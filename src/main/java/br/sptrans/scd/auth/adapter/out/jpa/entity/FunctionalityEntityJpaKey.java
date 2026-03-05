@@ -7,7 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public class FunctionalityEntityJpaId implements Serializable{
+public class FunctionalityEntityJpaKey implements Serializable{
 
     @Column(name = "COD_SISTEMA", length = 10)
     private String codSistema;
@@ -20,7 +20,7 @@ public class FunctionalityEntityJpaId implements Serializable{
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof FunctionalityEntityJpaId i)) {
+        if (!(o instanceof FunctionalityEntityJpaKey i)) {
             return false;
         }
         return Objects.equals(codSistema, i.codSistema) && Objects.equals(codModulo, i.codModulo)

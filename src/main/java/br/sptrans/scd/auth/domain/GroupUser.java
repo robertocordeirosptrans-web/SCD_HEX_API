@@ -13,14 +13,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class GroupUser {
-    private GroupUserId id;
+    private GroupUserKey id;
     private Long idUsuarioManutencao;
     private String codStatus;
     private LocalDateTime dtModi;
     private User user;
     private Group grupo;
 
-    public void setId(GroupUserId id) {
+    public void setId(GroupUserKey id) {
         this.id = id;
     }
 

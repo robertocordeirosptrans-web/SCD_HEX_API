@@ -22,11 +22,39 @@ public class Group {
     private Set<GroupProfile> perfis;
     private Set<GroupUser> usuarios;
 
+    public boolean isActive() {
+        return "A".equalsIgnoreCase(this.codStatus);
+    }
+
     public Set<GroupUser> getUsuarios() {
         return usuarios;
     }
 
     public void setUsuarios(Set<GroupUser> usuarios) {
         this.usuarios = usuarios;
+    }
+
+    public void setCodGrupo(String codGrupo) {
+        this.codGrupo = codGrupo;
+    }
+
+    public void setIdUsuarioManutencao(Long idUsuarioManutencao) {
+        this.idUsuarioManutencao = idUsuarioManutencao;
+    }
+
+    public void setDtModi(LocalDate dtModi) {
+        this.dtModi = dtModi;
+    }
+
+    public void setCodStatus(String codStatus) {
+        this.codStatus = codStatus;
+    }
+
+    public void setNomGrupo(String nomGrupo) {
+        this.nomGrupo = nomGrupo;
+    }
+
+    public void setPerfis(Set<GroupProfile> perfis) {
+        this.perfis = perfis;
     }
 }

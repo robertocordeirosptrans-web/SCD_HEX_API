@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 public class FunctionalityEntityJpa {
 
     @EmbeddedId
-    private FunctionalityEntityJpaId id;
+    private FunctionalityEntityJpaKey id;
 
     @Column(name = "NOM_FUNCIONALIDADE", length = 100)
     private String nomFuncionalidade;

@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class GroupProfile {
 
-    private GroupProfileId id;
+    private GroupProfileKey id;
     private Long idUsuarioManutencao;
     private String codStatus;
     private LocalDate dtModi;
@@ -51,11 +51,11 @@ public class GroupProfile {
         this.perfil = perfil;
     }
 
-    public GroupProfileId getId() {
+    public GroupProfileKey getId() {
         return id;
     }
 
-    public void setId(GroupProfileId id) {
+    public void setId(GroupProfileKey id) {
         this.id = id;
     }
 }

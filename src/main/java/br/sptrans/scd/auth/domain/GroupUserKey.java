@@ -5,16 +5,16 @@ import java.io.Serializable;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
-public class GroupUserId implements Serializable {
+public class GroupUserKey implements Serializable {
 
     private Long idUsuario;
 
     private String codGrupo;
 
-    public GroupUserId() {
+    public GroupUserKey() {
     }
 
-    public GroupUserId(Long idUsuario, String codGrupo) {
+    public GroupUserKey(Long idUsuario, String codGrupo) {
         this.idUsuario = idUsuario;
         this.codGrupo = codGrupo;
     }

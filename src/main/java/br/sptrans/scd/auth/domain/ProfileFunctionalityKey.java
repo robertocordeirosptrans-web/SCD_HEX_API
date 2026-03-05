@@ -5,7 +5,7 @@ import java.io.Serializable;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
-public class ProfileFunctionalityId implements Serializable {
+public class ProfileFunctionalityKey implements Serializable {
 
     private String codSistema;
 
@@ -18,10 +18,10 @@ public class ProfileFunctionalityId implements Serializable {
     private String codPerfil;
 
     // Default constructor
-    public ProfileFunctionalityId() {
+    public ProfileFunctionalityKey() {
     }
 
-    public ProfileFunctionalityId(String codSistema, String codModulo, String codRotina, String codFuncionalidade, String codPerfil) {
+    public ProfileFunctionalityKey(String codSistema, String codModulo, String codRotina, String codFuncionalidade, String codPerfil) {
         this.codSistema = codSistema;
         this.codModulo = codModulo;
         this.codRotina = codRotina;

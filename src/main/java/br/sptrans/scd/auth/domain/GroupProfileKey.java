@@ -6,17 +6,17 @@ import lombok.EqualsAndHashCode;
 
 
 @EqualsAndHashCode
-public class GroupProfileId implements Serializable{
+public class GroupProfileKey implements Serializable{
 
     private String codGrupo;
 
     private String codPerfil;
 
     // Default constructor
-    public GroupProfileId() {
+    public GroupProfileKey() {
     }
 
-    public GroupProfileId(String codGrupo, String codPerfil) {
+    public GroupProfileKey(String codGrupo, String codPerfil) {
         this.codGrupo = codGrupo;
         this.codPerfil = codPerfil;
     }

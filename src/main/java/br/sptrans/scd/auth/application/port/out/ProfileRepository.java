@@ -23,7 +23,7 @@ public interface ProfileRepository {
 
     void save(Profile perfil);
 
-    void updateProfile(String codPerfil, String codStatus, Long idUsuarioManutencao);
+    void updateStatus(String codPerfil, String codStatus, Long idUsuarioManutencao);
 
     // ── Associações PERFIL_FUNCIONALIDADES ────────────────────────────────────
     /**

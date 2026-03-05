@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "codPerfil")
 public class Profile {
-    
+
     private String codPerfil;
 
     private String nomPerfil;
@@ -23,6 +23,9 @@ public class Profile {
 
     private String codStatus;
 
+    public boolean isActive() {
+        return "A".equalsIgnoreCase(this.codStatus);
+    }
 
     public String getCodPerfil() {
         return codPerfil;

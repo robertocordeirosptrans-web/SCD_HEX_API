@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class ProfileFunctionality {
 
-    private ProfileFunctionalityId id;
+    private ProfileFunctionalityKey id;
     private Long idUsuarioManutencao;
     private LocalDate dtInicioValidade;
     private Functionality funcionalidade;
@@ -42,11 +42,11 @@ public class ProfileFunctionality {
         this.perfil = perfil;
     }
 
-    public ProfileFunctionalityId getId() {
+    public ProfileFunctionalityKey getId() {
         return id;
     }
 
-    public void setId(ProfileFunctionalityId id) {
+    public void setId(ProfileFunctionalityKey id) {
         this.id = id;
     }
 }
