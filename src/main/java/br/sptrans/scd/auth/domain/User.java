@@ -42,7 +42,7 @@ public class User {
     private String numDiasSemanasPermitidos = "7";
     private Set<GroupUser> gruposUsuario;
     private Set<UserProfile> perfisUsuario;
-    private Set<Functionality> funcionalidadesUsuario;
+    private Set<UserFunctionality> funcionalidadesUsuario;
 
     // ── Regras de negócio ────────────────────────────────────────────────────
     /**

@@ -158,8 +158,7 @@ public class AuthService implements AuthUseCase {
 
     @Override
     public Set<Functionality> loadPermissions(Long idUsuario) {
-        // Implementação padrão: retorna permissões do usuário
-        return null;
+              return userRepository.carregarFuncionalidadesEfetivas(idUsuario);
     }
 
     // ── redefinirSenha ───────────────────────────────────────────────────────

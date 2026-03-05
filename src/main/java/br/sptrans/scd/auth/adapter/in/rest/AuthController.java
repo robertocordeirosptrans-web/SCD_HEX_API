@@ -46,8 +46,10 @@ public class AuthController {
         AuthComand auth = new AuthComand(req.codLogin(), req.senha());
         User user = casoUso.autenticar(auth);
         Set<String> permissoes = user.getFuncionalidadesUsuario().stream()
-                .map(Functionality::canonicalKey)
-                .collect(Collectors.toSet());
+            .map(uf -> uf.getFuncionalidade())
+            .filter(f -> f != null)
+            .map(Functionality::canonicalKey)
+            .collect(Collectors.toSet());
         String jwt = providerJwtToken.gerarToken(user.getIdUsuario(), user.getCodLogin(), permissoes);
 
         ResponseLogin res = new ResponseLogin(jwt,
