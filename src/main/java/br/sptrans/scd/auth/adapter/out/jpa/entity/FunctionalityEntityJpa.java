@@ -37,4 +37,44 @@ public class FunctionalityEntityJpa {
     protected void aoAtualizar() {
         this.dtManutencao = LocalDateTime.now();
     }
+
+    public String getNomFuncionalidade() {
+        return nomFuncionalidade;
+    }
+
+    public void setNomFuncionalidade(String nomFuncionalidade) {
+        this.nomFuncionalidade = nomFuncionalidade;
+    }
+
+    public String getCodStatus() {
+        return codStatus;
+    }
+
+    public void setCodStatus(String codStatus) {
+        this.codStatus = codStatus;
+    }
+
+    public LocalDateTime getDtCadastro() {
+        return dtCadastro;
+    }
+
+    public void setDtCadastro(LocalDateTime dtCadastro) {
+        this.dtCadastro = dtCadastro;
+    }
+
+    public LocalDateTime getDtManutencao() {
+        return dtManutencao;
+    }
+
+    public void setDtManutencao(LocalDateTime dtManutencao) {
+        this.dtManutencao = dtManutencao;
+    }
+
+    public FunctionalityEntityJpaKey getId() {
+        return id;
+    }
+
+    public void setId(FunctionalityEntityJpaKey id) {
+        this.id = id;
+    }
 }
