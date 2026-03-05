@@ -5,12 +5,12 @@ import java.io.Serializable;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
-public class FunctionalityId implements Serializable {
+public class FunctionalityKey implements Serializable {
 
-    public FunctionalityId() {
+    public FunctionalityKey() {
     }
 
-    public FunctionalityId(String codSistema, String codModulo, String codRotina, String codFuncionalidade) {
+    public FunctionalityKey(String codSistema, String codModulo, String codRotina, String codFuncionalidade) {
         this.codSistema = codSistema;
         this.codModulo = codModulo;
         this.codRotina = codRotina;

@@ -15,7 +15,7 @@ import lombok.Setter;
 @EqualsAndHashCode(of = "id")
 public class Functionality {
 
-    private FunctionalityId id;
+    private FunctionalityKey id;
     private Long idUsuarioManutencao;
     private String codStatus;
     private LocalDateTime dtModi;
