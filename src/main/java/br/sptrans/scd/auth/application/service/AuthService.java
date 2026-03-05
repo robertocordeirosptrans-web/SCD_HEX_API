@@ -1,21 +1,24 @@
 package br.sptrans.scd.auth.application.service;
 
-import br.sptrans.scd.auth.application.port.in.AuthUseCase;
-import br.sptrans.scd.auth.application.port.in.AuthUseCase.AthenticationErrorType;
-import br.sptrans.scd.auth.application.port.out.GatewayEmail;
-import jakarta.transaction.Transactional;
-
+import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import br.sptrans.scd.auth.adapter.in.rest.ProviderJwtToken;
+import br.sptrans.scd.auth.application.port.in.AuthUseCase;
+import br.sptrans.scd.auth.application.port.in.AuthUseCase.AthenticationErrorType;
+import br.sptrans.scd.auth.application.port.out.GatewayEmail;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenRepository;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 import br.sptrans.scd.auth.domain.User;
+import io.jsonwebtoken.Claims;
+import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
@@ -68,23 +71,46 @@ public class AuthService implements AuthUseCase {
                     AthenticationErrorType.CONTA_INATIVA,
                     "Conta inativa. Contate o administrador.");
         }
-        // Valida senha MD5
-        // String senhaHash = md5(comando.senha());
-        // if (!senhaHash.equalsIgnoreCase(user.getCodSenha())) {
-        //     user.registrarTentativaFalha();
-        //     userRepository.atualizarTentativasEStatus(
-        //             user.getIduser(),
-        //             user.getNumTentativas(),
-        //             user.getCodStatus());
-        //     if (usuario.estaBloqueada()) {
-        //         throw new AuthenticationException(
-        //                 AthenticationErrorType.CONTA_BLOQUEADA,
-        //                 "Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
-        //     }
-        //     throw new AuthenticationException(
-        //             AthenticationErrorType.CREDENCIAIS_INVALIDAS,
-        //             "Usuário ou senha inválidos. Tentativa " + usuario.getNumTentativas() + " de 3.");
-        // }
+
+        String senhaRecebida = comando.senha();
+        boolean isMd5 = senhaRecebida.matches("^[a-fA-F0-9]{32}$");
+
+        if (isMd5) {
+            // Valida senha MD5
+            if (!senhaRecebida.equalsIgnoreCase(user.getCodSenha())) {
+                user.registrarTentativaFalha();
+                userRepository.atualizarTentativasEStatus(
+                        user.getIdUsuario(),
+                        user.getNumTentativasFalha(),
+                        user.getCodStatus());
+                if (user.isBlocked()) {
+                    throw new AuthenticationException(
+                            AthenticationErrorType.CONTA_BLOQUEADA,
+                            "Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
+                }
+                throw new AuthenticationException(
+                        AthenticationErrorType.CREDENCIAIS_INVALIDAS,
+                        "Usuário ou senha inválidos. Tentativa " + user.getNumTentativasFalha() + " de 3.");
+            }
+        } else {
+            // Valida JWT recebido como senha
+            try {
+
+                ProviderJwtToken jwtProvider = new ProviderJwtToken();
+                Claims claims = jwtProvider.validarEExtrairClaims(senhaRecebida);
+                String subject = claims.getSubject();
+                if (!subject.equalsIgnoreCase(user.getCodLogin())) {
+                    throw new AuthenticationException(
+                            AthenticationErrorType.CREDENCIAIS_INVALIDAS,
+                            "Senha invalida.");
+                }
+            } catch (Exception e) {
+                throw new AuthenticationException(
+                        AthenticationErrorType.CREDENCIAIS_INVALIDAS,
+                        "Senha invalida.");
+            }
+        }
+
         // Valida jornada de acesso
         if (!user.acessoPermitidoAgora()) {
             throw new AuthenticationException(
@@ -103,10 +129,37 @@ public class AuthService implements AuthUseCase {
         return user;
     }
 
-    // ── carregarPermissoes ───────────────────────────────────────────────────
-    @Transactional
-    public Set<Functionality> carregarPermissoes(Long idUsuario) {
-        return userRepository.carregarFuncionalidadesEfetivas(idUsuario);
+    // ── Recuperação de Senha ───────────────────────────────────────────────────────────
+    @Override
+    public void recoveryResetPassword(ResetRequestComand comando) {
+        User user = userRepository.findByNomEmail(comando.email())
+            .orElseThrow(() -> new AuthenticationException(
+            AthenticationErrorType.CREDENCIAIS_INVALIDAS,
+            "E-mail não cadastrado."));
+
+        // Invalida token anterior, se existir
+        tokenRepository.invalidateTokensForUser(user.getIdUsuario());
+
+        // Cria novo token com TTL
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setIdUsuario(user.getIdUsuario());
+        resetToken.setToken(UUID.randomUUID().toString());
+        resetToken.setExpiryDate(LocalDateTime.now().plusMinutes(tokenTtlMinutos));
+        resetToken.isUsed();
+
+        tokenRepository.save(resetToken);
+
+        // Envia e-mail via adaptador SMTP
+        gatewayEmail.enviarEmailRedefinicaoSenha(
+            user.getNomEmail(),
+            user.getNomUsuario(),
+            resetToken.getToken());
+    }
+
+    @Override
+    public Set<Functionality> loadPermissions(Long idUsuario) {
+        // Implementação padrão: retorna permissões do usuário
+        return null;
     }
 
     // ── redefinirSenha ───────────────────────────────────────────────────────
@@ -134,26 +187,35 @@ public class AuthService implements AuthUseCase {
                 AthenticationErrorType.TOKEN_INVALIDO,
                 "Usuário associado ao token não encontrado."));
 
-        // Impede reutilização da senha anterior
-        // String novaSenhaHash = md5(comando.novaSenha());
-        // if (novaSenhaHash.equalsIgnoreCase(usuario.getOldSenha())) {
-        //     throw new AuthenticationException(
-        //             AthenticationErrorType.SENHA_REUTILIZADA,
-        //             "A nova senha não pode ser igual à senha anterior.");
-        // }
+        // Impede reutilização da senha anterior comparando JWTs
+        ProviderJwtToken jwtProvider = new ProviderJwtToken();
+        String novaSenhaJwt = jwtProvider.gerarToken(user.getIdUsuario(), user.getCodLogin(), Set.of());
+        String oldSenhaJwt = user.getOldSenha();
+
+        // Se oldSenhaJwt não for nulo, comparar os hashes dos JWTs
+        if (oldSenhaJwt != null && !oldSenhaJwt.isEmpty()) {
+            String hashNova = Integer.toHexString(novaSenhaJwt.hashCode());
+            String hashOld = Integer.toHexString(oldSenhaJwt.hashCode());
+            if (hashNova.equals(hashOld)) {
+                throw new AuthenticationException(
+                        AthenticationErrorType.SENHA_REUTILIZADA,
+                        "A nova senha não pode ser igual à senha anterior.");
+            }
+        }
 
         // Valida complexidade
         validarComplexidadeSenha(comando.novaSenha());
 
-        // Persiste nova senha
+        // Persiste nova senha como JWT
         user.setOldSenha(user.getCodSenha());
-        user.setCodSenha(novaSenhaHash);
-        userRepository.salvar(user);
+        user.setCodSenha(novaSenhaJwt);
+        userRepository.save(user);
 
         // Invalida o token
-        tokenRepository.marcarComoUsado(comando.token());
+        tokenRepository.invalidateTokensForUser(user.getIdUsuario());
     }
 
+    // ── Validações ───────────────────────────────────────────────────────
     private void validarComplexidadeSenha(String senha) {
         if (senha == null || senha.length() < 8) {
             throw new AuthenticationException(
@@ -186,4 +248,5 @@ public class AuthService implements AuthUseCase {
                     "A senha não pode conter sequências óbvias (abc, 123 etc.).");
         }
     }
+
 }

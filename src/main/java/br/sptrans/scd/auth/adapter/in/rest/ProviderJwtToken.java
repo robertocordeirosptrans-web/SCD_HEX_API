@@ -29,7 +29,7 @@ import jakarta.servlet.http.HttpServletResponse;
 // ProvedorTokenJwt — geração e validação de tokens JWT
 // ══════════════════════════════════════════════════════════════════════════════
 @Component
-class ProviderJwtToken {
+public class ProviderJwtToken {
 
     @Value("${scd.jwt.secret:SCD-SPTRANS-key-secret-minimo-32-chars}")
     private String secret;
