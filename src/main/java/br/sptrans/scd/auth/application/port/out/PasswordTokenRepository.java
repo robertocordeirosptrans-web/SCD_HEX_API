@@ -1,0 +1,37 @@
+package br.sptrans.scd.auth.application.port.out;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+
+import br.sptrans.scd.auth.adapter.out.jpa.entity.PasswordTokenEntityJpa;
+import br.sptrans.scd.auth.domain.PasswordResetToken;
+
+/**
+ * Porta de Saída — repositório de tokens de redefinição de senha. Tabela:
+ * password_reset_tokens.
+ */
+public interface PasswordTokenRepository extends JpaRepository<PasswordTokenEntityJpa, Long> {
+
+    Optional<PasswordResetToken> findByToken(String token);
+
+    Optional<PasswordResetToken> findByUserIdAndUsedFalse(Long userId);
+
+    /**
+     * Retorna o token vigente (não expirado, não usado) do usuário, se existir.
+     */
+    Optional<PasswordResetToken> findByTokenUser(Long idUsuario);
+
+    void save(PasswordResetToken token);
+
+    @Modifying
+    @Query("UPDATE PasswordTokenEntityJpa t SET t.used = true WHERE t.userId = :userId AND t.used = false")
+    void invalidateTokensForUser(Long userId);
+
+    @Modifying
+    @Query("DELETE FROM PasswordResetTokenJpa t WHERE t.expiryDate <= CURRENT_TIMESTAMP")
+    void deleteExpiredTokens();
+
+}

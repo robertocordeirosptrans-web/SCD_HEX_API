@@ -1,0 +1,60 @@
+package br.sptrans.scd.auth.domain;
+
+import java.time.LocalDateTime;
+
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+public class GroupUser {
+    private GroupUserId id;
+    private Long idUsuarioManutencao;
+    private String codStatus;
+    private LocalDateTime dtModi;
+    private User user;
+    private Group grupo;
+
+    public void setId(GroupUserId id) {
+        this.id = id;
+    }
+
+    public Long getIdUsuarioManutencao() {
+        return idUsuarioManutencao;
+    }
+
+    public void setIdUsuarioManutencao(Long idUsuarioManutencao) {
+        this.idUsuarioManutencao = idUsuarioManutencao;
+    }
+
+    public String getCodStatus() {
+        return codStatus;
+    }
+
+    public void setCodStatus(String codStatus) {
+        this.codStatus = codStatus;
+    }
+
+    public LocalDateTime getDtModi() {
+        return dtModi;
+    }
+
+    public void setDtModi(LocalDateTime dtModi) {
+        this.dtModi = dtModi;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+
+}
