@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/auth")
@@ -43,15 +44,15 @@ public class AuthController {
         @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
         @ApiResponse(responseCode = "403", description = "Credenciais inválidas ou usuário bloqueado/inativo")
     })
-    public ResponseEntity<ResponseLogin> login(@RequestBody @Valid  RequestLogin req) {
-        System.out.print(req.codLogin);
-        AuthComand auth = new AuthComand(req.codLogin(), req.senha());
+    public ResponseEntity<?> login(@RequestBody @Valid RequestLogin req) {
+
+        AuthComand auth = new AuthComand(req.login(), req.password());
         User user = casoUso.autenticar(auth);
         Set<String> permissoes = user.getFuncionalidadesUsuario().stream()
-            .map(uf -> uf.getFuncionalidade())
-            .filter(f -> f != null)
-            .map(Functionality::canonicalKey)
-            .collect(Collectors.toSet());
+                .map(uf -> uf.getFuncionalidade())
+                .filter(f -> f != null)
+                .map(Functionality::canonicalKey)
+                .collect(Collectors.toSet());
         String jwt = providerJwtToken.gerarToken(user.getIdUsuario(), user.getCodLogin(), permissoes);
 
         ResponseLogin res = new ResponseLogin(jwt,
@@ -87,12 +88,39 @@ public class AuthController {
                 "Se o e-mail estiver cadastrado, você receberá as instruções em instantes."));
     }
 
-
+    @PostMapping("/login-test")
+    public ResponseEntity<String> loginTest(@RequestBody LoginDTO req) {
+        return ResponseEntity.ok("Login recebido: " + req.login + ", Password recebido: " + req.password);
+    }
 
     // ── DTOs ─────────────────────────────────────────────────────────────────
-    public record RequestLogin(String codLogin, String senha) { }
-    public record ResponseLogin(String token, Long idUsuario, String nomUsuario, Set<String> permissoes) {}
-    public record ResponseSimple(String mensagem) {}
-    public record RequestRecoveryPassword(String email) {}
-    public record ResquestChangePassword(String token, String novaSenha) {}
+    public record RequestLogin(@NotBlank(message = "Login é obrigatório")
+            String login,
+            @NotBlank(message = "Senha é obrigatória")
+            String password) {
+
+    }
+
+    public record ResponseLogin(String token, Long idUsuario, String nomUsuario, Set<String> permissoes) {
+
+    }
+
+    public record ResponseSimple(String mensagem) {
+
+    }
+
+    public record RequestRecoveryPassword(String email) {
+
+    }
+
+    public record ResquestChangePassword(String token, String novaSenha) {
+
+    }
+
+    public static class LoginDTO {
+        @NotBlank
+        public String login;
+        @NotBlank
+        public String password;
+    }
 }

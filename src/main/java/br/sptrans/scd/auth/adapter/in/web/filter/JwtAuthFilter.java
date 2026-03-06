@@ -3,6 +3,8 @@ package br.sptrans.scd.auth.adapter.in.web.filter;
 import java.io.IOException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,6 +35,7 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final TokenValidatorPort tokenValidator;
     private final UserRepository userRepository;
@@ -116,14 +119,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) throws ServletException {
         String path   = request.getRequestURI();
         String method = request.getMethod();
-
-        return method.equalsIgnoreCase("OPTIONS")
+        boolean ignore = method.equalsIgnoreCase("OPTIONS")
             || path.startsWith("/api/v1/auth/login")
             || path.startsWith("/api/v1/auth/forgot-password")
             || path.startsWith("/api/v1/auth/reset-password")
             || path.startsWith("/actuator/health")
             || path.startsWith("/swagger-ui")
             || path.startsWith("/v3/api-docs");
+        log.info("JwtAuthFilter.shouldNotFilter: path={}, ignore={}", path, ignore);
+        return ignore;
     }
 
     private void writeUnauthorized(HttpServletResponse response,
