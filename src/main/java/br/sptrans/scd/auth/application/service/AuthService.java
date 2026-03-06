@@ -82,7 +82,7 @@ public class AuthService implements AuthUseCase {
                 userRepository.atualizarTentativasEStatus(
                         user.getIdUsuario(),
                         user.getNumTentativasFalha(),
-                        user.getCodStatus());
+                        user.getStatus() != null ? user.getStatus().getCode() : null);
                 if (user.isBlocked()) {
                     throw new AuthenticationException(
                             AthenticationErrorType.CONTA_BLOQUEADA,
@@ -120,7 +120,7 @@ public class AuthService implements AuthUseCase {
         // Login bem-sucedido
         user.resetarTentativas();
         userRepository.atualizarTentativasEStatus(
-                user.getIdUsuario(), 0, user.getCodStatus());
+            user.getIdUsuario(), 0, user.getStatus() != null ? user.getStatus().getCode() : null);
         userRepository.atualizarUltimoAcesso(user.getIdUsuario());
         // Carrega permissões
         // Set<Functionality> permissoes = userRepository

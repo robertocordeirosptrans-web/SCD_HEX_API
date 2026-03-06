@@ -10,6 +10,7 @@ import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.UserManagementException;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.auth.domain.enums.UserStatus;
 import br.sptrans.scd.shared.exception.EncryptorException;
 import br.sptrans.scd.shared.security.Criptografia;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class UserManagementService implements UserManagementUseCase {
         user.setCodRg(cmd.codRg());
         user.setCodSenha(passwordHash);
         user.setOldSenha(null);
-        user.setCodStatus("A");
+        user.setStatus(UserStatus.ACTIVE);
         user.setNumTentativasFalha(0);
         user.setNumDiasSemanasPermitidos(cmd.numDiasSemanasPermitidos());
         user.setDt_jornada_ini(cmd.dtJornadaIni());
@@ -100,7 +101,7 @@ public class UserManagementService implements UserManagementUseCase {
                     "Não é possível inativar usuário com sessão ativa. Aguarde 30 minutos ou solicite logout.");
         }
 
-        userRepository.updateStatus(cmd.idUsuario(), "I", cmd.idUsuarioLogado());
+        userRepository.updateStatus(cmd.idUsuario(), br.sptrans.scd.auth.domain.enums.UserStatus.INACTIVE.getCode(), cmd.idUsuarioLogado());
     }
 
     // ── reactivateUser ────────────────────────────────────────────────────────
@@ -115,7 +116,7 @@ public class UserManagementService implements UserManagementUseCase {
         }
 
         // Reativa e zera tentativas
-        userRepository.resetAttemptsAndStatus(cmd.idUsuario(), "A", cmd.idUsuarioLogado());
+        userRepository.resetAttemptsAndStatus(cmd.idUsuario(), br.sptrans.scd.auth.domain.enums.UserStatus.ACTIVE.getCode(), cmd.idUsuarioLogado());
     }
 
     // ── unblockUser ───────────────────────────────────────────────────────────
@@ -130,7 +131,7 @@ public class UserManagementService implements UserManagementUseCase {
         }
 
         // Desbloqueia e zera contador de tentativas
-        userRepository.resetAttemptsAndStatus(cmd.idUsuario(), "A", cmd.idUsuarioLogado());
+        userRepository.resetAttemptsAndStatus(cmd.idUsuario(), br.sptrans.scd.auth.domain.enums.UserStatus.ACTIVE.getCode(), cmd.idUsuarioLogado());
     }
 
     // ── adminResetPassword ────────────────────────────────────────────────────

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import br.sptrans.scd.auth.domain.enums.UserStatus;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,11 +16,18 @@ import lombok.Setter;
 @NoArgsConstructor
 @EqualsAndHashCode(of = "idUsuario")
 public class User {
+    public Set<Profile> getProfiles() {
+        return perfis;
+    }
+
+    public Set<Functionality> getFunctionalities() {
+        return funcionalidadesDiretas;
+    }
 
     private Long idUsuario;
     private String codSenha;
     private String codLogin;
-    private String codStatus;
+    private UserStatus status;
     private LocalDateTime dtModi;
     private String nomUsuario;
     private String desEndereco;
@@ -70,24 +78,21 @@ public class User {
      * Conta está disponível para login.
      */
     public boolean isActived() {
-        return "A".equalsIgnoreCase(this.codStatus);
+        return status != null && status.canLogin();
     }
 
-    /**
-     * Conta foi bloqueada (3 tentativas ou bloqueio manual).
-     */
     public boolean isBlocked() {
-        return "B".equalsIgnoreCase(this.codStatus);
+        return status != null && status.isBlocked();
     }
 
     public boolean isInactive() {
-        return "I".equalsIgnoreCase(this.codStatus);
+        return status == UserStatus.INACTIVE;
     }
 
     public void registrarTentativaFalha() {
         this.numTentativasFalha = (this.numTentativasFalha == null ? 0 : this.numTentativasFalha) + 1;
         if (this.numTentativasFalha >= 3) {
-            this.codStatus = "B";
+            this.status = UserStatus.BLOCKED;
         }
     }
 

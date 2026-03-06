@@ -66,7 +66,7 @@ public class UserController {
 			user.getNomEmail(),
 			user.getCodCpf(),
 			user.getCodRg(),
-			user.getCodStatus(),
+			user.getStatus() != null ? user.getStatus().getCode() : null,
 			user.getDtCriacao(),
 			user.getDtModi(),
 			user.getDtExpiraSenha()

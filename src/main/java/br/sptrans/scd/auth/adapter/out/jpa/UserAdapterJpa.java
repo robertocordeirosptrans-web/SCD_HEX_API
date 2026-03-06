@@ -108,7 +108,7 @@ public class UserAdapterJpa implements UserRepository {
 				.setParameter("dias", usuario.getNumDiasSemanasPermitidos())
 				.setParameter("jornadaIni", usuario.getDt_jornada_ini())
 				.setParameter("jornadaFim", usuario.getDt_jornada_fim())
-				.setParameter("status", usuario.getCodStatus())
+				.setParameter("status", usuario.getStatus() != null ? usuario.getStatus().getCode() : null)
 				.executeUpdate();
 	}
 
@@ -131,7 +131,7 @@ public class UserAdapterJpa implements UserRepository {
 				.setParameter("dias", usuario.getNumDiasSemanasPermitidos())
 				.setParameter("jornadaIni", usuario.getDt_jornada_ini())
 				.setParameter("jornadaFim", usuario.getDt_jornada_fim())
-				.setParameter("status", usuario.getCodStatus())
+				.setParameter("status", usuario.getStatus() != null ? usuario.getStatus().getCode() : null)
 				.setParameter("id", usuario.getIdUsuario())
 				.executeUpdate();
 	}
@@ -245,6 +245,17 @@ public class UserAdapterJpa implements UserRepository {
 		// Exemplo:
 		// user.setIdUsuario(((Number) row[0]).longValue());
 		// ...
+		// Supondo que COD_STATUS está em row[16] (ajuste conforme seu select)
+		if (row.length > 16 && row[16] != null) {
+			String codStatus = row[16].toString();
+			try {
+				user.setStatus(br.sptrans.scd.auth.domain.enums.UserStatus.valueOf(
+					codStatus.equals("A") ? "ACTIVE" : codStatus.equals("B") ? "BLOCKED" : "INACTIVE"
+				));
+			} catch (Exception e) {
+				user.setStatus(null);
+			}
+		}
 		return user;
 	}
 }
