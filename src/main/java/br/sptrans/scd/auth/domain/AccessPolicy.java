@@ -1,10 +1,7 @@
 package br.sptrans.scd.auth.domain;
 
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Objeto de Valor: regras de acesso por jornada. Encapsula a lógica de
@@ -30,20 +27,21 @@ public class AccessPolicy {
     }
 
     /**
-     * Valida se o momento atual está dentro da jornada permitida. Retorna true
-     * se não houver restrição configurada (campos nulos).
+     * Valida se o dia atual é permitido.
+     * diasPermitidos é uma string de 7 caracteres ('0' ou '1'),
+     * onde cada posição representa um dia: índice 0=Domingo, 1=Segunda, ..., 6=Sábado.
+     * Ex: "1111111" = todos os dias, "0111110" = segunda a sexta.
      */
     private boolean validarDiaSemana() {
         if (diasPermitidos == null || diasPermitidos.isBlank()) {
             return true; // sem restrição de dia
         }
-        Set<Integer> diasSet = Arrays.stream(diasPermitidos.split(","))
-                .map(String::trim)
-                .map(Integer::parseInt)
-                .collect(Collectors.toSet());
-
-        int diaHoje = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        return diasSet.contains(diaHoje);
+        if (diasPermitidos.length() != 7) {
+            return true; // formato inválido, sem restrição
+        }
+        // Calendar.DAY_OF_WEEK: 1=Domingo, 2=Segunda, ..., 7=Sábado → índice 0..6
+        int indice = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1;
+        return diasPermitidos.charAt(indice) == '1';
     }
 
     private boolean validarHorario() {

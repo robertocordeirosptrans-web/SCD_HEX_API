@@ -82,13 +82,15 @@ public class AuthService implements AuthUseCase {
         }
 
         String senhaRecebida = comando.senha();
+        String hashArmazenado = user.getCodSenha() != null ? user.getCodSenha().trim() : null;
         boolean isMd5 = senhaRecebida.matches("^[a-fA-F0-9]{32}$");
-        boolean isBcrypt = user.getCodSenha() != null && user.getCodSenha().startsWith("$2a$");
-        log.info("Tipo de senha recebida: {}", isMd5 ? "MD5" : isBcrypt ? "BCrypt" : "JWT");
+        boolean isBcrypt = hashArmazenado != null && hashArmazenado.startsWith("$2a$");
+        log.info("Hash armazenado (primeiros 10 chars): {}", hashArmazenado != null ? hashArmazenado.substring(0, Math.min(10, hashArmazenado.length())) : "null");
+        log.info("Tipo de senha detectado: {}", isMd5 ? "MD5" : isBcrypt ? "BCrypt" : "JWT/OUTRO");
 
         if (isMd5) {
             log.info("Validando senha MD5 para usuário: {}", user.getCodLogin());
-            if (!senhaRecebida.equalsIgnoreCase(user.getCodSenha())) {
+            if (!senhaRecebida.equalsIgnoreCase(hashArmazenado)) {
                 log.warn("Senha MD5 inválida para usuário: {}", user.getCodLogin());
                 user.registrarTentativaFalha();
                 userRepository.atualizarTentativasEStatus(
@@ -104,7 +106,7 @@ public class AuthService implements AuthUseCase {
             log.info("Senha MD5 válida para usuário: {}", user.getCodLogin());
         } else if (isBcrypt) {
             log.info("Validando senha BCrypt para usuário: {}", user.getCodLogin());
-            if (!BCrypt.checkpw(senhaRecebida, user.getCodSenha())) {
+            if (!BCrypt.checkpw(senhaRecebida, hashArmazenado)) {
                 log.warn("Senha BCrypt inválida para usuário: {}", user.getCodLogin());
                 user.registrarTentativaFalha();
                 userRepository.atualizarTentativasEStatus(

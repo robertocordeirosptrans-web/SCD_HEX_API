@@ -1,5 +1,6 @@
 package br.sptrans.scd.auth.adapter.out.jpa;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -8,16 +9,29 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.auth.domain.enums.UserStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 @Repository
 public class UserAdapterJpa implements UserRepository {
+
+	private static final Logger log = LoggerFactory.getLogger(UserAdapterJpa.class);
+
+	private static final String USUARIOS_SELECT =
+		"SELECT ID_USUARIO, COD_LOGIN, COD_SENHA, NOM_USUARIO, DES_ENDERECO, "
+		+ "NOM_DEPARTAMENTO, NOM_CARGO, NOM_FUNCAO, COD_CPF, COD_RG, NOM_EMAIL, "
+		+ "COD_EMPRESA, COD_CLASSIFICACAO_PESSOA, COD_STATUS, NUM_TENTATIVA, "
+		+ "NUM_DIAS_SEMANAS_PERMITIDOS, DT_JORNADA_INI, DT_JORNADA_FIM, DT_CRIACAO, "
+		+ "DT_MODI, DT_EXPIRA_SENHA, DT_ULTIMO_ACESSO FROM SPTRANSDBA.USUARIOS";
 
 	@PersistenceContext
 	private EntityManager em;
@@ -35,9 +49,9 @@ public class UserAdapterJpa implements UserRepository {
 
 	@Override
 	public Optional<User> findById(Long id) {
-		List<Object[]> rows = em.createNativeQuery("""
-				SELECT * FROM SPTRANSDBA.USUARIOS WHERE ID_USUARIO = :id
-				""")
+		@SuppressWarnings("unchecked")
+		List<Object[]> rows = em.createNativeQuery(
+				USUARIOS_SELECT + " WHERE ID_USUARIO = :id")
 				.setParameter("id", id)
 				.getResultList();
 		if (rows.isEmpty()) return Optional.empty();
@@ -46,20 +60,26 @@ public class UserAdapterJpa implements UserRepository {
 
 	@Override
 	public Optional<User> findByCodLogin(String codLogin) {
-		List<Object[]> rows = em.createNativeQuery("""
-				SELECT * FROM SPTRANSDBA.USUARIOS WHERE COD_LOGIN = :login
-				""")
+		Long total = ((Number) em.createNativeQuery(
+				"SELECT COUNT(*) FROM SPTRANSDBA.USUARIOS")
+				.getSingleResult()).longValue();
+		log.info("findByCodLogin: buscando '{}' | total de usuários na tabela: {}", codLogin, total);
+
+		@SuppressWarnings("unchecked")
+		List<Object[]> rows = em.createNativeQuery(
+				USUARIOS_SELECT + " WHERE UPPER(TRIM(COD_LOGIN)) = UPPER(TRIM(:login))")
 				.setParameter("login", codLogin)
 				.getResultList();
+		log.info("findByCodLogin: resultado da busca -> {} registro(s) encontrado(s)", rows.size());
 		if (rows.isEmpty()) return Optional.empty();
 		return Optional.of(mapToUser(rows.get(0)));
 	}
 
 	@Override
 	public Optional<User> findByNomEmail(String nomEmail) {
-		List<Object[]> rows = em.createNativeQuery("""
-				SELECT * FROM SPTRANSDBA.USUARIOS WHERE NOM_EMAIL = :email
-				""")
+		@SuppressWarnings("unchecked")
+		List<Object[]> rows = em.createNativeQuery(
+				USUARIOS_SELECT + " WHERE NOM_EMAIL = :email")
 				.setParameter("email", nomEmail)
 				.getResultList();
 		if (rows.isEmpty()) return Optional.empty();
@@ -183,6 +203,7 @@ public class UserAdapterJpa implements UserRepository {
 	@Override
 	public Set<Functionality> carregarFuncionalidadesEfetivas(Long idUsuario) {
 		// Exemplo simplificado: apenas busca funcionalidades diretas
+		@SuppressWarnings("unchecked")
 		List<Object[]> rows = em.createNativeQuery("""
 			SELECT f.COD_SISTEMA, f.COD_MODULO, f.COD_ROTINA, f.COD_FUNCIONALIDADE, f.NOM_FUNCIONALIDADE
 			FROM SPTRANSDBA.USUARIO_FUNCIONALIDADES uf
@@ -194,7 +215,11 @@ public class UserAdapterJpa implements UserRepository {
 		Set<Functionality> funcionalidades = new HashSet<>();
 		for (Object[] row : rows) {
 			Functionality func = new Functionality();
-			// Preencher campos conforme entidade Functionality
+			if (row[0] != null) func.setCodSistema(row[0].toString());
+			if (row[1] != null) func.setCodModulo(row[1].toString());
+			if (row[2] != null) func.setCodRotina(row[2].toString());
+			if (row[3] != null) func.setCodFuncionalidade(row[3].toString());
+			if (row[4] != null) func.setNomFuncionalidade(row[4].toString());
 			funcionalidades.add(func);
 		}
 		return funcionalidades;
@@ -203,7 +228,7 @@ public class UserAdapterJpa implements UserRepository {
 	@Override
 	public boolean existsByLogin(String codLogin) {
 		Long count = ((Number) em.createNativeQuery("""
-				SELECT COUNT(*) FROM SPTRANSDBA.USUARIOS WHERE COD_LOGIN = :login
+				SELECT COUNT(*) FROM SPTRANSDBA.USUARIOS WHERE UPPER(COD_LOGIN) = UPPER(:login)
 				""")
 				.setParameter("login", codLogin)
 				.getSingleResult()).longValue();
@@ -212,7 +237,7 @@ public class UserAdapterJpa implements UserRepository {
 
 	@Override
 	public List<User> findAll(String codStatus) {
-		String sql = "SELECT * FROM SPTRANSDBA.USUARIOS";
+		String sql = USUARIOS_SELECT;
 		if (codStatus != null) {
 			sql += " WHERE COD_STATUS = :status";
 		}
@@ -220,6 +245,7 @@ public class UserAdapterJpa implements UserRepository {
 		if (codStatus != null) {
 			query.setParameter("status", codStatus);
 		}
+		@SuppressWarnings("unchecked")
 		List<Object[]> rows = query.getResultList();
 		List<User> users = new ArrayList<>();
 		for (Object row : rows) {
@@ -239,23 +265,51 @@ public class UserAdapterJpa implements UserRepository {
 	}
 
 	// Helper para mapear Object[] para User
+	// Índices correspondem a USUARIOS_SELECT:
+	// 0:ID_USUARIO, 1:COD_LOGIN, 2:COD_SENHA, 3:NOM_USUARIO, 4:DES_ENDERECO,
+	// 5:NOM_DEPARTAMENTO, 6:NOM_CARGO, 7:NOM_FUNCAO, 8:COD_CPF, 9:COD_RG,
+	// 10:NOM_EMAIL, 11:COD_EMPRESA, 12:COD_CLASSIFICACAO_PESSOA, 13:COD_STATUS,
+	// 14:NUM_TENTATIVA, 15:NUM_DIAS_SEMANAS_PERMITIDOS, 16:DT_JORNADA_INI,
+	// 17:DT_JORNADA_FIM, 18:DT_CRIACAO, 19:DT_MODI, 20:DT_EXPIRA_SENHA, 21:DT_ULTIMO_ACESSO
 	private User mapToUser(Object[] row) {
 		User user = new User();
-		// Preencher campos conforme ordem do select ou usar ResultSetMapping
-		// Exemplo:
-		// user.setIdUsuario(((Number) row[0]).longValue());
-		// ...
-		// Supondo que COD_STATUS está em row[16] (ajuste conforme seu select)
-		if (row.length > 16 && row[16] != null) {
-			String codStatus = row[16].toString();
-			try {
-				user.setStatus(br.sptrans.scd.auth.domain.enums.UserStatus.valueOf(
-					codStatus.equals("A") ? "ACTIVE" : codStatus.equals("B") ? "BLOCKED" : "INACTIVE"
-				));
-			} catch (Exception e) {
-				user.setStatus(null);
+		user.setIdUsuario(row[0] != null ? ((Number) row[0]).longValue() : null);
+		user.setCodLogin(row[1] != null ? row[1].toString() : null);
+		user.setCodSenha(row[2] != null ? row[2].toString() : null);
+		user.setNomUsuario(row[3] != null ? row[3].toString() : null);
+		user.setDesEndereco(row[4] != null ? row[4].toString() : null);
+		user.setNomDepartamento(row[5] != null ? row[5].toString() : null);
+		user.setNomCargo(row[6] != null ? row[6].toString() : null);
+		user.setNomFuncao(row[7] != null ? row[7].toString() : null);
+		user.setCodCpf(row[8] != null ? row[8].toString() : null);
+		user.setCodRg(row[9] != null ? row[9].toString() : null);
+		user.setNomEmail(row[10] != null ? row[10].toString() : null);
+		user.setCodEmpresa(row[11] != null ? row[11].toString() : null);
+		if (row[12] != null) {
+			ClassificationPerson cp = new ClassificationPerson();
+			cp.setDesClassificacaoPessoa(row[12].toString());
+			user.setCodClassificacaoPessoa(cp);
+		}
+		if (row[13] != null) {
+			String code = row[13].toString();
+			for (UserStatus s : UserStatus.values()) {
+				if (s.getCode().equals(code)) { user.setStatus(s); break; }
 			}
 		}
+		user.setNumTentativasFalha(row[14] != null ? ((Number) row[14]).intValue() : 0);
+		user.setNumDiasSemanasPermitidos(row[15] != null ? row[15].toString() : null);
+		user.setDt_jornada_ini(row[16] != null ? (Date) row[16] : null);
+		user.setDt_jornada_fim(row[17] != null ? (Date) row[17] : null);
+		user.setDtCriacao(toLocalDateTime(row[18]));
+		user.setDtModi(toLocalDateTime(row[19]));
+		user.setDtExpiraSenha(toLocalDateTime(row[20]));
+		user.setDtUltimoAcesso(toLocalDateTime(row[21]));
 		return user;
+	}
+
+	private LocalDateTime toLocalDateTime(Object obj) {
+		if (obj instanceof Timestamp ts) return ts.toLocalDateTime();
+		if (obj instanceof java.sql.Date d) return d.toLocalDate().atStartOfDay();
+		return null;
 	}
 }

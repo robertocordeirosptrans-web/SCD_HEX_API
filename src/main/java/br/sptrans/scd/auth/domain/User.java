@@ -48,7 +48,7 @@ public class User {
     private String newSenha;
     private String oldSenha;
     private Integer numTentativasFalha = 0;
-    private String numDiasSemanasPermitidos = "7";
+    private String numDiasSemanasPermitidos = null;
 
     // Permissões carregadas após autenticação
     private Set<Profile> perfis = new HashSet<>();
