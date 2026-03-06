@@ -7,11 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
-import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.UserManagementException;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.enums.UserStatus;
+import br.sptrans.scd.shared.exception.BusinessException;
+import br.sptrans.scd.shared.exception.DuplicateResourceException;
 import br.sptrans.scd.shared.exception.EncryptorException;
+import br.sptrans.scd.shared.exception.ResourceNotFoundException;
 import br.sptrans.scd.shared.security.Criptografia;
 import lombok.RequiredArgsConstructor;
 
@@ -27,9 +29,7 @@ public class UserManagementService implements UserManagementUseCase {
     public User createUser(CreateUserCommand cmd) {
         // COD_LOGIN único
         if (userRepository.existsByLogin(cmd.codLogin())) {
-            throw new UserManagementException(
-                    ErrorType.LOGIN_ALREADY_EXISTS,
-                    "Login '" + cmd.codLogin() + "' já está em uso.");
+            throw new DuplicateResourceException("Login", "codLogin", cmd.codLogin());
         }
 
         String tempPassword = "SBEReset@#2026";
@@ -89,16 +89,12 @@ public class UserManagementService implements UserManagementUseCase {
         User user = findUserOrThrow(cmd.idUsuario());
 
         if (user.isInactive()) {
-            throw new UserManagementException(
-                    ErrorType.ALREADY_INACTIVE,
-                    "Usuário já está inativo.");
+            throw new BusinessException("Usuário já está inativo.", "ALREADY_INACTIVE");
         }
 
         // Bloqueia inativação se há sessão ativa nos últimos 30 minutos
         if (userRepository.hasActiveSession(cmd.idUsuario())) {
-            throw new UserManagementException(
-                    ErrorType.ACTIVE_SESSION,
-                    "Não é possível inativar usuário com sessão ativa. Aguarde 30 minutos ou solicite logout.");
+            throw new BusinessException("Não é possível inativar usuário com sessão ativa. Aguarde 30 minutos ou solicite logout.", "ACTIVE_SESSION");
         }
 
         userRepository.updateStatus(cmd.idUsuario(), br.sptrans.scd.auth.domain.enums.UserStatus.INACTIVE.getCode(), cmd.idUsuarioLogado());
@@ -110,9 +106,7 @@ public class UserManagementService implements UserManagementUseCase {
         User user = findUserOrThrow(cmd.idUsuario());
 
         if (user.isActived()) {
-            throw new UserManagementException(
-                    ErrorType.ALREADY_ACTIVE,
-                    "Usuário já está ativo.");
+            throw new BusinessException("Usuário já está ativo.", "ALREADY_ACTIVE");
         }
 
         // Reativa e zera tentativas
@@ -125,9 +119,7 @@ public class UserManagementService implements UserManagementUseCase {
         User user = findUserOrThrow(cmd.idUsuario());
 
         if (!user.isBlocked()) {
-            throw new UserManagementException(
-                    ErrorType.NOT_BLOCKED,
-                    "Usuário não está bloqueado.");
+            throw new BusinessException("Usuário não está bloqueado.", "NOT_BLOCKED");
         }
 
         // Desbloqueia e zera contador de tentativas
@@ -184,9 +176,7 @@ public class UserManagementService implements UserManagementUseCase {
     // ── Utilitários privados ──────────────────────────────────────────────────
     private User findUserOrThrow(Long idUsuario) {
         return userRepository.findById(idUsuario)
-                .orElseThrow(() -> new UserManagementException(
-                ErrorType.USER_NOT_FOUND,
-                "Usuário não encontrado: id=" + idUsuario));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", idUsuario));
     }
 
 }

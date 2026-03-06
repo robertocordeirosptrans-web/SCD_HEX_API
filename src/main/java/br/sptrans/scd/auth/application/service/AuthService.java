@@ -13,13 +13,17 @@ import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.adapter.in.rest.ProviderJwtToken;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
-import br.sptrans.scd.auth.application.port.in.AuthUseCase.AthenticationErrorType;
 import br.sptrans.scd.auth.application.port.out.GatewayEmail;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenRepository;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.shared.exception.AccountBlockedException;
+import br.sptrans.scd.shared.exception.AuthenticationFailedException;
+import br.sptrans.scd.shared.exception.InactiveUserException;
+import br.sptrans.scd.shared.exception.ResourceNotFoundException;
+import br.sptrans.scd.shared.exception.ValidationException;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 
@@ -62,25 +66,19 @@ public class AuthService implements AuthUseCase {
         User user = userRepository.findByCodLogin(comando.codLogin())
             .orElseThrow(() -> {
                 log.warn("Usuário não encontrado: {}", comando.codLogin());
-                return new AuthenticationException(
-                AthenticationErrorType.CREDENCIAIS_INVALIDAS,
-                "Usuário ou senha inválidos.");
+                return new AuthenticationFailedException("Usuário ou senha inválidos.");
             });
         log.info("Usuário encontrado: {} (status: {})", user.getCodLogin(), user.getStatus());
         System.out.print(user.getCodLogin());
         // Conta bloqueada
         if (user.isBlocked()) {
             log.warn("Usuário bloqueado: {}", user.getCodLogin());
-            throw new AuthenticationException(
-                AthenticationErrorType.CONTA_BLOQUEADA,
-                "Conta bloqueada por excesso de tentativas. Contate o administrador.");
+            throw new AccountBlockedException("Conta bloqueada por excesso de tentativas. Contate o administrador.");
         }
         // Conta inativa
         if (user.isInactive()) {
             log.warn("Usuário inativo: {}", user.getCodLogin());
-            throw new AuthenticationException(
-                AthenticationErrorType.CONTA_INATIVA,
-                "Conta inativa. Contate o administrador.");
+            throw new InactiveUserException("Conta inativa. Contate o administrador.");
         }
 
         String senhaRecebida = comando.senha();
@@ -99,13 +97,9 @@ public class AuthService implements AuthUseCase {
                         user.getStatus() != null ? user.getStatus().getCode() : null);
                 if (user.isBlocked()) {
                     log.warn("Usuário bloqueado após tentativas inválidas: {}", user.getCodLogin());
-                    throw new AuthenticationException(
-                            AthenticationErrorType.CONTA_BLOQUEADA,
-                            "Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
+                    throw new AccountBlockedException("Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
                 }
-                throw new AuthenticationException(
-                        AthenticationErrorType.CREDENCIAIS_INVALIDAS,
-                        "Usuário ou senha inválidos. Tentativa " + user.getNumTentativasFalha() + " de 3.");
+                throw new AuthenticationFailedException("Usuário ou senha inválidos. Tentativa " + user.getNumTentativasFalha() + " de 3.");
             }
             log.info("Senha MD5 válida para usuário: {}", user.getCodLogin());
         } else if (isBcrypt) {
@@ -119,13 +113,9 @@ public class AuthService implements AuthUseCase {
                         user.getStatus() != null ? user.getStatus().getCode() : null);
                 if (user.isBlocked()) {
                     log.warn("Usuário bloqueado após tentativas inválidas: {}", user.getCodLogin());
-                    throw new AuthenticationException(
-                            AthenticationErrorType.CONTA_BLOQUEADA,
-                            "Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
+                    throw new AccountBlockedException("Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
                 }
-                throw new AuthenticationException(
-                        AthenticationErrorType.CREDENCIAIS_INVALIDAS,
-                        "Usuário ou senha inválidos. Tentativa " + user.getNumTentativasFalha() + " de 3.");
+                throw new AuthenticationFailedException("Usuário ou senha inválidos. Tentativa " + user.getNumTentativasFalha() + " de 3.");
             }
             log.info("Senha BCrypt válida para usuário: {}", user.getCodLogin());
         } else {
@@ -136,25 +126,19 @@ public class AuthService implements AuthUseCase {
                 String subject = claims.getSubject();
                 if (!subject.equalsIgnoreCase(user.getCodLogin())) {
                     log.warn("JWT inválido: subject não corresponde ao login");
-                    throw new AuthenticationException(
-                            AthenticationErrorType.CREDENCIAIS_INVALIDAS,
-                            "Senha invalida.");
+                    throw new AuthenticationFailedException("Senha invalida.");
                 }
                 log.info("JWT válido para usuário: {}", user.getCodLogin());
             } catch (Exception e) {
                 log.error("Erro ao validar JWT: {}", e.getMessage());
-                throw new AuthenticationException(
-                        AthenticationErrorType.CREDENCIAIS_INVALIDAS,
-                        "Senha invalida.");
+                throw new AuthenticationFailedException("Senha invalida.");
             }
         }
 
         // Valida jornada de acesso
         if (!user.acessoPermitidoAgora()) {
             log.warn("Acesso não permitido para usuário: {} (restrição de jornada)", user.getCodLogin());
-            throw new AuthenticationException(
-                    AthenticationErrorType.FORA_DA_JORNADA,
-                    "Acesso não permitido neste dia/horário conforme sua jornada configurada.");
+            throw new AuthenticationFailedException("Acesso não permitido neste dia/horário conforme sua jornada configurada.");
         }
         log.info("Login bem-sucedido para usuário: {}", user.getCodLogin());
         user.resetarTentativas();
@@ -168,9 +152,7 @@ public class AuthService implements AuthUseCase {
     @Override
     public void recoveryResetPassword(ResetRequestComand comando) {
         User user = userRepository.findByNomEmail(comando.email())
-            .orElseThrow(() -> new AuthenticationException(
-            AthenticationErrorType.CREDENCIAIS_INVALIDAS,
-            "E-mail não cadastrado."));
+            .orElseThrow(() -> new ResourceNotFoundException("E-mail não cadastrado."));
 
         // Invalida token anterior, se existir
         tokenRepository.invalidateTokensForUser(user.getIdUsuario());
@@ -200,26 +182,18 @@ public class AuthService implements AuthUseCase {
     @Override
     public void resetPassword(ResetPasswordComand comando) {
         PasswordResetToken tokenObj = tokenRepository.findByToken(comando.token())
-                .orElseThrow(() -> new AuthenticationException(
-                AthenticationErrorType.TOKEN_INVALIDO,
-                "Token inválido ou não encontrado."));
+                .orElseThrow(() -> new AuthenticationFailedException("Token inválido ou não encontrado."));
 
         if (tokenObj.isExpired()) {
-            throw new AuthenticationException(
-                    AthenticationErrorType.TOKEN_EXPIRADO,
-                    "Token expirado. Solicite um novo e-mail de recuperação.");
+            throw new AuthenticationFailedException("Token expirado. Solicite um novo e-mail de recuperação.");
         }
 
         if (!tokenObj.isValid()) {
-            throw new AuthenticationException(
-                    AthenticationErrorType.TOKEN_INVALIDO,
-                    "Token já utilizado. Solicite um novo e-mail de recuperação.");
+            throw new AuthenticationFailedException("Token já utilizado. Solicite um novo e-mail de recuperação.");
         }
 
         User user = userRepository.findById(tokenObj.getIdUsuario())
-                .orElseThrow(() -> new AuthenticationException(
-                AthenticationErrorType.TOKEN_INVALIDO,
-                "Usuário associado ao token não encontrado."));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", tokenObj.getIdUsuario()));
 
         // Impede reutilização da senha anterior comparando JWTs
         ProviderJwtToken jwtProvider = new ProviderJwtToken();
@@ -231,9 +205,7 @@ public class AuthService implements AuthUseCase {
             String hashNova = Integer.toHexString(novaSenhaJwt.hashCode());
             String hashOld = Integer.toHexString(oldSenhaJwt.hashCode());
             if (hashNova.equals(hashOld)) {
-                throw new AuthenticationException(
-                        AthenticationErrorType.SENHA_REUTILIZADA,
-                        "A nova senha não pode ser igual à senha anterior.");
+                throw new ValidationException("A nova senha não pode ser igual à senha anterior.");
             }
         }
 
@@ -252,34 +224,22 @@ public class AuthService implements AuthUseCase {
     // ── Validações ───────────────────────────────────────────────────────
     private void validarComplexidadeSenha(String senha) {
         if (senha == null || senha.length() < 8) {
-            throw new AuthenticationException(
-                    AthenticationErrorType.SENHA_FRACA,
-                    "A senha deve ter no mínimo 8 caracteres.");
+            throw new ValidationException("A senha deve ter no mínimo 8 caracteres.");
         }
         if (!TEM_MAIUSCULA.matcher(senha).matches()) {
-            throw new AuthenticationException(
-                    AthenticationErrorType.SENHA_FRACA,
-                    "A senha deve conter ao menos uma letra maiúscula.");
+            throw new ValidationException("A senha deve conter ao menos uma letra maiúscula.");
         }
         if (!TEM_MINUSCULA.matcher(senha).matches()) {
-            throw new AuthenticationException(
-                    AthenticationErrorType.SENHA_FRACA,
-                    "A senha deve conter ao menos uma letra minúscula.");
+            throw new ValidationException("A senha deve conter ao menos uma letra minúscula.");
         }
         if (!TEM_NUMERO.matcher(senha).matches()) {
-            throw new AuthenticationException(
-                    AthenticationErrorType.SENHA_FRACA,
-                    "A senha deve conter ao menos um número.");
+            throw new ValidationException("A senha deve conter ao menos um número.");
         }
         if (!TEM_ESPECIAL.matcher(senha).matches()) {
-            throw new AuthenticationException(
-                    AthenticationErrorType.SENHA_FRACA,
-                    "A senha deve conter ao menos um caractere especial (!@#$% etc.).");
+            throw new ValidationException("A senha deve conter ao menos um caractere especial (!@#$% etc.).");
         }
         if (TEM_SEQUENCIAL.matcher(senha.toLowerCase()).matches()) {
-            throw new AuthenticationException(
-                    AthenticationErrorType.SENHA_FRACA,
-                    "A senha não pode conter sequências óbvias (abc, 123 etc.).");
+            throw new ValidationException("A senha não pode conter sequências óbvias (abc, 123 etc.).");
         }
     }
 

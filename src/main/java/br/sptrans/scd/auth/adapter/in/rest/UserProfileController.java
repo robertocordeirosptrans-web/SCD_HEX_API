@@ -38,19 +38,14 @@ public class UserProfileController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> associate(@RequestBody UserProfileRequest request) {
-        try {
-      
-            groupProfileManagementUseCase.associateProfilesToGroup(
-                    new GroupProfileManagementUseCase.AssociateProfilesToGroupCommand(
-                            request.idUsuario().toString(),
-                            java.util.Set.of(request.codPerfil()),
-                            request.idUsuario()
-                    )
-            );
-            return ResponseEntity.ok().build();
-        } catch (GroupProfileManagementUseCase.GroupProfileManagementException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        groupProfileManagementUseCase.associateProfilesToGroup(
+                new GroupProfileManagementUseCase.AssociateProfilesToGroupCommand(
+                        request.idUsuario().toString(),
+                        java.util.Set.of(request.codPerfil()),
+                        request.idUsuario()
+                )
+        );
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping
@@ -75,18 +70,14 @@ public class UserProfileController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> updateStatus(@RequestBody UserProfileStatusRequest request) {
-        try {
-            groupProfileManagementUseCase.disassociateProfileFromGroup(
-                    new GroupProfileManagementUseCase.DisassociateProfileFromGroupCommand(
-                            request.idUsuario().toString(),
-                            request.codPerfil(),
-                            request.idUsuario()
-                    )
-            );
-            return ResponseEntity.ok().build();
-        } catch (GroupProfileManagementUseCase.GroupProfileManagementException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        groupProfileManagementUseCase.disassociateProfileFromGroup(
+                new GroupProfileManagementUseCase.DisassociateProfileFromGroupCommand(
+                        request.idUsuario().toString(),
+                        request.codPerfil(),
+                        request.idUsuario()
+                )
+        );
+        return ResponseEntity.ok().build();
     }
 
     public record UserProfileRequest(Long idUsuario, String codPerfil) {

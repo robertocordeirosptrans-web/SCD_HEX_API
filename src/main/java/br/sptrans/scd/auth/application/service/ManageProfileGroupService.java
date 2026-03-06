@@ -5,12 +5,14 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
-import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase.GroupProfileManagementException;
 import br.sptrans.scd.auth.application.port.out.GroupRepository;
 import br.sptrans.scd.auth.application.port.out.ProfileRepository;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.Profile;
+import br.sptrans.scd.shared.exception.BusinessException;
+import br.sptrans.scd.shared.exception.DuplicateResourceException;
+import br.sptrans.scd.shared.exception.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -32,9 +34,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     @Override
     public Group createGroup(CreateGroupCommand cmd) {
         if (groupRepository.existsByCode(cmd.codGrupo())) {
-            throw new GroupProfileManagementException(
-                    ErrorType.CODE_ALREADY_EXISTS,
-                    "Já existe um grupo com o código '" + cmd.codGrupo() + "'.");
+            throw new DuplicateResourceException("Grupo", "codGrupo", cmd.codGrupo());
         }
 
         Group grupo = new Group();
@@ -61,17 +61,14 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         Group grupo = buscarGrupoOuLancar(cmd.code());
 
         if (!grupo.isActive()) {
-            throw new GroupProfileManagementException(
-                    ErrorType.ALREADY_INACTIVE,
-                    "O grupo '" + cmd.code() + "' já está inativo.");
+            throw new BusinessException("O grupo '" + cmd.code() + "' já está inativo.", "ALREADY_INACTIVE");
         }
 
         long usuariosAtivos = groupRepository.countUserActive(cmd.code());
         if (usuariosAtivos > 0) {
-            throw new GroupProfileManagementException(
-                    ErrorType.HAS_ACTIVE_USERS,
+            throw new BusinessException(
                     "Não é possível inativar o grupo '" + cmd.code() + "': "
-                    + usuariosAtivos + " usuário(s) ativo(s) vinculado(s).");
+                    + usuariosAtivos + " usuário(s) ativo(s) vinculado(s).", "HAS_ACTIVE_USERS");
         }
 
         groupRepository.updateStatus(cmd.code(), "I", cmd.idUsuarioLogado());
@@ -82,9 +79,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         Group grupo = buscarGrupoOuLancar(cmd.code());
 
         if (grupo.isActive()) {
-            throw new GroupProfileManagementException(
-                    ErrorType.ALREADY_ACTIVE,
-                    "O grupo '" + cmd.code() + "' já está ativo.");
+            throw new BusinessException("O grupo '" + cmd.code() + "' já está ativo.", "ALREADY_ACTIVE");
         }
 
         groupRepository.updateStatus(cmd.code(), "A", cmd.idUsuarioLogado());
@@ -97,14 +92,10 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         for (String codPerfil : cmd.profileCodes()) {
             // Valida existência do perfil
             profileRepository.findById(codPerfil)
-                    .orElseThrow(() -> new GroupProfileManagementException(
-                    ErrorType.NOT_FOUND,
-                    "Perfil não encontrado: '" + codPerfil + "'."));
+                    .orElseThrow(() -> new ResourceNotFoundException("Perfil", "codPerfil", codPerfil));
 
             if (groupRepository.isProfileAssociate(cmd.groupCode(), codPerfil)) {
-                throw new GroupProfileManagementException(
-                        ErrorType.PROFILE_ALREADY_ASSOCIATED,
-                        "O perfil '" + codPerfil + "' já está ativo no grupo '" + cmd.groupCode() + "'.");
+                throw new DuplicateResourceException("Perfil '" + codPerfil + "' já está associado ao grupo '" + cmd.groupCode() + "'.");
             }
 
             groupRepository.associateProfilesToGroup(cmd.groupCode(), codPerfil, cmd.idUsuarioLogado());
@@ -114,27 +105,23 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     // ── Helpers privados ─────────────────────────────────────────────────────
     private Group buscarGrupoOuLancar(String codGrupo) {
         return groupRepository.findById(codGrupo)
-                .orElseThrow(() -> new GroupProfileManagementException(
-                ErrorType.NOT_FOUND,
-                "Grupo não encontrado: '" + codGrupo + "'."));
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo", "codGrupo", codGrupo));
     }
 
     private Profile buscarPerfilOuLancar(String codPerfil) {
         return profileRepository.findById(codPerfil)
-                .orElseThrow(() -> new GroupProfileManagementException(
-                ErrorType.NOT_FOUND,
-                "Perfil não encontrado: '" + codPerfil + "'."));
+                .orElseThrow(() -> new ResourceNotFoundException("Perfil", "codPerfil", codPerfil));
     }
 
     // Conversão de FunctionalityKey do caso de uso para o domínio
-    private FunctionalityKey toDomainKey(GroupProfileManagementUseCase.FunctionalityKey key) {
-        return new FunctionalityKey(
-            key.codSistema(),
-            key.codModulo(),
-            key.codRotina(),
-            key.codFuncionalidade()
-        );
-    }
+    // private FunctionalityKey toDomainKey(GroupProfileManagementUseCase.FunctionalityKey key) {
+    //     return new FunctionalityKey(
+    //         key.codSistema(),
+    //         key.codModulo(),
+    //         key.codRotina(),
+    //         key.codFuncionalidade()
+    //     );
+    // }
 
     // ══════════════════════════════════════════════════════════════════════════
     // PERFIS
@@ -142,9 +129,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     @Override
     public Profile createProfile(CreateProfileCommand cmd) {
         if (profileRepository.existsByCode(cmd.codPerfil())) {
-            throw new GroupProfileManagementException(
-                    ErrorType.CODE_ALREADY_EXISTS,
-                    "Já existe um perfil com o código '" + cmd.codPerfil() + "'.");
+            throw new DuplicateResourceException("Perfil", "codPerfil", cmd.codPerfil());
         }
         Profile perfil = new Profile();
         perfil.setCodPerfil(cmd.codPerfil().toUpperCase().trim());
@@ -168,17 +153,13 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     public void deactivateProfile(DeactivateCommand cmd) {
         Profile perfil = buscarPerfilOuLancar(cmd.code());
         if (!perfil.isActive()) {
-            throw new GroupProfileManagementException(
-                    ErrorType.ALREADY_INACTIVE,
-                    "O perfil '" + cmd.code() + "' já está inativo.");
+            throw new BusinessException("O perfil '" + cmd.code() + "' já está inativo.", "ALREADY_INACTIVE");
         }
         long usuariosAtivos = profileRepository.countUserActive(cmd.code());
         if (usuariosAtivos > 0) {
-            throw new GroupProfileManagementException(
-                    ErrorType.HAS_ACTIVE_USERS,
+            throw new BusinessException(
                     "Não é possível inativar o perfil '" + cmd.code() + "': "
-                    + usuariosAtivos + " usuário(s) ativo(s) vinculado(s)."
-            );
+                    + usuariosAtivos + " usuário(s) ativo(s) vinculado(s).", "HAS_ACTIVE_USERS");
         }
         profileRepository.updateStatus(cmd.code(), "I", cmd.idUsuarioLogado());
     }
@@ -187,9 +168,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     public void reactivateProfile(ReactivateCommand cmd) {
         Profile perfil = buscarPerfilOuLancar(cmd.code());
         if (perfil.isActive()) {
-            throw new GroupProfileManagementException(
-                    ErrorType.ALREADY_ACTIVE,
-                    "O perfil '" + cmd.code() + "' já está ativo.");
+            throw new BusinessException("O perfil '" + cmd.code() + "' já está ativo.", "ALREADY_ACTIVE");
         }
         profileRepository.updateStatus(cmd.code(), "A", cmd.idUsuarioLogado());
     }
@@ -199,14 +178,10 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         buscarPerfilOuLancar(cmd.codPerfil());
         for (var func : cmd.functionalities()) {
             if (!profileRepository.isFunctionality(func.getId())) {
-                throw new GroupProfileManagementException(
-                        ErrorType.FUNCTIONALITY_NOT_FOUND,
-                        "Funcionalidade não encontrada: '" + func.canonicalKey() + "'.");
+                throw new ResourceNotFoundException("Funcionalidade", "id", func.canonicalKey());
             }
             if (profileRepository.isFunctionalityAssociate(cmd.codPerfil(), func.getId())) {
-                throw new GroupProfileManagementException(
-                        ErrorType.FUNCTIONALITY_ALREADY_ASSOCIATED,
-                        "A funcionalidade '" + func.canonicalKey() + "' já está associada ao perfil '" + cmd.codPerfil() + "'.");
+                throw new DuplicateResourceException("Funcionalidade '" + func.canonicalKey() + "' já está associada ao perfil '" + cmd.codPerfil() + "'.");
             }
             profileRepository.associateFunctionalitiesToProfile(cmd.codPerfil(), func.getId(), cmd.idUsuarioLogado());
         }
@@ -242,9 +217,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         buscarGrupoOuLancar(cmd.groupCode());
         buscarPerfilOuLancar(cmd.profileCode());
         if (!groupRepository.isProfileAssociate(cmd.groupCode(), cmd.profileCode())) {
-            throw new GroupProfileManagementException(
-                    ErrorType.PROFILE_NOT_ASSOCIATED,
-                    "O perfil '" + cmd.profileCode() + "' não está associado ao grupo '" + cmd.groupCode() + "'.");
+            throw new ResourceNotFoundException("Perfil '" + cmd.profileCode() + "' não está associado ao grupo '" + cmd.groupCode() + "'.");
         }
         groupRepository.disassociateProfileFromGroup(cmd.groupCode(), cmd.profileCode(), cmd.idUsuarioLogado());
     }

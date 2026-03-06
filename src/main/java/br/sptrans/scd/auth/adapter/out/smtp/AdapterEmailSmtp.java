@@ -35,6 +35,7 @@ public class AdapterEmailSmtp implements GatewayEmail {
         this.templateEngine = templateEngine;
     }
 
+    @SuppressWarnings("null")
     @Override
     public void sendPasswordResetEmail(String destinatario, String nomeUsuario, String token) {
         try {

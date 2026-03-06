@@ -53,7 +53,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     private int publicCapacity;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) 
+    public boolean preHandle(@SuppressWarnings("null") HttpServletRequest request, @SuppressWarnings("null") HttpServletResponse response, @SuppressWarnings("null") Object handler) 
             throws Exception {
         
         if (!rateLimitingEnabled) {

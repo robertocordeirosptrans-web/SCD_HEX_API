@@ -21,6 +21,7 @@ public class OracleConfiguration {
     protected static Logger logger = LoggerFactory.getLogger(OracleConfiguration.class);
 
     @Bean
+    @SuppressWarnings("UseSpecificCatch")
     public DataSource dataSource(Environment environment) throws Exception {
         try {
 

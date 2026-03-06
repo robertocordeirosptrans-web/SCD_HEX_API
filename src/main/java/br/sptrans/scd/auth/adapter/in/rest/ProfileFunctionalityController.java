@@ -40,27 +40,22 @@ public class ProfileFunctionalityController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> associate(@RequestBody ProfileFunctionalityRequest request) {
-        try {
+        FunctionalityKey key = new FunctionalityKey(
+                request.codSistema(),
+                request.codModulo(),
+                request.codRotina(),
+                request.codFuncionalidade()
+        );
 
-            FunctionalityKey key = new FunctionalityKey(
-                    request.codSistema(),
-                    request.codModulo(),
-                    request.codRotina(),
-                    request.codFuncionalidade()
-            );
-
-            var functionality = new Functionality();
-            groupProfileManagementUseCase.associateFunctionalitiesToProfile(
-                    new GroupProfileManagementUseCase.AssociateFunctionalitiesToProfileCommand(
-                            request.codPerfil(),
-                            java.util.Set.of(functionality),
-                            request.idUsuarioLogado()
-                    )
-            );
-            return ResponseEntity.ok().build();
-        } catch (GroupProfileManagementUseCase.GroupProfileManagementException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        var functionality = new Functionality();
+        groupProfileManagementUseCase.associateFunctionalitiesToProfile(
+                new GroupProfileManagementUseCase.AssociateFunctionalitiesToProfileCommand(
+                        request.codPerfil(),
+                        java.util.Set.of(functionality),
+                        request.idUsuarioLogado()
+                )
+        );
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping
@@ -85,29 +80,25 @@ public class ProfileFunctionalityController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> updateStatus(@RequestBody ProfileFunctionalityStatusRequest request) {
-        try {
-            var key = new FunctionalityKey(
-                    request.codSistema(),
-                    request.codModulo(),
-                    request.codRotina(),
-                    request.codFuncionalidade()
-            );
-            groupProfileManagementUseCase.disassociateFunctionalityFromProfile(
-                    new GroupProfileManagementUseCase.DisassociateFunctionalityFromProfileCommand(
-                            request.codPerfil(),
-                            new GroupProfileManagementUseCase.FunctionalityKey(
-                                    request.codSistema(),
-                                    request.codModulo(),
-                                    request.codRotina(),
-                                    request.codFuncionalidade()
-                            ),
-                            request.idUsuarioLogado()
-                    )
-            );
-            return ResponseEntity.ok().build();
-        } catch (GroupProfileManagementUseCase.GroupProfileManagementException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        var key = new FunctionalityKey(
+                request.codSistema(),
+                request.codModulo(),
+                request.codRotina(),
+                request.codFuncionalidade()
+        );
+        groupProfileManagementUseCase.disassociateFunctionalityFromProfile(
+                new GroupProfileManagementUseCase.DisassociateFunctionalityFromProfileCommand(
+                        request.codPerfil(),
+                        new GroupProfileManagementUseCase.FunctionalityKey(
+                                request.codSistema(),
+                                request.codModulo(),
+                                request.codRotina(),
+                                request.codFuncionalidade()
+                        ),
+                        request.idUsuarioLogado()
+                )
+        );
+        return ResponseEntity.ok().build();
     }
 
     public record ProfileFunctionalityRequest(String codSistema, String codModulo, String codRotina, String codFuncionalidade, String codPerfil, Long idUsuarioLogado) {

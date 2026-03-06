@@ -5,6 +5,9 @@ package br.sptrans.scd.auth.domain.session;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Agregado de domínio: representa uma sessão ativa de um usuário.
  *
@@ -17,6 +20,8 @@ import java.util.UUID;
  * - Ver sessões ativas no painel do usuário
  * - Revogar sessão administrativa
  */
+@Getter
+@Setter
 public class UserSession {
 
     private String sessionId;       // UUID — mesmo que vai no JWT claim
@@ -50,56 +55,5 @@ public class UserSession {
         this.revokedReason = reason;
     }
 
-    public String getSessionId()  { return sessionId; }
-    public Long   getUserId()     { return userId; }
-    public boolean isRevoked()    { return revokedAt != null; }
-    // ... demais getters
-
-    public String getIpAddress() {
-        return ipAddress;
-    }
-
-    public void setIpAddress(String ipAddress) {
-        this.ipAddress = ipAddress;
-    }
-
-    public String getUserAgent() {
-        return userAgent;
-    }
-
-    public void setUserAgent(String userAgent) {
-        this.userAgent = userAgent;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getExpiresAt() {
-        return expiresAt;
-    }
-
-    public void setExpiresAt(LocalDateTime expiresAt) {
-        this.expiresAt = expiresAt;
-    }
-
-    public LocalDateTime getRevokedAt() {
-        return revokedAt;
-    }
-
-    public void setRevokedAt(LocalDateTime revokedAt) {
-        this.revokedAt = revokedAt;
-    }
-
-    public String getRevokedReason() {
-        return revokedReason;
-    }
-
-    public void setRevokedReason(String revokedReason) {
-        this.revokedReason = revokedReason;
-    }
+   
 }
