@@ -13,6 +13,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.port.out.TokenGeneratorPort;
+import br.sptrans.scd.auth.domain.port.out.TokenValidatorPort;
 
 /**
  * Adapter de saída: implementa TokenGeneratorPort usando JWT (auth0).
