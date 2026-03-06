@@ -48,7 +48,7 @@ public class OracleConfiguration {
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            throw new Exception("Erro ao obter datasource da aplicação PersoService");
+            throw new Exception("Erro ao obter datasource da aplicação SCDApplication");
         }
 
     }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.auth.domain.Functionality;
+import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.enums.UserStatus;
 import jakarta.persistence.EntityManager;
@@ -202,7 +203,6 @@ public class UserAdapterJpa implements UserRepository {
 
 	@Override
 	public Set<Functionality> carregarFuncionalidadesEfetivas(Long idUsuario) {
-		// Exemplo simplificado: apenas busca funcionalidades diretas
 		@SuppressWarnings("unchecked")
 		List<Object[]> rows = em.createNativeQuery("""
 			SELECT f.COD_SISTEMA, f.COD_MODULO, f.COD_ROTINA, f.COD_FUNCIONALIDADE, f.NOM_FUNCIONALIDADE
@@ -223,6 +223,40 @@ public class UserAdapterJpa implements UserRepository {
 			funcionalidades.add(func);
 		}
 		return funcionalidades;
+	}
+
+	@Override
+	public Set<Profile> carregarPerfisEfetivos(Long idUsuario) {
+		// Perfis diretos (USUARIO_PERFIS) + perfis via grupos (GRUPO_USUARIOS → GRUPO_PERFIS)
+		@SuppressWarnings("unchecked")
+		List<Object[]> rows = em.createNativeQuery("""
+			SELECT DISTINCT p.COD_PERFIL, p.NOM_PERFIL, p.COD_STATUS
+			FROM SPTRANSDBA.PERFIS p
+			WHERE p.COD_STATUS = 'A'
+			  AND (
+			    EXISTS (
+			      SELECT 1 FROM SPTRANSDBA.USUARIO_PERFIS up
+			      WHERE up.ID_USUARIO = :id AND up.COD_PERFIL = p.COD_PERFIL AND up.COD_STATUS = 'A'
+			    )
+			    OR EXISTS (
+			      SELECT 1 FROM SPTRANSDBA.GRUPO_USUARIOS gu
+			      JOIN SPTRANSDBA.GRUPO_PERFIS gp ON gp.COD_GRUPO = gu.COD_GRUPO
+			      WHERE gu.ID_USUARIO = :id AND gp.COD_PERFIL = p.COD_PERFIL
+			        AND gu.COD_STATUS = 'A' AND gp.COD_STATUS = 'A'
+			    )
+			  )
+		""")
+				.setParameter("id", idUsuario)
+				.getResultList();
+		Set<Profile> perfis = new HashSet<>();
+		for (Object[] row : rows) {
+			Profile perfil = new Profile();
+			if (row[0] != null) perfil.setCodPerfil(row[0].toString());
+			if (row[1] != null) perfil.setNomPerfil(row[1].toString());
+			if (row[2] != null) perfil.setCodStatus(row[2].toString());
+			perfis.add(perfil);
+		}
+		return perfis;
 	}
 
 	@Override

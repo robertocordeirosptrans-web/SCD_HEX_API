@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
@@ -37,11 +36,10 @@ public class ProviderJwtToken {
     @Value("${scd.jwt.expiracao-ms:28800000}") // 8 horas padrão
     private long expiredMs;
 
-    public String gerarToken(Long idUsuario, String codLogin, Set<String> permissoes) {
+    public String gerarToken(Long idUsuario, String codLogin) {
         return Jwts.builder()
                 .subject(codLogin)
                 .claim("idUsuario", idUsuario)
-                .claim("permissoes", permissoes)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(chave())

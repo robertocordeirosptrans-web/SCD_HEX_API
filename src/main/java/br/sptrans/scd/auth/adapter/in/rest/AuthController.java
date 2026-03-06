@@ -4,6 +4,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +16,9 @@ import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetPasswordComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetRequestComand;
+import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.Functionality;
+import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,11 +36,12 @@ public class AuthController {
 
     private final AuthUseCase casoUso;
     private final ProviderJwtToken providerJwtToken;
+    private final UserRepository userRepository;
 
-    public AuthController(AuthUseCase casoUso, ProviderJwtToken providerJwtToken) {
+    public AuthController(AuthUseCase casoUso, ProviderJwtToken providerJwtToken, UserRepository userRepository) {
         this.casoUso = casoUso;
         this.providerJwtToken = providerJwtToken;
-
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/login")
@@ -44,23 +50,37 @@ public class AuthController {
         @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
         @ApiResponse(responseCode = "403", description = "Credenciais inválidas ou usuário bloqueado/inativo")
     })
-    public ResponseEntity<?> login(@RequestBody @Valid RequestLogin req) {
-
+    public ResponseEntity<ResponseLogin> login(@RequestBody @Valid RequestLogin req) {
         AuthComand auth = new AuthComand(req.login(), req.password());
         User user = casoUso.autenticar(auth);
-        Set<String> permissoes = user.getFuncionalidadesUsuario().stream()
-                .map(uf -> uf.getFuncionalidade())
-                .filter(f -> f != null)
+        String jwt = providerJwtToken.gerarToken(user.getIdUsuario(), user.getCodLogin());
+        return ResponseEntity.ok(new ResponseLogin(jwt));
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Dados do usuário autenticado", description = "Retorna id, nome, perfis e permissões do usuário logado")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Dados retornados com sucesso"),
+        @ApiResponse(responseCode = "401", description = "Token ausente ou inválido")
+    })
+    public ResponseEntity<MeResponse> me(Authentication authentication) {
+        String codLogin = authentication.getName();
+        User user = userRepository.findByCodLogin(codLogin)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        Set<String> roles = userRepository.carregarPerfisEfetivos(user.getIdUsuario())
+                .stream()
+                .map(Profile::getCodPerfil)
+                .collect(Collectors.toSet());
+
+        Set<String> permissions = userRepository.carregarFuncionalidadesEfetivas(user.getIdUsuario())
+                .stream()
                 .map(Functionality::canonicalKey)
                 .collect(Collectors.toSet());
-        String jwt = providerJwtToken.gerarToken(user.getIdUsuario(), user.getCodLogin(), permissoes);
 
-        ResponseLogin res = new ResponseLogin(jwt,
-                user.getIdUsuario(),
-                user.getNomUsuario(),
-                permissoes);
-
-        return ResponseEntity.ok(res);
+        return ResponseEntity.ok(new MeResponse(user.getIdUsuario(), user.getNomUsuario(), roles, permissions));
     }
 
     @PostMapping("/change-password")
@@ -101,7 +121,11 @@ public class AuthController {
 
     }
 
-    public record ResponseLogin(String token, Long idUsuario, String nomUsuario, Set<String> permissoes) {
+    public record ResponseLogin(String token) {
+
+    }
+
+    public record MeResponse(Long id, String name, Set<String> roles, Set<String> permissions) {
 
     }
 

@@ -6,40 +6,37 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.domain.Functionality;
+import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.User;
 
 
 @Component
 public class AuthorityBuilderAdapter {
 
+    private final UserRepository userRepository;
+
+    public AuthorityBuilderAdapter(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public List<GrantedAuthority> buildAuthorities(User user) {
         List<GrantedAuthority> authorities = new ArrayList<>();
 
-        // Sempre tem ROLE_USER
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
-        // Perfis do usuário → PERFIL_ADMIN, PERFIL_OPERADOR, etc.
-        if (user.getProfiles() != null) {
-            user.getProfiles().stream()
-                .filter(p -> "A".equals(p.getCodStatus()))
-                .forEach(p -> {
-                    // ROLE_ADMIN para perfil ADMIN
-                    if ("ADMIN".equals(p.getCodPerfil())) {
-                        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-                    }
-                    authorities.add(new SimpleGrantedAuthority("PERFIL_" + p.getCodPerfil()));
-                });
+        // Perfis efetivos (diretos + via grupos)
+        for (Profile perfil : userRepository.carregarPerfisEfetivos(user.getIdUsuario())) {
+            if ("ADMIN".equals(perfil.getCodPerfil())) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            }
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + perfil.getCodPerfil()));
         }
 
-        // Funcionalidades diretas → FUNC_SISTEMA_MODULO_ROTINA
-        if (user.getFunctionalities() != null) {
-            user.getFunctionalities().stream()
-                .filter(f -> "A".equals(f.getCodStatus()))
-                .forEach(f -> authorities.add(
-                    new SimpleGrantedAuthority(
-                        "FUNC_" + f.getCodSistema() + "_" + f.getCodModulo() + "_" + f.getCodRotina()
-                    )
-                ));
+        // Funcionalidades efetivas (diretas + via perfis + via grupos)
+        for (Functionality func : userRepository.carregarFuncionalidadesEfetivas(user.getIdUsuario())) {
+            authorities.add(new SimpleGrantedAuthority(func.canonicalKey()));
         }
 
         return authorities;

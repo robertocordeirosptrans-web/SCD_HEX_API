@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import br.sptrans.scd.auth.domain.Functionality;
+import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.User;
 
 public interface UserRepository {
@@ -65,6 +66,9 @@ public interface UserRepository {
      * Implementado no adaptador JPA com JOIN otimizado.
      */
     Set<Functionality> carregarFuncionalidadesEfetivas(Long idUsuario);
+
+    /** Carrega os perfis ativos vinculados ao usuário (USUARIO_PERFIS + GRUPO_PERFIS). */
+    Set<Profile> carregarPerfisEfetivos(Long idUsuario);
 
     // ── Verificações ──────────────────────────────────────────────────────────
     boolean existsByLogin(String codLogin);

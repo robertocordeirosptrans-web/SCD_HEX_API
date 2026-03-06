@@ -199,7 +199,7 @@ public class AuthService implements AuthUseCase {
 
         // Impede reutilização da senha anterior comparando JWTs
         ProviderJwtToken jwtProvider = new ProviderJwtToken();
-        String novaSenhaJwt = jwtProvider.gerarToken(user.getIdUsuario(), user.getCodLogin(), Set.of());
+        String novaSenhaJwt = jwtProvider.gerarToken(user.getIdUsuario(), user.getCodLogin());
         String oldSenhaJwt = user.getOldSenha();
 
         // Se oldSenhaJwt não for nulo, comparar os hashes dos JWTs

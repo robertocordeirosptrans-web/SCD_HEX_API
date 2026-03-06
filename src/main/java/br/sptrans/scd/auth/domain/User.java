@@ -16,6 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @EqualsAndHashCode(of = "idUsuario")
 public class User {
+
     public Set<Profile> getProfiles() {
         return perfis;
     }
@@ -54,9 +55,9 @@ public class User {
     private Set<Profile> perfis = new HashSet<>();
     private Set<Group> grupos = new HashSet<>();
     private Set<Functionality> funcionalidadesDiretas = new HashSet<>();
-    private Set<GroupUser> gruposUsuario;
-    private Set<UserProfile> perfisUsuario;
-    private Set<UserFunctionality> funcionalidadesUsuario;
+    private Set<GroupUser> gruposUsuario = new HashSet<>();
+    private Set<UserProfile> perfisUsuario = new HashSet<>();
+    private Set<UserFunctionality> funcionalidadesUsuario = new HashSet<>();
 
     public User(String codLogin, String codSenha, String nomUsuario, String desEndereco, String nomDepartamento, String nomCargo, String nomFuncao, String codCpf, String codRg, String nomEmail, ClassificationPerson codClassificacaoPessoa, String codEmpresa) {
         this.codLogin = codLogin;
