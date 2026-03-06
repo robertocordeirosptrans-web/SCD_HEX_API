@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/auth")
@@ -42,7 +43,8 @@ public class AuthController {
         @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
         @ApiResponse(responseCode = "403", description = "Credenciais inválidas ou usuário bloqueado/inativo")
     })
-    public ResponseEntity<ResponseLogin> login(@RequestBody RequestLogin req) {
+    public ResponseEntity<ResponseLogin> login(@RequestBody @Valid  RequestLogin req) {
+        System.out.print(req.codLogin);
         AuthComand auth = new AuthComand(req.codLogin(), req.senha());
         User user = casoUso.autenticar(auth);
         Set<String> permissoes = user.getFuncionalidadesUsuario().stream()
@@ -88,9 +90,9 @@ public class AuthController {
 
 
     // ── DTOs ─────────────────────────────────────────────────────────────────
-    record RequestLogin(String codLogin, String senha) { }
-    record ResponseLogin(String token, Long idUsuario, String nomUsuario, Set<String> permissoes) {}
-    record ResponseSimple(String mensagem) {}
-    record RequestRecoveryPassword(String email) {}
-    record ResquestChangePassword(String token, String novaSenha) {}
+    public record RequestLogin(String codLogin, String senha) { }
+    public record ResponseLogin(String token, Long idUsuario, String nomUsuario, Set<String> permissoes) {}
+    public record ResponseSimple(String mensagem) {}
+    public record RequestRecoveryPassword(String email) {}
+    public record ResquestChangePassword(String token, String novaSenha) {}
 }
