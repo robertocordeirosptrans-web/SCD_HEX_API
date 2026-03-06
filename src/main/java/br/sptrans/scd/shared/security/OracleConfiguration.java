@@ -12,7 +12,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jndi.JndiObjectFactoryBean;
 
-import br.sptrans.scd.shared.security.Criptografia;
 import oracle.jdbc.pool.OracleDataSource;
 
 @Configuration
@@ -27,8 +26,8 @@ public class OracleConfiguration {
 
             if (environment.getActiveProfiles().length != 0 && environment.getActiveProfiles()[0].equals("local")) {
                 OracleDataSource dataSource = new OracleDataSource();
-                dataSource.setUser(Criptografia.decripta(environment.getProperty("spring.datasource.username")));
-                dataSource.setPassword(Criptografia.decripta(environment.getProperty("spring.datasource.password")));
+                    dataSource.setUser(environment.getProperty("spring.datasource.username"));
+                    dataSource.setPassword(environment.getProperty("spring.datasource.password"));
                 dataSource.setURL(environment.getProperty("spring.datasource.url"));
                 dataSource.setImplicitCachingEnabled(true);
 

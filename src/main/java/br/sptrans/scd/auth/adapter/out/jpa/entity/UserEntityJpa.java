@@ -3,20 +3,18 @@ package br.sptrans.scd.auth.adapter.out.jpa.entity;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-import org.hibernate.annotations.GenericGenerator;
-
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+@Entity
 public class UserEntityJpa {
 
     @Id
-    @GenericGenerator(
-            name = "custom-id-generator",
-            strategy = "com.example.auth.infra.CustomIdGenerator"
-    )
-    @GeneratedValue(generator = "custom-id-generator")
     @Column(name = "ID_USUARIO")
     private Long idUsuario;
 
@@ -94,11 +92,8 @@ public class UserEntityJpa {
 
     // @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     // private Set<GrupoUsuarioJpaEntity> gruposUsuario;
-
     // @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     // private Set<UsuarioPerfilJpaEntity> perfisUsuario;
-
     // @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     // private Set<UsuarioFuncionalidadeJpaEntity> funcionalidadesUsuario;
-
 }

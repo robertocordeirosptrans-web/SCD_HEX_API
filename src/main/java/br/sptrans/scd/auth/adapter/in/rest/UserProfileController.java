@@ -39,7 +39,7 @@ public class UserProfileController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> associate(@RequestBody UserProfileRequest request) {
         try {
-            // Exemplo: associar perfil ao usuário (ajuste conforme caso de uso real)
+      
             groupProfileManagementUseCase.associateProfilesToGroup(
                     new GroupProfileManagementUseCase.AssociateProfilesToGroupCommand(
                             request.idUsuario().toString(),

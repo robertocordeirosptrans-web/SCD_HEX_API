@@ -17,21 +17,19 @@ public interface PasswordTokenRepository extends JpaRepository<PasswordTokenEnti
 
     Optional<PasswordResetToken> findByToken(String token);
 
-    Optional<PasswordResetToken> findByUserIdAndUsedFalse(Long userId);
-
     /**
      * Retorna o token vigente (não expirado, não usado) do usuário, se existir.
      */
-    Optional<PasswordResetToken> findByTokenUser(Long idUsuario);
+    Optional<PasswordResetToken> findByIdUsuarioAndUsedFalse(Long idUsuario);
 
     void save(PasswordResetToken token);
 
     @Modifying
-    @Query("UPDATE PasswordTokenEntityJpa t SET t.used = true WHERE t.userId = :userId AND t.used = false")
-    void invalidateTokensForUser(Long userId);
+    @Query("UPDATE PasswordTokenEntityJpa t SET t.used = true WHERE t.idUsuario = :idUsuario AND t.used = false")
+    void invalidateTokensForUser(Long idUsuario);
 
     @Modifying
-    @Query("DELETE FROM PasswordResetTokenJpa t WHERE t.expiryDate <= CURRENT_TIMESTAMP")
+    @Query("DELETE FROM PasswordTokenEntityJpa t WHERE t.expiryDate <= CURRENT_TIMESTAMP")
     void deleteExpiredTokens();
 
 }

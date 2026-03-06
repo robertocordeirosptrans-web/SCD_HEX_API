@@ -1,12 +1,20 @@
 package br.sptrans.scd.auth.adapter.out.jpa.entity;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "GRUPOS", schema = "SPTRANSDBA")
 public class GroupEntityJpa {
@@ -24,9 +32,9 @@ public class GroupEntityJpa {
     @Column(name = "DT_MANUTENCAO") private LocalDateTime dtManutencao;
     @Column(name = "ID_USUARIO_MANUTENCAO") private Long idUsuarioManutencao;
 
-    // @OneToMany(mappedBy = "grupo", fetch = FetchType.LAZY)
-    // private Set<GrupoPerfilJpaEntidade> grupoPerfis = new HashSet<>();
+    @OneToMany(mappedBy = "grupo", fetch = FetchType.LAZY)
+    private Set<GroupProfileEntityJpa> grupoPerfis = new HashSet<>();
 
-    // @OneToMany(mappedBy = "grupo", fetch = FetchType.LAZY)
-    // private Set<GrupoUsuarioJpaEntidade> grupoUsuarios = new HashSet<>();
+    @OneToMany(mappedBy = "grupo", fetch = FetchType.LAZY)
+    private Set<GroupUserEntityJpa> grupoUsuarios = new HashSet<>();
 }

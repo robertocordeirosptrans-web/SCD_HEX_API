@@ -1,14 +1,20 @@
 package br.sptrans.scd.auth.adapter.in.rest;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
+import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,6 +29,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProfileController {
 
+    public record CreateProfileRequest(String codPerfil, String nomPerfil, Long idUsuarioLogado) {
+
+    }
+
+    public record UpdateProfileRequest(String nomPerfil, Long idUsuarioLogado) {
+
+    }
+
+    private final GroupProfileManagementUseCase groupProfileManagementUseCase;
+
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Criar perfil", description = "Cria um novo perfil no sistema")
@@ -31,9 +48,10 @@ public class ProfileController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> createProfile() {
-
-        return null;
+    public ResponseEntity<?> createProfile(@RequestBody CreateProfileRequest request) {
+        GroupProfileManagementUseCase.CreateProfileCommand cmd = new GroupProfileManagementUseCase.CreateProfileCommand(request.codPerfil(), request.nomPerfil(), request.idUsuarioLogado());
+        var perfil = groupProfileManagementUseCase.createProfile(cmd);
+        return ResponseEntity.ok(perfil);
     }
 
     @GetMapping
@@ -44,7 +62,8 @@ public class ProfileController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> getAllProfile() {
-        return null;
+        List<Profile> perfis = groupProfileManagementUseCase.listProfiles(null);
+        return ResponseEntity.ok(perfis);
     }
 
     @GetMapping("/{codPerfil}")
@@ -56,7 +75,9 @@ public class ProfileController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> getProfileById(@PathVariable String codPerfil) {
-        return null;
+        List<Profile> perfis = groupProfileManagementUseCase.listProfiles(null);
+        Optional<Profile> perfil = perfis.stream().filter(p -> p.getCodPerfil().equalsIgnoreCase(codPerfil)).findFirst();
+        return perfil.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{codPerfil}")
@@ -67,7 +88,9 @@ public class ProfileController {
         @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateGroup(@PathVariable String codPerfil) {
-        return null;
+    public ResponseEntity<?> updateProfile(@PathVariable String codPerfil, @RequestBody UpdateProfileRequest request) {
+        GroupProfileManagementUseCase.UpdateProfileCommand cmd = new GroupProfileManagementUseCase.UpdateProfileCommand(codPerfil, request.nomPerfil(), request.idUsuarioLogado());
+        var perfil = groupProfileManagementUseCase.updateProfile(cmd);
+        return ResponseEntity.ok(perfil);
     }
 }

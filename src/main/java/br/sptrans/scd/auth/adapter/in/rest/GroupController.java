@@ -1,14 +1,20 @@
 package br.sptrans.scd.auth.adapter.in.rest;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
+import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,6 +29,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GroupController {
 
+    public record CreateGroupRequest(String codGrupo, String nomGrupo, Long idUsuarioLogado) {
+
+    }
+
+    public record UpdateGroupRequest(String nomGrupo, Long idUsuarioLogado) {
+
+    }
+
+    private final GroupProfileManagementUseCase groupProfileManagementUseCase;
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Criar grupo", description = "Cria um novo grupo no sistema")
@@ -31,9 +47,10 @@ public class GroupController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> createGroup() {
-
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> createGroup(@RequestBody CreateGroupRequest request) {
+        GroupProfileManagementUseCase.CreateGroupCommand cmd = new GroupProfileManagementUseCase.CreateGroupCommand(request.codGrupo(), request.nomGrupo(), request.idUsuarioLogado());
+        var grupo = groupProfileManagementUseCase.createGroup(cmd);
+        return ResponseEntity.ok(grupo);
     }
 
     @GetMapping
@@ -44,7 +61,8 @@ public class GroupController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> getAllGroup() {
-        return null;
+        List<Group> grupos = groupProfileManagementUseCase.listGroups(null);
+        return ResponseEntity.ok(grupos);
     }
 
     @GetMapping("/{codGrupo}")
@@ -56,7 +74,9 @@ public class GroupController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> getGroupById(@PathVariable String codGrupo) {
-        return null;
+        List<Group> grupos = groupProfileManagementUseCase.listGroups(null);
+        Optional<Group> grupo = grupos.stream().filter(g -> g.getCodGrupo().equalsIgnoreCase(codGrupo)).findFirst();
+        return grupo.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{codGrupo}")
@@ -67,8 +87,9 @@ public class GroupController {
         @ApiResponse(responseCode = "404", description = "Grupo não encontrado")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateGroup(@PathVariable String codGrupo) {
-        return null;
+    public ResponseEntity<?> updateGroup(@PathVariable String codGrupo, @RequestBody UpdateGroupRequest request) {
+        GroupProfileManagementUseCase.UpdateGroupCommand cmd = new GroupProfileManagementUseCase.UpdateGroupCommand(codGrupo, request.nomGrupo(), request.idUsuarioLogado());
+        var grupo = groupProfileManagementUseCase.updateGroup(cmd);
+        return ResponseEntity.ok(grupo);
     }
-
 }

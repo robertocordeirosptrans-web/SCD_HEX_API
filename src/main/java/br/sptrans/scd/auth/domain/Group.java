@@ -57,4 +57,28 @@ public class Group {
     public void setPerfis(Set<GroupProfile> perfis) {
         this.perfis = perfis;
     }
+
+    public String getCodGrupo() {
+        return codGrupo;
+    }
+
+    public Long getIdUsuarioManutencao() {
+        return idUsuarioManutencao;
+    }
+
+    public LocalDate getDtModi() {
+        return dtModi;
+    }
+
+    public String getCodStatus() {
+        return codStatus;
+    }
+
+    public String getNomGrupo() {
+        return nomGrupo;
+    }
+
+    public Set<GroupProfile> getPerfis() {
+        return perfis;
+    }
 }

@@ -13,5 +13,5 @@ public interface GatewayEmail {
      * @param token token UUID único para montar o link de redefinição
      */
 
-    void enviarEmailRedefinicaoSenha(String destinatario, String nomeUsuario, String token);
+    void sendPasswordResetEmail(String destinatario, String nomeUsuario, String token);
 }

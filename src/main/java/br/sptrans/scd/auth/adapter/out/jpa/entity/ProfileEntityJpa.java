@@ -1,12 +1,22 @@
 package br.sptrans.scd.auth.adapter.out.jpa.entity;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+@Entity
 public class ProfileEntityJpa {
 
     @Id
@@ -26,8 +36,8 @@ public class ProfileEntityJpa {
     @Column(name = "ID_USUARIO_MANUTENCAO")
     private Long idUsuarioManutencao;
 
-    // @OneToMany(mappedBy = "perfil", fetch = FetchType.LAZY)
-    // private Set<PerfilFuncionalidadeJpaEntidade> perfilFuncionalidades = new HashSet<>();
+    @OneToMany(mappedBy = "perfil", fetch = FetchType.LAZY)
+    private Set<ProfileFunctionalityJpa> perfilFuncionalidades = new HashSet<>();
 
     @PrePersist
     protected void aoInserir() {

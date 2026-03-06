@@ -150,7 +150,7 @@ public class AuthService implements AuthUseCase {
         tokenRepository.save(resetToken);
 
         // Envia e-mail via adaptador SMTP
-        gatewayEmail.enviarEmailRedefinicaoSenha(
+        gatewayEmail.sendPasswordResetEmail(
             user.getNomEmail(),
             user.getNomUsuario(),
             resetToken.getToken());

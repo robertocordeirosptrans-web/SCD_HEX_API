@@ -2,6 +2,8 @@ package br.sptrans.scd.auth.application.service;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase.GroupProfileManagementException;
 import br.sptrans.scd.auth.application.port.out.GroupRepository;
@@ -9,7 +11,10 @@ import br.sptrans.scd.auth.application.port.out.ProfileRepository;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.Profile;
+import jakarta.transaction.Transactional;
 
+@Service
+@Transactional
 public class ManageProfileGroupService implements GroupProfileManagementUseCase {
 
     private final GroupRepository groupRepository;
