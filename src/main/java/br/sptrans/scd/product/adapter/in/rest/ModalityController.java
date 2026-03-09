@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,27 +17,36 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase.CreateModalityCommand;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase.UpdateModalityCommand;
 import br.sptrans.scd.product.domain.Modality;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/modalities")
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Modalidades v1", description = "Endpoints para gerenciamento de modalidades de produto")
 public class ModalityController {
 
     private final ModalityManagementUseCase modalityManagementUseCase;
+    private final UserRepository userRepository;
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova modalidade")
-    public ResponseEntity<Modality> createModality(@RequestBody CreateModalityCommand command) {
-        Modality modality = modalityManagementUseCase.createModality(command);
+    public ResponseEntity<Modality> createModality(
+            @RequestBody CreateModalityRequest request,
+            Authentication authentication) {
+        Long idUsuario = resolveUserId(authentication);
+        Modality modality = modalityManagementUseCase.createModality(
+                new CreateModalityCommand(request.codModalidade(), request.desModalidade(), idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(modality);
     }
 
@@ -43,8 +54,11 @@ public class ModalityController {
     @Operation(summary = "Atualiza dados de uma modalidade")
     public ResponseEntity<Modality> updateModality(
             @PathVariable String codModalidade,
-            @RequestBody UpdateModalityCommand command) {
-        Modality modality = modalityManagementUseCase.updateModality(codModalidade, command);
+            @RequestBody UpdateModalityRequest request,
+            Authentication authentication) {
+        Long idUsuario = resolveUserId(authentication);
+        Modality modality = modalityManagementUseCase.updateModality(codModalidade,
+                new UpdateModalityCommand(request.desModalidade(), idUsuario));
         return ResponseEntity.ok(modality);
     }
 
@@ -65,8 +79,8 @@ public class ModalityController {
     @Operation(summary = "Ativa uma modalidade")
     public ResponseEntity<Void> activateModality(
             @PathVariable String codModalidade,
-            @RequestParam Long idUsuario) {
-        modalityManagementUseCase.activateModality(codModalidade, idUsuario);
+            Authentication authentication) {
+        modalityManagementUseCase.activateModality(codModalidade, resolveUserId(authentication));
         return ResponseEntity.noContent().build();
     }
 
@@ -74,8 +88,8 @@ public class ModalityController {
     @Operation(summary = "Inativa uma modalidade")
     public ResponseEntity<Void> inactivateModality(
             @PathVariable String codModalidade,
-            @RequestParam Long idUsuario) {
-        modalityManagementUseCase.inactivateModality(codModalidade, idUsuario);
+            Authentication authentication) {
+        modalityManagementUseCase.inactivateModality(codModalidade, resolveUserId(authentication));
         return ResponseEntity.noContent().build();
     }
 
@@ -85,4 +99,14 @@ public class ModalityController {
         modalityManagementUseCase.deleteModality(codModalidade);
         return ResponseEntity.noContent().build();
     }
+
+    private Long resolveUserId(Authentication authentication) {
+        return userRepository.findByCodLogin(authentication.getName())
+                .map(u -> u.getIdUsuario())
+                .orElse(null);
+    }
+
+    // ── Request DTOs ──────────────────────────────────────────────────────────
+    public record CreateModalityRequest(String codModalidade, String desModalidade) {}
+    public record UpdateModalityRequest(String desModalidade) {}
 }

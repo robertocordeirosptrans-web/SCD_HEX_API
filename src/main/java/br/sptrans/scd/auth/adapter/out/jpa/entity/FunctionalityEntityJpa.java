@@ -10,7 +10,7 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "FUNCIONALIDADES", schema = "SPTRANSDBA")
+@Table(name = "FUNCIONALIDADES_BKP_MGR", schema = "SPTRANSDBA")
 public class FunctionalityEntityJpa {
 
     @EmbeddedId

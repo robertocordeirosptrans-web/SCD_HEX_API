@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,27 +17,36 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.CreateTechnologyCommand;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.UpdateTechnologyCommand;
 import br.sptrans.scd.product.domain.Technology;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/technologies")
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Tecnologias v1", description = "Endpoints para gerenciamento de tecnologias de produto")
 public class TechnologyController {
 
     private final TechnologyManagementUseCase technologyManagementUseCase;
+    private final UserRepository userRepository;
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova tecnologia")
-    public ResponseEntity<Technology> createTechnology(@RequestBody CreateTechnologyCommand command) {
-        Technology technology = technologyManagementUseCase.createTechnology(command);
+    public ResponseEntity<Technology> createTechnology(
+            @RequestBody CreateTechnologyRequest request,
+            Authentication authentication) {
+        Long idUsuario = resolveUserId(authentication);
+        Technology technology = technologyManagementUseCase.createTechnology(
+                new CreateTechnologyCommand(request.codTecnologia(), request.desTecnologia(), idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(technology);
     }
 
@@ -43,8 +54,11 @@ public class TechnologyController {
     @Operation(summary = "Atualiza dados de uma tecnologia")
     public ResponseEntity<Technology> updateTechnology(
             @PathVariable String codTecnologia,
-            @RequestBody UpdateTechnologyCommand command) {
-        Technology technology = technologyManagementUseCase.updateTechnology(codTecnologia, command);
+            @RequestBody UpdateTechnologyRequest request,
+            Authentication authentication) {
+        Long idUsuario = resolveUserId(authentication);
+        Technology technology = technologyManagementUseCase.updateTechnology(codTecnologia,
+                new UpdateTechnologyCommand(request.desTecnologia(), idUsuario));
         return ResponseEntity.ok(technology);
     }
 
@@ -65,8 +79,8 @@ public class TechnologyController {
     @Operation(summary = "Ativa uma tecnologia")
     public ResponseEntity<Void> activateTechnology(
             @PathVariable String codTecnologia,
-            @RequestParam Long idUsuario) {
-        technologyManagementUseCase.activateTechnology(codTecnologia, idUsuario);
+            Authentication authentication) {
+        technologyManagementUseCase.activateTechnology(codTecnologia, resolveUserId(authentication));
         return ResponseEntity.noContent().build();
     }
 
@@ -74,8 +88,8 @@ public class TechnologyController {
     @Operation(summary = "Inativa uma tecnologia")
     public ResponseEntity<Void> inactivateTechnology(
             @PathVariable String codTecnologia,
-            @RequestParam Long idUsuario) {
-        technologyManagementUseCase.inactivateTechnology(codTecnologia, idUsuario);
+            Authentication authentication) {
+        technologyManagementUseCase.inactivateTechnology(codTecnologia, resolveUserId(authentication));
         return ResponseEntity.noContent().build();
     }
 
@@ -85,4 +99,14 @@ public class TechnologyController {
         technologyManagementUseCase.deleteTechnology(codTecnologia);
         return ResponseEntity.noContent().build();
     }
+
+    private Long resolveUserId(Authentication authentication) {
+        return userRepository.findByCodLogin(authentication.getName())
+                .map(u -> u.getIdUsuario())
+                .orElse(null);
+    }
+
+    // ── Request DTOs ──────────────────────────────────────────────────────────
+    public record CreateTechnologyRequest(String codTecnologia, String desTecnologia) {}
+    public record UpdateTechnologyRequest(String desTecnologia) {}
 }
