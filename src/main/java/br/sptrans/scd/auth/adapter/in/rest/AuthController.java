@@ -20,6 +20,7 @@ import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.auth.domain.port.out.TokenGeneratorPort;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,12 +36,12 @@ import jakarta.validation.constraints.NotBlank;
 public class AuthController {
 
     private final AuthUseCase casoUso;
-    private final ProviderJwtToken providerJwtToken;
+    private final TokenGeneratorPort tokenGenerator;
     private final UserRepository userRepository;
 
-    public AuthController(AuthUseCase casoUso, ProviderJwtToken providerJwtToken, UserRepository userRepository) {
+    public AuthController(AuthUseCase casoUso, TokenGeneratorPort tokenGenerator, UserRepository userRepository) {
         this.casoUso = casoUso;
-        this.providerJwtToken = providerJwtToken;
+        this.tokenGenerator = tokenGenerator;
         this.userRepository = userRepository;
     }
 
@@ -53,7 +54,7 @@ public class AuthController {
     public ResponseEntity<ResponseLogin> login(@RequestBody @Valid RequestLogin req) {
         AuthComand auth = new AuthComand(req.login(), req.password());
         User user = casoUso.autenticar(auth);
-        String jwt = providerJwtToken.gerarToken(user.getIdUsuario(), user.getCodLogin());
+        String jwt = tokenGenerator.generate(user);
         return ResponseEntity.ok(new ResponseLogin(jwt));
     }
 
