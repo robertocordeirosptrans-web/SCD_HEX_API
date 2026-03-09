@@ -1,0 +1,36 @@
+package br.sptrans.scd.product.application.port.in;
+
+import java.util.List;
+
+import br.sptrans.scd.product.domain.Family;
+
+/**
+ * Porta de entrada para gestão de Famílias de produto.
+ */
+public interface FamilyManagementUseCase {
+
+    Family createFamily(CreateFamilyCommand command);
+
+    Family updateFamily(String codFamilia, UpdateFamilyCommand command);
+
+    Family findByFamily(String codFamilia);
+
+    List<Family> findAllFamilies(String codStatus);
+
+    void activateFamily(String codFamilia, Long idUsuario);
+
+    void inactivateFamily(String codFamilia, Long idUsuario);
+
+    void deleteFamily(String codFamilia);
+
+    // ── Commands ──────────────────────────────────────────────────────────────
+
+    record CreateFamilyCommand(
+            String codFamilia,
+            String desFamilia,
+            Long idUsuario) {}
+
+    record UpdateFamilyCommand(
+            String desFamilia,
+            Long idUsuario) {}
+}
