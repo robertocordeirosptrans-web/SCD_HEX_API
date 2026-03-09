@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import br.sptrans.scd.product.domain.Product;
 
-interface ProductRepository {
+public interface ProductRepository {
 
     Optional<Product> findById(String codProduto);
 

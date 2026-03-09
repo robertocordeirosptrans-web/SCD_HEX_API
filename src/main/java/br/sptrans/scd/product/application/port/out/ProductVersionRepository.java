@@ -5,9 +5,11 @@ import java.util.Optional;
 
 import br.sptrans.scd.product.domain.ProductVersion;
 
-interface ProductVersionRepository {
+public interface ProductVersionRepository {
 
     Optional<ProductVersion> findById(String codProduto);
+
+    Optional<ProductVersion> findLastVersion(String codProduto);
 
     boolean existsByProduct(String codProduto);
 
@@ -15,6 +17,6 @@ interface ProductVersionRepository {
 
     void updateStatus(String codProduto, String codStatus, Long idUsuario);
 
-    List<ProductVersion> findAll(String codStatus);
+    List<ProductVersion> findByProduct(String codProduto);
 
 }
