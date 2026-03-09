@@ -1,17 +1,269 @@
 package br.sptrans.scd.product.adapter.in.rest;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.domain.ClassificationPerson;
+import br.sptrans.scd.product.application.port.in.ProductUseCase;
+import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateProductCommand;
+import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateVersionCommand;
+import br.sptrans.scd.product.application.port.in.ProductUseCase.UpdateProductCommand;
+import br.sptrans.scd.product.domain.Family;
+import br.sptrans.scd.product.domain.Modality;
+import br.sptrans.scd.product.domain.Product;
+import br.sptrans.scd.product.domain.ProductType;
+import br.sptrans.scd.product.domain.ProductVersion;
+import br.sptrans.scd.product.domain.Species;
+import br.sptrans.scd.product.domain.Technology;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/product")
+@RequiredArgsConstructor
 @PreAuthorize("isAuthenticated()")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Produtos v1", description = "Endpoints para gerenciamento de produtos - Versão 1")
 public class ProductController {
+
+    private final ProductUseCase productUseCase;
+    private final UserRepository userRepository;
+
+    @PostMapping
+    @Operation(summary = "Cadastra um novo produto")
+    public ResponseEntity<Void> createProduct(
+            @RequestBody CreateProductRequest request,
+            Authentication authentication) {
+        Long idUsuario = resolveUserId(authentication);
+        productUseCase.createProduct(new CreateProductCommand(
+                request.codProduto(),
+                request.desProduto(),
+                request.desEmissorResponsavel(),
+                request.desUtilizacao(),
+                request.flgBloqFabricacao(),
+                request.flgBloqVenda(),
+                request.flgBloqDistribuicao(),
+                request.flgBloqTroca(),
+                request.flgBloqAquisicao(),
+                request.flgBloqPedido(),
+                request.flgBloqDevolucao(),
+                request.flgInicializado(),
+                request.flgComercializado(),
+                request.flgRestManual(),
+                request.codEntidade(),
+                request.codTipoCartao(),
+                request.codClassificacaoPessoa() != null ? new ClassificationPerson(request.codClassificacaoPessoa(), null, null, null, null, null, null, null) : null,
+                request.codTipoProduto() != null ? new ProductType(request.codTipoProduto(), null, null, null, null, null, null) : null,
+                request.codTecnologia() != null ? new Technology(request.codTecnologia(), null, null, null, null, null, null) : null,
+                request.codModalidade() != null ? new Modality(request.codModalidade(), null, null, null, null, null, null) : null,
+                request.codFamilia() != null ? new Family(request.codFamilia(), null, null, null, null, null, null) : null,
+                request.codEspecie() != null ? new Species(request.codEspecie(), null, null, null, null, null, null) : null,
+                idUsuario
+        ));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping
+    @Operation(summary = "Lista todos os produtos, com filtro opcional de status")
+    public ResponseEntity<List<Product>> findAllProducts(
+            @RequestParam(required = false) String codStatus) {
+        return ResponseEntity.ok(productUseCase.findAllProducts(codStatus));
+    }
+
+    @GetMapping("/{codProduto}")
+    @Operation(summary = "Busca produto por código")
+    public ResponseEntity<Product> findByProduct(@PathVariable String codProduto) {
+        return ResponseEntity.ok(productUseCase.findByProduct(codProduto));
+    }
+
+    @PutMapping("/{codProduto}")
+    @Operation(summary = "Atualiza dados de um produto")
+    public ResponseEntity<Void> updateProduct(
+            @PathVariable String codProduto,
+            @RequestBody UpdateProductRequest request,
+            Authentication authentication) {
+        Long idUsuario = resolveUserId(authentication);
+        productUseCase.updateProduct(codProduto, new UpdateProductCommand(
+                request.desProduto(),
+                request.desEmissorResponsavel(),
+                request.desUtilizacao(),
+                request.flgBloqFabricacao(),
+                request.flgBloqVenda(),
+                request.flgBloqDistribuicao(),
+                request.flgBloqTroca(),
+                request.flgBloqAquisicao(),
+                request.flgBloqPedido(),
+                request.flgBloqDevolucao(),
+                request.flgInicializado(),
+                request.flgComercializado(),
+                request.flgRestManual(),
+                request.codEntidade(),
+                request.codTipoCartao(),
+                request.codClassificacaoPessoa() != null ? new ClassificationPerson(request.codClassificacaoPessoa(), null, null, null, null, null, null, null) : null,
+                request.codTipoProduto() != null ? new ProductType(request.codTipoProduto(), null, null, null, null, null, null) : null,
+                request.codTecnologia() != null ? new Technology(request.codTecnologia(), null, null, null, null, null, null) : null,
+                request.codModalidade() != null ? new Modality(request.codModalidade(), null, null, null, null, null, null) : null,
+                request.codFamilia() != null ? new Family(request.codFamilia(), null, null, null, null, null, null) : null,
+                request.codEspecie() != null ? new Species(request.codEspecie(), null, null, null, null, null, null) : null,
+                idUsuario
+        ));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{codProduto}/activate")
+    @Operation(summary = "Ativa um produto")
+    public ResponseEntity<Void> activateProduct(
+            @PathVariable String codProduto,
+            Authentication authentication) {
+        productUseCase.activateProduct(codProduto, resolveUserId(authentication));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{codProduto}/inactivate")
+    @Operation(summary = "Inativa um produto")
+    public ResponseEntity<Void> inactivateProduct(
+            @PathVariable String codProduto,
+            Authentication authentication) {
+        productUseCase.inactivateProduct(codProduto, resolveUserId(authentication));
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── Versões ───────────────────────────────────────────────────────────────
+
+    @PostMapping("/{codProduto}/versions")
+    @Operation(summary = "Cria uma nova versão para um produto")
+    public ResponseEntity<ProductVersion> createNewVersion(
+            @PathVariable String codProduto,
+            @RequestBody CreateVersionRequest request,
+            Authentication authentication) {
+        Long idUsuario = resolveUserId(authentication);
+        ProductVersion version = productUseCase.createNewVersion(codProduto, new CreateVersionCommand(
+                request.dtValidade(),
+                request.dtVidaInicio(),
+                request.dtVidaFim(),
+                request.dtLiberacao(),
+                request.dtLancamento(),
+                request.dtVendaInicio(),
+                request.dtVendaFim(),
+                request.dtUsoIni(),
+                request.dtUsoFim(),
+                request.dtTrocaIni(),
+                request.dtTrocaFim(),
+                request.flgBloqFabricacao(),
+                request.flgBloqVenda(),
+                request.flgBloqDistribuicao(),
+                request.flgBloqTroca(),
+                request.flgBloqAquisicao(),
+                request.flgBloqPedido(),
+                request.flgBloqDevolucao(),
+                request.desProdutoVersoes(),
+                idUsuario
+        ));
+        return ResponseEntity.status(HttpStatus.CREATED).body(version);
+    }
+
+    @GetMapping("/versions/{codVersao}")
+    @Operation(summary = "Busca uma versão de produto por código")
+    public ResponseEntity<ProductVersion> findByVersion(@PathVariable String codVersao) {
+        return ResponseEntity.ok(productUseCase.findByVersion(codVersao));
+    }
+
+    // ── Helper ────────────────────────────────────────────────────────────────
+
+    private Long resolveUserId(Authentication authentication) {
+        return userRepository.findByCodLogin(authentication.getName())
+                .map(u -> u.getIdUsuario())
+                .orElse(null);
+    }
+
+    // ── Request DTOs ──────────────────────────────────────────────────────────
+
+    public record CreateProductRequest(
+            String codProduto,
+            String desProduto,
+            String desEmissorResponsavel,
+            String desUtilizacao,
+            String flgBloqFabricacao,
+            String flgBloqVenda,
+            String flgBloqDistribuicao,
+            String flgBloqTroca,
+            String flgBloqAquisicao,
+            String flgBloqPedido,
+            String flgBloqDevolucao,
+            String flgInicializado,
+            String flgComercializado,
+            String flgRestManual,
+            String codEntidade,
+            String codTipoCartao,
+            String codClassificacaoPessoa,
+            String codTipoProduto,
+            String codTecnologia,
+            String codModalidade,
+            String codFamilia,
+            String codEspecie
+    ) {}
+
+    public record UpdateProductRequest(
+            String desProduto,
+            String desEmissorResponsavel,
+            String desUtilizacao,
+            String flgBloqFabricacao,
+            String flgBloqVenda,
+            String flgBloqDistribuicao,
+            String flgBloqTroca,
+            String flgBloqAquisicao,
+            String flgBloqPedido,
+            String flgBloqDevolucao,
+            String flgInicializado,
+            String flgComercializado,
+            String flgRestManual,
+            String codEntidade,
+            String codTipoCartao,
+            String codClassificacaoPessoa,
+            String codTipoProduto,
+            String codTecnologia,
+            String codModalidade,
+            String codFamilia,
+            String codEspecie
+    ) {}
+
+    public record CreateVersionRequest(
+            LocalDateTime dtValidade,
+            LocalDateTime dtVidaInicio,
+            LocalDateTime dtVidaFim,
+            LocalDateTime dtLiberacao,
+            LocalDateTime dtLancamento,
+            LocalDateTime dtVendaInicio,
+            LocalDateTime dtVendaFim,
+            LocalDateTime dtUsoIni,
+            LocalDateTime dtUsoFim,
+            LocalDateTime dtTrocaIni,
+            LocalDateTime dtTrocaFim,
+            String flgBloqFabricacao,
+            String flgBloqVenda,
+            String flgBloqDistribuicao,
+            String flgBloqTroca,
+            String flgBloqAquisicao,
+            String flgBloqPedido,
+            String flgBloqDevolucao,
+            String desProdutoVersoes
+    ) {}
 }
