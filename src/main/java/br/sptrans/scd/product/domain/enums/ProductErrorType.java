@@ -12,7 +12,10 @@ public enum ProductErrorType {
     PRODUCT_ALREADY_INACTIVE("Produto já está inativo."),
     PRODUCT_WITHOUT_VERSION("Produto sem versão configurada não pode ser ativado."),
     VERSION_NOT_FOUND("Versão de produto não encontrada."),
-    VERSION_INVALID_DATE("Data de início da nova versão deve ser futura.");
+    VERSION_INVALID_DATE("Data de início da nova versão deve ser futura."),
+    FARE_NOT_FOUND("Tarifa não encontrada."),
+    FARE_VALIDITY_CONFLICT("Conflito de vigência com outra tarifa existente."),
+    FEE_NOT_FOUND("Taxa não encontrada.");
 
     private final String description;
 
