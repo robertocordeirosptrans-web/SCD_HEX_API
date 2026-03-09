@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.out.config;
+package br.sptrans.scd.shared.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
