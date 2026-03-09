@@ -12,7 +12,13 @@ public interface FamilyRepository {
 
     Optional<Family> findById(String codFamilia);
 
-    List<Family> findAll();
+    boolean existsById(String codFamilia);
+
+    List<Family> findAll(String codStatus);
 
     Family save(Family family);
+
+    void updateStatus(String codFamilia, String codStatus, Long idUsuario);
+
+    void deleteById(String codFamilia);
 }

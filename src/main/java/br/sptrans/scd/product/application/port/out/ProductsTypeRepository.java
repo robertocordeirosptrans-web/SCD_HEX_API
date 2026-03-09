@@ -12,7 +12,13 @@ public interface ProductsTypeRepository {
 
     Optional<ProductType> findById(String codTipoProduto);
 
-    List<ProductType> findAll();
+    boolean existsById(String codTipoProduto);
+
+    List<ProductType> findAll(String codStatus);
 
     ProductType save(ProductType tiposProdutos);
+
+    void updateStatus(String codTipoProduto, String codStatus, Long idUsuario);
+
+    void deleteById(String codTipoProduto);
 }

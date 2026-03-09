@@ -9,7 +9,13 @@ public interface SpeciesRepository {
 
     Optional<Species> findById(String codEspecie);
 
-    List<Species> findAll();
+    boolean existsById(String codEspecie);
+
+    List<Species> findAll(String codStatus);
 
     Species save(Species especies);
+
+    void updateStatus(String codEspecie, String codStatus, Long idUsuario);
+
+    void deleteById(String codEspecie);
 }

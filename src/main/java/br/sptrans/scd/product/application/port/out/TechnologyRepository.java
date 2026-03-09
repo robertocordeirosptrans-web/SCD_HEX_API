@@ -9,7 +9,13 @@ public interface TechnologyRepository {
 
     Optional<Technology> findById(String codTecnologia);
 
-    List<Technology> findAll();
+    boolean existsById(String codTecnologia);
+
+    List<Technology> findAll(String codStatus);
 
     Technology save(Technology tecnologia);
+
+    void updateStatus(String codTecnologia, String codStatus, Long idUsuario);
+
+    void deleteById(String codTecnologia);
 }

@@ -9,7 +9,13 @@ public interface ModalityRepository {
 
     Optional<Modality> findById(String codModalidade);
 
-    List<Modality> findAll();
+    boolean existsById(String codModalidade);
+
+    List<Modality> findAll(String codStatus);
 
     Modality save(Modality modalidade);
+
+    void updateStatus(String codModalidade, String codStatus, Long idUsuario);
+
+    void deleteById(String codModalidade);
 }
