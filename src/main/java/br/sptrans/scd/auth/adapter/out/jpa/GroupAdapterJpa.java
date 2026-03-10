@@ -22,6 +22,7 @@ public class GroupAdapterJpa implements GroupRepository {
 
     @Override
     public Optional<Group> findById(String codGrupo) {
+        @SuppressWarnings("unchecked")
         List<Object[]> rows = em.createNativeQuery("""
                 SELECT g.COD_GRUPO, g.NOM_GRUPO, g.COD_STATUS
                 FROM   SPTRANSDBA.GRUPOS g
@@ -60,6 +61,7 @@ public class GroupAdapterJpa implements GroupRepository {
         if (codStatus != null) {
             query.setParameter("status", codStatus);
         }
+        @SuppressWarnings("unchecked")
         List<Object[]> rows = query.getResultList();
         return rows.stream()
                 .map(this::mapearGrupo)
