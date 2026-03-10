@@ -1,0 +1,116 @@
+package br.sptrans.scd.creditrequest.domain;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class CreditRequestItems {
+
+    private CreditRequestItemsKey id;
+
+    private CreditRequest solicitacao;
+
+    private String codCanal;
+
+    private Long idUsuarioCadastro;
+
+    private String codVersao;
+
+    private String numLogicoCartao;
+
+    private String codProduto;
+
+    private String codTipoDocumento;
+
+    private String codSituacao;
+
+    private Integer qtdItem;
+
+    private BigDecimal vlUnitario;
+
+    private BigDecimal vlItem;
+
+    private LocalDateTime dtRecarga;
+
+    private BigDecimal vlCarregado;
+
+    private BigDecimal vlAjuste;
+
+    private String flgAjuste;
+
+    private String idFuncionario;
+
+    private String codAssinaturaHsm;
+
+    private LocalDateTime dtCadastro;
+
+    private LocalDateTime dtManutencao;
+
+    private Integer seqRecarga;
+
+    private LocalDateTime dtEnvioHm;
+
+    private LocalDateTime dtRetornoHm;
+
+    private Long idUsuarioManutencao;
+
+    private LocalDateTime dtAssinatura;
+
+    private LocalDateTime dtPagtoEconomica;
+
+    private Long sqPid;
+
+    private LocalDateTime dtInicProcesso;
+
+    private Long idUsuarioCartao = 0L;
+
+    private Integer sqRecarga = 0;
+
+    private BigDecimal vlTxadm = BigDecimal.ZERO;
+
+    private BigDecimal vlTxserv = BigDecimal.ZERO;
+
+    private BigDecimal vlTxtotal;
+
+    private String flgEvento;
+
+    private BigDecimal vlEvento;
+
+    private String flgOutrasVias;
+
+    private String codAssdigRecarga;
+
+    private BigDecimal vlAutorizacaoHm;
+
+    private Integer flgLiminarLoja;
+
+    private String codProdutoHm;
+
+    private Integer qtdDiasUtilizados;
+
+    private Integer codMidia = 0;
+
+    /**
+     * Regra 4.3 — indica se este item deve ser marcado como RECARREGADO com
+     * valor zero.
+     *
+     * <p>
+     * Quando o valor efetivo do item ({@code vlItem + valorEvento}) for menor
+     * ou igual a zero, o item é considerado "recarregado por evento" sem valor
+     * monetário, e deve receber o status RECARREGADO.</p>
+     *
+     * @param valorEvento valor do evento financeiro associado ao item (pode ser
+     * null)
+     * @return {@code true} se o valor efetivo for ≤ 0
+     */
+
+    public boolean mustIndicateReloadedByEvent(BigDecimal valorEvento) {
+        BigDecimal valorEfetivo = (this.vlItem != null ? this.vlItem : BigDecimal.ZERO)
+                .add(valorEvento != null ? valorEvento : BigDecimal.ZERO);
+        return valorEfetivo.compareTo(BigDecimal.ZERO) <= 0;
+    }
+}
