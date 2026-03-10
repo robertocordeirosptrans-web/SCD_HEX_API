@@ -1,4 +1,4 @@
-package br.sptrans.scd.channel.adapter.in.rest;
+package br.sptrans.scd.channel.adapter.port.in.rest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
