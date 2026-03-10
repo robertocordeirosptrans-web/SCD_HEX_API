@@ -25,7 +25,23 @@ public enum ChannelErrorType {
 
     // AddressChannel
     ADDRESS_CHANNEL_NOT_FOUND("Endereço do canal não encontrado."),
-    ADDRESS_CHANNEL_CODE_ALREADY_EXISTS("Código de endereço já cadastrado.");
+    ADDRESS_CHANNEL_CODE_ALREADY_EXISTS("Código de endereço já cadastrado."),
+
+    // AgreementValidity
+    AGREEMENT_VALIDITY_NOT_FOUND("Vigência de convênio não encontrada."),
+    AGREEMENT_VALIDITY_ALREADY_EXISTS("Vigência de convênio já cadastrada para este canal e produto."),
+
+    // MarketingDistribuitionChannel
+    MARKETING_CHANNEL_NOT_FOUND("Canal de comercialização/distribuição não encontrado."),
+    MARKETING_CHANNEL_ALREADY_EXISTS("Canal de comercialização/distribuição já cadastrado."),
+
+    // ProductChannel
+    PRODUCT_CHANNEL_NOT_FOUND("Canal de produto não encontrado."),
+    PRODUCT_CHANNEL_ALREADY_EXISTS("Canal de produto já cadastrado para este canal e produto."),
+
+    // RechargeLimit
+    RECHARGE_LIMIT_NOT_FOUND("Limite de recarga não encontrado."),
+    RECHARGE_LIMIT_ALREADY_EXISTS("Limite de recarga já cadastrado para este canal e produto.");
 
     private final String description;
 }
