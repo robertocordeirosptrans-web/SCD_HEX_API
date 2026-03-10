@@ -39,11 +39,11 @@ public class SwaggerConfig {
                                 .name("Apache 2.0")
                                 .url("https://springdoc.org")))
                 .components(new Components()
-                        .addSecuritySchemes("bearer-key",
+                        .addSecuritySchemes("bearerAuth",
                                 new SecurityScheme()
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")))
-                .addSecurityItem(new SecurityRequirement().addList("bearer-key"));
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
     }
 }

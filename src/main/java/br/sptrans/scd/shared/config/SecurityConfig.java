@@ -70,7 +70,7 @@ public class SecurityConfig {
                     "/actuator/health",
                     "/swagger-ui/**", "/v3/api-docs/**"
                 ).permitAll()
-                .requestMatchers("/OPTIONS", "/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )
 

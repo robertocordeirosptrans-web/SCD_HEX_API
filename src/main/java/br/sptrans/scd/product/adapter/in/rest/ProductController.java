@@ -49,6 +49,7 @@ public class ProductController {
 
     @PostMapping
     @Operation(summary = "Cadastra um novo produto")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> createProduct(
             @RequestBody CreateProductRequest request,
             Authentication authentication) {
@@ -83,19 +84,23 @@ public class ProductController {
 
     @GetMapping
     @Operation(summary = "Lista todos os produtos, com filtro opcional de status")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<Product>> findAllProducts(
             @RequestParam(required = false) String codStatus) {
         return ResponseEntity.ok(productUseCase.findAllProducts(codStatus));
     }
 
     @GetMapping("/{codProduto}")
+
     @Operation(summary = "Busca produto por código")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Product> findByProduct(@PathVariable String codProduto) {
         return ResponseEntity.ok(productUseCase.findByProduct(codProduto));
     }
 
     @PutMapping("/{codProduto}")
     @Operation(summary = "Atualiza dados de um produto")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> updateProduct(
             @PathVariable String codProduto,
             @RequestBody UpdateProductRequest request,
@@ -129,6 +134,7 @@ public class ProductController {
     }
 
     @PatchMapping("/{codProduto}/activate")
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Ativa um produto")
     public ResponseEntity<Void> activateProduct(
             @PathVariable String codProduto,
@@ -139,6 +145,7 @@ public class ProductController {
 
     @PatchMapping("/{codProduto}/inactivate")
     @Operation(summary = "Inativa um produto")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> inactivateProduct(
             @PathVariable String codProduto,
             Authentication authentication) {
@@ -147,9 +154,9 @@ public class ProductController {
     }
 
     // ── Versões ───────────────────────────────────────────────────────────────
-
     @PostMapping("/{codProduto}/versions")
     @Operation(summary = "Cria uma nova versão para um produto")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ProductVersion> createNewVersion(
             @PathVariable String codProduto,
             @RequestBody CreateVersionRequest request,
@@ -182,12 +189,12 @@ public class ProductController {
 
     @GetMapping("/versions/{codVersao}")
     @Operation(summary = "Busca uma versão de produto por código")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ProductVersion> findByVersion(@PathVariable String codVersao) {
         return ResponseEntity.ok(productUseCase.findByVersion(codVersao));
     }
 
     // ── Helper ────────────────────────────────────────────────────────────────
-
     private Long resolveUserId(Authentication authentication) {
         return userRepository.findByCodLogin(authentication.getName())
                 .map(u -> u.getIdUsuario())
@@ -195,7 +202,6 @@ public class ProductController {
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
-
     public record CreateProductRequest(
             String codProduto,
             String desProduto,
@@ -219,7 +225,9 @@ public class ProductController {
             String codModalidade,
             String codFamilia,
             String codEspecie
-    ) {}
+            ) {
+
+    }
 
     public record UpdateProductRequest(
             String desProduto,
@@ -243,7 +251,9 @@ public class ProductController {
             String codModalidade,
             String codFamilia,
             String codEspecie
-    ) {}
+            ) {
+
+    }
 
     public record CreateVersionRequest(
             LocalDateTime dtValidade,
@@ -265,5 +275,7 @@ public class ProductController {
             String flgBloqPedido,
             String flgBloqDevolucao,
             String desProdutoVersoes
-    ) {}
+            ) {
+
+    }
 }

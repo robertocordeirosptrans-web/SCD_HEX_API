@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.DisabledException;
@@ -235,6 +236,26 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Trata ausência de token JWT (requisição sem Authorization header)
+     */
+    @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationCredentialsNotFound(
+            AuthenticationCredentialsNotFoundException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.UNAUTHORIZED.value(),
+            "Unauthorized",
+            "Token de autenticação ausente ou inválido",
+            "MISSING_TOKEN",
+            request.getRequestURI()
+        );
+
+        log.warn("Missing authentication token at URI: {}", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
      * Trata exceções de credenciais inválidas
      */
     @ExceptionHandler(BadCredentialsException.class)
@@ -255,7 +276,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Trata outras exceções de autenticação do Spring Security
+     * Trata exceções de autenticação customizadas
      */
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationException(
@@ -392,7 +413,8 @@ public class GlobalExceptionHandler {
         
         Map<String, String> errors = new HashMap<>();
         String parameterName = ex.getName();
-        String requiredType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
+        Class<?> requiredTypeClass = ex.getRequiredType();
+        String requiredType = requiredTypeClass != null ? requiredTypeClass.getSimpleName() : "unknown";
         errors.put(parameterName, String.format("Tipo inválido. Esperado: %s", requiredType));
 
         ErrorResponse errorResponse = new ErrorResponse(
