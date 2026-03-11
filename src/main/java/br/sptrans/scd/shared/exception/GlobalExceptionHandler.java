@@ -24,6 +24,10 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthenticationException;
+import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
+import br.sptrans.scd.channel.domain.exception.ChannelException;
+import br.sptrans.scd.product.domain.enums.ProductErrorType;
+import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.exception.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -532,6 +536,94 @@ public class GlobalExceptionHandler {
 
         log.warn("Unsupported media type at URI: {} - ContentType: {}", request.getRequestURI(), ex.getContentType());
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(errorResponse);
+    }
+
+    /**
+     * Trata exceções do módulo Channel
+     */
+    @ExceptionHandler(ChannelException.class)
+    public ResponseEntity<ErrorResponse> handleChannelException(
+            ChannelException ex,
+            HttpServletRequest request) {
+
+        ChannelErrorType errorType = ex.getErrorType();
+        String errorName = errorType.name();
+
+        HttpStatus status;
+        String errorCode;
+
+        if (errorName.contains("NOT_FOUND")) {
+            status = HttpStatus.NOT_FOUND;
+            errorCode = "CHANNEL_NOT_FOUND";
+        } else if (errorName.contains("ALREADY_EXISTS") || errorName.contains("CODE_ALREADY_EXISTS")) {
+            status = HttpStatus.CONFLICT;
+            errorCode = "CHANNEL_DUPLICATE";
+        } else if (errorName.contains("ALREADY_ACTIVE") || errorName.contains("ALREADY_INACTIVE")) {
+            status = HttpStatus.UNPROCESSABLE_ENTITY;
+            errorCode = "CHANNEL_INVALID_STATE";
+        } else {
+            status = HttpStatus.BAD_REQUEST;
+            errorCode = "CHANNEL_ERROR";
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            status.value(),
+            status.getReasonPhrase(),
+            ex.getMessage(),
+            errorCode,
+            request.getRequestURI()
+        );
+
+        log.warn("Channel error at URI: {} - Type: {} - Message: {}",
+                 request.getRequestURI(), errorName, ex.getMessage());
+        return ResponseEntity.status(status).body(errorResponse);
+    }
+
+    /**
+     * Trata exceções do módulo Product
+     */
+    @ExceptionHandler(ProductException.class)
+    public ResponseEntity<ErrorResponse> handleProductException(
+            ProductException ex,
+            HttpServletRequest request) {
+
+        ProductErrorType errorType = ex.getErrorType();
+        String errorName = errorType.name();
+
+        HttpStatus status;
+        String errorCode;
+
+        if (errorName.contains("NOT_FOUND")) {
+            status = HttpStatus.NOT_FOUND;
+            errorCode = "PRODUCT_NOT_FOUND";
+        } else if (errorName.contains("ALREADY_EXISTS") || errorName.contains("CODE_ALREADY_EXISTS")) {
+            status = HttpStatus.CONFLICT;
+            errorCode = "PRODUCT_DUPLICATE";
+        } else if (errorName.contains("ALREADY_ACTIVE") || errorName.contains("ALREADY_INACTIVE")) {
+            status = HttpStatus.UNPROCESSABLE_ENTITY;
+            errorCode = "PRODUCT_INVALID_STATE";
+        } else if (errorName.contains("CONFLICT")) {
+            status = HttpStatus.CONFLICT;
+            errorCode = "PRODUCT_CONFLICT";
+        } else if (errorName.contains("INVALID")) {
+            status = HttpStatus.BAD_REQUEST;
+            errorCode = "PRODUCT_VALIDATION_ERROR";
+        } else {
+            status = HttpStatus.BAD_REQUEST;
+            errorCode = "PRODUCT_ERROR";
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            status.value(),
+            status.getReasonPhrase(),
+            ex.getMessage(),
+            errorCode,
+            request.getRequestURI()
+        );
+
+        log.warn("Product error at URI: {} - Type: {} - Message: {}",
+                 request.getRequestURI(), errorName, ex.getMessage());
+        return ResponseEntity.status(status).body(errorResponse);
     }
 
     /**
