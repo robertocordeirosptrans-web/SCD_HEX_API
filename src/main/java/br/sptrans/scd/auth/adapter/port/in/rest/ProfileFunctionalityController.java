@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.in.rest;
+package br.sptrans.scd.auth.adapter.port.in.rest;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -1,5 +1,4 @@
-package br.sptrans.scd.channel.adapter.port.out.jpa;
-
+package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 import java.util.List;
 import java.util.Optional;
 

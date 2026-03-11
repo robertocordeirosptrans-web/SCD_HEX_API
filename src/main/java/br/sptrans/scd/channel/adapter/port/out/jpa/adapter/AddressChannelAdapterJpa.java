@@ -1,4 +1,4 @@
-package br.sptrans.scd.channel.adapter.port.out.jpa;
+package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;

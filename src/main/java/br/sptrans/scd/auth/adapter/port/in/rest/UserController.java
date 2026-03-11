@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.in.rest;
+package br.sptrans.scd.auth.adapter.port.in.rest;
 
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.adapter.in.rest.dto.UserRequestDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserResponseDTO;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.CreateUserCommand;

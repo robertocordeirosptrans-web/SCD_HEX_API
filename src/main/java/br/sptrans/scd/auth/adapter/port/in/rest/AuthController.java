@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.in.rest;
+package br.sptrans.scd.auth.adapter.port.in.rest;
 
 import java.util.Set;
 import java.util.stream.Collectors;

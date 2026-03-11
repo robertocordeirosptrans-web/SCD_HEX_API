@@ -1,4 +1,4 @@
-package br.sptrans.scd.channel.adapter.port.out.jpa;
+package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;

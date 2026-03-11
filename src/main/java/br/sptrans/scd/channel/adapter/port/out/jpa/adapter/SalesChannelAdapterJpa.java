@@ -1,4 +1,4 @@
-package br.sptrans.scd.channel.adapter.port.out.jpa;
+package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 
 import java.sql.Date;
 import java.sql.Timestamp;

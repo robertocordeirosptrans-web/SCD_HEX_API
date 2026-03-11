@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.in.rest;
+package br.sptrans.scd.auth.adapter.port.in.rest;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,74 +17,69 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@RestController
-@RequestMapping(ApiVersionConfig.API_V1_PATH + "/usuario-perfil")
-@Tag(name = "Usuário-Perfil v1", description = "Endpoints para associação de usuário e perfil")
 
-public class UserProfileController {
+@RestController
+@RequestMapping(ApiVersionConfig.API_V1_PATH + "/grupo-usuario")
+@Tag(name = "Grupo-Usuário v1", description = "Endpoints para associação de grupo e usuários")
+public class GroupUserController {
 
     private final GroupProfileManagementUseCase groupProfileManagementUseCase;
 
-    public UserProfileController(GroupProfileManagementUseCase groupProfileManagementUseCase) {
+    public GroupUserController(GroupProfileManagementUseCase groupProfileManagementUseCase) {
         this.groupProfileManagementUseCase = groupProfileManagementUseCase;
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Associar perfil ao usuário", description = "Associa um perfil ao usuário")
+    @Operation(summary = "Associar usuário ao grupo", description = "Associa um usuário ao grupo")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Associação criada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> associate(@RequestBody UserProfileRequest request) {
+    public ResponseEntity<?> associate(@RequestBody GroupUserRequest request) {
         groupProfileManagementUseCase.associateProfilesToGroup(
-                new GroupProfileManagementUseCase.AssociateProfilesToGroupCommand(
-                        request.idUsuario().toString(),
-                        java.util.Set.of(request.codPerfil()),
-                        request.idUsuario()
-                )
+            new GroupProfileManagementUseCase.AssociateProfilesToGroupCommand(
+                request.codGrupo(),
+                java.util.Set.of(request.idUsuario().toString()),
+                request.idUsuario()
+            )
         );
         return ResponseEntity.ok().build();
     }
 
     @PutMapping
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Atualizar associação usuário-perfil", description = "Atualiza dados da associação")
+    @Operation(summary = "Atualizar associação grupo-usuário", description = "Atualiza dados da associação")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Associação atualizada com sucesso"),
         @ApiResponse(responseCode = "404", description = "Associação não encontrada")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> update(@RequestBody UserProfileRequest request) {
+    public ResponseEntity<?> update(@RequestBody GroupUserRequest request) {
         // Implementar lógica de atualização se necessário
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/status")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Atualizar status da associação", description = "Atualiza o status da associação usuário-perfil")
+    @Operation(summary = "Atualizar status da associação", description = "Atualiza o status da associação grupo-usuário")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
         @ApiResponse(responseCode = "404", description = "Associação não encontrada")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateStatus(@RequestBody UserProfileStatusRequest request) {
+    public ResponseEntity<?> updateStatus(@RequestBody GroupUserStatusRequest request) {
         groupProfileManagementUseCase.disassociateProfileFromGroup(
-                new GroupProfileManagementUseCase.DisassociateProfileFromGroupCommand(
-                        request.idUsuario().toString(),
-                        request.codPerfil(),
-                        request.idUsuario()
-                )
+            new GroupProfileManagementUseCase.DisassociateProfileFromGroupCommand(
+                request.codGrupo(),
+                request.idUsuario().toString(),
+                request.idUsuario()
+            )
         );
         return ResponseEntity.ok().build();
     }
 
-    public record UserProfileRequest(Long idUsuario, String codPerfil) {
-
-    }
-
-    public record UserProfileStatusRequest(Long idUsuario, String codPerfil, String status) {
-
-    }
+    public record GroupUserRequest(String codGrupo, Long idUsuario) {}
+    public record GroupUserStatusRequest(String codGrupo, Long idUsuario, String status) {}
 }
