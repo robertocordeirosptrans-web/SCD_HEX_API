@@ -13,6 +13,10 @@ import lombok.Setter;
 @Setter
 public class CreditRequest {
 
+    private Long numSolicitacao;
+
+    private String codCanal;
+
     private Long idUsuarioCadastro;
 
     private String codTipoDocumento;
