@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.out.jpa;
+package br.sptrans.scd.auth.adapter.port.out.jpa;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;

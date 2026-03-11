@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.out.security;
+package br.sptrans.scd.auth.adapter.port.out.security;
 
 
 

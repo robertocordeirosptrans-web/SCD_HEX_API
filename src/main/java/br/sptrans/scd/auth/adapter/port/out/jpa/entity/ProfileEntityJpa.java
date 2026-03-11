@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.out.jpa.entity;
+package br.sptrans.scd.auth.adapter.port.out.jpa.entity;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;

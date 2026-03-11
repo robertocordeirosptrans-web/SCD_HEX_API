@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.in.web.filter;
+package br.sptrans.scd.auth.adapter.port.in.web.filter;
 import java.util.ArrayList;
 import java.util.List;
 

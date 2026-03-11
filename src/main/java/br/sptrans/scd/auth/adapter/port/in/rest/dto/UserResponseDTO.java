@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.in.rest.dto;
+package br.sptrans.scd.auth.adapter.port.in.rest.dto;
 
 import java.time.LocalDateTime;
 

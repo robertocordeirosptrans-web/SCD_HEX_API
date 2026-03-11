@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.out.smtp;
+package br.sptrans.scd.auth.adapter.port.out.smtp;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;

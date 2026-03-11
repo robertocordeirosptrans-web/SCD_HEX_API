@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.out.jpa;
+package br.sptrans.scd.auth.adapter.port.out.jpa;
 
 import java.util.List;
 import java.util.Optional;

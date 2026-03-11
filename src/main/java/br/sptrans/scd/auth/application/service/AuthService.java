@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
-import br.sptrans.scd.auth.adapter.in.rest.ProviderJwtToken;
+import br.sptrans.scd.auth.adapter.port.in.rest.ProviderJwtToken;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.out.GatewayEmail;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenRepository;

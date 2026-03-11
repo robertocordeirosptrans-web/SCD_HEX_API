@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.out.logging;
+package br.sptrans.scd.auth.adapter.port.out.logging;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -15,7 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.header.HeaderWriter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import br.sptrans.scd.auth.adapter.in.web.filter.JwtAuthFilter;
+import br.sptrans.scd.auth.adapter.port.in.web.filter.JwtAuthFilter;
 
 
 
