@@ -92,8 +92,6 @@ public class CreditRequestItems {
 
     private Integer qtdDiasUtilizados;
 
-    private Integer codMidia = 0;
-
     /**
      * Regra 4.3 — indica se este item deve ser marcado como RECARREGADO com
      * valor zero.

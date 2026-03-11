@@ -143,7 +143,4 @@ public class CreditRequestItemsEJpa {
 
     @Column(name = "QTD_DIAS_UTILIZADOS")
     private Integer qtdDiasUtilizados;
-
-    @Column(name = "COD_MIDIA")
-    private Integer codMidia;
 }
