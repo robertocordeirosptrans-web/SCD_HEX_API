@@ -42,4 +42,14 @@ public interface HistCreditRequestRepository {
      * Retorna o total de registros de histórico.
      */
     long count();
+
+    /**
+     * Obtém o maior número de sequência de histórico para uma dada solicitação.
+     */
+    Long findMaxSeqHistSdis(Long numSolicitacao, String codCanal);
+
+    /**
+     * Retorna o histórico mais recente de uma solicitação.
+     */
+    List<HistCreditRequest> findLatestBySolicitacao(Long numSolicitacao, String codCanal);
 }
