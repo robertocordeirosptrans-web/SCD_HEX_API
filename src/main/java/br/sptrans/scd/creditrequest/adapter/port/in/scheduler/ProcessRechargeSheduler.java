@@ -35,6 +35,9 @@ public class ProcessRechargeSheduler {
     private final CreditRequestRepository creditRequestRepository;
     private final ProcessRechargeUseCase processRechargeUseCase;
 
+    @Value("${scheduler.processar-recarga.enabled:true}")
+    private boolean enabled;
+
     /**
      * Tamanho de cada lote de solicitações processadas por execução.
      */
@@ -47,6 +50,10 @@ public class ProcessRechargeSheduler {
      */
     @Scheduled(fixedRateString = "${scheduler.processar-recarga.intervalo-ms:60000}")
     public void executar() {
+        if (!enabled) {
+            log.debug("Job ProcessarRecarga desativado (scheduler.processar-recarga.enabled=false)");
+            return;
+        }
         log.debug("Iniciando job ProcessarRecarga");
 
         int processadas = 0;

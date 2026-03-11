@@ -42,6 +42,9 @@ public class ReleaseRechargeScheduler {
     private final CreditRequestItemsRepository itemRepository;
     private final ReleaseRechargeUseCase releaseRechargeUseCase;
 
+    @Value("${scheduler.liberar-recarga.enabled:true}")
+    private boolean enabled;
+
     /**
      * Atraso mínimo (em minutos) após o pagamento antes de liberar.
      */
@@ -66,6 +69,10 @@ public class ReleaseRechargeScheduler {
      */
     @Scheduled(fixedDelayString = "${scheduler.liberar-recarga.intervalo-ms:60000}")
     public void executar() {
+        if (!enabled) {
+            log.debug("Job LiberarRecarga desativado (scheduler.liberar-recarga.enabled=false)");
+            return;
+        }
         LocalDateTime agora = LocalDateTime.now();
         LocalDateTime dtFim = agora.minusMinutes(atrasoMinutos);
         LocalDateTime dtInicio = dtFim.minusMinutes(janelaMinutos);

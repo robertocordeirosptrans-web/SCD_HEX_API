@@ -39,6 +39,9 @@ public class ConfirmedRechargeScheduler {
     private final CreditRequestRepository solDistribuicoesRepository;
     private final ConfirmedRechargeUseCase confirmarRecargaUseCase;
 
+    @Value("${scheduler.confirmar-recarga.enabled:true}")
+    private boolean enabled;
+
     /**
      * Tamanho de cada lote de solicitações processadas por execução.
      */
@@ -51,6 +54,10 @@ public class ConfirmedRechargeScheduler {
      */
     @Scheduled(fixedRateString = "${scheduler.confirmar-recarga.intervalo-ms:30000}")
     public void executar() {
+        if (!enabled) {
+            log.debug("Job ConfirmarRecarga desativado (scheduler.confirmar-recarga.enabled=false)");
+            return;
+        }
         log.debug("Iniciando job ConfirmarRecarga");
 
         List<CreditRequest> solicitacoes = solDistribuicoesRepository.findElegiveisParaConfirmacao(
