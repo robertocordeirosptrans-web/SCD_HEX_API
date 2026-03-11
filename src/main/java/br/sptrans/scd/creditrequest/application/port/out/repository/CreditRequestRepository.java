@@ -1,59 +1,57 @@
 package br.sptrans.scd.creditrequest.application.port.out.repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.repository.query.Param;
+import br.sptrans.scd.creditrequest.domain.CreditRequest;
 
-import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestEJpa;
-import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestEJpaKey;
+/**
+ * Porta de saída (output port) para persistência de CreditRequest.
+ * Implementada pelo adapter JPA (CreditRequestAdapterJpa).
+ */
+public interface CreditRequestRepository {
 
-public interface CreditRequestRepository extends JpaRepository<CreditRequestEJpa, CreditRequestEJpaKey>,
-        JpaSpecificationExecutor<CreditRequestEJpa> {
+    Optional<CreditRequest> findByNumSolicitacaoAndCodCanal(Long numSolicitacao, String codCanal);
 
-    /**
-     * Busca por número de solicitação e código de canal.
-     */
-    Optional< CreditRequestEJpa> findByNumSolicitacaoAndCodCanal(
-            Long numSolicitacao,
-            String codCanal);
+    List<CreditRequest> findByCanalAndSituacao(String codCanal, String codSituacao);
 
-    /**
-     * Lista por código de canal e situação.
-     */
-    List<CreditRequestEJpa> findByCanalAndSituacao(
-            String codCanal,
-            String codSituacao);
-
-    /**
-     * Verifica se já existe um pedido com o numSolicitacao informado em
-     * qualquer canal.
-     */
     boolean existsByNumSolicitacao(Long numSolicitacao);
 
-    /**
-     * Verifica se já existe um lote com o numLote informado para um dado canal.
-     */
-    boolean existsByNumLoteAndCodCanal(@Param("numLote") String numLote, String codCanal);
+    boolean existsByNumLoteAndCodCanal(String numLote, String codCanal);
+
+    CreditRequest findElegiveisParaLiberacao(String codSituacao, LocalDateTime dtInicio, LocalDateTime dtFim);
+
+    CreditRequest findElegiveisParaProcessamento(String codSituacao);
+
+    CreditRequest findElegiveisParaConfirmacao(String codSituacao);
+
+    void update(Long numSolicitacao, String codCanal, CreditRequest creditRequest);
+
+    Optional<CreditRequest> findByCodTipoDocumentoAndIdUsuarioCadastro(String codTipoDocumento, Long idUsuarioCadastro);
 
     /**
-     * Busca solicitações elegíveis para liberação de recarga.
+     * Busca paginada por cursor com filtros dinâmicos.
      */
-    CreditRequestEJpa findElegiveisParaLiberacao(
+    List<CreditRequest> findWithCursor(
+            Long cursorNumSolicitacao,
+            String cursorCodCanal,
+            String codCanal,
             String codSituacao,
+            String numLote,
+            String codFormaPagto,
             LocalDateTime dtInicio,
-            LocalDateTime dtFim);
-
-    /**
-     * Busca solicitações elegíveis para processamento de recarga.
-     */
-    CreditRequestEJpa findElegiveisParaProcessamento(String codSituacao);
-
-    /**
-     * Busca solicitações elegíveis para confirmação de retorno do HM.
-     */
-    CreditRequestEJpa findElegiveisParaConfirmacao(String codSituacao);
+            LocalDateTime dtFim,
+            LocalDateTime dtLiberacaoEfetivaInicio,
+            LocalDateTime dtLiberacaoEfetivaFim,
+            LocalDateTime dtPagtoEconomicaInicio,
+            LocalDateTime dtPagtoEconomicaFim,
+            LocalDateTime dtFinanceiraInicio,
+            LocalDateTime dtFinanceiraFim,
+            LocalDateTime dtAlteracaoInicio,
+            LocalDateTime dtAlteracaoFim,
+            BigDecimal vlTotalMin,
+            BigDecimal vlTotalMax,
+            int limit);
 }
