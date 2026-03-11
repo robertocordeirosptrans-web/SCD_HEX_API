@@ -2,12 +2,12 @@ package br.sptrans.scd.creditrequest.domain;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 
-
-
+@Component
 public class SearchModeClassifier {
 
     private static final Logger log = LoggerFactory.getLogger(SearchModeClassifier.class);

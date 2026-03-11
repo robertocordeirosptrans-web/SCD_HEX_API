@@ -284,7 +284,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             String codFormaPagto, BigDecimal vlPago,
             LocalDateTime dtConfirmaPagto, LocalDateTime dtAceite) {
 
-        List<CreditRequestItemsEJpa> itens = itemRepository.findByNumSolicitacaoAndCodCanal(
+        List<CreditRequestItemsEJpa> itens = itemRepository.findById_NumSolicitacaoAndCodCanal(
                 numSolicitacao, codCanal);
         if (itens.isEmpty()) {
             log.warn("Nenhum item encontrado para a solicitação {} e canal {}", numSolicitacao, codCanal);
@@ -448,7 +448,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 String codCanal = parts[1];
 
                 List<CreditRequestItemsEJpa> itens = itemRepository
-                        .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
+                        .findById_NumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
 
                 if (!itens.isEmpty()) {
                     BigDecimal totalCalculado = itens.stream()

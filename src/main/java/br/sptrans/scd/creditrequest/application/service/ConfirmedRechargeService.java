@@ -57,7 +57,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
         log.debug("Confirmando recarga para solicitação {}/{}", numSolicitacao, codCanal);
 
         List<CreditRequestItemsEJpa> itens = itemRepository
-                .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
+                .findById_NumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
 
         if (itens.isEmpty()) {
             log.warn("Nenhum item encontrado para solicitação {}/{}", numSolicitacao, codCanal);

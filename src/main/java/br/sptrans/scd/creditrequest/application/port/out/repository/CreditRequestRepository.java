@@ -21,15 +21,30 @@ public interface CreditRequestRepository {
 
     boolean existsByNumLoteAndCodCanal(String numLote, String codCanal);
 
-    CreditRequest findElegiveisParaLiberacao(String codSituacao, LocalDateTime dtInicio, LocalDateTime dtFim);
+    List<CreditRequest> findElegiveisParaLiberacao(String codSituacao, LocalDateTime dtInicio, LocalDateTime dtFim, int limit);
 
     CreditRequest findElegiveisParaProcessamento(String codSituacao);
 
-    CreditRequest findElegiveisParaConfirmacao(String codSituacao);
+    List<CreditRequest> findElegiveisParaConfirmacao(String codSituacao, int limit);
 
     void update(Long numSolicitacao, String codCanal, CreditRequest creditRequest);
 
     Optional<CreditRequest> findByCodTipoDocumentoAndIdUsuarioCadastro(String codTipoDocumento, Long idUsuarioCadastro);
+
+    /**
+     * Busca específica por numSolicitacao (fast path, sem paginação).
+     */
+    List<CreditRequest> findByNumSolicitacaoSpecific(Long numSolicitacao, String codCanal);
+
+    /**
+     * Busca por código de produto com filtros de data.
+     */
+    List<CreditRequest> findByCodProduto(
+            String codProduto,
+            String codCanal,
+            LocalDateTime dtInicio,
+            LocalDateTime dtFim,
+            int limit);
 
     /**
      * Busca paginada por cursor com filtros dinâmicos.

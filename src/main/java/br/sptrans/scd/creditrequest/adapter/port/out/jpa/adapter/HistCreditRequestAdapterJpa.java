@@ -1,4 +1,4 @@
-package br.sptrans.scd.creditrequest.adapter.port.out.jpa;
+package br.sptrans.scd.creditrequest.adapter.port.out.jpa.adapter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

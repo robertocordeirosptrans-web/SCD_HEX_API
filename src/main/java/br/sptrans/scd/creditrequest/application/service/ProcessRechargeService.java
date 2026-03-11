@@ -72,7 +72,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
         log.debug("Processando recarga para solicitação {}/{}", numSolicitacao, codCanal);
 
         List<CreditRequestItemsEJpa> itens = itemRepository
-                .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
+                .findById_NumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
 
         if (itens.isEmpty()) {
             log.warn("Nenhum item encontrado para solicitação {}/{}", numSolicitacao, codCanal);
@@ -182,7 +182,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
                 numSolicitacao, numSolicitacaoItem);
 
         List<CreditRequestItemsEJpa> todosItens = itemRepository
-                .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
+                .findById_NumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
         consolidarStatusSolicitacao(numSolicitacao, codCanal, todosItens);
     }
 

@@ -1,4 +1,4 @@
-package br.sptrans.scd.creditrequest.adapter.port.out.jpa;
+package br.sptrans.scd.creditrequest.adapter.port.out.jpa.adapter;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -58,14 +58,14 @@ public class CreditRequestAdapterJpa implements CreditRequestRepository {
     }
 
     @Override
-    public CreditRequest findElegiveisParaLiberacao(String codSituacao, LocalDateTime dtInicio, LocalDateTime dtFim) {
+    public List<CreditRequest> findElegiveisParaLiberacao(String codSituacao, LocalDateTime dtInicio, LocalDateTime dtFim, int limit) {
         String sql = """
                 SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
                 WHERE s.COD_SITUACAO = ?
                   AND s.DT_SOLICITACAO >= ? AND s.DT_SOLICITACAO <= ?
+                FETCH FIRST ? ROWS ONLY
                 """;
-        List<CreditRequest> result = jdbc.query(sql, this::mapRow, codSituacao, dtInicio, dtFim);
-        return result.stream().findFirst().orElse(null);
+        return jdbc.query(sql, this::mapRow, codSituacao, dtInicio, dtFim, limit);
     }
 
     @Override
@@ -79,13 +79,52 @@ public class CreditRequestAdapterJpa implements CreditRequestRepository {
     }
 
     @Override
-    public CreditRequest findElegiveisParaConfirmacao(String codSituacao) {
+    public List<CreditRequest> findElegiveisParaConfirmacao(String codSituacao, int limit) {
         String sql = """
                 SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
                 WHERE s.COD_SITUACAO = ?
+                FETCH FIRST ? ROWS ONLY
                 """;
-        List<CreditRequest> result = jdbc.query(sql, this::mapRow, codSituacao);
-        return result.stream().findFirst().orElse(null);
+        return jdbc.query(sql, this::mapRow, codSituacao, limit);
+    }
+
+    // ── Buscas específicas ─────────────────────────────────────────
+
+    @Override
+    public List<CreditRequest> findByNumSolicitacaoSpecific(Long numSolicitacao, String codCanal) {
+        var sql = new StringBuilder("""
+                SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
+                WHERE s.NUM_SOLICITACAO = ?
+                """);
+        var params = new ArrayList<>();
+        params.add(numSolicitacao);
+        if (codCanal != null) {
+            sql.append(" AND s.COD_CANAL = ?");
+            params.add(codCanal);
+        }
+        return jdbc.query(sql.toString(), this::mapRow, params.toArray());
+    }
+
+    @Override
+    public List<CreditRequest> findByCodProduto(
+            String codProduto, String codCanal,
+            LocalDateTime dtInicio, LocalDateTime dtFim, int limit) {
+        var sql = new StringBuilder("""
+                SELECT s.* FROM SPTRANSDBA.SOL_DISTRIBUICOES s
+                INNER JOIN SPTRANSDBA.SOL_DISTRIBUICOES_ITENS i
+                    ON s.NUM_SOLICITACAO = i.NUM_SOLICITACAO
+                   AND s.COD_CANAL = i.COD_CANAL
+                WHERE i.COD_PRODUTO = ?
+                """);
+        var params = new ArrayList<>();
+        params.add(codProduto);
+        appendIfNotNull(sql, params, "AND s.COD_CANAL = ?", codCanal);
+        appendIfNotNull(sql, params, "AND s.DT_SOLICITACAO >= ?", dtInicio);
+        appendIfNotNull(sql, params, "AND s.DT_SOLICITACAO <= ?", dtFim);
+        sql.append(" ORDER BY s.NUM_SOLICITACAO DESC, s.COD_CANAL ASC");
+        sql.append(" FETCH FIRST ? ROWS ONLY");
+        params.add(limit);
+        return jdbc.query(sql.toString(), this::mapRow, params.toArray());
     }
 
     // ── Busca paginada por cursor ────────────────────────────────────
