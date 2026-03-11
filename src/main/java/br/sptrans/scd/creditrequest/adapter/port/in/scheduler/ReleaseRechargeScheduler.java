@@ -7,10 +7,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.application.port.in.ReleaseRechargeUseCase;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
-import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ReleaseRechargeScheduler {
 
     private final CreditRequestRepository creditRequestRepository;
+    private final CreditRequestItemsRepository itemRepository;
     private final ReleaseRechargeUseCase releaseRechargeUseCase;
 
     /**
@@ -126,7 +128,8 @@ public class ReleaseRechargeScheduler {
      * {@link SituationCreditRequestItems#PAGO}.
      */
     boolean possuiItensElegiveis(CreditRequest solicitacao) {
-        List<CreditRequestItems> itens = solicitacao.getItens();
+        List<CreditRequestItemsEJpa> itens = itemRepository.findById_NumSolicitacaoAndCodCanal(
+                solicitacao.getNumSolicitacao(), solicitacao.getCodCanal());
         if (itens == null || itens.isEmpty()) {
             return false;
         }

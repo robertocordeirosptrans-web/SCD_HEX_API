@@ -175,7 +175,6 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
         item.setFlgLiminarLoja(e.getFlgLiminarLoja());
         item.setCodProdutoHm(e.getCodProdutoHm());
         item.setQtdDiasUtilizados(e.getQtdDiasUtilizados());
-        item.setCodMidia(e.getCodMidia());
         return item;
     }
 }

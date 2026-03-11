@@ -36,11 +36,19 @@ public class CreditRequestAdapterJpa implements CreditRequestRepository {
 
     @Override
     public List<CreditRequest> findByCanalAndSituacao(String codCanal, String codSituacao) {
-        String sql = """
-                SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
-                WHERE s.COD_CANAL = ? AND s.COD_SITUACAO = ?
-                """;
-        return jdbc.query(sql, this::mapRow, codCanal, codSituacao);
+        if (codCanal != null) {
+            String sql = """
+                    SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
+                    WHERE s.COD_CANAL = ? AND s.COD_SITUACAO = ?
+                    """;
+            return jdbc.query(sql, this::mapRow, codCanal, codSituacao);
+        } else {
+            String sql = """
+                    SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
+                    WHERE s.COD_SITUACAO = ?
+                    """;
+            return jdbc.query(sql, this::mapRow, codSituacao);
+        }
     }
 
     @Override

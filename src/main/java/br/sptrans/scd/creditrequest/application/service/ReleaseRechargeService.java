@@ -64,7 +64,7 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
         String origemTransicao = comando.idOrigemTransicao() != null
                 ? comando.idOrigemTransicao() : ORIGEM_TRANSICAO;
 
-        liberarRecargaPorSolicitacao(solicitacao.getNumSolicitacao(), solicitacao.getCodCanal());
+        liberarRecargaPorSolicitacao(solicitacao.getNumSolicitacao(), solicitacao.getCodCanal(), origemTransicao);
     }
 
     @Override
@@ -91,6 +91,12 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
     @Override
     @Transactional
     public void liberarRecargaPorSolicitacao(Long numSolicitacao, String codCanal) {
+        liberarRecargaPorSolicitacao(numSolicitacao, codCanal, ORIGEM_TRANSICAO);
+    }
+
+    @Override
+    @Transactional
+    public void liberarRecargaPorSolicitacao(Long numSolicitacao, String codCanal, String origemTransicao) {
         log.debug("Liberando recarga para solicitação {}/{}", numSolicitacao, codCanal);
 
         List<CreditRequestItemsEJpa> itens = itemRepository
@@ -112,7 +118,7 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
             item.setDtManutencao(LocalDateTime.now());
             itemRepository.save(item);
 
-            historyService.saveItemStatusHistory(toDomain(item), ORIGEM_TRANSICAO);
+            historyService.saveItemStatusHistory(toDomain(item), origemTransicao);
             liberados++;
 
             log.info("Item liberado - Solicitação={}, Item={}, NovoStatus={}",
@@ -122,7 +128,7 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
         }
 
         if (liberados > 0) {
-            consolidarStatusSolicitacao(numSolicitacao, codCanal, itens);
+            consolidarStatusSolicitacao(numSolicitacao, codCanal, itens, origemTransicao);
         }
 
         log.debug("Liberação de recarga concluída para solicitação {}/{} - {} itens liberados",
@@ -130,7 +136,7 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
     }
 
     private void consolidarStatusSolicitacao(Long numSolicitacao, String codCanal,
-            List<CreditRequestItemsEJpa> itens) {
+            List<CreditRequestItemsEJpa> itens, String origemTransicao) {
 
         CreditRequest solicitacao = creditRequestRepository
                 .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal)
@@ -152,7 +158,7 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
             String statusAnterior = solicitacao.getCodSituacao();
             solicitacao.setCodSituacao(novoStatus);
             creditRequestRepository.update(numSolicitacao, codCanal, solicitacao);
-            historyService.saveRequestStatusHistory(solicitacao, numSolicitacao, codCanal, ORIGEM_TRANSICAO);
+            historyService.saveRequestStatusHistory(solicitacao, numSolicitacao, codCanal, origemTransicao);
 
             log.info("Status da solicitação {}/{} consolidado - StatusAnterior={}, NovoStatus={}",
                     numSolicitacao, codCanal, statusAnterior, novoStatus);
@@ -205,7 +211,6 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
         item.setFlgLiminarLoja(e.getFlgLiminarLoja());
         item.setCodProdutoHm(e.getCodProdutoHm());
         item.setQtdDiasUtilizados(e.getQtdDiasUtilizados());
-        item.setCodMidia(e.getCodMidia());
         return item;
     }
 }
