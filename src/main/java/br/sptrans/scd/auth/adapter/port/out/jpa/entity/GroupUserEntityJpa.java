@@ -12,7 +12,11 @@ import jakarta.persistence.MapsId;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "GRUPO_USUARIOS", schema = "SPTRANSDBA")
 public class GroupUserEntityJpa {
@@ -25,7 +29,7 @@ public class GroupUserEntityJpa {
 
     @Column(name = "DT_CADASTRO")
     private LocalDateTime dtCadastro;
-    @Column(name = "DT_MANUTENCAO")
+    @Column(name = "DT_MODI")
     private LocalDateTime dtManutencao;
     @Column(name = "ID_USUARIO_MANUTENCAO")
     private Long idUsuarioManutencao;

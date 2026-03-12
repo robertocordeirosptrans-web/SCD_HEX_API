@@ -24,7 +24,7 @@ public class ProfileAdapterJpa implements ProfileRepository {
 	@Override
 	public Optional<Profile> findById(String codPerfil) {
 		List<Object[]> rows = em.createNativeQuery("""
-				SELECT COD_PERFIL, NOM_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MANUTENCAO
+				SELECT COD_PERFIL, NOM_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MODI
 				FROM SPTRANSDBA.PERFIS
 				WHERE COD_PERFIL = :codPerfil
 				""")
@@ -35,9 +35,9 @@ public class ProfileAdapterJpa implements ProfileRepository {
 		}
 		Object[] row = rows.get(0);
 		Profile perfil = new Profile();
-		perfil.setCodPerfil((String) row[0]);
-		perfil.setNomPerfil((String) row[1]);
-		perfil.setCodStatus((String) row[2]);
+		perfil.setCodPerfil(row[0] != null ? row[0].toString() : null);
+		perfil.setNomPerfil(row[1] != null ? row[1].toString() : null);
+		perfil.setCodStatus(row[2] != null ? row[2].toString() : null);
 		perfil.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
 		perfil.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
 		return Optional.of(perfil);
@@ -55,7 +55,7 @@ public class ProfileAdapterJpa implements ProfileRepository {
 
 	@Override
 	public List<Profile> listProfile(String codStatus) {
-		String sql = "SELECT COD_PERFIL, NOM_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MANUTENCAO, DT_INICIO_VALIDADE, DT_FIM_VALIDADE FROM SPTRANSDBA.PERFIS";
+		String sql = "SELECT COD_PERFIL, NOM_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MODI FROM SPTRANSDBA.PERFIS";
 		if (codStatus != null) {
 			sql += " WHERE COD_STATUS = :status";
 		}
@@ -66,12 +66,12 @@ public class ProfileAdapterJpa implements ProfileRepository {
 		List<Object[]> rows = query.getResultList();
 		return rows.stream().map(row -> {
 			Profile perfil = new Profile();
-			perfil.setCodPerfil((String) row[0]);
-			perfil.setNomPerfil((String) row[1]);
-			perfil.setCodStatus((String) row[2]);
+			perfil.setCodPerfil(row[0] != null ? row[0].toString() : null);
+			perfil.setNomPerfil(row[1] != null ? row[1].toString() : null);
+			perfil.setCodStatus(row[2] != null ? row[2].toString() : null);
 			perfil.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
 			perfil.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
-			// Se necessário, adicione setters para dtInicioValidade e dtFimValidade
+			// Removido campos de validade inexistentes
 			return perfil;
 		}).toList();
 	}
@@ -79,7 +79,7 @@ public class ProfileAdapterJpa implements ProfileRepository {
 	@Override
 	public void save(Profile perfil) {
 		em.createNativeQuery("""
-				INSERT INTO SPTRANSDBA.PERFIS (COD_PERFIL, NOM_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MANUTENCAO)
+				INSERT INTO SPTRANSDBA.PERFIS (COD_PERFIL, NOM_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MODI)
 				VALUES (:codPerfil, :nomPerfil, :codStatus, :idUsuarioManutencao, :dtManutencao)
 			""")
 			.setParameter("codPerfil", perfil.getCodPerfil())
@@ -93,7 +93,7 @@ public class ProfileAdapterJpa implements ProfileRepository {
 	@Override
 	public void updateStatus(String codPerfil, String codStatus, Long idUsuarioManutencao) {
 		em.createNativeQuery("""
-				UPDATE SPTRANSDBA.PERFIS SET COD_STATUS = :codStatus, ID_USUARIO_MANUTENCAO = :idUsuarioManutencao, DT_MANUTENCAO = CURRENT_DATE
+				UPDATE SPTRANSDBA.PERFIS SET COD_STATUS = :codStatus, ID_USUARIO_MANUTENCAO = :idUsuarioManutencao, DT_MODI = CURRENT_DATE
 				WHERE COD_PERFIL = :codPerfil
 			""")
 			.setParameter("codStatus", codStatus)
@@ -202,12 +202,12 @@ public class ProfileAdapterJpa implements ProfileRepository {
 				.getResultList();
 		return rows.stream().map(row -> {
 		    UserProfileId id = new UserProfileId();
-		    id.setIdUsuario(row[0] != null ? ((Number) row[0]).longValue() : null);
-		    id.setCodPerfil((String) row[1]);
+            id.setIdUsuario(row[0] != null ? ((Number) row[0]).longValue() : null);
+            id.setCodPerfil(row[1] != null ? row[1].toString() : null);
 		    // Se houver campos de validade, adicione aqui
 		    UserProfile up = new UserProfile();
 		    up.setId(id);
-		    up.setCodStatus((String) row[2]);
+            up.setCodStatus(row[2] != null ? row[2].toString() : null);
 		    up.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
 		    up.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
 		    // Se houver campos de validade, adicione setters aqui

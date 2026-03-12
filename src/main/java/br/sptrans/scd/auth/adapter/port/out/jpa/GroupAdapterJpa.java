@@ -144,7 +144,7 @@ public class GroupAdapterJpa implements GroupRepository {
     @SuppressWarnings("unchecked")
     public List<GroupUser> listGroupUsers() {
         List<Object[]> rows = em.createNativeQuery("""
-                SELECT gu.ID_USUARIO, gu.COD_GRUPO, gu.COD_STATUS, gu.ID_USUARIO_MANUTENCAO, gu.DT_MANUTENCAO
+                SELECT gu.ID_USUARIO, gu.COD_GRUPO, gu.COD_STATUS, gu.ID_USUARIO_MANUTENCAO, gu.DT_MODI
                 FROM SPTRANSDBA.GRUPO_USUARIOS gu
                 ORDER BY gu.COD_GRUPO, gu.ID_USUARIO
                 """)
@@ -152,9 +152,9 @@ public class GroupAdapterJpa implements GroupRepository {
         return rows.stream().map(row -> {
             GroupUser gu = new GroupUser();
             gu.setId(new GroupUserKey(
-                    row[0] != null ? ((Number) row[0]).longValue() : null,
-                    (String) row[1]));
-            gu.setCodStatus((String) row[2]);
+                row[0] != null ? ((Number) row[0]).longValue() : null,
+                row[1] != null ? row[1].toString() : null));
+            gu.setCodStatus(row[2] != null ? row[2].toString() : null);
             gu.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
             gu.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
             return gu;
