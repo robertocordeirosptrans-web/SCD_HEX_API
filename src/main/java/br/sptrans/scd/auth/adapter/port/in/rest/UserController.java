@@ -1,5 +1,8 @@
 package br.sptrans.scd.auth.adapter.port.in.rest;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.port.in.rest.dto.PageResponse;
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserRequestDTO;
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserResponseDTO;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
@@ -16,13 +20,38 @@ import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.CreateUserC
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.StatusChangeCommand;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.UpdateUserCommand;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.shared.version.ApiVersionConfig;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping(ApiVersionConfig.API_V1_PATH + "/users")
+@Tag(name = "Usuario v1", description = "Endpoints Gerenciamento de Usuarios")
 @RequiredArgsConstructor
 public class UserController {
 	private final UserManagementUseCase userManagementUseCase;
+
+	@GetMapping
+	@Operation(summary = "Lista usuários com paginação, filtros e ordenação")
+	public PageResponse<UserResponseDTO> listUsers(
+			@Parameter(description = "Número da página (0-based)") @RequestParam(defaultValue = "0") int page,
+			@Parameter(description = "Tamanho da página") @RequestParam(defaultValue = "20") int size,
+			@Parameter(description = "Campo de ordenação (idUsuario, codLogin, nomUsuario, nomEmail, codStatus, dtCriacao, dtModi, dtUltimoAcesso)") @RequestParam(defaultValue = "idUsuario") String sortBy,
+			@Parameter(description = "Direção da ordenação (ASC ou DESC)") @RequestParam(defaultValue = "ASC") String sortDir,
+			@Parameter(description = "Filtro por status (A=Ativo, B=Bloqueado, I=Inativo)") @RequestParam(required = false) String codStatus,
+			@Parameter(description = "Busca por nome, login, e-mail ou CPF") @RequestParam(required = false) String search
+	) {
+		String dbSortColumn = mapSortColumn(sortBy);
+
+		List<User> users = userManagementUseCase.listUsersPaginated(codStatus, search, page, size, dbSortColumn, sortDir);
+		long totalElements = userManagementUseCase.countUsers(codStatus, search);
+
+		List<UserResponseDTO> content = users.stream().map(this::toResponseDTO).toList();
+
+		return PageResponse.of(content, page, size, totalElements);
+	}
 
 	@PostMapping
 	public UserResponseDTO createUser(@RequestBody UserRequestDTO dto) {
@@ -71,5 +100,18 @@ public class UserController {
 			user.getDtModi(),
 			user.getDtExpiraSenha()
 		);
+	}
+
+	private String mapSortColumn(String sortBy) {
+		return switch (sortBy) {
+			case "codLogin" -> "COD_LOGIN";
+			case "nomUsuario" -> "NOM_USUARIO";
+			case "nomEmail" -> "NOM_EMAIL";
+			case "codStatus" -> "COD_STATUS";
+			case "dtCriacao" -> "DT_CRIACAO";
+			case "dtModi" -> "DT_MODI";
+			case "dtUltimoAcesso" -> "DT_ULTIMO_ACESSO";
+			default -> "ID_USUARIO";
+		};
 	}
 }

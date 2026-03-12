@@ -3,6 +3,8 @@ package br.sptrans.scd.auth.application.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class UserManagementService implements UserManagementUseCase {
 
     // ── Criando Usuario ────────────────────────────────────────────────────────────
     @Override
+    @CacheEvict(value = "usuarios", allEntries = true)
     public User createUser(CreateUserCommand cmd) {
         // COD_LOGIN único
         if (userRepository.existsByLogin(cmd.codLogin())) {
@@ -69,6 +72,7 @@ public class UserManagementService implements UserManagementUseCase {
 
     // ── updateUser ────────────────────────────────────────────────────────────
     @Override
+    @CacheEvict(value = "usuarios", allEntries = true)
     public User updateUser(UpdateUserCommand cmd) {
         User user = findUserOrThrow(cmd.idUsuario());
 
@@ -85,6 +89,7 @@ public class UserManagementService implements UserManagementUseCase {
 
     // ── deactivateUser ────────────────────────────────────────────────────────
     @Override
+    @CacheEvict(value = "usuarios", allEntries = true)
     public void deactivateUser(StatusChangeCommand cmd) {
         User user = findUserOrThrow(cmd.idUsuario());
 
@@ -102,6 +107,7 @@ public class UserManagementService implements UserManagementUseCase {
 
     // ── reactivateUser ────────────────────────────────────────────────────────
     @Override
+    @CacheEvict(value = "usuarios", allEntries = true)
     public void reactivateUser(StatusChangeCommand cmd) {
         User user = findUserOrThrow(cmd.idUsuario());
 
@@ -115,6 +121,7 @@ public class UserManagementService implements UserManagementUseCase {
 
     // ── unblockUser ───────────────────────────────────────────────────────────
     @Override
+    @CacheEvict(value = "usuarios", allEntries = true)
     public void unblockUser(StatusChangeCommand cmd) {
         User user = findUserOrThrow(cmd.idUsuario());
 
@@ -128,6 +135,7 @@ public class UserManagementService implements UserManagementUseCase {
 
     // ── adminResetPassword ────────────────────────────────────────────────────
     @Override
+    @CacheEvict(value = "usuarios", allEntries = true)
     public String adminResetPassword(AdminResetPasswordCommand cmd) {
         User user = findUserOrThrow(cmd.idUsuario());
 
@@ -165,6 +173,21 @@ public class UserManagementService implements UserManagementUseCase {
     @Transactional(readOnly = true)
     public List<User> listUsers(String codStatus) {
         return userRepository.findAll(codStatus);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "usuarios", key = "(#codStatus ?: 'ALL') + '_' + (#search ?: '') + '_' + #page + '_' + #size + '_' + #sortBy + '_' + #sortDir")
+    public List<User> listUsersPaginated(String codStatus, String search, int page, int size, String sortBy, String sortDir) {
+        int offset = page * size;
+        return userRepository.findAllPaginated(codStatus, search, offset, size, sortBy, sortDir);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "usuarios", key = "'count_' + (#codStatus ?: 'ALL') + '_' + (#search ?: '')")
+    public long countUsers(String codStatus, String search) {
+        return userRepository.countAll(codStatus, search);
     }
 
     @Override

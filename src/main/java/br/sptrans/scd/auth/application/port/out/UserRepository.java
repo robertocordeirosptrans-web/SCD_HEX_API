@@ -76,6 +76,16 @@ public interface UserRepository {
     List<User> findAll(String codStatus);
 
     /**
+     * Busca paginada de usuários com filtros, ordenação e contagem total.
+     */
+    List<User> findAllPaginated(String codStatus, String search, int offset, int limit, String sortBy, String sortDir);
+
+    /**
+     * Conta total de usuários aplicando os mesmos filtros da busca paginada.
+     */
+    long countAll(String codStatus, String search);
+
+    /**
      * Verifica se o usuário possui sessão ativa (DT_ULTIMO_ACESSO > now - 30
      * min). Usado antes de inativar para evitar interrupção abrupta de sessão.
      */

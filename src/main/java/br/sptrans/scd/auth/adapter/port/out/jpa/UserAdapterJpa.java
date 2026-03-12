@@ -288,6 +288,80 @@ public class UserAdapterJpa implements UserRepository {
 		return users;
 	}
 
+	private static final Set<String> ALLOWED_SORT_COLUMNS = Set.of(
+		"ID_USUARIO", "COD_LOGIN", "NOM_USUARIO", "NOM_EMAIL",
+		"COD_STATUS", "DT_CRIACAO", "DT_MODI", "DT_ULTIMO_ACESSO"
+	);
+
+	@Override
+	public List<User> findAllPaginated(String codStatus, String search, int offset, int limit, String sortBy, String sortDir) {
+		StringBuilder sql = new StringBuilder(USUARIOS_SELECT);
+		List<String> conditions = new ArrayList<>();
+
+		if (codStatus != null && !codStatus.isBlank()) {
+			conditions.add("COD_STATUS = :status");
+		}
+		if (search != null && !search.isBlank()) {
+			conditions.add("(UPPER(NOM_USUARIO) LIKE :search OR UPPER(COD_LOGIN) LIKE :search OR UPPER(NOM_EMAIL) LIKE :search OR UPPER(COD_CPF) LIKE :search)");
+		}
+
+		if (!conditions.isEmpty()) {
+			sql.append(" WHERE ").append(String.join(" AND ", conditions));
+		}
+
+		// Ordenação segura — só colunas permitidas
+		String safeSort = ALLOWED_SORT_COLUMNS.contains(sortBy.toUpperCase()) ? sortBy.toUpperCase() : "ID_USUARIO";
+		String safeDir = "DESC".equalsIgnoreCase(sortDir) ? "DESC" : "ASC";
+		sql.append(" ORDER BY ").append(safeSort).append(" ").append(safeDir);
+
+		sql.append(" OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY");
+
+		var query = em.createNativeQuery(sql.toString());
+		if (codStatus != null && !codStatus.isBlank()) {
+			query.setParameter("status", codStatus);
+		}
+		if (search != null && !search.isBlank()) {
+			query.setParameter("search", "%" + search.toUpperCase() + "%");
+		}
+		query.setParameter("offset", offset);
+		query.setParameter("limit", limit);
+
+		@SuppressWarnings("unchecked")
+		List<Object[]> rows = query.getResultList();
+		List<User> users = new ArrayList<>();
+		for (Object row : rows) {
+			users.add(mapToUser((Object[]) row));
+		}
+		return users;
+	}
+
+	@Override
+	public long countAll(String codStatus, String search) {
+		StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM SPTRANSDBA.USUARIOS");
+		List<String> conditions = new ArrayList<>();
+
+		if (codStatus != null && !codStatus.isBlank()) {
+			conditions.add("COD_STATUS = :status");
+		}
+		if (search != null && !search.isBlank()) {
+			conditions.add("(UPPER(NOM_USUARIO) LIKE :search OR UPPER(COD_LOGIN) LIKE :search OR UPPER(NOM_EMAIL) LIKE :search OR UPPER(COD_CPF) LIKE :search)");
+		}
+
+		if (!conditions.isEmpty()) {
+			sql.append(" WHERE ").append(String.join(" AND ", conditions));
+		}
+
+		var query = em.createNativeQuery(sql.toString());
+		if (codStatus != null && !codStatus.isBlank()) {
+			query.setParameter("status", codStatus);
+		}
+		if (search != null && !search.isBlank()) {
+			query.setParameter("search", "%" + search.toUpperCase() + "%");
+		}
+
+		return ((Number) query.getSingleResult()).longValue();
+	}
+
 	@Override
 	public boolean hasActiveSession(Long idUsuario) {
 		Long count = ((Number) em.createNativeQuery("""

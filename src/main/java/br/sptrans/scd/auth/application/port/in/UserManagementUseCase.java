@@ -97,6 +97,16 @@ public interface UserManagementUseCase {
     List<User> listUsers(String codStatus);
 
     /**
+     * Lista usuários com paginação, filtros e ordenação.
+     */
+    List<User> listUsersPaginated(String codStatus, String search, int page, int size, String sortBy, String sortDir);
+
+    /**
+     * Conta total de usuários com os filtros aplicados.
+     */
+    long countUsers(String codStatus, String search);
+
+    /**
      * Busca usuário por ID com perfis, grupos e funcionalidades efetivas
      * carregados.
      */
