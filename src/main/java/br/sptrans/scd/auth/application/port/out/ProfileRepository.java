@@ -6,6 +6,8 @@ import java.util.Optional;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.FunctionalityKey;
 import br.sptrans.scd.auth.domain.Profile;
+import br.sptrans.scd.auth.domain.ProfileFunctionality;
+import br.sptrans.scd.auth.domain.UserProfile;
 
 
 /**
@@ -50,5 +52,15 @@ public interface ProfileRepository {
      * USUARIO_PERFIS.
      */
     long countUserActive(String codPerfil);
+
+    /**
+     * Lista todas as associações usuário-perfil.
+     */
+    List<UserProfile> listUserProfiles();
+
+    /**
+     * Lista todas as associações perfil-funcionalidade.
+     */
+    List<ProfileFunctionality> listProfileFunctionalities();
 
 }

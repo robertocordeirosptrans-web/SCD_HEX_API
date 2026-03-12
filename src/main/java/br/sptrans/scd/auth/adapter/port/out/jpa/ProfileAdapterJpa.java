@@ -9,6 +9,10 @@ import br.sptrans.scd.auth.application.port.out.ProfileRepository;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.FunctionalityKey;
 import br.sptrans.scd.auth.domain.Profile;
+import br.sptrans.scd.auth.domain.ProfileFunctionality;
+import br.sptrans.scd.auth.domain.ProfileFunctionalityKey;
+import br.sptrans.scd.auth.domain.UserProfile;
+import br.sptrans.scd.auth.domain.UserProfileId;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
@@ -184,5 +188,50 @@ public class ProfileAdapterJpa implements ProfileRepository {
 			.setParameter("codPerfil", codPerfil)
 			.getSingleResult()).longValue();
 		return count;
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<UserProfile> listUserProfiles() {
+		List<Object[]> rows = em.createNativeQuery("""
+				SELECT up.ID_USUARIO, up.COD_PERFIL, up.COD_STATUS, up.ID_USUARIO_MANUTENCAO, up.DT_MANUTENCAO
+				FROM SPTRANSDBA.USUARIO_PERFIS up
+				ORDER BY up.ID_USUARIO, up.COD_PERFIL
+				""")
+				.getResultList();
+		return rows.stream().map(row -> {
+			UserProfile up = new UserProfile(
+					new UserProfileId(
+							row[0] != null ? ((Number) row[0]).longValue() : null,
+							(String) row[1]),
+					row[3] != null ? ((Number) row[3]).longValue() : null,
+					(String) row[2],
+					row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null,
+					null, null, null);
+			return up;
+		}).toList();
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<ProfileFunctionality> listProfileFunctionalities() {
+		List<Object[]> rows = em.createNativeQuery("""
+				SELECT pf.COD_PERFIL, pf.COD_SISTEMA, pf.COD_MODULO, pf.COD_ROTINA, pf.COD_FUNCIONALIDADE, pf.ID_USUARIO_MANUTENCAO, pf.DT_MANUTENCAO
+				FROM SPTRANSDBA.PERFIL_FUNCIONALIDADES pf
+				ORDER BY pf.COD_PERFIL, pf.COD_FUNCIONALIDADE
+				""")
+				.getResultList();
+		return rows.stream().map(row -> {
+			ProfileFunctionality pf = new ProfileFunctionality();
+			pf.setId(new ProfileFunctionalityKey(
+					(String) row[1],
+					(String) row[2],
+					(String) row[3],
+					(String) row[4],
+					(String) row[0]));
+			pf.setIdUsuarioManutencao(row[5] != null ? ((Number) row[5]).longValue() : null);
+			pf.setDtInicioValidade(row[6] != null ? ((java.sql.Timestamp) row[6]).toLocalDateTime().toLocalDate() : null);
+			return pf;
+		}).toList();
 	}
 }

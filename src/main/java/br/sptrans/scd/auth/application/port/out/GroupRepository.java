@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import br.sptrans.scd.auth.domain.Group;
+import br.sptrans.scd.auth.domain.GroupUser;
 
 /**
  * Porta de Saída — repositório de Grupos. Tabela principal: SPTRANSDBA.GRUPOS.
@@ -47,4 +48,9 @@ public interface GroupRepository {
      * grupo via GRUPO_USUARIOS. Usado antes de inativar.
      */
     long countUserActive(String codGrupo);
+
+    /**
+     * Lista todas as associações grupo-usuário.
+     */
+    List<GroupUser> listGroupUsers();
 }

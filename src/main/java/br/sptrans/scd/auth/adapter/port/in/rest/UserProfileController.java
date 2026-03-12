@@ -1,15 +1,21 @@
 package br.sptrans.scd.auth.adapter.port.in.rest;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
+import br.sptrans.scd.auth.domain.UserProfile;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,6 +33,20 @@ public class UserProfileController {
 
     public UserProfileController(GroupProfileManagementUseCase groupProfileManagementUseCase) {
         this.groupProfileManagementUseCase = groupProfileManagementUseCase;
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Listar associações usuário-perfil", description = "Retorna uma lista paginada de todas as associações usuário-perfil")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de associações retornada com sucesso")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<PageResponse<UserProfile>> listUserProfiles(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<UserProfile> all = groupProfileManagementUseCase.listUserProfiles();
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @PostMapping

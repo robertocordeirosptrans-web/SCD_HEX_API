@@ -5,7 +5,10 @@ import java.util.Set;
 
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
+import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.Profile;
+import br.sptrans.scd.auth.domain.ProfileFunctionality;
+import br.sptrans.scd.auth.domain.UserProfile;
 
 /**
  * Porta de Entrada — Casos de uso de gestão de Grupos e Perfis.
@@ -102,6 +105,25 @@ public interface GroupProfileManagementUseCase {
      * Lista funcionalidades disponíveis para vinculação (todas ativas).
      */
     List<Functionality> listFunctionalities();
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // ASSOCIAÇÕES
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Lista todas as associações grupo-usuário.
+     */
+    List<GroupUser> listGroupUsers();
+
+    /**
+     * Lista todas as associações usuário-perfil.
+     */
+    List<UserProfile> listUserProfiles();
+
+    /**
+     * Lista todas as associações perfil-funcionalidade.
+     */
+    List<ProfileFunctionality> listProfileFunctionalities();
 
     // ══════════════════════════════════════════════════════════════════════════
     // Commands

@@ -9,7 +9,10 @@ import br.sptrans.scd.auth.application.port.out.GroupRepository;
 import br.sptrans.scd.auth.application.port.out.ProfileRepository;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
+import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.Profile;
+import br.sptrans.scd.auth.domain.ProfileFunctionality;
+import br.sptrans.scd.auth.domain.UserProfile;
 import br.sptrans.scd.shared.exception.BusinessException;
 import br.sptrans.scd.shared.exception.DuplicateResourceException;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
@@ -225,5 +228,20 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     @Override
     public List<Group> listGroups(String statusCode) {
         return groupRepository.listGroups(statusCode);
+    }
+
+    @Override
+    public List<GroupUser> listGroupUsers() {
+        return groupRepository.listGroupUsers();
+    }
+
+    @Override
+    public List<UserProfile> listUserProfiles() {
+        return profileRepository.listUserProfiles();
+    }
+
+    @Override
+    public List<ProfileFunctionality> listProfileFunctionalities() {
+        return profileRepository.listProfileFunctionalities();
     }
 }

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Repository;
 import br.sptrans.scd.auth.application.port.out.GroupRepository;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.GroupProfile;
+import br.sptrans.scd.auth.domain.GroupUser;
+import br.sptrans.scd.auth.domain.GroupUserKey;
 import br.sptrans.scd.auth.domain.Profile;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -138,7 +140,26 @@ public class GroupAdapterJpa implements GroupRepository {
                 .getSingleResult()).longValue();
         return count;
     }
-
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<GroupUser> listGroupUsers() {
+        List<Object[]> rows = em.createNativeQuery("""
+                SELECT gu.ID_USUARIO, gu.COD_GRUPO, gu.COD_STATUS, gu.ID_USUARIO_MANUTENCAO, gu.DT_MANUTENCAO
+                FROM SPTRANSDBA.GRUPO_USUARIOS gu
+                ORDER BY gu.COD_GRUPO, gu.ID_USUARIO
+                """)
+                .getResultList();
+        return rows.stream().map(row -> {
+            GroupUser gu = new GroupUser();
+            gu.setId(new GroupUserKey(
+                    row[0] != null ? ((Number) row[0]).longValue() : null,
+                    (String) row[1]));
+            gu.setCodStatus((String) row[2]);
+            gu.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
+            gu.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
+            return gu;
+        }).toList();
+    }
     // ── Helpers de mapeamento ─────────────────────────────────────────────────
     private Group mapearGrupo(Object[] row) {
         Group g = new Group();
