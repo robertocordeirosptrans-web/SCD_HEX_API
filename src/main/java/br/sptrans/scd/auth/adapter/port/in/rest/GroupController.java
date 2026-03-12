@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Group;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -60,9 +62,11 @@ public class GroupController {
         @ApiResponse(responseCode = "200", description = "Lista de grupos retornada com sucesso")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> getAllGroup() {
+    public ResponseEntity<PageResponse<Group>> getAllGroup(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         List<Group> grupos = groupProfileManagementUseCase.listGroups(null);
-        return ResponseEntity.ok(grupos);
+        return ResponseEntity.ok(PageResponse.fromList(grupos, page, size));
     }
 
     @GetMapping("/{codGrupo}")

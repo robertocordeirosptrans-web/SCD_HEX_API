@@ -30,6 +30,7 @@ import br.sptrans.scd.product.domain.ProductType;
 import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.product.domain.Species;
 import br.sptrans.scd.product.domain.Technology;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -85,9 +86,12 @@ public class ProductController {
     @GetMapping
     @Operation(summary = "Lista todos os produtos, com filtro opcional de status")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<List<Product>> findAllProducts(
-            @RequestParam(required = false) String codStatus) {
-        return ResponseEntity.ok(productUseCase.findAllProducts(codStatus));
+    public ResponseEntity<PageResponse<Product>> findAllProducts(
+            @RequestParam(required = false) String codStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<Product> all = productUseCase.findAllProducts(codStatus);
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @GetMapping("/{codProduto}")

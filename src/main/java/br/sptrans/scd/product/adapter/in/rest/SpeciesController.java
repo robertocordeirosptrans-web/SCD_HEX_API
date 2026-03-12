@@ -22,6 +22,7 @@ import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase.CreateSpeciesCommand;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase.UpdateSpeciesCommand;
 import br.sptrans.scd.product.domain.Species;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -70,9 +71,12 @@ public class SpeciesController {
 
     @GetMapping
     @Operation(summary = "Lista todas as espécies, com filtro opcional de status")
-    public ResponseEntity<List<Species>> findAllSpecies(
-            @RequestParam(required = false) String codStatus) {
-        return ResponseEntity.ok(speciesManagementUseCase.findAllSpecies(codStatus));
+    public ResponseEntity<PageResponse<Species>> findAllSpecies(
+            @RequestParam(required = false) String codStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<Species> all = speciesManagementUseCase.findAllSpecies(codStatus);
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @PatchMapping("/{codEspecie}/activate")

@@ -22,6 +22,7 @@ import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase.CreateFamilyCommand;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase.UpdateFamilyCommand;
 import br.sptrans.scd.product.domain.Family;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -70,9 +71,12 @@ public class FamilyController {
 
     @GetMapping
     @Operation(summary = "Lista todas as famílias, com filtro opcional de status")
-    public ResponseEntity<List<Family>> findAllFamilies(
-            @RequestParam(required = false) String codStatus) {
-        return ResponseEntity.ok(familyManagementUseCase.findAllFamilies(codStatus));
+    public ResponseEntity<PageResponse<Family>> findAllFamilies(
+            @RequestParam(required = false) String codStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<Family> all = familyManagementUseCase.findAllFamilies(codStatus);
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @PatchMapping("/{codFamilia}/activate")

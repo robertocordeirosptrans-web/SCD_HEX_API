@@ -23,6 +23,7 @@ import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.CreateRechargeLimitCommand;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.UpdateRechargeLimitCommand;
 import br.sptrans.scd.channel.domain.RechargeLimit;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -90,16 +91,20 @@ public class RechargeLimitController {
 
     @GetMapping
     @Operation(summary = "Lista limites de recarga com filtro opcional por canal ou produto")
-    public ResponseEntity<List<RechargeLimit>> findRechargeLimits(
+    public ResponseEntity<PageResponse<RechargeLimit>> findRechargeLimits(
             @RequestParam(required = false) String codCanal,
-            @RequestParam(required = false) String codProduto) {
+            @RequestParam(required = false) String codProduto,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<RechargeLimit> all;
         if (codCanal != null) {
-            return ResponseEntity.ok(rechargeLimitUseCase.findByCodCanal(codCanal));
+            all = rechargeLimitUseCase.findByCodCanal(codCanal);
+        } else if (codProduto != null) {
+            all = rechargeLimitUseCase.findByCodProduto(codProduto);
+        } else {
+            all = rechargeLimitUseCase.findAllRechargeLimits();
         }
-        if (codProduto != null) {
-            return ResponseEntity.ok(rechargeLimitUseCase.findByCodProduto(codProduto));
-        }
-        return ResponseEntity.ok(rechargeLimitUseCase.findAllRechargeLimits());
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @DeleteMapping("/{codCanal}/{codProduto}")

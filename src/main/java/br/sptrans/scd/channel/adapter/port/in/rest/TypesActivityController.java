@@ -20,6 +20,7 @@ import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase;
 import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase.CreateTypesActivityCommand;
 import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase.UpdateTypesActivityCommand;
 import br.sptrans.scd.channel.domain.TypesActivity;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -63,9 +64,12 @@ public class TypesActivityController {
 
     @GetMapping
     @Operation(summary = "Lista todos os tipos de atividade, com filtro opcional de status")
-    public ResponseEntity<List<TypesActivity>> findAllTypesActivities(
-            @RequestParam(required = false) String codStatus) {
-        return ResponseEntity.ok(typesActivityUseCase.findAllTypesActivities(codStatus));
+    public ResponseEntity<PageResponse<TypesActivity>> findAllTypesActivities(
+            @RequestParam(required = false) String codStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<TypesActivity> all = typesActivityUseCase.findAllTypesActivities(codStatus);
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @PatchMapping("/{codAtividade}/activate")

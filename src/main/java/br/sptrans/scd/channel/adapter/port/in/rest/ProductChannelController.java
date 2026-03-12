@@ -21,6 +21,7 @@ import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.CreateProductChannelCommand;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.UpdateProductChannelCommand;
 import br.sptrans.scd.channel.domain.ProductChannel;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -98,16 +99,20 @@ public class ProductChannelController {
 
     @GetMapping
     @Operation(summary = "Lista canais de produto com filtro opcional por canal ou produto")
-    public ResponseEntity<List<ProductChannel>> findProductChannels(
+    public ResponseEntity<PageResponse<ProductChannel>> findProductChannels(
             @RequestParam(required = false) String codCanal,
-            @RequestParam(required = false) String codProduto) {
+            @RequestParam(required = false) String codProduto,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<ProductChannel> all;
         if (codCanal != null) {
-            return ResponseEntity.ok(productChannelUseCase.findByCodCanal(codCanal));
+            all = productChannelUseCase.findByCodCanal(codCanal);
+        } else if (codProduto != null) {
+            all = productChannelUseCase.findByCodProduto(codProduto);
+        } else {
+            all = productChannelUseCase.findAllProductChannels();
         }
-        if (codProduto != null) {
-            return ResponseEntity.ok(productChannelUseCase.findByCodProduto(codProduto));
-        }
-        return ResponseEntity.ok(productChannelUseCase.findAllProductChannels());
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @DeleteMapping("/{codCanal}/{codProduto}")

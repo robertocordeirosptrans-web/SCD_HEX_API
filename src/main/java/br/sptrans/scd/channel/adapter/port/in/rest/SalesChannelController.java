@@ -24,6 +24,7 @@ import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.CreateSalesChannelCommand;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.UpdateSalesChannelCommand;
 import br.sptrans.scd.channel.domain.SalesChannel;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -115,9 +116,12 @@ public class SalesChannelController {
 
     @GetMapping
     @Operation(summary = "Lista todos os canais de venda, com filtro opcional de status")
-    public ResponseEntity<List<SalesChannel>> findAllSalesChannels(
-            @RequestParam(required = false) String stCanais) {
-        return ResponseEntity.ok(salesChannelUseCase.findAllSalesChannels(stCanais));
+    public ResponseEntity<PageResponse<SalesChannel>> findAllSalesChannels(
+            @RequestParam(required = false) String stCanais,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<SalesChannel> all = salesChannelUseCase.findAllSalesChannels(stCanais);
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @PatchMapping("/{codCanal}/activate")

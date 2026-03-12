@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.adapter.port.in.rest.dto.PageResponse;
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserRequestDTO;
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserResponseDTO;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
@@ -20,6 +19,7 @@ import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.CreateUserC
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.StatusChangeCommand;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.UpdateUserCommand;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

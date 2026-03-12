@@ -22,6 +22,7 @@ import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase.CreateProductsTypeCommand;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase.UpdateProductsTypeCommand;
 import br.sptrans.scd.product.domain.ProductType;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -70,9 +71,12 @@ public class ProductsTypeController {
 
     @GetMapping
     @Operation(summary = "Lista todos os tipos de produto, com filtro opcional de status")
-    public ResponseEntity<List<ProductType>> findAllProductsTypes(
-            @RequestParam(required = false) String codStatus) {
-        return ResponseEntity.ok(productsTypeManagementUseCase.findAllProductsTypes(codStatus));
+    public ResponseEntity<PageResponse<ProductType>> findAllProductsTypes(
+            @RequestParam(required = false) String codStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<ProductType> all = productsTypeManagementUseCase.findAllProductsTypes(codStatus);
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @PatchMapping("/{codTipoProduto}/activate")

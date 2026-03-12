@@ -22,6 +22,7 @@ import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.CreateTechnologyCommand;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.UpdateTechnologyCommand;
 import br.sptrans.scd.product.domain.Technology;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -70,9 +71,12 @@ public class TechnologyController {
 
     @GetMapping
     @Operation(summary = "Lista todas as tecnologias, com filtro opcional de status")
-    public ResponseEntity<List<Technology>> findAllTechnologies(
-            @RequestParam(required = false) String codStatus) {
-        return ResponseEntity.ok(technologyManagementUseCase.findAllTechnologies(codStatus));
+    public ResponseEntity<PageResponse<Technology>> findAllTechnologies(
+            @RequestParam(required = false) String codStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<Technology> all = technologyManagementUseCase.findAllTechnologies(codStatus);
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @PatchMapping("/{codTecnologia}/activate")

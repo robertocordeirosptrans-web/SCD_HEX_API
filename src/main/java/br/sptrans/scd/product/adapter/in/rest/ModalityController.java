@@ -22,6 +22,7 @@ import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase.CreateModalityCommand;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase.UpdateModalityCommand;
 import br.sptrans.scd.product.domain.Modality;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -70,9 +71,12 @@ public class ModalityController {
 
     @GetMapping
     @Operation(summary = "Lista todas as modalidades, com filtro opcional de status")
-    public ResponseEntity<List<Modality>> findAllModalities(
-            @RequestParam(required = false) String codStatus) {
-        return ResponseEntity.ok(modalityManagementUseCase.findAllModalities(codStatus));
+    public ResponseEntity<PageResponse<Modality>> findAllModalities(
+            @RequestParam(required = false) String codStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<Modality> all = modalityManagementUseCase.findAllModalities(codStatus);
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @PatchMapping("/{codModalidade}/activate")

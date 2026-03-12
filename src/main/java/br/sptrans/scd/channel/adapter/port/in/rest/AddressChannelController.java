@@ -21,6 +21,7 @@ import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.CreateAddressChannelCommand;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.UpdateAddressChannelCommand;
 import br.sptrans.scd.channel.domain.AddressChannel;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -100,9 +101,12 @@ public class AddressChannelController {
 
     @GetMapping
     @Operation(summary = "Lista endereços do canal, com filtro opcional por canal")
-    public ResponseEntity<List<AddressChannel>> findAllAddressChannels(
-            @RequestParam(required = false) String codCanal) {
-        return ResponseEntity.ok(addressChannelUseCase.findAllAddressChannels(codCanal));
+    public ResponseEntity<PageResponse<AddressChannel>> findAllAddressChannels(
+            @RequestParam(required = false) String codCanal,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<AddressChannel> all = addressChannelUseCase.findAllAddressChannels(codCanal);
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @DeleteMapping("/{codEndereco}")

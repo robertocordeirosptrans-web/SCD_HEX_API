@@ -22,6 +22,7 @@ import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase.CreateAgreementValidityCommand;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase.UpdateAgreementValidityCommand;
 import br.sptrans.scd.channel.domain.AgreementValidity;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -83,16 +84,20 @@ public class AgreementValidityController {
 
     @GetMapping
     @Operation(summary = "Lista vigências de convênio com filtro opcional por canal ou produto")
-    public ResponseEntity<List<AgreementValidity>> findAgreementValidities(
+    public ResponseEntity<PageResponse<AgreementValidity>> findAgreementValidities(
             @RequestParam(required = false) String codCanal,
-            @RequestParam(required = false) String codProduto) {
+            @RequestParam(required = false) String codProduto,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<AgreementValidity> all;
         if (codCanal != null) {
-            return ResponseEntity.ok(agreementValidityUseCase.findByCodCanal(codCanal));
+            all = agreementValidityUseCase.findByCodCanal(codCanal);
+        } else if (codProduto != null) {
+            all = agreementValidityUseCase.findByCodProduto(codProduto);
+        } else {
+            all = agreementValidityUseCase.findAllAgreementValidities();
         }
-        if (codProduto != null) {
-            return ResponseEntity.ok(agreementValidityUseCase.findByCodProduto(codProduto));
-        }
-        return ResponseEntity.ok(agreementValidityUseCase.findAllAgreementValidities());
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @DeleteMapping("/{codCanal}/{codProduto}")

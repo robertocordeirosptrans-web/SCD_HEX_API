@@ -21,6 +21,7 @@ import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelU
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.CreateMarketingDistribuitionChannelCommand;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.UpdateMarketingDistribuitionChannelCommand;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -80,16 +81,20 @@ public class MarketingDistribuitionChannelController {
 
     @GetMapping
     @Operation(summary = "Lista canais de comercialização/distribuição com filtro opcional")
-    public ResponseEntity<List<MarketingDistribuitionChannel>> findMarketingDistribuitionChannels(
+    public ResponseEntity<PageResponse<MarketingDistribuitionChannel>> findMarketingDistribuitionChannels(
             @RequestParam(required = false) String codCanalComercializacao,
-            @RequestParam(required = false) String codCanalDistribuicao) {
+            @RequestParam(required = false) String codCanalDistribuicao,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<MarketingDistribuitionChannel> all;
         if (codCanalComercializacao != null) {
-            return ResponseEntity.ok(marketingUseCase.findByCodCanalComercializacao(codCanalComercializacao));
+            all = marketingUseCase.findByCodCanalComercializacao(codCanalComercializacao);
+        } else if (codCanalDistribuicao != null) {
+            all = marketingUseCase.findByCodCanalDistribuicao(codCanalDistribuicao);
+        } else {
+            all = marketingUseCase.findAllMarketingDistribuitionChannels();
         }
-        if (codCanalDistribuicao != null) {
-            return ResponseEntity.ok(marketingUseCase.findByCodCanalDistribuicao(codCanalDistribuicao));
-        }
-        return ResponseEntity.ok(marketingUseCase.findAllMarketingDistribuitionChannels());
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @DeleteMapping("/{codCanalComercializacao}/{codCanalDistribuicao}")

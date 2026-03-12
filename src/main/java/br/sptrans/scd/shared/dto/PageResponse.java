@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.port.in.rest.dto;
+package br.sptrans.scd.shared.dto;
 
 import java.util.List;
 
@@ -22,5 +22,13 @@ public record PageResponse<T>(
             page == 0,
             page >= totalPages - 1
         );
+    }
+
+    public static <T> PageResponse<T> fromList(List<T> allItems, int page, int size) {
+        long totalElements = allItems.size();
+        int start = Math.min(page * size, allItems.size());
+        int end = Math.min(start + size, allItems.size());
+        List<T> content = allItems.subList(start, end);
+        return of(content, page, size, totalElements);
     }
 }

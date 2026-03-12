@@ -21,6 +21,7 @@ import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase.CreateContactChannelCommand;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase.UpdateContactChannelCommand;
 import br.sptrans.scd.channel.domain.ContactChannel;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -98,9 +99,12 @@ public class ContactChannelController {
 
     @GetMapping
     @Operation(summary = "Lista contatos do canal, com filtro opcional por canal")
-    public ResponseEntity<List<ContactChannel>> findAllContactChannels(
-            @RequestParam(required = false) String codCanal) {
-        return ResponseEntity.ok(contactChannelUseCase.findAllContactChannels(codCanal));
+    public ResponseEntity<PageResponse<ContactChannel>> findAllContactChannels(
+            @RequestParam(required = false) String codCanal,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<ContactChannel> all = contactChannelUseCase.findAllContactChannels(codCanal);
+        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
     @DeleteMapping("/{codContato}")
