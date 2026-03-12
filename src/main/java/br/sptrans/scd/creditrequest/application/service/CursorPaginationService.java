@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
 
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorCodec;
@@ -40,6 +41,7 @@ public class CursorPaginationService {
      * Busca registros usando paginação por cursor.
      * Performance otimizada para milhões de registros.
      */
+    @Cacheable(value = "pedidos", key = "#request.toString()")
     public CursorPageResponse<CreditRequestDTO> findWithCursor(CursorPageRequest request) {
         long startTime = System.currentTimeMillis();
 

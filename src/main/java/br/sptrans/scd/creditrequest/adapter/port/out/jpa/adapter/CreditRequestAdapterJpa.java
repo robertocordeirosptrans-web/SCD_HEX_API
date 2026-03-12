@@ -284,7 +284,36 @@ public class CreditRequestAdapterJpa implements CreditRequestRepository {
         cr.setIdUsuarioManutencao(getLong(rs, "ID_USUARIO_MANUTENCAO"));
         cr.setFlgBloq(rs.getString("FLG_BLOQ"));
         cr.setVlPago(rs.getBigDecimal("VL_PAGO"));
+
+        // Carregar itens do pedido
+        cr.setItens(loadItens(cr.getNumSolicitacao(), cr.getCodCanal()));
+
         return cr;
+    }
+
+    // Busca os itens de um pedido
+    private List<br.sptrans.scd.creditrequest.domain.CreditRequestItems> loadItens(Long numSolicitacao, String codCanal) {
+        String sql = "SELECT * FROM SPTRANSDBA.SOL_DISTRIB_ITENS WHERE NUM_SOLICITACAO = ? AND COD_CANAL = ?";
+        return jdbc.query(sql, (rs, rowNum) -> {
+            var item = new br.sptrans.scd.creditrequest.domain.CreditRequestItems();
+            var key = new br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey();
+            key.setNumSolicitacao(rs.getLong("NUM_SOLICITACAO"));
+            key.setNumSolicitacaoItem(rs.getLong("NUM_SOLICITACAO_ITEM"));
+            key.setCodCanal(rs.getString("COD_CANAL"));
+            item.setId(key);
+            item.setCodCanal(rs.getString("COD_CANAL"));
+            item.setCodProduto(rs.getString("COD_PRODUTO"));
+            item.setCodSituacao(rs.getString("COD_SITUACAO"));
+            item.setVlItem(rs.getBigDecimal("VL_ITEM"));
+            item.setDtRecarga(toLocalDateTime(rs.getTimestamp("DT_RECARGA")));
+            item.setVlCarregado(rs.getBigDecimal("VL_CARREGADO"));
+            item.setDtCadastro(toLocalDateTime(rs.getTimestamp("DT_CADASTRO")));
+            item.setDtManutencao(toLocalDateTime(rs.getTimestamp("DT_MANUTENCAO")));
+            item.setVlTxadm(rs.getBigDecimal("VL_TXADM"));
+            item.setVlTxserv(rs.getBigDecimal("VL_TXSERV"));
+            item.setVlTxtotal(rs.getBigDecimal("VL_TXTOTAL"));
+            return item;
+        }, numSolicitacao, codCanal);
     }
 
     private LocalDateTime toLocalDateTime(Timestamp ts) {
