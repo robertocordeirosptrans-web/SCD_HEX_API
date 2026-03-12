@@ -25,6 +25,8 @@ import br.sptrans.scd.product.domain.ProductType;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,10 @@ public class ProductsTypeController {
 
     @PostMapping
     @Operation(summary = "Cadastra um novo tipo de produto")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tipo de produto cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<ProductType> createProductsType(
             @RequestBody CreateProductsTypeRequest request,
             Authentication authentication) {
@@ -53,6 +59,10 @@ public class ProductsTypeController {
 
     @PutMapping("/{codTipoProduto}")
     @Operation(summary = "Atualiza dados de um tipo de produto")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tipo de produto atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<ProductType> updateProductsType(
             @PathVariable String codTipoProduto,
             @RequestBody UpdateProductsTypeRequest request,

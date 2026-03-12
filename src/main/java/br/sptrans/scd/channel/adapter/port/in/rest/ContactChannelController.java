@@ -24,6 +24,8 @@ import br.sptrans.scd.channel.domain.ContactChannel;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +42,11 @@ public class ContactChannelController {
     private final UserRepository userRepository;
 
     @PostMapping
-    @Operation(summary = "Cadastra um novo contato do canal")
+        @Operation(summary = "Cadastra um novo contato do canal")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Contato do canal cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<ContactChannel> createContactChannel(
             @RequestBody CreateContactChannelRequest request,
             Authentication authentication) {
@@ -66,7 +72,11 @@ public class ContactChannelController {
     }
 
     @PutMapping("/{codContato}")
-    @Operation(summary = "Atualiza dados de um contato do canal")
+        @Operation(summary = "Atualiza dados de um contato do canal")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Contato do canal atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<ContactChannel> updateContactChannel(
             @PathVariable String codContato,
             @RequestBody UpdateContactChannelRequest request,

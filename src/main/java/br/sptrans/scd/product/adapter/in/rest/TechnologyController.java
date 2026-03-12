@@ -25,6 +25,8 @@ import br.sptrans.scd.product.domain.Technology;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,10 @@ public class TechnologyController {
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova tecnologia")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tecnologia cadastrada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<Technology> createTechnology(
             @RequestBody CreateTechnologyRequest request,
             Authentication authentication) {
@@ -53,6 +59,10 @@ public class TechnologyController {
 
     @PutMapping("/{codTecnologia}")
     @Operation(summary = "Atualiza dados de uma tecnologia")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tecnologia atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<Technology> updateTechnology(
             @PathVariable String codTecnologia,
             @RequestBody UpdateTechnologyRequest request,

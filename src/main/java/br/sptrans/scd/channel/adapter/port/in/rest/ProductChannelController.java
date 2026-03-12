@@ -24,6 +24,8 @@ import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +43,10 @@ public class ProductChannelController {
 
     @PostMapping
     @Operation(summary = "Cadastra um novo canal de produto")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Canal de produto cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<ProductChannel> createProductChannel(
             @RequestBody CreateProductChannelRequest request,
             Authentication authentication) {
@@ -66,6 +72,10 @@ public class ProductChannelController {
 
     @PutMapping("/{codCanal}/{codProduto}")
     @Operation(summary = "Atualiza um canal de produto")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Canal de produto atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<ProductChannel> updateProductChannel(
             @PathVariable String codCanal,
             @PathVariable String codProduto,

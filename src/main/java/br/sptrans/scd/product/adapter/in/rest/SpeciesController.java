@@ -25,6 +25,8 @@ import br.sptrans.scd.product.domain.Species;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,10 @@ public class SpeciesController {
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova espécie")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Espécie cadastrada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<Species> createSpecies(
             @RequestBody CreateSpeciesRequest request,
             Authentication authentication) {
@@ -53,6 +59,10 @@ public class SpeciesController {
 
     @PutMapping("/{codEspecie}")
     @Operation(summary = "Atualiza dados de uma espécie")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Espécie atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<Species> updateSpecies(
             @PathVariable String codEspecie,
             @RequestBody UpdateSpeciesRequest request,

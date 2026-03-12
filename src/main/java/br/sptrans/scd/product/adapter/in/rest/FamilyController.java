@@ -25,6 +25,8 @@ import br.sptrans.scd.product.domain.Family;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,10 @@ public class FamilyController {
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova família")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Família cadastrada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<Family> createFamily(
             @RequestBody CreateFamilyRequest request,
             Authentication authentication) {
@@ -53,6 +59,10 @@ public class FamilyController {
 
     @PutMapping("/{codFamilia}")
     @Operation(summary = "Atualiza dados de uma família")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Família atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<Family> updateFamily(
             @PathVariable String codFamilia,
             @RequestBody UpdateFamilyRequest request,

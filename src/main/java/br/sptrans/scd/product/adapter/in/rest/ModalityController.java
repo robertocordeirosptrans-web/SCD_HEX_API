@@ -25,6 +25,8 @@ import br.sptrans.scd.product.domain.Modality;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,10 @@ public class ModalityController {
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova modalidade")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Modalidade cadastrada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<Modality> createModality(
             @RequestBody CreateModalityRequest request,
             Authentication authentication) {
@@ -53,6 +59,10 @@ public class ModalityController {
 
     @PutMapping("/{codModalidade}")
     @Operation(summary = "Atualiza dados de uma modalidade")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Modalidade atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<Modality> updateModality(
             @PathVariable String codModalidade,
             @RequestBody UpdateModalityRequest request,

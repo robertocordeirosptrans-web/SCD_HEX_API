@@ -25,6 +25,8 @@ import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,10 @@ public class AgreementValidityController {
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova vigência de convênio")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Vigência de convênio cadastrada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<AgreementValidity> createAgreementValidity(
             @RequestBody CreateAgreementValidityRequest request,
             Authentication authentication) {
@@ -59,6 +65,10 @@ public class AgreementValidityController {
 
     @PutMapping("/{codCanal}/{codProduto}")
     @Operation(summary = "Atualiza uma vigência de convênio")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Vigência de convênio atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<AgreementValidity> updateAgreementValidity(
             @PathVariable String codCanal,
             @PathVariable String codProduto,

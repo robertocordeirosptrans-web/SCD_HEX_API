@@ -23,6 +23,8 @@ import br.sptrans.scd.channel.domain.TypesActivity;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,10 @@ public class TypesActivityController {
 
     @PostMapping
     @Operation(summary = "Cadastra um novo tipo de atividade")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tipo de atividade cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<TypesActivity> createTypesActivity(
             @RequestBody CreateTypesActivityRequest request) {
         TypesActivity result = typesActivityUseCase.createTypesActivity(
@@ -48,6 +54,10 @@ public class TypesActivityController {
 
     @PutMapping("/{codAtividade}")
     @Operation(summary = "Atualiza dados de um tipo de atividade")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tipo de atividade atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<TypesActivity> updateTypesActivity(
             @PathVariable String codAtividade,
             @RequestBody UpdateTypesActivityRequest request) {
@@ -58,12 +68,20 @@ public class TypesActivityController {
 
     @GetMapping("/{codAtividade}")
     @Operation(summary = "Busca tipo de atividade por código")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tipo de atividade retornado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<TypesActivity> findByTypesActivity(@PathVariable String codAtividade) {
         return ResponseEntity.ok(typesActivityUseCase.findByTypesActivity(codAtividade));
     }
 
     @GetMapping
     @Operation(summary = "Lista todos os tipos de atividade, com filtro opcional de status")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de tipos de atividade retornada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<PageResponse<TypesActivity>> findAllTypesActivities(
             @RequestParam(required = false) String codStatus,
             @RequestParam(defaultValue = "0") int page,

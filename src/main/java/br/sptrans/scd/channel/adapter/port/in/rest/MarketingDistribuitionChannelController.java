@@ -24,6 +24,8 @@ import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +43,10 @@ public class MarketingDistribuitionChannelController {
 
     @PostMapping
     @Operation(summary = "Cadastra um novo canal de comercialização/distribuição")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Canal de comercialização/distribuição cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<MarketingDistribuitionChannel> createMarketingDistribuitionChannel(
             @RequestBody CreateMarketingDistribuitionChannelRequest request,
             Authentication authentication) {
@@ -56,6 +62,10 @@ public class MarketingDistribuitionChannelController {
 
     @PutMapping("/{codCanalComercializacao}/{codCanalDistribuicao}")
     @Operation(summary = "Atualiza um canal de comercialização/distribuição")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Canal de comercialização/distribuição atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<MarketingDistribuitionChannel> updateMarketingDistribuitionChannel(
             @PathVariable String codCanalComercializacao,
             @PathVariable String codCanalDistribuicao,

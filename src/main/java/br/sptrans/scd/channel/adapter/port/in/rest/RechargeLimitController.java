@@ -26,6 +26,8 @@ import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,10 @@ public class RechargeLimitController {
 
     @PostMapping
     @Operation(summary = "Cadastra um novo limite de recarga")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Limite de recarga cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<RechargeLimit> createRechargeLimit(
             @RequestBody CreateRechargeLimitRequest request,
             Authentication authentication) {
@@ -63,6 +69,10 @@ public class RechargeLimitController {
 
     @PutMapping("/{codCanal}/{codProduto}")
     @Operation(summary = "Atualiza um limite de recarga")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Limite de recarga atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
     public ResponseEntity<RechargeLimit> updateRechargeLimit(
             @PathVariable String codCanal,
             @PathVariable String codProduto,

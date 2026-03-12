@@ -33,6 +33,8 @@ import br.sptrans.scd.product.domain.Technology;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +52,11 @@ public class ProductController {
 
     @PostMapping
     @Operation(summary = "Cadastra um novo produto")
-    @SecurityRequirement(name = "bearerAuth")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Produto cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
+        @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> createProduct(
             @RequestBody CreateProductRequest request,
             Authentication authentication) {
