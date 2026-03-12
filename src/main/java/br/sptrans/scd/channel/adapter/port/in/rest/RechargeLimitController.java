@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/recharge-limits")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
+@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Limites de Recarga v1", description = "Endpoints para gerenciamento de limites de recarga")
 public class RechargeLimitController {

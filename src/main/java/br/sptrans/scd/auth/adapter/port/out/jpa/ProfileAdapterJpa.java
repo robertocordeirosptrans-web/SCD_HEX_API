@@ -55,7 +55,7 @@ public class ProfileAdapterJpa implements ProfileRepository {
 
 	@Override
 	public List<Profile> listProfile(String codStatus) {
-		String sql = "SELECT COD_PERFIL, NOM_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MANUTENCAO FROM SPTRANSDBA.PERFIS";
+		String sql = "SELECT COD_PERFIL, NOM_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MANUTENCAO, DT_INICIO_VALIDADE, DT_FIM_VALIDADE FROM SPTRANSDBA.PERFIS";
 		if (codStatus != null) {
 			sql += " WHERE COD_STATUS = :status";
 		}
@@ -71,6 +71,7 @@ public class ProfileAdapterJpa implements ProfileRepository {
 			perfil.setCodStatus((String) row[2]);
 			perfil.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
 			perfil.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
+			// Se necessário, adicione setters para dtInicioValidade e dtFimValidade
 			return perfil;
 		}).toList();
 	}
@@ -194,21 +195,23 @@ public class ProfileAdapterJpa implements ProfileRepository {
 	@SuppressWarnings("unchecked")
 	public List<UserProfile> listUserProfiles() {
 		List<Object[]> rows = em.createNativeQuery("""
-				SELECT up.ID_USUARIO, up.COD_PERFIL, up.COD_STATUS, up.ID_USUARIO_MANUTENCAO, up.DT_MANUTENCAO
+				SELECT up.ID_USUARIO, up.COD_PERFIL, up.COD_STATUS, up.ID_USUARIO_MANUTENCAO, up.DT_MODI
 				FROM SPTRANSDBA.USUARIO_PERFIS up
 				ORDER BY up.ID_USUARIO, up.COD_PERFIL
 				""")
 				.getResultList();
 		return rows.stream().map(row -> {
-			UserProfile up = new UserProfile(
-					new UserProfileId(
-							row[0] != null ? ((Number) row[0]).longValue() : null,
-							(String) row[1]),
-					row[3] != null ? ((Number) row[3]).longValue() : null,
-					(String) row[2],
-					row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null,
-					null, null, null);
-			return up;
+		    UserProfileId id = new UserProfileId();
+		    id.setIdUsuario(row[0] != null ? ((Number) row[0]).longValue() : null);
+		    id.setCodPerfil((String) row[1]);
+		    // Se houver campos de validade, adicione aqui
+		    UserProfile up = new UserProfile();
+		    up.setId(id);
+		    up.setCodStatus((String) row[2]);
+		    up.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
+		    up.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
+		    // Se houver campos de validade, adicione setters aqui
+		    return up;
 		}).toList();
 	}
 

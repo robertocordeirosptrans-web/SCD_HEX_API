@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/technologies")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
+@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Tecnologias v1", description = "Endpoints para gerenciamento de tecnologias de produto")
 public class TechnologyController {

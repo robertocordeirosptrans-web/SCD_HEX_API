@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/sales-channels")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
+@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Canais de Venda v1", description = "Endpoints para gerenciamento de canais de venda")
 public class SalesChannelController {

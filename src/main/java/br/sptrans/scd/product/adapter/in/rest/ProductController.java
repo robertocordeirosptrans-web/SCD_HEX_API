@@ -40,7 +40,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/product")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
+@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Produtos v1", description = "Endpoints para gerenciamento de produtos - Versão 1")
 public class ProductController {

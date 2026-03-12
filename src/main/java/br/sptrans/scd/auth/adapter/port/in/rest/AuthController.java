@@ -59,7 +59,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Dados do usuário autenticado", description = "Retorna id, nome, perfis e permissões do usuário logado")
     @ApiResponses(value = {

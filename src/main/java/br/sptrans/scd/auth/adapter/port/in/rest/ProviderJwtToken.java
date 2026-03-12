@@ -1,28 +1,16 @@
 package br.sptrans.scd.auth.adapter.port.in.rest;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ProvedorTokenJwt — geração e validação de tokens JWT
@@ -61,58 +49,10 @@ public class ProviderJwtToken {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// AuthenticationJwtFilter — valida Bearer token em cada requisição
+// AuthenticationJwtFilter — DESATIVADO
+// Este filtro foi desabilitado porque conflitava com o JwtAuthFilter
+// registrado na SecurityConfig. Ambos tentavam validar o token JWT,
+// mas com secrets diferentes (scd.jwt.secret vs api.security.token.secret),
+// fazendo com que este filtro limpasse o SecurityContext após o JwtAuthFilter
+// já tê-lo preenchido corretamente.
 // ══════════════════════════════════════════════════════════════════════════════
-@Component
-class AuthenticationJwtFilter extends OncePerRequestFilter {
-
-    private final ProviderJwtToken provedorToken;
-
-    AuthenticationJwtFilter(ProviderJwtToken provedorToken) {
-        this.provedorToken = provedorToken;
-    }
-
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain chain) throws ServletException, IOException {
-        String cabecalho = request.getHeader("Authorization");
-
-        if (cabecalho != null && cabecalho.startsWith("Bearer ")) {
-            String token = cabecalho.substring(7);
-            try {
-                Claims claims = provedorToken.validarEExtrairClaims(token);
-
-                @SuppressWarnings("unchecked")
-                List<String> permissoes = (List<String>) claims.get("permissoes");
-
-                List<SimpleGrantedAuthority> authorities = permissoes == null
-                        ? List.of()
-                        : permissoes.stream()
-                                .map(SimpleGrantedAuthority::new)
-                                .collect(Collectors.toList());
-
-                UsernamePasswordAuthenticationToken auth
-                        = new UsernamePasswordAuthenticationToken(
-                                claims.getSubject(), null, authorities);
-
-                SecurityContextHolder.getContext().setAuthentication(auth);
-
-            } catch (JwtException ex) {
-                // Token inválido ou expirado — deixa prosseguir sem autenticação
-                // O Spring Security bloqueará na rota protegida
-                SecurityContextHolder.clearContext();
-            }
-        }
-
-        chain.doFilter(request, response);
-    }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        // Rotas públicas: login e recuperação de senha não exigem token
-        return path.startsWith("/api/v1/auth/");
-    }
-
-}

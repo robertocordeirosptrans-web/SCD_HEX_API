@@ -10,7 +10,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "USUARIO_PERFIS", schema = "SPTRANSDBA")
 public class UserProfileJpa {
@@ -21,10 +25,7 @@ public class UserProfileJpa {
     @Column(name = "COD_STATUS", length = 1)
     private String codStatus;    // "A" = Ativo  "I" = Inativo
 
-    @Column(name = "DT_CADASTRO")
-    private LocalDateTime dtCadastro;
-
-    @Column(name = "DT_MANUTENCAO")
+    @Column(name = "DT_MODI")
     private LocalDateTime dtManutencao;
 
     @Column(name = "ID_USUARIO_MANUTENCAO")
