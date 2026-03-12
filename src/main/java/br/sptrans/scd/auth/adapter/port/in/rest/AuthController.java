@@ -109,10 +109,7 @@ public class AuthController {
                 "Se o e-mail estiver cadastrado, você receberá as instruções em instantes."));
     }
 
-    @PostMapping("/login-test")
-    public ResponseEntity<String> loginTest(@RequestBody LoginDTO req) {
-        return ResponseEntity.ok("Login recebido: " + req.login + ", Password recebido: " + req.password);
-    }
+
 
     // ── DTOs ─────────────────────────────────────────────────────────────────
     public record RequestLogin(@NotBlank(message = "Login é obrigatório")
@@ -142,10 +139,5 @@ public class AuthController {
 
     }
 
-    public static class LoginDTO {
-        @NotBlank
-        public String login;
-        @NotBlank
-        public String password;
-    }
+
 }

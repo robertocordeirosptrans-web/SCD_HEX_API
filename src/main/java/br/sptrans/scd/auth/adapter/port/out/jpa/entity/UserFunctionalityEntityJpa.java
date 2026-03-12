@@ -15,7 +15,7 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "USUARIO_FUNC_BKP_MGR", schema = "SPTRANSDBA")
+@Table(name = "USUARIO_FUNCIONALIDADES", schema = "SPTRANSDBA")
 public class UserFunctionalityEntityJpa {
 
     @EmbeddedId
