@@ -1,6 +1,7 @@
 package br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -16,17 +17,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class HistRICEntityJpa {
 
-    @Column(name = "COD_TIPO_CANAL", length = 20, nullable = false)
-    private String codTipoCanal;
-
-    @Column(name = "COD_CANAL", length = 20, nullable = false)
-    private String codCanal;
-
-    @Column(name = "NR_SOLICITACAO", nullable = false)
-    private Long seqHistSolicCartaoIni;
-
-    @Column(name = "NR_SOLICITACAO", nullable = false)
-    private Long nrSolicitacao;
+    @EmbeddedId
+    private HistRICEntityJpaKey id;
 
     @Column(name = "COD_ADQUIRENTE", length = 20)
     private String codAdquirente;
