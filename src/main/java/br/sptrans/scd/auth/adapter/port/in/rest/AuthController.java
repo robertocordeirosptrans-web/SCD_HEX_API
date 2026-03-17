@@ -1,5 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.in.rest;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,8 +17,10 @@ import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetPasswordComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetRequestComand;
+import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.Functionality;
+import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.port.out.TokenGeneratorPort;
@@ -38,11 +41,13 @@ public class AuthController {
     private final AuthUseCase casoUso;
     private final TokenGeneratorPort tokenGenerator;
     private final UserRepository userRepository;
+    private final GroupUserRepository groupUserRepository;
 
-    public AuthController(AuthUseCase casoUso, TokenGeneratorPort tokenGenerator, UserRepository userRepository) {
+    public AuthController(AuthUseCase casoUso, TokenGeneratorPort tokenGenerator, UserRepository userRepository, GroupUserRepository groupUserRepository) {
         this.casoUso = casoUso;
         this.tokenGenerator = tokenGenerator;
         this.userRepository = userRepository;
+        this.groupUserRepository = groupUserRepository;
     }
 
     @PostMapping("/login")
@@ -61,7 +66,7 @@ public class AuthController {
     @GetMapping("/me")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Dados do usuário autenticado", description = "Retorna id, nome, perfis e permissões do usuário logado")
+    @Operation(summary = "Dados do usuário autenticado", description = "Retorna id, nome, perfis, permissões e grupos do usuário logado")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Dados retornados com sucesso"),
         @ApiResponse(responseCode = "401", description = "Token ausente ou inválido")
@@ -71,17 +76,25 @@ public class AuthController {
         User user = userRepository.findByCodLogin(codLogin)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
+        // Buscar perfis ativos do usuário
         Set<String> roles = userRepository.carregarPerfisEfetivos(user.getIdUsuario())
                 .stream()
                 .map(Profile::getCodPerfil)
                 .collect(Collectors.toSet());
 
+        // Buscar permissões ativos do usuário
         Set<String> permissions = userRepository.carregarFuncionalidadesEfetivas(user.getIdUsuario())
                 .stream()
                 .map(Functionality::canonicalKey)
                 .collect(Collectors.toSet());
 
-        return ResponseEntity.ok(new MeResponse(user.getIdUsuario(), user.getNomUsuario(), roles, permissions));
+        // Buscar grupos ativos do usuário
+        List<GroupUser> gruposUsuario = groupUserRepository.findById_IdUsuarioAndCodStatus(user.getIdUsuario(), "A");
+        Set<String> grupos = gruposUsuario.stream()
+                .map(gu -> gu.getId().getCodGrupo())
+                .collect(Collectors.toSet());
+
+        return ResponseEntity.ok(new MeResponse(user.getIdUsuario(), user.getNomUsuario(), roles, permissions, grupos));
     }
 
     @PostMapping("/change-password")
@@ -109,8 +122,6 @@ public class AuthController {
                 "Se o e-mail estiver cadastrado, você receberá as instruções em instantes."));
     }
 
-
-
     // ── DTOs ─────────────────────────────────────────────────────────────────
     public record RequestLogin(@NotBlank(message = "Login é obrigatório")
             String login,
@@ -123,7 +134,7 @@ public class AuthController {
 
     }
 
-    public record MeResponse(Long id, String name, Set<String> roles, Set<String> permissions) {
+    public record MeResponse(Long id, String name, Set<String> roles, Set<String> permissions, Set<String> groups) {
 
     }
 
@@ -138,6 +149,5 @@ public class AuthController {
     public record ResquestChangePassword(String token, String novaSenha) {
 
     }
-
 
 }
