@@ -1,5 +1,7 @@
 package br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity;
 
+import java.util.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -81,31 +83,31 @@ public class RICEntityJpa {
     private Long idUsuarioAprovacao;
 
     @Column(name = "DT_PREVISTA_ENTREGA")
-    private java.util.Date dtPrevistaEntrega;
+    private Date dtPrevistaEntrega;
 
     @Column(name = "DT_SOLICITACAO")
-    private java.util.Date dtSolicitacao;
+    private Date dtSolicitacao;
 
     @Column(name = "DT_APROVACAO")
-    private java.util.Date dtAprovacao;
+    private Date dtAprovacao;
 
     @Column(name = "DT_ASSOCIACAO_LOTE_SCP")
-    private java.util.Date dtAssociacaoLoteScp;
+    private Date dtAssociacaoLoteScp;
 
     @Column(name = "DT_GERACAO_ARQUIVO")
-    private java.util.Date dtGeracaoArquivo;
+    private Date dtGeracaoArquivo;
 
     @Column(name = "DT_ASSOCIACAO_USUARIO")
-    private java.util.Date dtAssociacaoUsuario;
+    private Date dtAssociacaoUsuario;
 
     @Column(name = "DT_ENVIO")
-    private java.util.Date dtEnvio;
+    private Date dtEnvio;
 
     @Column(name = "DT_RECEBIMENTO")
-    private java.util.Date dtRecebimento;
+    private Date dtRecebimento;
 
     @Column(name = "DT_DEVOLUCAO")
-    private java.util.Date dtDevolucao;
+    private Date dtDevolucao;
 
     @Column(name = "FLG_FASE_SOLICITACAO", length = 1)
     private String flgFaseSolicitacao;
@@ -114,10 +116,10 @@ public class RICEntityJpa {
     private String stSolicitaCartaoInicializad;
 
     @Column(name = "DT_CADASTRO")
-    private java.util.Date dtCadastro;
+    private Date dtCadastro;
 
     @Column(name = "DT_MANUTENCAO")
-    private java.util.Date dtManutencao;
+    private Date dtManutencao;
 
     @Column(name = "ID_USUARIO_CADASTRO")
     private Long idUsuarioCadastro;
@@ -126,5 +128,5 @@ public class RICEntityJpa {
     private Long idUsuarioManutencao;
 
     @Column(name = "DT_CANCELAMENTO")
-    private java.util.Date dtCancelamento;
+    private Date dtCancelamento;
 }

@@ -8,9 +8,9 @@ public interface RequestInitializedUseCase {
 
     RequestInitializedCards createRequestInitialized(RequestInitializedCardCommand command);
 
-    RequestInitializedCards findById(String codEndereco);
+    RequestInitializedCards findById(String codCanal, Long nrSolicitacao);
 
-    List<RequestInitializedCards> findAllRequestInitialized(String codCanal);
+    List<RequestInitializedCards> findAllRequestInitialized(String codCanal, Long nrSolicitacao, String codAdquirente);
 
     public record RequestInitializedCardCommand(
             String cod_tipo_canal,
