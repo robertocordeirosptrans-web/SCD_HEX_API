@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class GroupUser {
+    
     private GroupUserKey id;
     private Long idUsuarioManutencao;
     private String codStatus;

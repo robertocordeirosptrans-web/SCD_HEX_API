@@ -140,6 +140,7 @@ public class GroupAdapterJpa implements GroupRepository {
                 .getSingleResult()).longValue();
         return count;
     }
+
     @Override
     @SuppressWarnings("unchecked")
     public List<GroupUser> listGroupUsers() {
@@ -152,20 +153,21 @@ public class GroupAdapterJpa implements GroupRepository {
         return rows.stream().map(row -> {
             GroupUser gu = new GroupUser();
             gu.setId(new GroupUserKey(
-                row[0] != null ? ((Number) row[0]).longValue() : null,
-                row[1] != null ? row[1].toString() : null));
+                    row[0] != null ? ((Number) row[0]).longValue() : null,
+                    row[1] != null ? row[1].toString() : null));
             gu.setCodStatus(row[2] != null ? row[2].toString() : null);
             gu.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
             gu.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
             return gu;
         }).toList();
     }
+
     // ── Helpers de mapeamento ─────────────────────────────────────────────────
     private Group mapearGrupo(Object[] row) {
         Group g = new Group();
         g.setCodGrupo((String) row[0]);
         g.setNomGrupo((String) row[1]);
-        g.setCodStatus((String) row[2]);
+        g.setCodStatus(row[2] != null ? row[2].toString() : null);
         return g;
     }
 

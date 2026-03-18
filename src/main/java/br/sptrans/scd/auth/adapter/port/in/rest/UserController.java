@@ -64,6 +64,22 @@ public class UserController {
         return PageResponse.of(content, page, size, totalElements);
     }
 
+    @GetMapping("/{idUsuario}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Busca de usuarios por id")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+        @ApiResponse(responseCode = "404", description = "Usuario não encontrado")
+    })
+    public UserResponse getUsersById(@PathVariable Long idUsuario) {
+        User user = userManagementUseCase.findById(idUsuario);
+        return new UserResponse(
+            user.getNomUsuario(),
+            user.getNomFuncao(),
+            user.getNomCargo()
+        );
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Criar usuario", description = "Cria um novo usuario no sistema")
@@ -140,4 +156,9 @@ public class UserController {
                 "ID_USUARIO";
         };
     }
+
+    public record UserResponse(String nomUsuario, String nomFuncao, String nomCargo) {
+
+    }
+
 }

@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.port.in.rest.AuthController.RequestRecoveryPassword;
+import br.sptrans.scd.auth.adapter.port.in.rest.AuthController.ResponseSimple;
+import br.sptrans.scd.auth.adapter.port.in.rest.AuthController.ResquestChangePassword;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetPasswordComand;
@@ -137,6 +140,7 @@ public class AuthController {
     public record MeResponse(Long id, String name, Set<String> roles, Set<String> permissions, Set<String> groups) {
 
     }
+
 
     public record ResponseSimple(String mensagem) {
 
