@@ -384,8 +384,21 @@ public class UserAdapterJpa implements UserRepository {
 		user.setNomEmail(row[10] != null ? row[10].toString() : null);
 		user.setCodEmpresa(row[11] != null ? row[11].toString() : null);
 		if (row[12] != null) {
-			ClassificationPerson cp = new ClassificationPerson();
-			cp.setDesClassificacaoPessoa(row[12].toString());
+			String codClassificacao = row[12].toString();
+			ClassificationPerson cp = null;
+			try {
+				Object[] result = (Object[]) em.createNativeQuery(
+					"SELECT COD_CLASSIFICACAO_PESSOA, DES_CLASSIFICACAO_PESSOA FROM SPTRANSDBA.CLASSIFICACOES_PESSOAS WHERE COD_CLASSIFICACAO_PESSOA = :cod")
+					.setParameter("cod", codClassificacao)
+					.getSingleResult();
+				cp = new ClassificationPerson();
+				cp.setCodClassificacaoPessoa(result[0] != null ? result[0].toString() : null);
+				cp.setDesClassificacaoPessoa(result[1] != null ? result[1].toString() : null);
+			} catch (Exception e) {
+				// fallback: cria só com o código
+				cp = new ClassificationPerson();
+				cp.setCodClassificacaoPessoa(codClassificacao);
+			}
 			user.setCodClassificacaoPessoa(cp);
 		}
 		if (row[13] != null) {

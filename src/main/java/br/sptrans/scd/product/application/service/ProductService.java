@@ -41,33 +41,33 @@ public class ProductService implements ProductUseCase {
         User usuarioCadastro = resolveUser(cmd.idUsuario());
 
         Product product = new Product(
-                cmd.codProduto(),
-                cmd.desProduto(),
-                cmd.desEmissorResponsavel(),
-                ProductStatus.INACTIVE.getCode(),
-                cmd.desUtilizacao(),
-                LocalDateTime.now(),
-                LocalDateTime.now(),
-                cmd.flgBloqFabricacao(),
-                cmd.flgBloqVenda(),
-                cmd.flgBloqDistribuicao(),
-                cmd.flgBloqTroca(),
-                cmd.flgBloqAquisicao(),
-                cmd.flgBloqPedido(),
-                cmd.flgBloqDevolucao(),
-                cmd.flgInicializado(),
-                cmd.flgComercializado(),
-                cmd.flgRestManual(),
-                cmd.codEntidade(),
-                cmd.codTipoCartao(),
-                cmd.codClassificacaoPessoa(),
-                cmd.codTipoProduto(),
-                cmd.codTecnologia(),
-                cmd.codModalidade(),
-                cmd.codFamilia(),
-                cmd.codEspecie(),
-                usuarioCadastro,
-                null
+            cmd.codProduto(),
+            cmd.desProduto(),
+            cmd.desEmissorResponsavel(),
+            ProductStatus.INACTIVE.getCode(),
+            cmd.desUtilizacao(),
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            cmd.flgBloqFabricacao(),
+            cmd.flgBloqVenda(),
+            cmd.flgBloqDistribuicao(),
+            cmd.flgBloqTroca(),
+            cmd.flgBloqAquisicao(),
+            cmd.flgBloqPedido(),
+            cmd.flgBloqDevolucao(),
+            cmd.flgInicializado(),
+            cmd.flgComercializado(),
+            cmd.flgRestManual(),
+            cmd.codEntidade(),
+            cmd.codTipoCartao(),
+            cmd.codClassificacaoPessoa(),
+            cmd.codTipoProduto(),
+            cmd.codTecnologia(),
+            cmd.codModalidade(),
+            cmd.codFamilia(),
+            cmd.codEspecie(),
+            usuarioCadastro.getIdUsuario(),
+            null
         );
 
         productRepository.save(product);
@@ -152,7 +152,7 @@ public class ProductService implements ProductUseCase {
                 cmd.codFamilia(),
                 cmd.codEspecie(),
                 existing.getIdUsuarioCadastro(),
-                usuarioManutencao
+                usuarioManutencao.getIdUsuario()
         );
 
         productRepository.save(updated);

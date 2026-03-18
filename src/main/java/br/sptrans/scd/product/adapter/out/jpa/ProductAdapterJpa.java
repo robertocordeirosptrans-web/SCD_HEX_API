@@ -28,7 +28,7 @@ public class ProductAdapterJpa implements ProductRepository {
         SELECT COD_PRODUTO, DES_PRODUTO, DES_EMISSOR_RESPONSAVEL, ST_PRODUTOS,
                DES_UTILIZACAO, COD_CLASSIFICACAO_PESSOA, COD_TIPO_PRODUTO,
                COD_TECNOLOGIA, COD_MODALIDADE, COD_FAMILIA, COD_ESPECIE,
-               DT_VIGENCIA_INI, DT_VIGENCIA_FIM,
+
                DT_CADASTRO, DT_MANUTENCAO,
                ID_USUARIO_CADASTRO, ID_USUARIO_MANUTENCAO
         FROM SPTRANSDBA.PRODUTOS
@@ -39,7 +39,6 @@ public class ProductAdapterJpa implements ProductRepository {
             COD_PRODUTO, DES_PRODUTO, DES_EMISSOR_RESPONSAVEL, ST_PRODUTOS,
             DES_UTILIZACAO, COD_CLASSIFICACAO_PESSOA, COD_TIPO_PRODUTO,
             COD_TECNOLOGIA, COD_MODALIDADE, COD_FAMILIA, COD_ESPECIE,
-            DT_VIGENCIA_INI, DT_VIGENCIA_FIM,
             DT_CADASTRO, DT_MANUTENCAO,
             ID_USUARIO_CADASTRO, ID_USUARIO_MANUTENCAO
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
@@ -190,12 +189,6 @@ public class ProductAdapterJpa implements ProductRepository {
             f = Product.class.getDeclaredField("codEspecie");
             f.setAccessible(true);
             f.set(p, rs.getString("COD_ESPECIE"));
-            f = Product.class.getDeclaredField("dtVigenciaIni");
-            f.setAccessible(true);
-            f.set(p, fromTs(rs.getTimestamp("DT_VIGENCIA_INI")));
-            f = Product.class.getDeclaredField("dtVigenciaFim");
-            f.setAccessible(true);
-            f.set(p, fromTs(rs.getTimestamp("DT_VIGENCIA_FIM")));
             f = Product.class.getDeclaredField("dtCadastro");
             f.setAccessible(true);
             f.set(p, fromTs(rs.getTimestamp("DT_CADASTRO")));
@@ -209,7 +202,9 @@ public class ProductAdapterJpa implements ProductRepository {
             f.setAccessible(true);
             f.set(p, rs.getLong("ID_USUARIO_MANUTENCAO"));
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("Erro ao mapear Produto do ResultSet", e);
+            System.err.println("Erro ao mapear Produto do ResultSet: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Erro ao mapear Produto do ResultSet: " + e.getMessage(), e);
         }
     }
 

@@ -2,8 +2,6 @@ package br.sptrans.scd.product.domain;
 
 import java.time.LocalDateTime;
 
-import br.sptrans.scd.auth.domain.ClassificationPerson;
-import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.domain.enums.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -70,21 +68,21 @@ public class Product {
 
     private String codTipoCartao;
 
-    private ClassificationPerson codClassificacaoPessoa;
+    private String codClassificacaoPessoa;
 
-    private ProductType codTipoProduto;
+    private String codTipoProduto;
 
-    private Technology codTecnologia;
+    private String codTecnologia;
 
-    private Modality codModalidade;
+    private String codModalidade;
 
-    private Family codFamilia;
+    private String codFamilia;
 
-    private Species codEspecie;
+    private String codEspecie;
 
-    private User idUsuarioCadastro;
+    private Long idUsuarioCadastro;
 
-    private User idUsuarioManutencao;
+    private Long idUsuarioManutencao;
 
     // -------------------------------------------------------------------------
     // Consultas de status
@@ -102,13 +100,13 @@ public class Product {
     // Transições de status
     // -------------------------------------------------------------------------
 
-    public void activate(User idUsuario) {
+    public void activate(Long idUsuario) {
         this.codStatus = ProductStatus.ACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
 
-    public void deactivate(User idUsuario) {
+    public void deactivate(Long idUsuario) {
         this.codStatus = ProductStatus.INACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();

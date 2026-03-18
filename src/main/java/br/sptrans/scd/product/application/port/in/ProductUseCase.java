@@ -3,14 +3,8 @@ package br.sptrans.scd.product.application.port.in;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import br.sptrans.scd.auth.domain.ClassificationPerson;
-import br.sptrans.scd.product.domain.Family;
-import br.sptrans.scd.product.domain.Modality;
 import br.sptrans.scd.product.domain.Product;
-import br.sptrans.scd.product.domain.ProductType;
 import br.sptrans.scd.product.domain.ProductVersion;
-import br.sptrans.scd.product.domain.Species;
-import br.sptrans.scd.product.domain.Technology;
 
 /**
  * Porta de entrada (driven port) do módulo de Produto. Define todos os casos de
@@ -84,12 +78,12 @@ public interface ProductUseCase {
             String flgRestManual,
             String codEntidade,
             String codTipoCartao,
-            ClassificationPerson codClassificacaoPessoa,
-            ProductType codTipoProduto,
-            Technology codTecnologia,
-            Modality codModalidade,
-            Family codFamilia,
-            Species codEspecie,
+            String codClassificacaoPessoa,
+            String codTipoProduto,
+            String codTecnologia,
+            String codModalidade,
+            String codFamilia,
+            String codEspecie,
             Long idUsuario
     ) {}
 
@@ -109,12 +103,12 @@ public interface ProductUseCase {
             String flgRestManual,
             String codEntidade,
             String codTipoCartao,
-            ClassificationPerson codClassificacaoPessoa,
-            ProductType codTipoProduto,
-            Technology codTecnologia,
-            Modality codModalidade,
-            Family codFamilia,
-            Species codEspecie,
+            String codClassificacaoPessoa,
+            String codTipoProduto,
+            String codTecnologia,
+            String codModalidade,
+            String codFamilia,
+            String codEspecie,
             Long idUsuario
     ) {}
 

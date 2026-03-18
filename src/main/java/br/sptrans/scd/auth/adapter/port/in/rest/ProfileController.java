@@ -65,7 +65,7 @@ public class ProfileController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PageResponse<Profile>> getAllProfile(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         List<Profile> perfis = groupProfileManagementUseCase.listProfiles(null);
         return ResponseEntity.ok(PageResponse.fromList(perfis, page, size));
     }

@@ -18,18 +18,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.out.UserRepository;
-import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.product.application.port.in.ProductUseCase;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateProductCommand;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateVersionCommand;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.UpdateProductCommand;
-import br.sptrans.scd.product.domain.Family;
-import br.sptrans.scd.product.domain.Modality;
 import br.sptrans.scd.product.domain.Product;
-import br.sptrans.scd.product.domain.ProductType;
 import br.sptrans.scd.product.domain.ProductVersion;
-import br.sptrans.scd.product.domain.Species;
-import br.sptrans.scd.product.domain.Technology;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
@@ -78,12 +72,12 @@ public class ProductController {
                 request.flgRestManual(),
                 request.codEntidade(),
                 request.codTipoCartao(),
-                request.codClassificacaoPessoa() != null ? new ClassificationPerson(request.codClassificacaoPessoa(), null, null, null, null, null, null, null) : null,
-                request.codTipoProduto() != null ? new ProductType(request.codTipoProduto(), null, null, null, null, null, null) : null,
-                request.codTecnologia() != null ? new Technology(request.codTecnologia(), null, null, null, null, null, null) : null,
-                request.codModalidade() != null ? new Modality(request.codModalidade(), null, null, null, null, null, null) : null,
-                request.codFamilia() != null ? new Family(request.codFamilia(), null, null, null, null, null, null) : null,
-                request.codEspecie() != null ? new Species(request.codEspecie(), null, null, null, null, null, null) : null,
+                request.codClassificacaoPessoa(),
+                request.codTipoProduto(),
+                request.codTecnologia(),
+                request.codModalidade(),
+                request.codFamilia(),
+                request.codEspecie() ,
                 idUsuario
         ));
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -132,12 +126,12 @@ public class ProductController {
                 request.flgRestManual(),
                 request.codEntidade(),
                 request.codTipoCartao(),
-                request.codClassificacaoPessoa() != null ? new ClassificationPerson(request.codClassificacaoPessoa(), null, null, null, null, null, null, null) : null,
-                request.codTipoProduto() != null ? new ProductType(request.codTipoProduto(), null, null, null, null, null, null) : null,
-                request.codTecnologia() != null ? new Technology(request.codTecnologia(), null, null, null, null, null, null) : null,
-                request.codModalidade() != null ? new Modality(request.codModalidade(), null, null, null, null, null, null) : null,
-                request.codFamilia() != null ? new Family(request.codFamilia(), null, null, null, null, null, null) : null,
-                request.codEspecie() != null ? new Species(request.codEspecie(), null, null, null, null, null, null) : null,
+                request.codClassificacaoPessoa(),
+                request.codTipoProduto(),
+                request.codTecnologia(),
+                request.codModalidade(),
+                request.codFamilia(),
+                request.codEspecie(),
                 idUsuario
         ));
         return ResponseEntity.noContent().build();

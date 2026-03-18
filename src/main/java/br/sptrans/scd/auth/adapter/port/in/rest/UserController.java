@@ -48,7 +48,7 @@ public class UserController {
     @SecurityRequirement(name = "bearerAuth")
     public PageResponse<UserResponseDTO> listUsers(
             @Parameter(description = "Número da página (0-based)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Tamanho da página") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Tamanho da página") @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Campo de ordenação (idUsuario, codLogin, nomUsuario, nomEmail, codStatus, dtCriacao, dtModi, dtUltimoAcesso)") @RequestParam(defaultValue = "idUsuario") String sortBy,
             @Parameter(description = "Direção da ordenação (ASC ou DESC)") @RequestParam(defaultValue = "ASC") String sortDir,
             @Parameter(description = "Filtro por status (A=Ativo, B=Bloqueado, I=Inativo)") @RequestParam(required = false) String codStatus,
@@ -71,12 +71,12 @@ public class UserController {
         @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
         @ApiResponse(responseCode = "404", description = "Usuario não encontrado")
     })
-    public UserResponse getUsersById(@PathVariable Long idUsuario) {
+    public UserResponseDTO getUsersById(@PathVariable Long idUsuario) {
         User user = userManagementUseCase.findById(idUsuario);
-        return new UserResponse(
-            user.getNomUsuario(),
-            user.getNomFuncao(),
-            user.getNomCargo()
+        // O campo desCanal não está presente, então passamos null ou ajuste conforme necessário
+        return new UserResponseDTO(
+            user,
+            null
         );
     }
 
@@ -122,18 +122,7 @@ public class UserController {
     }
 
     private UserResponseDTO toResponseDTO(User user) {
-        return new UserResponseDTO(
-                user.getIdUsuario(),
-                user.getCodLogin(),
-                user.getNomUsuario(),
-                user.getNomEmail(),
-                user.getCodCpf(),
-                user.getCodRg(),
-                user.getStatus() != null ? user.getStatus().getCode() : null,
-                user.getDtCriacao(),
-                user.getDtModi(),
-                user.getDtExpiraSenha()
-        );
+        return new UserResponseDTO(user, null);
     }
 
     private String mapSortColumn(String sortBy) {

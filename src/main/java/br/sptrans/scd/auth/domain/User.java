@@ -17,13 +17,6 @@ import lombok.Setter;
 @EqualsAndHashCode(of = "idUsuario")
 public class User {
 
-    public Set<Profile> getProfiles() {
-        return perfis;
-    }
-
-    public Set<Functionality> getFunctionalities() {
-        return funcionalidadesDiretas;
-    }
 
     private Long idUsuario;
     private String codSenha;
