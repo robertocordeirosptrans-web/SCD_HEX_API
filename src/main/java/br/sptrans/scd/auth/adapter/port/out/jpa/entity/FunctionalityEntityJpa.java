@@ -8,8 +8,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "FUNCIONALIDADES", schema = "SPTRANSDBA")
 public class FunctionalityEntityJpa {
 
@@ -38,43 +42,4 @@ public class FunctionalityEntityJpa {
         this.dtManutencao = LocalDateTime.now();
     }
 
-    public String getNomFuncionalidade() {
-        return nomFuncionalidade;
-    }
-
-    public void setNomFuncionalidade(String nomFuncionalidade) {
-        this.nomFuncionalidade = nomFuncionalidade;
-    }
-
-    public String getCodStatus() {
-        return codStatus;
-    }
-
-    public void setCodStatus(String codStatus) {
-        this.codStatus = codStatus;
-    }
-
-    public LocalDateTime getDtCadastro() {
-        return dtCadastro;
-    }
-
-    public void setDtCadastro(LocalDateTime dtCadastro) {
-        this.dtCadastro = dtCadastro;
-    }
-
-    public LocalDateTime getDtManutencao() {
-        return dtManutencao;
-    }
-
-    public void setDtManutencao(LocalDateTime dtManutencao) {
-        this.dtManutencao = dtManutencao;
-    }
-
-    public FunctionalityEntityJpaKey getId() {
-        return id;
-    }
-
-    public void setId(FunctionalityEntityJpaKey id) {
-        this.id = id;
-    }
 }

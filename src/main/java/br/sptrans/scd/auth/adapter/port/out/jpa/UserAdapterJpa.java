@@ -7,13 +7,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.ProfileEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.ProfileFunctionalityJpa;
 import br.sptrans.scd.auth.adapter.port.out.jpa.entity.UserEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.UserProfileJpa;
+import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.FunctionalityMapper;
+import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.ProfileMapper;
 import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.UserMapper;
+import br.sptrans.scd.auth.adapter.port.out.jpa.repository.ProfileFunctionalityJpaRepository;
+import br.sptrans.scd.auth.adapter.port.out.jpa.repository.UserProfileJpaRepository;
 import br.sptrans.scd.auth.adapter.port.out.jpa.repository.UserRepositoryJpa;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.Functionality;
@@ -28,6 +36,8 @@ public class UserAdapterJpa implements UserRepository {
     private static final Logger log = LoggerFactory.getLogger(UserAdapterJpa.class);
 
     private final UserRepositoryJpa userRepositoryJpa;
+    private final UserProfileJpaRepository userProfileJpaRepository;
+    private final ProfileFunctionalityJpaRepository profileFunctionalityJpaRepository;
 
     @Override
     public Optional<User> findByCodLogin(String codLogin) {
@@ -140,14 +150,65 @@ public class UserAdapterJpa implements UserRepository {
 
     @Override
     public Set<Functionality> carregarFuncionalidadesEfetivas(Long idUsuario) {
-        // TODO: Implementar busca de funcionalidades efetivas via JOINs
-        return new HashSet<>();
+        // Busca todos os perfis ativos do usuário
+        List<UserProfileJpa> userProfiles = userProfileJpaRepository.findByUsuarioIdUsuarioAndCodStatus(idUsuario, "A");
+        Set<Functionality> funcionalidades = new HashSet<>();
+        for (UserProfileJpa userProfile : userProfiles) {
+            ProfileEntityJpa perfil = userProfile.getPerfil();
+            if (perfil != null && "A".equalsIgnoreCase(perfil.getCodStatus())) {
+                // Busca funcionalidades do perfil
+                List<ProfileFunctionalityJpa> perfilFuncs = profileFunctionalityJpaRepository.findByPerfil(perfil);
+                if (perfilFuncs != null && !perfilFuncs.isEmpty()) {
+                    perfilFuncs.stream()
+                        .filter(pf -> pf.getFuncionalidade() != null)
+                        .map(pf -> FunctionalityMapper.toDomain(pf.getFuncionalidade()))
+                        .forEach(funcionalidades::add);
+                }
+            }
+        }
+        return funcionalidades;
     }
 
     @Override
     public Set<Profile> carregarPerfisEfetivos(Long idUsuario) {
-        // TODO: Implementar busca de perfis efetivos via JOINs
-        return new HashSet<>();
+        List<UserProfileJpa> userProfiles = userProfileJpaRepository.findByUsuarioIdUsuarioAndCodStatus(idUsuario, "A");
+        long nullCount = userProfiles.stream().filter(up -> up == null).count();
+        log.info("[carregarPerfisEfetivos] Perfis encontrados para usuário {}: {} (nulos: {})", idUsuario, userProfiles.size(), nullCount);
+
+        Set<Profile> perfisValidos = userProfiles.stream()
+            .filter(up -> up != null)
+            .filter(up -> {
+                // Ignora perfis expirados
+                if (up.getId() != null && up.getId().getDtFimValidade() != null) {
+                    if (up.getId().getDtFimValidade().isBefore(java.time.LocalDateTime.now())) {
+                        log.warn("Perfil expirado para usuário {}: {} (dtFimValidade={})", idUsuario, up, up.getId().getDtFimValidade());
+                        return false;
+                    }
+                }
+                return true;
+            })
+            .peek(up -> {
+                if (up.getPerfil() == null) {
+                    log.warn("UserProfileJpa com perfil nulo para usuário {}: {}", idUsuario, up);
+                } else {
+                    log.info("[carregarPerfisEfetivos] Perfil encontrado: codPerfil={}, codStatus={}", up.getPerfil().getCodPerfil(), up.getPerfil().getCodStatus());
+                }
+            })
+            .map(UserProfileJpa::getPerfil)
+            .filter(perfil -> {
+                if (perfil == null) {
+                    log.warn("UserProfileJpa com perfil nulo encontrado para usuário {}", idUsuario);
+                    return false;
+                }
+                return "A".equalsIgnoreCase(perfil.getCodStatus());
+            })
+            .map(ProfileMapper::toDomain)
+            .collect(Collectors.toSet());
+
+        if (perfisValidos.isEmpty()) {
+            throw new IllegalStateException("Usuário sem associação válida com perfil (expirado, inativo ou inexistente)");
+        }
+        return perfisValidos;
     }
 
 }

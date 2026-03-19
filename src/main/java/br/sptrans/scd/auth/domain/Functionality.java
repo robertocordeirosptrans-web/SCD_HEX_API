@@ -33,60 +33,6 @@ public class Functionality {
         return codSistema + "_" + codModulo + "_" + codRotina + "_" + codFuncionalidade;
     }
 
-    public Long getIdUsuarioManutencao() {
-        return idUsuarioManutencao;
-    }
-
-    public void setIdUsuarioManutencao(Long idUsuarioManutencao) {
-        this.idUsuarioManutencao = idUsuarioManutencao;
-    }
-
-    public String getCodStatus() {
-        return codStatus;
-    }
-
-    public void setCodStatus(String codStatus) {
-        this.codStatus = codStatus;
-    }
-
-    public LocalDateTime getDtModi() {
-        return dtModi;
-    }
-
-    public void setDtModi(LocalDateTime dtModi) {
-        this.dtModi = dtModi;
-    }
-
-    public String getFlgMonitoracao() {
-        return flgMonitoracao;
-    }
-
-    public void setFlgMonitoracao(String flgMonitoracao) {
-        this.flgMonitoracao = flgMonitoracao;
-    }
-
-    public LocalDateTime getDtSinc() {
-        return dtSinc;
-    }
-
-    public void setDtSinc(LocalDateTime dtSinc) {
-        this.dtSinc = dtSinc;
-    }
-
-    public String getNomFuncionalidade() {
-        return nomFuncionalidade;
-    }
-
-    public void setNomFuncionalidade(String nomFuncionalidade) {
-        this.nomFuncionalidade = nomFuncionalidade;
-    }
-
-    public String getFlgEvento() {
-        return flgEvento;
-    }
-
-    public void setFlgEvento(String flgEvento) {
-        this.flgEvento = flgEvento;
-    }
+    
 
 }

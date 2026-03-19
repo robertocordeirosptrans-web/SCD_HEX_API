@@ -55,7 +55,6 @@ public class UserController {
             @RequestParam(defaultValue = "ASC") String sortDir
     ) {
         String dbSortColumn = mapSortColumn(sortBy);
-        // TODO: Adaptar o use case para receber FiltroUsuarioRequest
         List<User> users = userManagementUseCase.listUsersPaginated(filtro, page, size, dbSortColumn, sortDir);
         long totalElements = userManagementUseCase.countUsers(filtro);
         List<UserResponseDTO> content = users.stream().map(this::toResponseDTO).toList();
@@ -73,8 +72,8 @@ public class UserController {
         User user = userManagementUseCase.findById(idUsuario);
         // O campo desCanal não está presente, então passamos null ou ajuste conforme necessário
         return new UserResponseDTO(
-            user,
-            null
+                user,
+                null
         );
     }
 

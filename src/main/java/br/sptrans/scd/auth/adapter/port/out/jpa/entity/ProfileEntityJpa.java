@@ -11,12 +11,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
+@Table(name = "PERFIS", schema = "SPTRANSDBA")
 public class ProfileEntityJpa {
 
     @Id
@@ -29,9 +31,7 @@ public class ProfileEntityJpa {
     @Column(name = "COD_STATUS", length = 1)
     private String codStatus;
 
-    @Column(name = "DT_CADASTRO")
-    private LocalDateTime dtCadastro;
-    @Column(name = "DT_MANUTENCAO")
+    @Column(name = "DT_MODI")
     private LocalDateTime dtManutencao;
     @Column(name = "ID_USUARIO_MANUTENCAO")
     private Long idUsuarioManutencao;
@@ -41,7 +41,7 @@ public class ProfileEntityJpa {
 
     @PrePersist
     protected void aoInserir() {
-        this.dtCadastro = LocalDateTime.now();
+  
         this.dtManutencao = LocalDateTime.now();
     }
 

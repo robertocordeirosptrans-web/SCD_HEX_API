@@ -11,11 +11,12 @@ import jakarta.persistence.JoinColumns;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Entity
 @Table(name = "PERFIL_FUNCIONALIDADES", schema = "SPTRANSDBA")
 public class ProfileFunctionalityJpa {
@@ -23,13 +24,11 @@ public class ProfileFunctionalityJpa {
     @EmbeddedId
     private ProfileFunctionalityJpaId id;
 
-    @Column(name = "COD_STATUS", length = 1)
-    private String codStatus;
+    @Column(name = "DT_INICIO_VALIDADE")
+    private LocalDateTime dtInicioValidade;
 
-    @Column(name = "DT_CADASTRO")
-    private LocalDateTime dtCadastro;
-    @Column(name = "DT_MANUTENCAO")
-    private LocalDateTime dtManutencao;
+    @Column(name = "ID_USUARIO_MANUTENCAO")
+    private Long idUsuarioManutencao;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("codPerfil")
@@ -47,60 +46,9 @@ public class ProfileFunctionalityJpa {
 
     @PrePersist
     protected void aoInserir() {
-        this.dtCadastro = LocalDateTime.now();
-        this.dtManutencao = LocalDateTime.now();
+        this.dtInicioValidade = LocalDateTime.now();
+
     }
 
-    @PreUpdate
-    protected void aoAtualizar() {
-        this.dtManutencao = LocalDateTime.now();
-    }
 
-    public ProfileFunctionalityJpaId getId() {
-        return id;
-    }
-
-    public void setId(ProfileFunctionalityJpaId id) {
-        this.id = id;
-    }
-
-    public String getCodStatus() {
-        return codStatus;
-    }
-
-    public void setCodStatus(String codStatus) {
-        this.codStatus = codStatus;
-    }
-
-    public LocalDateTime getDtCadastro() {
-        return dtCadastro;
-    }
-
-    public void setDtCadastro(LocalDateTime dtCadastro) {
-        this.dtCadastro = dtCadastro;
-    }
-
-    public LocalDateTime getDtManutencao() {
-        return dtManutencao;
-    }
-
-    public void setDtManutencao(LocalDateTime dtManutencao) {
-        this.dtManutencao = dtManutencao;
-    }
-
-    public ProfileEntityJpa getPerfil() {
-        return perfil;
-    }
-
-    public void setPerfil(ProfileEntityJpa perfil) {
-        this.perfil = perfil;
-    }
-
-    public FunctionalityEntityJpa getFuncionalidade() {
-        return funcionalidade;
-    }
-
-    public void setFuncionalidade(FunctionalityEntityJpa funcionalidade) {
-        this.funcionalidade = funcionalidade;
-    }
 }
