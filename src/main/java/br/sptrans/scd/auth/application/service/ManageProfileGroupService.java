@@ -24,11 +24,19 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
 
     private final GroupRepository groupRepository;
     private final ProfileRepository profileRepository;
+    private final br.sptrans.scd.auth.application.port.out.GroupUserRepository groupUserRepository;
 
     public ManageProfileGroupService(GroupRepository groupRepository,
-            ProfileRepository profileRepository) {
+            ProfileRepository profileRepository,
+            br.sptrans.scd.auth.application.port.out.GroupUserRepository groupUserRepository) {
         this.groupRepository = groupRepository;
         this.profileRepository = profileRepository;
+        this.groupUserRepository = groupUserRepository;
+    }
+    @Override
+    public List<GroupUser> listGroupUsersByCodGrupo(String codGrupo) {
+        // Retorna apenas usuários ativos do grupo
+        return groupUserRepository.findById_CodGrupoAndCodStatus(codGrupo, "A");
     }
 
     // ══════════════════════════════════════════════════════════════════════════
