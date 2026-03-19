@@ -12,7 +12,7 @@ import br.sptrans.scd.auth.domain.User;
 
 public interface UserRepository {
 
-    User save(User user);
+   
 
     Optional<User> findById(Long id);
 
@@ -28,7 +28,7 @@ public interface UserRepository {
     /**
      * Insere novo usuário na tabela USUARIOS.
      */
-    void insert(User usuario);
+    User save(User user);
 
     /**
      * Atualiza campos cadastrais do usuário (exceto COD_LOGIN e COD_SENHA).
@@ -73,17 +73,15 @@ public interface UserRepository {
     // ── Verificações ──────────────────────────────────────────────────────────
     boolean existsByLogin(String codLogin);
 
-    List<User> findAll(String codStatus);
-
     /**
      * Busca paginada de usuários com filtros, ordenação e contagem total.
      */
-    List<User> findAllPaginated(String codStatus, String search, int offset, int limit, String sortBy, String sortDir);
+    List<User> findAllPaginated(String status, String nome, String email, String perfil, int offset, int limit, String sortBy, String sortDir);
 
     /**
      * Conta total de usuários aplicando os mesmos filtros da busca paginada.
      */
-    long countAll(String codStatus, String search);
+    long countAll(String status, String nome, String email, String perfil);
 
     /**
      * Verifica se o usuário possui sessão ativa (DT_ULTIMO_ACESSO > now - 30

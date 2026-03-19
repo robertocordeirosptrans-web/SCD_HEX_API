@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO;
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserRequestDTO;
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserResponseDTO;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
@@ -23,7 +25,6 @@ import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -47,20 +48,17 @@ public class UserController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public PageResponse<UserResponseDTO> listUsers(
-            @Parameter(description = "Número da página (0-based)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Tamanho da página") @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "Campo de ordenação (idUsuario, codLogin, nomUsuario, nomEmail, codStatus, dtCriacao, dtModi, dtUltimoAcesso)") @RequestParam(defaultValue = "idUsuario") String sortBy,
-            @Parameter(description = "Direção da ordenação (ASC ou DESC)") @RequestParam(defaultValue = "ASC") String sortDir,
-            @Parameter(description = "Filtro por status (A=Ativo, B=Bloqueado, I=Inativo)") @RequestParam(required = false) String codStatus,
-            @Parameter(description = "Busca por nome, login, e-mail ou CPF") @RequestParam(required = false) String search
+            @ModelAttribute UserFilterRequestDTO filtro,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "idUsuario") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDir
     ) {
         String dbSortColumn = mapSortColumn(sortBy);
-
-        List<User> users = userManagementUseCase.listUsersPaginated(codStatus, search, page, size, dbSortColumn, sortDir);
-        long totalElements = userManagementUseCase.countUsers(codStatus, search);
-
+        // TODO: Adaptar o use case para receber FiltroUsuarioRequest
+        List<User> users = userManagementUseCase.listUsersPaginated(filtro, page, size, dbSortColumn, sortDir);
+        long totalElements = userManagementUseCase.countUsers(filtro);
         List<UserResponseDTO> content = users.stream().map(this::toResponseDTO).toList();
-
         return PageResponse.of(content, page, size, totalElements);
     }
 

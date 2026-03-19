@@ -6,12 +6,20 @@ import java.util.Date;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
+
+@Entity
+@Table(name = "USUARIOS", schema="SPTRANSDBA")
 @Getter
 @Setter
-@Entity
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserEntityJpa {
 
     @Id
@@ -77,9 +85,6 @@ public class UserEntityJpa {
 
     @Column(name = "COD_CLASSIFICACAO_PESSOA")
     private String codClassificacaoPessoa;
-
-    @Column(name = "NEW_SENHA")
-    private String newSenha;
 
     @Column(name = "OLD_SENHA")
     private String oldSenha;

@@ -68,8 +68,7 @@ public class AuthService implements AuthUseCase {
                 log.warn("Usuário não encontrado: {}", comando.codLogin());
                 return new AuthenticationFailedException("Usuário ou senha inválidos.");
             });
-        log.info("Usuário encontrado: {} (status: {})", user.getCodLogin(), user.getStatus());
-        System.out.print(user.getCodLogin());
+        log.info("Usuário encontrado: {} (status: {})", user.getCodLogin(), user.getCodStatus());
         // Conta bloqueada
         if (user.isBlocked()) {
             log.warn("Usuário bloqueado: {}", user.getCodLogin());
@@ -94,9 +93,9 @@ public class AuthService implements AuthUseCase {
                 log.warn("Senha MD5 inválida para usuário: {}", user.getCodLogin());
                 user.registrarTentativaFalha();
                 userRepository.atualizarTentativasEStatus(
-                        user.getIdUsuario(),
-                        user.getNumTentativasFalha(),
-                        user.getStatus() != null ? user.getStatus().getCode() : null);
+                    user.getIdUsuario(),
+                    user.getNumTentativasFalha(),
+                    user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
                 if (user.isBlocked()) {
                     log.warn("Usuário bloqueado após tentativas inválidas: {}", user.getCodLogin());
                     throw new AccountBlockedException("Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
@@ -112,7 +111,7 @@ public class AuthService implements AuthUseCase {
                 userRepository.atualizarTentativasEStatus(
                         user.getIdUsuario(),
                         user.getNumTentativasFalha(),
-                        user.getStatus() != null ? user.getStatus().getCode() : null);
+                        user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
                 if (user.isBlocked()) {
                     log.warn("Usuário bloqueado após tentativas inválidas: {}", user.getCodLogin());
                     throw new AccountBlockedException("Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
@@ -145,7 +144,7 @@ public class AuthService implements AuthUseCase {
         log.info("Login bem-sucedido para usuário: {}", user.getCodLogin());
         user.resetarTentativas();
         userRepository.atualizarTentativasEStatus(
-            user.getIdUsuario(), 0, user.getStatus() != null ? user.getStatus().getCode() : null);
+            user.getIdUsuario(), 0, user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
         userRepository.atualizarUltimoAcesso(user.getIdUsuario());
         return user;
     }

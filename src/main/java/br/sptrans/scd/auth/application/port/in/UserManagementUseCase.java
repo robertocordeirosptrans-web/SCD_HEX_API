@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO;
 import br.sptrans.scd.auth.domain.User;
 
 /**
@@ -71,40 +72,32 @@ public interface UserManagementUseCase {
      * Idempotente: se o vínculo existe mas está inativo, reativa.
      */
     // void assignProfiles(AssignProfilesCommand command);
-
     /**
      * Remove vínculo de perfil do usuário (COD_STATUS = 'I' em USUARIO_PERFIS).
      * Não deleta — mantém histórico.
      */
     // void removeProfile(RemoveProfileCommand command);
-
     // ── Vínculos de grupo ─────────────────────────────────────────────────────
     /**
      * Vincula usuário a um grupo (GRUPO_USUARIOS). Idempotente: se o vínculo
      * existe mas está inativo, reativa.
      */
     // void assignGroup(AssignGroupCommand command);
-
     /**
      * Remove vínculo de grupo do usuário (COD_STATUS = 'I' em GRUPO_USUARIOS).
      */
     // void removeGroup(RemoveGroupCommand command);
-
     // ── Consultas ─────────────────────────────────────────────────────────────
-    /**
-     * Lista usuários com filtro opcional por status.
-     */
-    List<User> listUsers(String codStatus);
 
     /**
      * Lista usuários com paginação, filtros e ordenação.
      */
-    List<User> listUsersPaginated(String codStatus, String search, int page, int size, String sortBy, String sortDir);
+    List<User> listUsersPaginated(UserFilterRequestDTO filtro, int page, int size, String sortBy, String sortDir);
 
     /**
      * Conta total de usuários com os filtros aplicados.
      */
-    long countUsers(String codStatus, String search);
+    long countUsers(UserFilterRequestDTO filtro);
 
     /**
      * Busca usuário por ID com perfis, grupos e funcionalidades efetivas

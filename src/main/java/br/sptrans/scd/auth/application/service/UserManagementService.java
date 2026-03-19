@@ -52,7 +52,7 @@ public class UserManagementService implements UserManagementUseCase {
         user.setCodRg(cmd.codRg());
         user.setCodSenha(passwordHash);
         user.setOldSenha(null);
-        user.setStatus(UserStatus.ACTIVE);
+        user.setCodStatus(UserStatus.ACTIVE);
         user.setNumTentativasFalha(0);
         user.setNumDiasSemanasPermitidos(cmd.numDiasSemanasPermitidos());
         user.setDt_jornada_ini(cmd.dtJornadaIni());
@@ -66,7 +66,7 @@ public class UserManagementService implements UserManagementUseCase {
             user.setDtExpiraSenha(LocalDateTime.now());
         }
 
-        userRepository.insert(user);
+        userRepository.save(user);
         return user;
     }
 
@@ -168,26 +168,37 @@ public class UserManagementService implements UserManagementUseCase {
                 cmd.idUsuarioLogado());
     }
 
-    // ── listUsers ─────────────────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
-    public List<User> listUsers(String codStatus) {
-        return userRepository.findAll(codStatus);
-    }
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "usuarios", key = "(#codStatus ?: 'ALL') + '_' + (#search ?: '') + '_' + #page + '_' + #size + '_' + #sortBy + '_' + #sortDir")
-    public List<User> listUsersPaginated(String codStatus, String search, int page, int size, String sortBy, String sortDir) {
+    @Cacheable(value = "usuarios", key = "(#filtro.status() ?: 'ALL') + '_' + (#filtro.nome() ?: '') + '_' + (#filtro.email() ?: '') + '_' + (#filtro.perfil() ?: '') + '_' + #page + '_' + #size + '_' + #sortBy + '_' + #sortDir")
+    public List<User> listUsersPaginated(br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO filtro, int page, int size, String sortBy, String sortDir) {
         int offset = page * size;
-        return userRepository.findAllPaginated(codStatus, search, offset, size, sortBy, sortDir);
+        // Adapte o repositório para aceitar os novos filtros se necessário
+        return userRepository.findAllPaginated(
+            filtro.status(),
+            filtro.nome(),
+            filtro.email(),
+            filtro.perfil(),
+            offset,
+            size,
+            sortBy,
+            sortDir
+        );
     }
+
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "usuarios", key = "'count_' + (#codStatus ?: 'ALL') + '_' + (#search ?: '')")
-    public long countUsers(String codStatus, String search) {
-        return userRepository.countAll(codStatus, search);
+    @Cacheable(value = "usuarios", key = "'count_' + (#filtro.status() ?: 'ALL') + '_' + (#filtro.nome() ?: '') + '_' + (#filtro.email() ?: '') + '_' + (#filtro.perfil() ?: '')")
+    public long countUsers(br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO filtro) {
+        // Adapte o repositório para aceitar os novos filtros se necessário
+        return userRepository.countAll(
+            filtro.status(),
+            filtro.nome(),
+            filtro.email(),
+            filtro.perfil()
+        );
     }
 
     @Override

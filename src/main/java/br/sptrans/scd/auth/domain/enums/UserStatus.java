@@ -1,11 +1,11 @@
 package br.sptrans.scd.auth.domain.enums;
 
 /**
- * Enum para status de usuário.
- * Substitui Strings "A", "B", "I" por valores type-safe (FASE 3).
+ * Enum para status de usuário. Substitui Strings "A", "B", "I" por valores
+ * type-safe (FASE 3).
  */
-
 public enum UserStatus {
+
     ACTIVE("A", "Ativo"),
     BLOCKED("B", "Bloqueado"),
     INACTIVE("I", "Inativo");
@@ -20,6 +20,18 @@ public enum UserStatus {
 
     public String getCode() {
         return code;
+    }
+
+    public static UserStatus valueOfCode(String code) {
+        if (code == null) {
+            return null;
+        }
+        for (UserStatus status : values()) {
+            if (status.getCode().equalsIgnoreCase(code)) {
+                return status;
+            }
+        }
+        return null;
     }
 
     public String getDescription() {

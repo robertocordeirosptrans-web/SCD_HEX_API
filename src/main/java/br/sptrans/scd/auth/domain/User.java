@@ -21,7 +21,7 @@ public class User {
     private Long idUsuario;
     private String codSenha;
     private String codLogin;
-    private UserStatus status;
+    private UserStatus codStatus;
     private LocalDateTime dtModi;
     private String nomUsuario;
     private String desEndereco;
@@ -39,7 +39,6 @@ public class User {
     private Date dt_jornada_ini;
     private Date dt_jornada_fim;
     private ClassificationPerson codClassificacaoPessoa;
-    private String newSenha;
     private String oldSenha;
     private Integer numTentativasFalha = 0;
     private String numDiasSemanasPermitidos = null;
@@ -72,21 +71,21 @@ public class User {
      * Conta está disponível para login.
      */
     public boolean isActived() {
-        return status != null && status.canLogin();
+        return codStatus != null && codStatus.canLogin();
     }
 
     public boolean isBlocked() {
-        return status != null && status.isBlocked();
+        return codStatus != null && codStatus.isBlocked();
     }
 
     public boolean isInactive() {
-        return status == UserStatus.INACTIVE;
+        return codStatus == UserStatus.INACTIVE;
     }
 
     public void registrarTentativaFalha() {
         this.numTentativasFalha = (this.numTentativasFalha == null ? 0 : this.numTentativasFalha) + 1;
         if (this.numTentativasFalha >= 3) {
-            this.status = UserStatus.BLOCKED;
+            this.codStatus = UserStatus.BLOCKED;
         }
     }
 

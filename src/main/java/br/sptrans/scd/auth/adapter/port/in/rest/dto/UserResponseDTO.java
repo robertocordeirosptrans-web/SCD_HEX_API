@@ -34,7 +34,7 @@ public record UserResponseDTO(
     public UserResponseDTO(User user, String desCanal) {
         this(
                 user.getCodLogin(),
-                user.getStatus() != null ? user.getStatus().getCode() : null,
+                user.getCodStatus() != null ? user.getCodStatus().getCode() : null,
                 user.getDtModi(),
                 user.getNomUsuario(),
                 user.getDesEndereco(),
