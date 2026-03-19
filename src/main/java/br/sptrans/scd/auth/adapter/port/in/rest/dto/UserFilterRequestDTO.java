@@ -1,9 +1,9 @@
 package br.sptrans.scd.auth.adapter.port.in.rest.dto;
 
 public record UserFilterRequestDTO(
-    String nome,
-    String email,
-    String perfil,
-    String status
+    String nomUsuario,
+    String nomEmail,
+    String codPerfil,
+    String codStatus
 ) {
 }

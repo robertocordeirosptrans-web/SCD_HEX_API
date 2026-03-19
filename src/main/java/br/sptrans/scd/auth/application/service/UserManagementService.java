@@ -171,15 +171,15 @@ public class UserManagementService implements UserManagementUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "usuarios", key = "(#filtro.status() ?: 'ALL') + '_' + (#filtro.nome() ?: '') + '_' + (#filtro.email() ?: '') + '_' + (#filtro.perfil() ?: '') + '_' + #page + '_' + #size + '_' + #sortBy + '_' + #sortDir")
+    @Cacheable(value = "usuarios", key = "(#filtro.codStatus() ?: 'ALL') + '_' + (#filtro.nomUsuario() ?: '') + '_' + (#filtro.nomEmail() ?: '') + '_' + (#filtro.codPerfil() ?: '') + '_' + #page + '_' + #size + '_' + #sortBy + '_' + #sortDir")
     public List<User> listUsersPaginated(br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO filtro, int page, int size, String sortBy, String sortDir) {
         int offset = page * size;
         // Adapte o repositório para aceitar os novos filtros se necessário
         return userRepository.findAllPaginated(
-            filtro.status(),
-            filtro.nome(),
-            filtro.email(),
-            filtro.perfil(),
+            filtro.codStatus(),
+            filtro.nomUsuario(),
+            filtro.nomEmail(),
+            filtro.codPerfil(),
             offset,
             size,
             sortBy,
@@ -190,14 +190,14 @@ public class UserManagementService implements UserManagementUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "usuarios", key = "'count_' + (#filtro.status() ?: 'ALL') + '_' + (#filtro.nome() ?: '') + '_' + (#filtro.email() ?: '') + '_' + (#filtro.perfil() ?: '')")
+    @Cacheable(value = "usuarios", key = "'count_' + (#filtro.codStatus() ?: 'ALL') + '_' + (#filtro.nomUsuario() ?: '') + '_' + (#filtro.nomEmail() ?: '') + '_' + (#filtro.codPerfil() ?: '')")
     public long countUsers(br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO filtro) {
         // Adapte o repositório para aceitar os novos filtros se necessário
         return userRepository.countAll(
-            filtro.status(),
-            filtro.nome(),
-            filtro.email(),
-            filtro.perfil()
+            filtro.codStatus(),
+            filtro.nomUsuario(),
+            filtro.nomEmail(),
+            filtro.codPerfil()
         );
     }
 

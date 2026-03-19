@@ -109,11 +109,15 @@ public interface GroupProfileManagementUseCase {
     // ══════════════════════════════════════════════════════════════════════════
     // ASSOCIAÇÕES
     // ══════════════════════════════════════════════════════════════════════════
-
     /**
      * Lista todas as associações grupo-usuário.
      */
     List<GroupUser> listGroupUsers();
+
+    /**
+     * Lista todas as associações grupo-usuário.
+     */
+    List<GroupUser> listGroupUsersByCodGrupo();
 
     /**
      * Lista todas as associações usuário-perfil.
@@ -197,7 +201,7 @@ public interface GroupProfileManagementUseCase {
     }
 
     record FunctionalityKey(
-             String codSistema,
+            String codSistema,
             String codModulo,
             String codRotina,
             String codFuncionalidade) {
