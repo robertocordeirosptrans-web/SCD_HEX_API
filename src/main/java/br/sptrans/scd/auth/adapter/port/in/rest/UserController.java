@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.port.in.rest.dto.UpdateUserDTO;
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO;
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserRequestDTO;
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserResponseDTO;
@@ -101,14 +102,14 @@ public class UserController {
     }
 
     @PutMapping("/{idUsuario}")
-    public UserResponseDTO updateUser(@PathVariable Long idUsuario, @RequestBody UserRequestDTO dto) {
+    public UserResponseDTO updateUser(@PathVariable Long idUsuario, @RequestBody UpdateUserDTO dto) {
         User user = userManagementUseCase.updateUser(new UpdateUserCommand(
                 idUsuario,
                 dto.nomUsuario(),
                 dto.nomEmail(),
                 dto.codCpf(),
                 dto.codRg(),
-                dto.idUsuarioLogado()
+                null // idUsuarioLogado não existe no UpdateUserDTO, ajuste conforme necessário
         ));
         return toResponseDTO(user);
     }
