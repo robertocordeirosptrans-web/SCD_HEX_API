@@ -5,6 +5,16 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.adapter.port.out.jpa.repository.ProfileJpaRepository;
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.ProfileEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.jpa.repository.ProfileFunctionalityJpaRepository;
+import br.sptrans.scd.auth.adapter.port.out.jpa.repository.FunctionalityJpaRepository;
+import br.sptrans.scd.auth.adapter.port.out.jpa.repository.UserProfileJpaRepository;
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.ProfileFunctionalityJpa;
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.FunctionalityEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.FunctionalityEntityJpaKey;
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.ProfileFunctionalityJpaId;
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.UserProfileJpa;
 import br.sptrans.scd.auth.application.port.out.ProfileRepository;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.FunctionalityKey;
@@ -13,228 +23,196 @@ import br.sptrans.scd.auth.domain.ProfileFunctionality;
 import br.sptrans.scd.auth.domain.ProfileFunctionalityKey;
 import br.sptrans.scd.auth.domain.UserProfile;
 import br.sptrans.scd.auth.domain.UserProfileId;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 
 @Repository
+@RequiredArgsConstructor
 public class ProfileAdapterJpa implements ProfileRepository {
-	@PersistenceContext
-	private EntityManager em;
 
-	@Override
-	public Optional<Profile> findById(String codPerfil) {
-		List<Object[]> rows = em.createNativeQuery("""
-				SELECT COD_PERFIL, NOM_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MODI
-				FROM SPTRANSDBA.PERFIS
-				WHERE COD_PERFIL = :codPerfil
-				""")
-				.setParameter("codPerfil", codPerfil)
-				.getResultList();
-		if (rows.isEmpty()) {
-			return Optional.empty();
-		}
-		Object[] row = rows.get(0);
-		Profile perfil = new Profile();
-		perfil.setCodPerfil(row[0] != null ? row[0].toString() : null);
-		perfil.setNomPerfil(row[1] != null ? row[1].toString() : null);
-		perfil.setCodStatus(row[2] != null ? row[2].toString() : null);
-		perfil.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
-		perfil.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
-		return Optional.of(perfil);
-	}
+    private final ProfileJpaRepository profileJpaRepository;
+    private final ProfileFunctionalityJpaRepository profileFunctionalityJpaRepository;
+    private final FunctionalityJpaRepository functionalityJpaRepository;
+    private final UserProfileJpaRepository userProfileJpaRepository;
 
-	@Override
-	public boolean existsByCode(String codPerfil) {
-		Long count = ((Number) em.createNativeQuery("""
-				SELECT COUNT(*) FROM SPTRANSDBA.PERFIS WHERE COD_PERFIL = :codPerfil
-				""")
-				.setParameter("codPerfil", codPerfil)
-				.getSingleResult()).longValue();
-		return count > 0;
-	}
+    @Override
 
-	@Override
-	public List<Profile> listProfile(String codStatus) {
-		String sql = "SELECT COD_PERFIL, NOM_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MODI FROM SPTRANSDBA.PERFIS";
-		if (codStatus != null) {
-			sql += " WHERE COD_STATUS = :status";
-		}
-		var query = em.createNativeQuery(sql);
-		if (codStatus != null) {
-			query.setParameter("status", codStatus);
-		}
-		List<Object[]> rows = query.getResultList();
-		return rows.stream().map(row -> {
-			Profile perfil = new Profile();
-			perfil.setCodPerfil(row[0] != null ? row[0].toString() : null);
-			perfil.setNomPerfil(row[1] != null ? row[1].toString() : null);
-			perfil.setCodStatus(row[2] != null ? row[2].toString() : null);
-			perfil.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
-			perfil.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
-			// Removido campos de validade inexistentes
-			return perfil;
-		}).toList();
-	}
+    public Optional<Profile> findById(String codPerfil) {
+        return profileJpaRepository.findByCodPerfil(codPerfil).map(this::toDomainProfile);
+    }
 
-	@Override
-	public void save(Profile perfil) {
-		em.createNativeQuery("""
-				INSERT INTO SPTRANSDBA.PERFIS (COD_PERFIL, NOM_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MODI)
-				VALUES (:codPerfil, :nomPerfil, :codStatus, :idUsuarioManutencao, :dtManutencao)
-			""")
-			.setParameter("codPerfil", perfil.getCodPerfil())
-			.setParameter("nomPerfil", perfil.getNomPerfil())
-			.setParameter("codStatus", perfil.getCodStatus())
-			.setParameter("idUsuarioManutencao", perfil.getIdUsuarioManutencao())
-			.setParameter("dtManutencao", perfil.getDtModi())
-			.executeUpdate();
-	}
+    @Override
+    public boolean existsByCode(String codPerfil) {
+        return profileJpaRepository.countByCodPerfil(codPerfil) > 0;
+    }
 
-	@Override
-	public void updateStatus(String codPerfil, String codStatus, Long idUsuarioManutencao) {
-		em.createNativeQuery("""
-				UPDATE SPTRANSDBA.PERFIS SET COD_STATUS = :codStatus, ID_USUARIO_MANUTENCAO = :idUsuarioManutencao, DT_MODI = CURRENT_DATE
-				WHERE COD_PERFIL = :codPerfil
-			""")
-			.setParameter("codStatus", codStatus)
-			.setParameter("idUsuarioManutencao", idUsuarioManutencao)
-			.setParameter("codPerfil", codPerfil)
-			.executeUpdate();
-	}
+    @Override
+    public List<Profile> listProfile(String codStatus) {
+        return profileJpaRepository.findByCodStatus(codStatus).stream().map(this::toDomainProfile).toList();
+    }
 
-	@Override
-	public void associateFunctionalitiesToProfile(String codPerfil, FunctionalityKey chave, Long idUsuarioManutencao) {
-		em.createNativeQuery("""
-				INSERT INTO SPTRANSDBA.PERFIL_FUNCIONALIDADES (COD_PERFIL, COD_SISTEMA, COD_MODULO, COD_ROTINA, COD_FUNCIONALIDADE, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MANUTENCAO)
-				VALUES (:codPerfil, :codSistema, :codModulo, :codRotina, :codFuncionalidade, 'A', :idUsuarioManutencao, CURRENT_DATE)
-			""")
-			.setParameter("codPerfil", codPerfil)
-			.setParameter("codSistema", chave.getCodSistema())
-			.setParameter("codModulo", chave.getCodModulo())
-			.setParameter("codRotina", chave.getCodRotina())
-			.setParameter("codFuncionalidade", chave.getCodFuncionalidade())
-			.setParameter("idUsuarioManutencao", idUsuarioManutencao)
-			.executeUpdate();
-	}
+    @Override
+    public void updateStatus(String codPerfil, String codStatus, Long idUsuarioManutencao) {
+        profileJpaRepository.findByCodPerfil(codPerfil).ifPresent(entity -> {
+            entity.setCodStatus(codStatus);
+            entity.setIdUsuarioManutencao(idUsuarioManutencao);
+            entity.setDtManutencao(java.time.LocalDateTime.now());
+            profileJpaRepository.save(entity);
+        });
+    }
 
-	@Override
-	public void desassociateFunctionalitiesToProfile(String codPerfil, FunctionalityKey chave, Long idUsuarioManutencao) {
-		em.createNativeQuery("""
-				UPDATE SPTRANSDBA.PERFIL_FUNCIONALIDADES SET COD_STATUS = 'I', ID_USUARIO_MANUTENCAO = :idUsuarioManutencao, DT_MANUTENCAO = CURRENT_DATE
-				WHERE COD_PERFIL = :codPerfil AND COD_SISTEMA = :codSistema AND COD_MODULO = :codModulo AND COD_ROTINA = :codRotina AND COD_FUNCIONALIDADE = :codFuncionalidade
-			""")
-			.setParameter("idUsuarioManutencao", idUsuarioManutencao)
-			.setParameter("codPerfil", codPerfil)
-			.setParameter("codSistema", chave.getCodSistema())
-			.setParameter("codModulo", chave.getCodModulo())
-			.setParameter("codRotina", chave.getCodRotina())
-			.setParameter("codFuncionalidade", chave.getCodFuncionalidade())
-			.executeUpdate();
-	}
+    @Override
+    public void associateFunctionalitiesToProfile(String codPerfil, FunctionalityKey chave, Long idUsuarioManutencao) {
+        ProfileFunctionalityJpaId pfId = new ProfileFunctionalityJpaId();
+        pfId.setCodPerfil(codPerfil);
+        pfId.setCodSistema(chave.getCodSistema());
+        pfId.setCodModulo(chave.getCodModulo());
+        pfId.setCodRotina(chave.getCodRotina());
+        pfId.setCodFuncionalidade(chave.getCodFuncionalidade());
+        ProfileFunctionalityJpa pf = new ProfileFunctionalityJpa();
+        pf.setId(pfId);
+        pf.setIdUsuarioManutencao(idUsuarioManutencao);
+        profileFunctionalityJpaRepository.save(pf);
+    }
 
-	@Override
-	public boolean isFunctionalityAssociate(String codPerfil, FunctionalityKey chave) {
-		Long count = ((Number) em.createNativeQuery("""
-				SELECT COUNT(*) FROM SPTRANSDBA.PERFIL_FUNCIONALIDADES
-				WHERE COD_PERFIL = :codPerfil AND COD_SISTEMA = :codSistema AND COD_MODULO = :codModulo AND COD_ROTINA = :codRotina AND COD_FUNCIONALIDADE = :codFuncionalidade AND COD_STATUS = 'A'
-			""")
-			.setParameter("codPerfil", codPerfil)
-			.setParameter("codSistema", chave.getCodSistema())
-			.setParameter("codModulo", chave.getCodModulo())
-			.setParameter("codRotina", chave.getCodRotina())
-			.setParameter("codFuncionalidade", chave.getCodFuncionalidade())
-			.getSingleResult()).longValue();
-		return count > 0;
-	}
+    @Override
+    public void desassociateFunctionalitiesToProfile(String codPerfil, FunctionalityKey chave, Long idUsuarioManutencao) {
+        profileFunctionalityJpaRepository.desassociateFunctionality(
+                codPerfil,
+                chave.getCodSistema(),
+                chave.getCodModulo(),
+                chave.getCodRotina(),
+                chave.getCodFuncionalidade(),
+                idUsuarioManutencao
+        );
+    }
 
-	@Override
-	public List<Functionality> listFunctionalityActive() {
-		List<Object[]> rows = em.createNativeQuery("""
-				SELECT COD_SISTEMA, COD_MODULO, COD_ROTINA, COD_FUNCIONALIDADE, NOM_FUNCIONALIDADE
-				FROM SPTRANSDBA.FUNCIONALIDADES
-				WHERE COD_STATUS = 'A'
-			""")
-			.getResultList();
-		return rows.stream().map(row -> {
-			Functionality func = new Functionality();
-			func.setCodSistema((String) row[0]);
-			func.setCodModulo((String) row[1]);
-			func.setCodRotina((String) row[2]);
-			func.setCodFuncionalidade((String) row[3]);
-			func.setNomFuncionalidade((String) row[4]);
-			return func;
-		}).toList();
-	}
+    @Override
+    public boolean isFunctionalityAssociate(String codPerfil, FunctionalityKey chave) {
+        return profileFunctionalityJpaRepository.countFunctionalityAssociation(
+                codPerfil,
+                chave.getCodSistema(),
+                chave.getCodModulo(),
+                chave.getCodRotina(),
+                chave.getCodFuncionalidade()
+        ) > 0;
+    }
 
-	@Override
-	public boolean isFunctionality(FunctionalityKey chave) {
-		Long count = ((Number) em.createNativeQuery("""
-				SELECT COUNT(*) FROM SPTRANSDBA.FUNCIONALIDADES
-				WHERE COD_SISTEMA = :codSistema AND COD_MODULO = :codModulo AND COD_ROTINA = :codRotina AND COD_FUNCIONALIDADE = :codFuncionalidade AND COD_STATUS = 'A'
-			""")
-			.setParameter("codSistema", chave.getCodSistema())
-			.setParameter("codModulo", chave.getCodModulo())
-			.setParameter("codRotina", chave.getCodRotina())
-			.setParameter("codFuncionalidade", chave.getCodFuncionalidade())
-			.getSingleResult()).longValue();
-		return count > 0;
-	}
+    @Override
+    public List<Functionality> listFunctionalityActive() {
+        return functionalityJpaRepository.findAll().stream()
+                .filter(f -> "A".equalsIgnoreCase(f.getCodStatus()))
+                .map(this::toDomainFunctionality)
+                .toList();
+    }
 
-	@Override
-	public long countUserActive(String codPerfil) {
-		Long count = ((Number) em.createNativeQuery("""
-				SELECT COUNT(*) FROM SPTRANSDBA.USUARIO_PERFIS
-				WHERE COD_PERFIL = :codPerfil AND COD_STATUS = 'A'
-			""")
-			.setParameter("codPerfil", codPerfil)
-			.getSingleResult()).longValue();
-		return count;
-	}
+    @Override
+    public boolean isFunctionality(FunctionalityKey chave) {
+        FunctionalityEntityJpaKey key = new FunctionalityEntityJpaKey();
+        key.setCodSistema(chave.getCodSistema());
+        key.setCodModulo(chave.getCodModulo());
+        key.setCodRotina(chave.getCodRotina());
+        key.setCodFuncionalidade(chave.getCodFuncionalidade());
+        return functionalityJpaRepository.findById(key)
+                .map(f -> "A".equalsIgnoreCase(f.getCodStatus()))
+                .orElse(false);
+    }
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public List<UserProfile> listUserProfiles() {
-		List<Object[]> rows = em.createNativeQuery("""
-				SELECT up.ID_USUARIO, up.COD_PERFIL, up.COD_STATUS, up.ID_USUARIO_MANUTENCAO, up.DT_MODI
-				FROM SPTRANSDBA.USUARIO_PERFIS up
-				ORDER BY up.ID_USUARIO, up.COD_PERFIL
-				""")
-				.getResultList();
-		return rows.stream().map(row -> {
-		    UserProfileId id = new UserProfileId();
-            id.setIdUsuario(row[0] != null ? ((Number) row[0]).longValue() : null);
-            id.setCodPerfil(row[1] != null ? row[1].toString() : null);
-		    // Se houver campos de validade, adicione aqui
-		    UserProfile up = new UserProfile();
-		    up.setId(id);
-            up.setCodStatus(row[2] != null ? row[2].toString() : null);
-		    up.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
-		    up.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
-		    // Se houver campos de validade, adicione setters aqui
-		    return up;
-		}).toList();
-	}
+    @Override
+    public long countUserActive(String codPerfil) {
+        return userProfileJpaRepository.countActiveUsersByProfile(codPerfil);
+    }
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public List<ProfileFunctionality> listProfileFunctionalities() {
-		List<Object[]> rows = em.createNativeQuery("""
-				SELECT pf.COD_PERFIL, pf.COD_SISTEMA, pf.COD_MODULO, pf.COD_ROTINA, pf.COD_FUNCIONALIDADE, pf.ID_USUARIO_MANUTENCAO, pf.DT_MANUTENCAO
-				FROM SPTRANSDBA.PERFIL_FUNCIONALIDADES pf
-				ORDER BY pf.COD_PERFIL, pf.COD_FUNCIONALIDADE
-				""")
-				.getResultList();
-		return rows.stream().map(row -> {
-			ProfileFunctionality pf = new ProfileFunctionality();
-			pf.setId(new ProfileFunctionalityKey(
-					(String) row[1],
-					(String) row[2],
-					(String) row[3],
-					(String) row[4],
-					(String) row[0]));
-			pf.setIdUsuarioManutencao(row[5] != null ? ((Number) row[5]).longValue() : null);
-			pf.setDtInicioValidade(row[6] != null ? ((java.sql.Timestamp) row[6]).toLocalDateTime().toLocalDate() : null);
-			return pf;
-		}).toList();
-	}
+    @Override
+    public List<UserProfile> listUserProfiles() {
+        return userProfileJpaRepository.listAllUserProfiles().stream()
+                .map(this::toDomainUserProfile)
+                .toList();
+    }
+
+    @Override
+    public void save(Profile perfil) {
+        profileJpaRepository.save(toEntityProfile(perfil));
+    }
+    private Profile toDomainProfile(ProfileEntityJpa entity) {
+        Profile p = new Profile();
+        p.setCodPerfil(entity.getCodPerfil());
+        p.setNomPerfil(entity.getNomPerfil());
+        p.setCodStatus(entity.getCodStatus());
+        p.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
+        p.setDtModi(entity.getDtManutencao());
+        return p;
+    }
+
+    private ProfileEntityJpa toEntityProfile(Profile domain) {
+        ProfileEntityJpa e = new ProfileEntityJpa();
+        e.setCodPerfil(domain.getCodPerfil());
+        e.setNomPerfil(domain.getNomPerfil());
+        e.setCodStatus(domain.getCodStatus());
+        e.setIdUsuarioManutencao(domain.getIdUsuarioManutencao());
+        e.setDtManutencao(domain.getDtModi());
+        return e;
+    }
+
+    @Override
+    public List<ProfileFunctionality> listProfileFunctionalities() {
+        return profileFunctionalityJpaRepository.findAll().stream()
+                .map(this::toDomainProfileFunctionality)
+                .toList();
+    }
+
+    private ProfileFunctionality toDomainProfileFunctionality(ProfileFunctionalityJpa entity) {
+        ProfileFunctionalityKey key = new ProfileFunctionalityKey(
+                entity.getId().getCodSistema(),
+                entity.getId().getCodModulo(),
+                entity.getId().getCodRotina(),
+                entity.getId().getCodFuncionalidade(),
+                entity.getId().getCodPerfil()
+        );
+        ProfileFunctionality pf = new ProfileFunctionality();
+        pf.setId(key);
+        pf.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
+        if (entity.getDtInicioValidade() != null) {
+            pf.setDtInicioValidade(entity.getDtInicioValidade().toLocalDate());
+        }
+        // pf.setFuncionalidade(...); // Se necessário, mapear funcionalidade
+        // pf.setPerfil(...); // Se necessário, mapear perfil
+        return pf;
+    }
+
+    // Métodos auxiliares de conversão
+    private Functionality toDomainFunctionality(FunctionalityEntityJpa entity) {
+        FunctionalityKey key = new FunctionalityKey(
+                entity.getId().getCodSistema(),
+                entity.getId().getCodModulo(),
+                entity.getId().getCodRotina(),
+                entity.getId().getCodFuncionalidade()
+        );
+        Functionality f = new Functionality();
+        f.setId(key);
+        f.setCodSistema(entity.getId().getCodSistema());
+        f.setCodModulo(entity.getId().getCodModulo());
+        f.setCodRotina(entity.getId().getCodRotina());
+        f.setCodFuncionalidade(entity.getId().getCodFuncionalidade());
+        f.setNomFuncionalidade(entity.getNomFuncionalidade());
+        f.setCodStatus(entity.getCodStatus());
+        f.setDtModi(entity.getDtManutencao());
+        return f;
+    }
+
+    private UserProfile toDomainUserProfile(UserProfileJpa entity) {
+        UserProfileId id = new UserProfileId();
+        id.setIdUsuario(entity.getId().getIdUsuario());
+        id.setCodPerfil(entity.getId().getCodPerfil());
+        id.setDtInicioValidade(entity.getId().getDtInicioValidade());
+        id.setDtFimValidade(entity.getId().getDtFimValidade());
+        UserProfile up = new UserProfile();
+        up.setId(id);
+        up.setCodStatus(entity.getCodStatus());
+        up.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
+        up.setDtModi(entity.getDtManutencao());
+        // up.setUser(...); // Se necessário, mapear usuário
+        // up.setPerfil(...); // Se necessário, mapear perfil
+        return up;
+    }
+
 }

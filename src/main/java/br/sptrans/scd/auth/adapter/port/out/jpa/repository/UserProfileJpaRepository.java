@@ -16,4 +16,10 @@ public interface UserProfileJpaRepository extends JpaRepository<UserProfileJpa, 
 
         @Query("SELECT up FROM UserProfileJpa up INNER JOIN FETCH up.perfil p WHERE up.usuario.idUsuario = :idUsuario AND up.codStatus = :codStatus")
         List<UserProfileJpa> findByUsuarioIdUsuarioAndCodStatus(@Param("idUsuario") Long idUsuario, @Param("codStatus") String codStatus);
+
+        @Query("SELECT COUNT(up) FROM UserProfileJpa up WHERE up.id.codPerfil = :codPerfil AND up.codStatus = 'A'")
+        long countActiveUsersByProfile(@Param("codPerfil") String codPerfil);
+
+        @Query("SELECT up FROM UserProfileJpa up ORDER BY up.id.idUsuario, up.id.codPerfil")
+        List<UserProfileJpa> listAllUserProfiles();
 }
