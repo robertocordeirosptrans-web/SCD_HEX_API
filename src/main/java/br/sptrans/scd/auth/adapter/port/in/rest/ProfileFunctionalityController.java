@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.port.in.rest.GroupController.GrupoResponseDTO;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.FunctionalityKey;
@@ -45,11 +46,14 @@ public class ProfileFunctionalityController {
         @ApiResponse(responseCode = "200", description = "Lista de associações retornada com sucesso")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<ProfileFunctionality>> listProfileFunctionalities(
+    public ResponseEntity<PageResponse<ProfileFunctionalityResponseDTO>> listProfileFunctionalities(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<ProfileFunctionality> all = groupProfileManagementUseCase.listProfileFunctionalities();
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+        List<ProfileFunctionalityResponseDTO> proDTOs = all.stream()
+                .map(ProfileFunctionalityResponseDTO::new)
+                .toList();
+        return ResponseEntity.ok(PageResponse.fromList(proDTOs, page, size));
     }
 
     @PostMapping
