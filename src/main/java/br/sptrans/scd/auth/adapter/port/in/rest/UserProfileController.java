@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.adapter.port.in.rest.GroupController.GrupoResponseDTO;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.UserProfile;
 import br.sptrans.scd.shared.dto.PageResponse;
@@ -53,6 +53,27 @@ public class UserProfileController {
                 .map(UserProfileResponseDTO::new)
                 .toList();
         return ResponseEntity.ok(PageResponse.fromList(userDTOs, page, size));
+    }
+
+    @GetMapping("/perfil/{codPerfil}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Listar usuários associados a um perfil", description = "Retorna os usuários associados ao perfil informado")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Usuários associados retornados com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<PageResponse<UserProfileResponseDTO>> getUsersByProfile(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size, @PathVariable String codPerfil) {
+        List<UserProfile> associados = groupProfileManagementUseCase.listUserProfiles();
+        List<UserProfileResponseDTO> associadosDTO = associados.stream()
+                .filter(up -> up.getId() != null && codPerfil.equals(up.getId().getCodPerfil()))
+                .map(UserProfileResponseDTO::new)
+                .toList();
+        if (associadosDTO.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(PageResponse.fromList(associadosDTO, page, size));
     }
 
     @PostMapping
