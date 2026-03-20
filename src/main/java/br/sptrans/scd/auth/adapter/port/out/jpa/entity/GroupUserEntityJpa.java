@@ -26,9 +26,6 @@ public class GroupUserEntityJpa {
 
     @Column(name = "COD_STATUS", length = 1)
     private String codStatus;
-
-    @Column(name = "DT_CADASTRO")
-    private LocalDateTime dtCadastro;
     @Column(name = "DT_MODI")
     private LocalDateTime dtManutencao;
     @Column(name = "ID_USUARIO_MANUTENCAO")
@@ -46,7 +43,6 @@ public class GroupUserEntityJpa {
 
     @PrePersist
     protected void aoInserir() {
-        this.dtCadastro = LocalDateTime.now();
         this.dtManutencao = LocalDateTime.now();
     }
 

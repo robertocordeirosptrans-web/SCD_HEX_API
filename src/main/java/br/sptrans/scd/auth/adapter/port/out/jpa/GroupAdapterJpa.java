@@ -1,201 +1,288 @@
 package br.sptrans.scd.auth.adapter.port.out.jpa;
 
+
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupProfileEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupProfileEntityJpaId;
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupUserEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupUserEntityJpaId;
+import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.GroupMapper;
+import br.sptrans.scd.auth.adapter.port.out.jpa.repository.GroupJpaRepository;
+import br.sptrans.scd.auth.adapter.port.out.jpa.repository.GroupProfileJpaRepository;
+import br.sptrans.scd.auth.adapter.port.out.jpa.repository.GroupUserJpaRepository;
+import br.sptrans.scd.auth.application.port.out.GroupProfileRepository;
 import br.sptrans.scd.auth.application.port.out.GroupRepository;
+import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.GroupProfile;
+import br.sptrans.scd.auth.domain.GroupProfileKey;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.GroupUserKey;
-import br.sptrans.scd.auth.domain.Profile;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Repository
-public class GroupAdapterJpa implements GroupRepository {
+public class GroupAdapterJpa implements GroupRepository, GroupUserRepository, GroupProfileRepository {
 
-    @PersistenceContext
-    private EntityManager em;
-    // ── buscarPorCodigo ───────────────────────────────────────────────────────
+    private final GroupJpaRepository groupJpaRepository;
+    private final GroupProfileJpaRepository groupProfileJpaRepository;
+    private final GroupUserJpaRepository groupUserJpaRepository;
 
     @Override
     public Optional<Group> findById(String codGrupo) {
-        @SuppressWarnings("unchecked")
-        List<Object[]> rows = em.createNativeQuery("""
-                SELECT g.COD_GRUPO, g.NOM_GRUPO, g.COD_STATUS
-                FROM   SPTRANSDBA.GRUPOS g
-                WHERE  g.COD_GRUPO = :cod
-                """)
-                .setParameter("cod", codGrupo)
-                .getResultList();
-
-        if (rows.isEmpty()) {
-            return Optional.empty();
-        }
-
-        Object[] row = (Object[]) rows.get(0);
-        Group grupo = mapearGrupo(row);
-        grupo.setPerfis(carregarPerfisDoGrupo(codGrupo));
-        return Optional.of(grupo);
+        return groupJpaRepository.findByCodGrupo(codGrupo)
+                .map(GroupMapper::toDomain);
     }
 
     @Override
     public boolean existsByCode(String codGrupo) {
-        Long count = ((Number) em.createNativeQuery("""
-                    SELECT COUNT(*) FROM SPTRANSDBA.GRUPOS WHERE COD_GRUPO = :cod
-                    """)
-                .setParameter("cod", codGrupo)
-                .getSingleResult()).longValue();
-        return count > 0;
+        return groupJpaRepository.existsByCodGrupo(codGrupo);
     }
 
     @Override
     public List<Group> listGroups(String codStatus) {
-        String sql = "SELECT COD_GRUPO, NOM_GRUPO, COD_STATUS FROM SPTRANSDBA.GRUPOS";
-        if (codStatus != null) {
-            sql += " WHERE COD_STATUS = :status";
-        }
-        var query = em.createNativeQuery(sql);
-        if (codStatus != null) {
-            query.setParameter("status", codStatus);
-        }
-        @SuppressWarnings("unchecked")
-        List<Object[]> rows = query.getResultList();
-        return rows.stream()
-                .map(this::mapearGrupo)
-                .toList();
+        return groupJpaRepository.findAllByCodStatus(codStatus)
+                .stream()
+                .map(GroupMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void save(Group grupo) {
-        em.createNativeQuery("""
-                INSERT INTO SPTRANSDBA.GRUPOS (COD_GRUPO, NOM_GRUPO, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MODI)
-                VALUES (:codGrupo, :nomGrupo, :codStatus, :idUsuarioManutencao, :dtModi)
-            """)
-                .setParameter("codGrupo", grupo.getCodGrupo())
-                .setParameter("nomGrupo", grupo.getNomGrupo())
-                .setParameter("codStatus", grupo.getCodStatus())
-                .setParameter("idUsuarioManutencao", grupo.getIdUsuarioManutencao())
-                .setParameter("dtModi", grupo.getDtModi())
-                .executeUpdate();
+        groupJpaRepository.save(GroupMapper.toEntity(grupo));
     }
 
     @Override
     public void updateStatus(String codGrupo, String codStatus, Long idUsuarioManutencao) {
-        em.createNativeQuery("""
-                UPDATE SPTRANSDBA.GRUPOS SET COD_STATUS = :codStatus, ID_USUARIO_MANUTENCAO = :idUsuarioManutencao, DT_MODI = CURRENT_DATE
-                WHERE COD_GRUPO = :codGrupo
-            """)
-                .setParameter("codStatus", codStatus)
-                .setParameter("idUsuarioManutencao", idUsuarioManutencao)
-                .setParameter("codGrupo", codGrupo)
-                .executeUpdate();
+        groupJpaRepository.findByCodGrupo(codGrupo).ifPresent(entity -> {
+            entity.setCodStatus(codStatus);
+            entity.setIdUsuarioManutencao(idUsuarioManutencao);
+            groupJpaRepository.save(entity);
+        });
     }
 
     @Override
     public void associateProfilesToGroup(String codGrupo, String codPerfil, Long idUsuarioManutencao) {
-        em.createNativeQuery("""
-                INSERT INTO SPTRANSDBA.GRUPO_PERFIS (COD_GRUPO, COD_PERFIL, COD_STATUS, ID_USUARIO_MANUTENCAO, DT_MODI)
-                VALUES (:codGrupo, :codPerfil, 'A', :idUsuarioManutencao, CURRENT_DATE)
-            """)
-                .setParameter("codGrupo", codGrupo)
-                .setParameter("codPerfil", codPerfil)
-                .setParameter("idUsuarioManutencao", idUsuarioManutencao)
-                .executeUpdate();
+        groupProfileJpaRepository.associateProfileToGroup(codGrupo, codPerfil, idUsuarioManutencao);
     }
 
     @Override
     public void disassociateProfileFromGroup(String codGrupo, String codPerfil, Long idUsuarioManutencao) {
-        em.createNativeQuery("""
-                UPDATE SPTRANSDBA.GRUPO_PERFIS SET COD_STATUS = 'I', ID_USUARIO_MANUTENCAO = :idUsuarioManutencao, DT_MODI = CURRENT_DATE
-                WHERE COD_GRUPO = :codGrupo AND COD_PERFIL = :codPerfil
-            """)
-                .setParameter("idUsuarioManutencao", idUsuarioManutencao)
-                .setParameter("codGrupo", codGrupo)
-                .setParameter("codPerfil", codPerfil)
-                .executeUpdate();
+        groupProfileJpaRepository.disassociateProfileFromGroup(codGrupo, codPerfil, idUsuarioManutencao);
     }
 
     @Override
     public boolean isProfileAssociate(String codGrupo, String codPerfil) {
-        Long count = ((Number) em.createNativeQuery("""
-                SELECT COUNT(*) FROM SPTRANSDBA.GRUPO_PERFIS WHERE COD_GRUPO = :codGrupo AND COD_PERFIL = :codPerfil AND COD_STATUS = 'A'
-            """)
-                .setParameter("codGrupo", codGrupo)
-                .setParameter("codPerfil", codPerfil)
-                .getSingleResult()).longValue();
-        return count > 0;
+        return groupProfileJpaRepository.countActiveProfileAssociation(codGrupo, codPerfil) > 0;
     }
 
     @Override
     public long countUserActive(String codGrupo) {
-        Long count = ((Number) em.createNativeQuery("""
-                SELECT COUNT(*) FROM SPTRANSDBA.GRUPO_USUARIOS WHERE COD_GRUPO = :codGrupo AND COD_STATUS = 'A'
-            """)
-                .setParameter("codGrupo", codGrupo)
-                .getSingleResult()).longValue();
-        return count;
+        return groupUserJpaRepository.countActiveUsersByGroup(codGrupo);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    public long count() {
+        return groupUserJpaRepository.count();
+    }
+
+    @Override
     public List<GroupUser> listGroupUsers() {
-        List<Object[]> rows = em.createNativeQuery("""
-                SELECT gu.ID_USUARIO, gu.COD_GRUPO, gu.COD_STATUS, gu.ID_USUARIO_MANUTENCAO, gu.DT_MODI
-                FROM SPTRANSDBA.GRUPO_USUARIOS gu
-                ORDER BY gu.COD_GRUPO, gu.ID_USUARIO
-                """)
-                .getResultList();
-        return rows.stream().map(row -> {
-            GroupUser gu = new GroupUser();
-            gu.setId(new GroupUserKey(
-                    row[0] != null ? ((Number) row[0]).longValue() : null,
-                    row[1] != null ? row[1].toString() : null));
-            gu.setCodStatus(row[2] != null ? row[2].toString() : null);
-            gu.setIdUsuarioManutencao(row[3] != null ? ((Number) row[3]).longValue() : null);
-            gu.setDtModi(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime() : null);
-            return gu;
-        }).toList();
+        return groupUserJpaRepository.findAllGroupUsers()
+                .stream()
+                .map(gu -> {
+                    GroupUser groupUser = new GroupUser();
+                    // Conversão explícita da chave composta
+                    var idJpa = gu.getId();
+                    groupUser.setId(
+                            idJpa != null ? new GroupUserKey(idJpa.getIdUsuario(), idJpa.getCodGrupo()) : null
+                    );
+                    groupUser.setCodStatus(gu.getCodStatus());
+                    groupUser.setIdUsuarioManutencao(gu.getIdUsuarioManutencao());
+                    groupUser.setDtModi(gu.getDtManutencao());
+                    return groupUser;
+                })
+                .collect(Collectors.toList());
     }
 
-    // ── Helpers de mapeamento ─────────────────────────────────────────────────
-    private Group mapearGrupo(Object[] row) {
-        Group g = new Group();
-        g.setCodGrupo((String) row[0]);
-        g.setNomGrupo((String) row[1]);
-        g.setCodStatus(row[2] != null ? row[2].toString() : null);
-        return g;
+    // Métodos migrados do GroupUserAdapterJpa
+    public Optional<GroupUser> findById_IdUsuarioAndId_CodGrupo(Long idUsuario, String codGrupo) {
+        var id = new GroupUserEntityJpaId();
+        id.setIdUsuario(idUsuario);
+        id.setCodGrupo(codGrupo);
+        return groupUserJpaRepository.findById(id)
+                .map(gu -> {
+                    GroupUser groupUser = new GroupUser();
+                    groupUser.setId(new GroupUserKey(idUsuario, codGrupo));
+                    groupUser.setCodStatus(gu.getCodStatus());
+                    groupUser.setIdUsuarioManutencao(gu.getIdUsuarioManutencao());
+                    groupUser.setDtModi(gu.getDtManutencao());
+                    return groupUser;
+                });
     }
 
-    @SuppressWarnings("unchecked")
-    private Set<GroupProfile> carregarPerfisDoGrupo(String codGrupo) {
-        List<Object[]> rows = em.createNativeQuery("""
-                SELECT p.COD_PERFIL, p.NOM_PERFIL, p.COD_STATUS
-                FROM   SPTRANSDBA.GRUPO_PERFIS gp
-                JOIN   SPTRANSDBA.PERFIS p ON p.COD_PERFIL = gp.COD_PERFIL
-                WHERE  gp.COD_GRUPO  = :g
-                AND    gp.COD_STATUS = 'A'
-                ORDER BY p.NOM_PERFIL
-                """)
-                .setParameter("g", codGrupo)
-                .getResultList();
+    public List<GroupUser> findById_IdUsuarioAndCodStatus(Long idUsuario, String codStatus) {
+        return groupUserJpaRepository.findAll().stream()
+                .filter(gu -> gu.getId() != null && idUsuario.equals(gu.getId().getIdUsuario()) && codStatus.equals(gu.getCodStatus()))
+                .map(gu -> {
+                    GroupUser groupUser = new GroupUser();
+                    groupUser.setId(new GroupUserKey(gu.getId().getIdUsuario(), gu.getId().getCodGrupo()));
+                    groupUser.setCodStatus(gu.getCodStatus());
+                    groupUser.setIdUsuarioManutencao(gu.getIdUsuarioManutencao());
+                    groupUser.setDtModi(gu.getDtManutencao());
+                    return groupUser;
+                })
+                .collect(Collectors.toList());
+    }
 
-        Set<GroupProfile> perfis = new java.util.HashSet<>();
-        for (Object[] row : rows) {
-            Profile p = new Profile();
-            p.setCodPerfil((String) row[0]);
-            p.setNomPerfil((String) row[1]);
-            p.setCodStatus((String) row[2]);
+    public List<GroupUser> findById_CodGrupoAndCodStatus(String codGrupo, String codStatus) {
+        return groupUserJpaRepository.findAll().stream()
+                .filter(gu -> gu.getId() != null && codGrupo.equals(gu.getId().getCodGrupo()) && codStatus.equals(gu.getCodStatus()))
+                .map(gu -> {
+                    GroupUser groupUser = new GroupUser();
+                    groupUser.setId(new GroupUserKey(gu.getId().getIdUsuario(), gu.getId().getCodGrupo()));
+                    groupUser.setCodStatus(gu.getCodStatus());
+                    groupUser.setIdUsuarioManutencao(gu.getIdUsuarioManutencao());
+                    groupUser.setDtModi(gu.getDtManutencao());
+                    return groupUser;
+                })
+                .collect(Collectors.toList());
+    }
 
-            GroupProfile gp = new GroupProfile();
-            gp.setPerfil(p);
-            // Se necessário, preencha outros campos de GroupProfile aqui
-            perfis.add(gp);
+    public List<GroupUser> findById_IdUsuario(Long idUsuario) {
+        return groupUserJpaRepository.findAll().stream()
+                .filter(gu -> gu.getId() != null && idUsuario.equals(gu.getId().getIdUsuario()))
+                .map(gu -> {
+                    GroupUser groupUser = new GroupUser();
+                    groupUser.setId(new GroupUserKey(gu.getId().getIdUsuario(), gu.getId().getCodGrupo()));
+                    groupUser.setCodStatus(gu.getCodStatus());
+                    groupUser.setIdUsuarioManutencao(gu.getIdUsuarioManutencao());
+                    groupUser.setDtModi(gu.getDtManutencao());
+                    return groupUser;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public Optional<GroupUser> findById(GroupUserKey id) {
+        return findById_IdUsuarioAndId_CodGrupo(id.getIdUsuario(), id.getCodGrupo());
+    }
+
+    public List<GroupUser> findAllGroupUsers() {
+        return listGroupUsers();
+    }
+
+    public GroupUser save(GroupUser entity) {
+        // Salva ou atualiza usando o repository JPA
+        var id = new GroupUserEntityJpaId();
+        id.setIdUsuario(entity.getId().getIdUsuario());
+        id.setCodGrupo(entity.getId().getCodGrupo());
+        var groupUserEntity = new GroupUserEntityJpa();
+        groupUserEntity.setId(id);
+        groupUserEntity.setCodStatus(entity.getCodStatus());
+        groupUserEntity.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
+        groupUserEntity.setDtManutencao(entity.getDtModi());
+        groupUserJpaRepository.save(groupUserEntity);
+        return entity;
+    }
+
+    public void delete(GroupUser entity) {
+        deleteById(entity.getId());
+    }
+
+    public void deleteById(GroupUserKey id) {
+        var idJpa = new GroupUserEntityJpaId();
+        idJpa.setIdUsuario(id.getIdUsuario());
+        idJpa.setCodGrupo(id.getCodGrupo());
+        groupUserJpaRepository.deleteById(idJpa);
+    }
+
+    public long countGroupUsers() {
+        return groupUserJpaRepository.count();
+    }
+
+    // Métodos do GroupProfileRepository
+    @Override
+    public Optional<GroupProfile> findByCodGrupoAndCodPerfil(String codGrupo, String codPerfil) {
+        var id = new GroupProfileEntityJpaId();
+        id.setCodGrupo(codGrupo);
+        id.setCodPerfil(codPerfil);
+        return groupProfileJpaRepository.findById(id)
+                .map(this::toDomainGroupProfile);
+    }
+
+    @Override
+    public List<GroupProfile> findByCodGrupoCodStatus(String codGrupo, String codStatus) {
+        return groupProfileJpaRepository.findAll().stream()
+                .filter(e -> e.getId() != null && codGrupo.equals(e.getId().getCodGrupo()) && codStatus.equals(e.getCodStatus()))
+                .map(this::toDomainGroupProfile)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<GroupProfile> findByCodGrupoPerfil(GroupProfileKey id) {
+        var idJpa = new GroupProfileEntityJpaId();
+        idJpa.setCodGrupo(id.getCodGrupo());
+        idJpa.setCodPerfil(id.getCodPerfil());
+        return groupProfileJpaRepository.findById(idJpa)
+                .map(this::toDomainGroupProfile);
+    }
+
+    @Override
+    public List<GroupProfile> findAllGroupProfile() {
+        return groupProfileJpaRepository.findAll().stream()
+                .map(this::toDomainGroupProfile)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public GroupProfile saveGroupProfile(GroupProfile entity) {
+        var id = new GroupProfileEntityJpaId();
+        id.setCodGrupo(entity.getId().getCodGrupo());
+        id.setCodPerfil(entity.getId().getCodPerfil());
+        var groupProfileEntity = new GroupProfileEntityJpa();
+        groupProfileEntity.setId(id);
+        groupProfileEntity.setCodStatus(entity.getCodStatus());
+        // Datas e outros campos podem ser ajustados conforme necessário
+        groupProfileJpaRepository.save(groupProfileEntity);
+        return entity;
+    }
+
+    @Override
+    public void deleteGroupProfile(GroupProfile entity) {
+        deleteByIdGroupProfile(entity.getId());
+    }
+
+    @Override
+    public void deleteByIdGroupProfile(GroupProfileKey id) {
+        var idJpa = new GroupProfileEntityJpaId();
+        idJpa.setCodGrupo(id.getCodGrupo());
+        idJpa.setCodPerfil(id.getCodPerfil());
+        groupProfileJpaRepository.deleteById(idJpa);
+    }
+
+    @Override
+    public long countGroupProfile() {
+        return groupProfileJpaRepository.count();
+    }
+
+    // Conversão manual entre entidade e domínio para GroupProfile
+    private GroupProfile toDomainGroupProfile(GroupProfileEntityJpa entity) {
+        if (entity == null) {
+            return null;
         }
-        return perfis;
+        var domain = new GroupProfile();
+        var id = entity.getId();
+        if (id != null) {
+            domain.setId(new GroupProfileKey(id.getCodGrupo(), id.getCodPerfil()));
+        }
+        domain.setCodStatus(entity.getCodStatus());
+        // Datas e objetos relacionados podem ser expandidos conforme necessário
+        return domain;
     }
+
 }

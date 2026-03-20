@@ -12,8 +12,12 @@ import jakarta.persistence.MapsId;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "GRUPO_PERFIS", schema = "SPTRANSDBA")
 public class GroupProfileEntityJpa {
 
@@ -23,9 +27,8 @@ public class GroupProfileEntityJpa {
     @Column(name = "COD_STATUS", length = 1)
     private String codStatus;
 
-    @Column(name = "DT_CADASTRO")
-    private LocalDateTime dtCadastro;
-    @Column(name = "DT_MANUTENCAO")
+
+    @Column(name = "DT_MODI")
     private LocalDateTime dtManutencao;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,7 +43,6 @@ public class GroupProfileEntityJpa {
 
     @PrePersist
     protected void aoInserir() {
-        this.dtCadastro = LocalDateTime.now();
         this.dtManutencao = LocalDateTime.now();
     }
 
@@ -49,52 +51,6 @@ public class GroupProfileEntityJpa {
         this.dtManutencao = LocalDateTime.now();
     }
 
-    public GroupProfileEntityJpaId getId() {
-        return id;
-    }
-
-    public void setId(GroupProfileEntityJpaId id) {
-        this.id = id;
-    }
-
-    public String getCodStatus() {
-        return codStatus;
-    }
-
-    public void setCodStatus(String codStatus) {
-        this.codStatus = codStatus;
-    }
-
-    public LocalDateTime getDtCadastro() {
-        return dtCadastro;
-    }
-
-    public void setDtCadastro(LocalDateTime dtCadastro) {
-        this.dtCadastro = dtCadastro;
-    }
-
-    public LocalDateTime getDtManutencao() {
-        return dtManutencao;
-    }
-
-    public void setDtManutencao(LocalDateTime dtManutencao) {
-        this.dtManutencao = dtManutencao;
-    }
-
-    public GroupEntityJpa getGrupo() {
-        return grupo;
-    }
-
-    public void setGrupo(GroupEntityJpa grupo) {
-        this.grupo = grupo;
-    }
-
-    public ProfileEntityJpa getPerfil() {
-        return perfil;
-    }
-
-    public void setPerfil(ProfileEntityJpa perfil) {
-        this.perfil = perfil;
-    }
+ 
 
 }

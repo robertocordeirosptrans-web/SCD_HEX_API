@@ -18,7 +18,7 @@ public interface GroupUserRepository {
 
     Optional<GroupUser> findById(GroupUserKey id);
 
-    List<GroupUser> findAll();
+    List<GroupUser> listGroupUsers();
 
     GroupUser save(GroupUser entity);
 

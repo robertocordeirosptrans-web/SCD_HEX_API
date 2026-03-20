@@ -18,6 +18,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "GRUPOS", schema = "SPTRANSDBA")
 public class GroupEntityJpa {
+
     @Id
     @Column(name = "COD_GRUPO", length = 20)
     private String codGrupo;
@@ -28,9 +29,10 @@ public class GroupEntityJpa {
     @Column(name = "COD_STATUS", length = 1)
     private String codStatus;
 
-    @Column(name = "DT_CADASTRO") private LocalDateTime dtCadastro;
-    @Column(name = "DT_MANUTENCAO") private LocalDateTime dtManutencao;
-    @Column(name = "ID_USUARIO_MANUTENCAO") private Long idUsuarioManutencao;
+    @Column(name = "DT_MODI")
+    private LocalDateTime dtManutencao;
+    @Column(name = "ID_USUARIO_MANUTENCAO")
+    private Long idUsuarioManutencao;
 
     @OneToMany(mappedBy = "grupo", fetch = FetchType.LAZY)
     private Set<GroupProfileEntityJpa> grupoPerfis = new HashSet<>();

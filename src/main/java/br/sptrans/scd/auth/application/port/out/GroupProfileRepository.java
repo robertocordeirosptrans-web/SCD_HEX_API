@@ -8,19 +8,19 @@ import br.sptrans.scd.auth.domain.GroupProfileKey;
 
 public interface GroupProfileRepository {
 
-    Optional<GroupProfile> findById_CodGrupoAndId_CodPerfil(String codGrupo, String codPerfil);
+    Optional<GroupProfile> findByCodGrupoAndCodPerfil(String codGrupo, String codPerfil);
 
-    List<GroupProfile> findById_CodGrupoAndCodStatus(String codGrupo, String codStatus);
+    List<GroupProfile> findByCodGrupoCodStatus(String codGrupo, String codStatus);
 
-    Optional<GroupProfile> findById(GroupProfileKey id);
+    Optional<GroupProfile> findByCodGrupoPerfil(GroupProfileKey id);
 
-    List<GroupProfile> findAll();
+    List<GroupProfile> findAllGroupProfile();
 
-    GroupProfile save(GroupProfile entity);
+    GroupProfile saveGroupProfile(GroupProfile entity);
 
-    void delete(GroupProfile entity);
+    void deleteGroupProfile(GroupProfile entity);
 
-    void deleteById(GroupProfileKey id);
+    void deleteByIdGroupProfile(GroupProfileKey id);
 
-    long count();
+    long countGroupProfile();
 }

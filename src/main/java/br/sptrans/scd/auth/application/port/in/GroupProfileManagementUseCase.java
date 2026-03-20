@@ -119,6 +119,8 @@ public interface GroupProfileManagementUseCase {
          */
         List<GroupUser> listGroupUsersByCodGrupo(String codGrupo);
 
+        
+
     /**
      * Lista todas as associações usuário-perfil.
      */
