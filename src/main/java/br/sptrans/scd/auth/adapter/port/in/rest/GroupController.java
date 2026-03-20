@@ -1,5 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.in.rest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,11 +63,14 @@ public class GroupController {
         @ApiResponse(responseCode = "200", description = "Lista de grupos retornada com sucesso")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<Group>> getAllGroup(
+    public ResponseEntity<PageResponse<GrupoResponseDTO>> getAllGroup(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<Group> grupos = groupProfileManagementUseCase.listGroups(null);
-        return ResponseEntity.ok(PageResponse.fromList(grupos, page, size));
+        List<GrupoResponseDTO> grupoDTOs = grupos.stream()
+            .map(GrupoResponseDTO::new)
+            .toList();
+        return ResponseEntity.ok(PageResponse.fromList(grupoDTOs, page, size));
     }
 
     @GetMapping("/{codGrupo}")
@@ -96,4 +100,24 @@ public class GroupController {
         var grupo = groupProfileManagementUseCase.updateGroup(cmd);
         return ResponseEntity.ok(grupo);
     }
+
+    public record GrupoResponseDTO(
+            String codGrupo,
+            Long idUsuarioManutencao,
+            LocalDateTime dtModi,
+            String codStatus,
+            String nomGrupo
+            ) {
+
+        public GrupoResponseDTO(Group grupo) {
+            this(
+                    grupo.getCodGrupo(),
+                    grupo.getIdUsuarioManutencao(),
+                    grupo.getDtModi(),
+                    grupo.getCodStatus(),
+                    grupo.getNomGrupo()
+            );
+        }
+    }
+
 }

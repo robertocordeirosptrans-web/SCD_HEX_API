@@ -11,7 +11,7 @@ public class GroupMapper {
         group.setNomGrupo(entity.getNomGrupo());
         group.setCodStatus(entity.getCodStatus());
         group.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
-        // Conversão de datas e coleções pode ser expandida conforme necessário
+        group.setDtModi(entity.getDtManutencao());
         return group;
     }
 
@@ -22,7 +22,7 @@ public class GroupMapper {
         entity.setNomGrupo(domain.getNomGrupo());
         entity.setCodStatus(domain.getCodStatus());
         entity.setIdUsuarioManutencao(domain.getIdUsuarioManutencao());
-        // Conversão de datas e coleções pode ser expandida conforme necessário
+        entity.setDtManutencao(entity.getDtManutencao());
         return entity;
     }
 }
