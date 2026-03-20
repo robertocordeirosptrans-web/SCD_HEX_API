@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.in.rest;
+package br.sptrans.scd.auth.adapter.port.in.rest;
 
 import br.sptrans.scd.auth.application.service.ManageProfileGroupService;
 import br.sptrans.scd.auth.domain.GroupProfile;
