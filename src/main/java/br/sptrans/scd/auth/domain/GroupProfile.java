@@ -2,60 +2,18 @@ package br.sptrans.scd.auth.domain;
 
 import java.time.LocalDate;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class GroupProfile {
 
     private GroupProfileKey id;
     private Long idUsuarioManutencao;
     private String codStatus;
     private LocalDate dtModi;
-    private Group grupo;
-    private Profile perfil;
+    private Group group;
+    private Profile profile;
 
-    public Long getIdUsuarioManutencao() {
-        return idUsuarioManutencao;
-    }
-
-    public void setIdUsuarioManutencao(Long idUsuarioManutencao) {
-        this.idUsuarioManutencao = idUsuarioManutencao;
-    }
-
-    public String getCodStatus() {
-        return codStatus;
-    }
-
-    public void setCodStatus(String codStatus) {
-        this.codStatus = codStatus;
-    }
-
-    public LocalDate getDtModi() {
-        return dtModi;
-    }
-
-    public void setDtModi(LocalDate dtModi) {
-        this.dtModi = dtModi;
-    }
-
-    public Group getGrupo() {
-        return grupo;
-    }
-
-    public void setGrupo(Group grupo) {
-        this.grupo = grupo;
-    }
-
-    public Profile getPerfil() {
-        return perfil;
-    }
-
-    public void setPerfil(Profile perfil) {
-        this.perfil = perfil;
-    }
-
-    public GroupProfileKey getId() {
-        return id;
-    }
-
-    public void setId(GroupProfileKey id) {
-        this.id = id;
-    }
 }
