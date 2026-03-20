@@ -71,7 +71,7 @@ public class UserEntityJpa {
     @Column(name = "COD_RG", nullable = false)
     private String codRg;
 
-    @Column(name = "NOM_EMAIL", nullable = false, unique = true)
+    @Column(name = "NOM_EMAIL", nullable = false)
     private String nomEmail;
 
     @Column(name = "COD_EMPRESA")

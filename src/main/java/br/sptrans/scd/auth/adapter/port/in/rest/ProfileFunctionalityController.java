@@ -1,5 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.in.rest;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -127,6 +128,29 @@ public class ProfileFunctionalityController {
 
     public record ProfileFunctionalityStatusRequest(String codSistema, String codModulo, String codRotina, String codFuncionalidade, String codPerfil, String status, Long idUsuarioLogado) {
 
+    }
+
+    public record ProfileFunctionalityResponseDTO(
+            String codSistema,
+            String codModulo,
+            String codRotina,
+            String codFuncionalidade,
+            String codPerfil,
+            Long idUsuarioManutencao,
+            LocalDate dtInicioValidade
+            ) {
+
+        public ProfileFunctionalityResponseDTO(ProfileFunctionality perfilFuncionalidade) {
+            this(
+                    perfilFuncionalidade.getId().getCodSistema(),
+                    perfilFuncionalidade.getId().getCodModulo(),
+                    perfilFuncionalidade.getId().getCodRotina(),
+                    perfilFuncionalidade.getId().getCodFuncionalidade(),
+                    perfilFuncionalidade.getId().getCodPerfil(),
+                    perfilFuncionalidade.getIdUsuarioManutencao(),
+                    perfilFuncionalidade.getDtInicioValidade()
+            );
+        }
     }
 
 }

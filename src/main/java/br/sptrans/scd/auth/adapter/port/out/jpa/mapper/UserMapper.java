@@ -51,6 +51,8 @@ public class UserMapper {
         entity.setCodEmpresa(user.getCodEmpresa());
         entity.setDt_jornada_ini(user.getDt_jornada_ini());
         entity.setDt_jornada_fim(user.getDt_jornada_fim());
+        entity.setCodClassificacaoPessoa(user.getCodClassificacaoPessoa().getCodClassificacaoPessoa());
+        entity.setCodClassificacaoPessoa(user.getCodClassificacaoPessoa().getDesClassificacaoPessoa());
         return entity;
     }
 }

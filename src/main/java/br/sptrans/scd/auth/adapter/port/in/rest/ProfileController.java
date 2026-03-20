@@ -1,5 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.in.rest;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +42,6 @@ public class ProfileController {
 
     private final GroupProfileManagementUseCase groupProfileManagementUseCase;
 
-
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Criar perfil", description = "Cria um novo perfil no sistema")
@@ -63,11 +63,14 @@ public class ProfileController {
         @ApiResponse(responseCode = "200", description = "Lista de perfis retornada com sucesso")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<Profile>> getAllProfile(
+    public ResponseEntity<PageResponse<ProfileResponseDTO>> getAllProfile(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         List<Profile> perfis = groupProfileManagementUseCase.listProfiles(null);
-        return ResponseEntity.ok(PageResponse.fromList(perfis, page, size));
+        List<ProfileResponseDTO> perfisDtos = perfis.stream()
+                .map(ProfileResponseDTO::new)
+                .toList();
+        return ResponseEntity.ok(PageResponse.fromList(perfisDtos, page, size));
     }
 
     @GetMapping("/{codPerfil}")
@@ -96,5 +99,25 @@ public class ProfileController {
         GroupProfileManagementUseCase.UpdateProfileCommand cmd = new GroupProfileManagementUseCase.UpdateProfileCommand(codPerfil, request.nomPerfil(), request.idUsuarioLogado());
         var perfil = groupProfileManagementUseCase.updateProfile(cmd);
         return ResponseEntity.ok(perfil);
+    }
+
+    public record ProfileResponseDTO(
+            String codPerfil,
+            String nomPerfil,
+            Long idUsuarioManutencao,
+            LocalDateTime dtModi,
+            String codStatus
+            ) {
+
+        public ProfileResponseDTO(Profile perfil) {
+            this(
+                    perfil.getCodPerfil(),
+                    perfil.getNomPerfil(),
+                    perfil.getIdUsuarioManutencao(),
+                    perfil.getDtModi(),
+                    perfil.getCodStatus()
+            );
+        }
+
     }
 }

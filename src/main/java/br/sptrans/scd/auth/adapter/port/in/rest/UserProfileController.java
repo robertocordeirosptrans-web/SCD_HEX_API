@@ -1,5 +1,7 @@
 package br.sptrans.scd.auth.adapter.port.in.rest;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.port.in.rest.GroupController.GrupoResponseDTO;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.UserProfile;
 import br.sptrans.scd.shared.dto.PageResponse;
@@ -42,11 +45,14 @@ public class UserProfileController {
         @ApiResponse(responseCode = "200", description = "Lista de associações retornada com sucesso")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<UserProfile>> listUserProfiles(
+    public ResponseEntity<PageResponse<UserProfileResponseDTO>> listUserProfiles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<UserProfile> all = groupProfileManagementUseCase.listUserProfiles();
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+        List<UserProfileResponseDTO> userDTOs = all.stream()
+                .map(UserProfileResponseDTO::new)
+                .toList();
+        return ResponseEntity.ok(PageResponse.fromList(userDTOs, page, size));
     }
 
     @PostMapping
@@ -107,4 +113,26 @@ public class UserProfileController {
     public record UserProfileStatusRequest(Long idUsuario, String codPerfil, String status) {
 
     }
+
+    public record UserProfileResponseDTO(
+            Long idUsuario,
+            String codPerfil,
+            String nomPerfil,
+            Long idUsuarioManutencao,
+            String codStatus,
+            LocalDateTime dtModi
+            ) {
+
+        public UserProfileResponseDTO(UserProfile usuarioPerfil) {
+            this(
+                    usuarioPerfil.getId().getIdUsuario() != null ? usuarioPerfil.getId().getIdUsuario() : null,
+                    usuarioPerfil.getId().getCodPerfil() != null ? usuarioPerfil.getId().getCodPerfil() : null,
+                    usuarioPerfil.getPerfil() != null ? usuarioPerfil.getPerfil().getNomPerfil() : null,
+                    usuarioPerfil.getIdUsuarioManutencao(),
+                    usuarioPerfil.getCodStatus(),
+                    usuarioPerfil.getDtModi()
+            );
+        }
+    }
+
 }

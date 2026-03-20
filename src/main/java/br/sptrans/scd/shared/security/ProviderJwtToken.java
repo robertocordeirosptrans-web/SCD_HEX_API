@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.port.in.rest;
+package br.sptrans.scd.shared.security;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
