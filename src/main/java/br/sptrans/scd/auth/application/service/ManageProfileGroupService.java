@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.GroupRepository;
+import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
 import br.sptrans.scd.auth.application.port.out.ProfileRepository;
+import br.sptrans.scd.auth.application.port.out.GroupProfileRepository;
+import br.sptrans.scd.auth.domain.GroupProfile;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.GroupUser;
@@ -22,17 +25,36 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class ManageProfileGroupService implements GroupProfileManagementUseCase {
 
+
     private final GroupRepository groupRepository;
     private final ProfileRepository profileRepository;
-    private final br.sptrans.scd.auth.application.port.out.GroupUserRepository groupUserRepository;
+    private final GroupUserRepository groupUserRepository;
+    private final GroupProfileRepository groupProfileRepository;
 
     public ManageProfileGroupService(GroupRepository groupRepository,
-            ProfileRepository profileRepository,
-            br.sptrans.scd.auth.application.port.out.GroupUserRepository groupUserRepository) {
+                                     ProfileRepository profileRepository,
+                                     GroupUserRepository groupUserRepository,
+                                     GroupProfileRepository groupProfileRepository) {
         this.groupRepository = groupRepository;
         this.profileRepository = profileRepository;
         this.groupUserRepository = groupUserRepository;
+        this.groupProfileRepository = groupProfileRepository;
     }
+        // ══════════════════════════════════════════════════════════════════════════
+        // GROUP PROFILE CRUD (exceto DELETE)
+        // ══════════════════════════════════════════════════════════════════════════
+
+        public List<GroupProfile> findAllGroupProfile() {
+            return groupProfileRepository.findAllGroupProfile();
+        }
+
+        public java.util.Optional<GroupProfile> findByCodGrupoAndCodPerfil(String codGrupo, String codPerfil) {
+            return groupProfileRepository.findByCodGrupoAndCodPerfil(codGrupo, codPerfil);
+        }
+
+        public GroupProfile saveGroupProfile(GroupProfile groupProfile) {
+            return groupProfileRepository.saveGroupProfile(groupProfile);
+        }
     @Override
     public List<GroupUser> listGroupUsersByCodGrupo(String codGrupo) {
         // Retorna apenas usuários ativos do grupo
@@ -124,15 +146,6 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
                 .orElseThrow(() -> new ResourceNotFoundException("Perfil", "codPerfil", codPerfil));
     }
 
-    // Conversão de FunctionalityKey do caso de uso para o domínio
-    // private FunctionalityKey toDomainKey(GroupProfileManagementUseCase.FunctionalityKey key) {
-    //     return new FunctionalityKey(
-    //         key.codSistema(),
-    //         key.codModulo(),
-    //         key.codRotina(),
-    //         key.codFuncionalidade()
-    //     );
-    // }
 
     // ══════════════════════════════════════════════════════════════════════════
     // PERFIS
