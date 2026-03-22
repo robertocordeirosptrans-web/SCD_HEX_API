@@ -1,9 +1,5 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,12 +7,10 @@ import br.sptrans.scd.channel.adapter.port.out.jpa.repository.ProductChannelJpaR
 import org.springframework.stereotype.Repository;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ProductChannelMapper;
 
-import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.out.ProductChannelRepository;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
-import br.sptrans.scd.channel.domain.SalesChannel;
-import br.sptrans.scd.product.domain.Product;
+
 import lombok.RequiredArgsConstructor;
 
 @Repository
