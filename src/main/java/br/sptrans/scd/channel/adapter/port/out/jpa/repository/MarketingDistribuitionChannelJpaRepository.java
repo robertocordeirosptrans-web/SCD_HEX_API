@@ -28,5 +28,5 @@ public interface MarketingDistribuitionChannelJpaRepository extends JpaRepositor
   @Query("SELECT COUNT(c) > 0 FROM MarketingDistribuitionChannelEntityJpa c WHERE c.id.codCanalComercializacao = :codCanalComercializacao AND c.id.codCanalDistribuicao = :codCanalDistribuicao")
   boolean existsByCodCanalComercializacaoAndCodCanalDistribuicao(@Param("codCanalComercializacao") String codCanalComercializacao, @Param("codCanalDistribuicao") String codCanalDistribuicao);
 
-  // save e deleteById já são providos pelo JpaRepository
+ 
 }
