@@ -24,5 +24,4 @@ public interface ContactChannelJpaRepository extends JpaRepository<ContactChanne
 	@Query("SELECT c FROM ContactChannelEntityJpa c ORDER BY c.codContato")
 	List<ContactChannelEntityJpa> findAllOrderByCodContato();
 
-	// save e deleteById já são providos pelo JpaRepository
 }
