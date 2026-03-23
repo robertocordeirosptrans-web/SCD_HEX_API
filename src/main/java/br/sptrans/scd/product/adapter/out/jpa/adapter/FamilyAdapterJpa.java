@@ -1,123 +1,59 @@
 package br.sptrans.scd.product.adapter.out.jpa.adapter;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.product.adapter.out.jpa.entity.FamilyEntityJpa;
+import br.sptrans.scd.product.adapter.out.jpa.repository.FamilyJpaRepository;
 import br.sptrans.scd.product.application.port.out.FamilyRepository;
 import br.sptrans.scd.product.domain.Family;
+import br.sptrans.scd.product.adapter.out.jpa.mapper.FamilyMapper;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
+
 public class FamilyAdapterJpa implements FamilyRepository {
 
-    private final JdbcTemplate jdbc;
-
-    private static final String SQL_SELECT_BASE = """
-        SELECT COD_FAMILIA, DES_FAMILIA, ST_FAMILIAS,
-               DT_CADASTRO, DT_MANUTENCAO,
-               ID_USUARIO_CADASTRO, ID_USUARIO_MANUTENCAO
-        FROM SPTRANSDBA.FAMILIAS
-        """;
-
-    private static final String SQL_INSERT = """
-        INSERT INTO SPTRANSDBA.FAMILIAS (
-            COD_FAMILIA, DES_FAMILIA, ST_FAMILIAS,
-            DT_CADASTRO, DT_MANUTENCAO,
-            ID_USUARIO_CADASTRO, ID_USUARIO_MANUTENCAO
-        ) VALUES (?,?,?,SYSDATE,SYSDATE,?,?)
-        """;
-
-    private static final String SQL_UPDATE = """
-        UPDATE SPTRANSDBA.FAMILIAS SET
-            DES_FAMILIA           = ?,
-            DT_MANUTENCAO         = SYSDATE,
-            ID_USUARIO_MANUTENCAO = ?
-        WHERE COD_FAMILIA = ?
-        """;
-
-    private static final String SQL_UPDATE_STATUS = """
-        UPDATE SPTRANSDBA.FAMILIAS SET
-            ST_FAMILIAS           = ?,
-            DT_MANUTENCAO         = SYSDATE,
-            ID_USUARIO_MANUTENCAO = ?
-        WHERE COD_FAMILIA = ?
-        """;
-
-    private static final String SQL_DELETE = "DELETE FROM SPTRANSDBA.FAMILIAS WHERE COD_FAMILIA = ?";
+    private final FamilyJpaRepository repository;
 
     @Override
+
     public Optional<Family> findById(String codFamilia) {
-        List<Family> result = jdbc.query(SQL_SELECT_BASE + "WHERE COD_FAMILIA = ?", rowMapper(), codFamilia);
-        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
+        return repository.findById(codFamilia).map(FamilyMapper::toDomain);
     }
 
     @Override
+
     public boolean existsById(String codFamilia) {
-        Integer count = jdbc.queryForObject(
-                "SELECT COUNT(1) FROM SPTRANSDBA.FAMILIAS WHERE COD_FAMILIA = ?",
-                Integer.class, codFamilia);
-        return count != null && count > 0;
+        return repository.existsById(codFamilia);
     }
 
     @Override
     public List<Family> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
-            return jdbc.query(SQL_SELECT_BASE + "WHERE ST_FAMILIAS = ? ORDER BY COD_FAMILIA",
-                    rowMapper(), codStatus);
+            return repository.findByCodStatusOrderByCodFamilia(codStatus).stream().map(FamilyMapper::toDomain).toList();
         }
-        return jdbc.query(SQL_SELECT_BASE + "ORDER BY COD_FAMILIA", rowMapper());
+        return repository.findAllByOrderByCodFamilia().stream().map(FamilyMapper::toDomain).toList();
     }
 
     @Override
     public Family save(Family family) {
-        if (existsById(family.getCodFamilia())) {
-            jdbc.update(SQL_UPDATE,
-                    family.getDesFamilia(),
-                    family.getIdUsuarioManutencao() != null ? family.getIdUsuarioManutencao().getIdUsuario() : null,
-                    family.getCodFamilia()
-            );
-        } else {
-            jdbc.update(SQL_INSERT,
-                    family.getCodFamilia(),
-                    family.getDesFamilia(),
-                    family.getCodStatus(),
-                    family.getIdUsuarioCadastro() != null ? family.getIdUsuarioCadastro().getIdUsuario() : null,
-                    family.getIdUsuarioManutencao() != null ? family.getIdUsuarioManutencao().getIdUsuario() : null
-            );
-        }
-        return findById(family.getCodFamilia()).orElseThrow();
+        FamilyEntityJpa entity = FamilyMapper.toEntity(family);
+        FamilyEntityJpa saved = repository.save(entity);
+        return FamilyMapper.toDomain(saved);
     }
 
     @Override
     public void updateStatus(String codFamilia, String codStatus, Long idUsuario) {
-        jdbc.update(SQL_UPDATE_STATUS, codStatus, idUsuario, codFamilia);
+        repository.updateStatus(codFamilia, codStatus, idUsuario);
     }
 
     @Override
     public void deleteById(String codFamilia) {
-        jdbc.update(SQL_DELETE, codFamilia);
+        repository.deleteById(codFamilia);
     }
 
-    private RowMapper<Family> rowMapper() {
-        return (rs, rowNum) -> new Family(
-                rs.getString("COD_FAMILIA"),
-                rs.getString("DES_FAMILIA"),
-                rs.getString("ST_FAMILIAS"),
-                toLocalDateTime(rs.getTimestamp("DT_CADASTRO")),
-                toLocalDateTime(rs.getTimestamp("DT_MANUTENCAO")),
-                null,
-                null
-        );
-    }
-
-    private LocalDateTime toLocalDateTime(Timestamp ts) {
-        return ts != null ? ts.toLocalDateTime() : null;
-    }
 }

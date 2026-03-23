@@ -26,12 +26,18 @@ public class FamilyEntityJpa {
     @Column(name = "DES_FAMILIA", length = 60)
     private String desFamilia;
 
-    @Column(name = "ST_FAMILIAS", length = 1)
-    private String codStatus;
+    @Column(name = "ST_FAMILIA", length = 1)
+    private String stFamilias;
 
     @Column(name = "DT_CADASTRO", length = 20)
     private LocalDateTime dtCadastro;
 
     @Column(name = "DT_MANUTENCAO", length = 20)
     private LocalDateTime dtManutencao;
+
+    @Column(name = "ID_USUARIO", length = 20)
+    private LocalDateTime idUsuarioCadastro;
+
+    @Column(name = "ID_USUARIO_MANUTENCAO", length = 20)
+    private LocalDateTime idUsuarioManutencao;
 }
