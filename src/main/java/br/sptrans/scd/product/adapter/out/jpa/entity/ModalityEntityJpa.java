@@ -1,5 +1,8 @@
 package br.sptrans.scd.product.adapter.out.jpa.entity;
 
+import java.time.LocalDateTime;
+
+import br.sptrans.scd.auth.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -28,14 +31,14 @@ public class ModalityEntityJpa {
     private String codStatus;
 
     @Column(name = "DT_CADASTRO", length = 20)
-    private String dtCadastro;
+    private LocalDateTime dtCadastro;
 
     @Column(name = "DT_MANUTENCAO", length = 20)
-    private String dtManutencao;
+    private LocalDateTime dtManutencao;
 
     @Column(name = "ID_USUARIO_CADASTRO")
-    private Long idUsuarioCadastro;
+    private User idUsuarioCadastro;
 
     @Column(name = "ID_USUARIO_MANUTENCAO")
-    private Long idUsuarioManutencao;
+    private User idUsuarioManutencao;
 }
