@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.product.adapter.out.jpa.entity.ProductTypesEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductsTypeMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductsTypeJpaRepository;
@@ -17,11 +18,12 @@ import lombok.RequiredArgsConstructor;
 public class ProductsTypeAdapterJpa implements ProductsTypeRepository {
 
     private final ProductsTypeJpaRepository repository;
+    private final UserRepository userRepository;
 
     @Override
     public Optional<ProductType> findById(String codTipoProduto) {
         return repository.findById(codTipoProduto)
-                .map(ProductsTypeMapper::toDomain);
+                .map(entity -> ProductsTypeMapper.toDomain(entity, userRepository));
     }
 
     @Override
@@ -33,12 +35,12 @@ public class ProductsTypeAdapterJpa implements ProductsTypeRepository {
     public List<ProductType> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findAll().stream()
-                    .map(ProductsTypeMapper::toDomain)
+                    .map(entity -> ProductsTypeMapper.toDomain(entity, userRepository))
                     .filter(t -> codStatus.equals(t.getCodStatus()))
                     .toList();
         }
         return repository.findAll().stream()
-                .map(ProductsTypeMapper::toDomain)
+                .map(entity -> ProductsTypeMapper.toDomain(entity, userRepository))
                 .toList();
     }
 
@@ -50,8 +52,14 @@ public class ProductsTypeAdapterJpa implements ProductsTypeRepository {
         entity.setCodStatus(type.getCodStatus());
         entity.setDtCadastro(type.getDtCadastro());
         entity.setDtManutencao(type.getDtManutencao());
+        if (type.getIdUsuarioCadastro() != null) {
+            entity.setIdUsuarioCadastro(type.getIdUsuarioCadastro().getIdUsuario());
+        }
+        if (type.getIdUsuarioManutencao() != null) {
+            entity.setIdUsuarioManutencao(type.getIdUsuarioManutencao().getIdUsuario());
+        }
         var saved = repository.save(entity);
-        return ProductsTypeMapper.toDomain(saved);
+        return ProductsTypeMapper.toDomain(saved, userRepository);
     }
 
     @Override
@@ -70,4 +78,4 @@ public class ProductsTypeAdapterJpa implements ProductsTypeRepository {
     }
 }
 
-  
+

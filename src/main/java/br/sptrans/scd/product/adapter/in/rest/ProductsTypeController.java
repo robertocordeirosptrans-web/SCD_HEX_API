@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.adapter.in.rest;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.product.adapter.port.in.rest.dto.ProductsTypeResponseDTO;
+import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase.CreateProductsTypeCommand;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase.UpdateProductsTypeCommand;
@@ -75,18 +78,39 @@ public class ProductsTypeController {
 
     @GetMapping("/{codTipoProduto}")
     @Operation(summary = "Busca tipo de produto por código")
-    public ResponseEntity<ProductType> findByProductsType(@PathVariable String codTipoProduto) {
-        return ResponseEntity.ok(productsTypeManagementUseCase.findByProductsType(codTipoProduto));
+    public ResponseEntity<ProductsTypeResponseDTO> findByProductsType(@PathVariable String codTipoProduto) {
+        ProductType productType = productsTypeManagementUseCase.findByProductsType(codTipoProduto);
+        ProductsTypeResponseDTO dto = new ProductsTypeResponseDTO(
+            productType.getCodTipoProduto(),
+            productType.getDesTipoProduto(),
+            productType.getCodStatus(),
+            productType.getDtCadastro(),
+            productType.getDtManutencao(),
+            UserSimpleMapper.toDto(productType.getIdUsuarioCadastro()),
+            UserSimpleMapper.toDto(productType.getIdUsuarioManutencao())
+        );
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping
     @Operation(summary = "Lista todos os tipos de produto, com filtro opcional de status")
-    public ResponseEntity<PageResponse<ProductType>> findAllProductsTypes(
+    public ResponseEntity<PageResponse<ProductsTypeResponseDTO>> findAllProductsTypes(
             @RequestParam(required = false) String codStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<ProductType> all = productsTypeManagementUseCase.findAllProductsTypes(codStatus);
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+        List<ProductsTypeResponseDTO> dtos = all.stream()
+            .map(productType -> new ProductsTypeResponseDTO(
+                productType.getCodTipoProduto(),
+                productType.getDesTipoProduto(),
+                productType.getCodStatus(),
+                productType.getDtCadastro(),
+                productType.getDtManutencao(),
+                UserSimpleMapper.toDto(productType.getIdUsuarioCadastro()),
+                UserSimpleMapper.toDto(productType.getIdUsuarioManutencao())
+            ))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
     }
 
     @PatchMapping("/{codTipoProduto}/activate")
