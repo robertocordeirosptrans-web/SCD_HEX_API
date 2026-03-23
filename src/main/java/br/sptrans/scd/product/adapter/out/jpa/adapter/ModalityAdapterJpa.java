@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ModalityMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ModalityJpaRepository;
 import br.sptrans.scd.product.application.port.out.ModalityRepository;
@@ -16,11 +18,12 @@ import lombok.RequiredArgsConstructor;
 public class ModalityAdapterJpa implements ModalityRepository {
 
     private final ModalityJpaRepository repository;
+    private final UserRepository userRepository;
 
     @Override
     public Optional<Modality> findById(String codModalidade) {
         return repository.findById(codModalidade)
-                .map(ModalityMapper::toDomain);
+                .map(entity -> ModalityMapper.toDomain(entity, userRepository));
     }
 
     @Override
@@ -32,12 +35,12 @@ public class ModalityAdapterJpa implements ModalityRepository {
     public List<Modality> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findAll().stream()
-                    .map(ModalityMapper::toDomain)
+                    .map(entity -> ModalityMapper.toDomain(entity, userRepository))
                     .filter(m -> codStatus.equals(m.getCodStatus()))
                     .toList();
         }
         return repository.findAll().stream()
-                .map(ModalityMapper::toDomain)
+                .map(entity -> ModalityMapper.toDomain(entity, userRepository))
                 .toList();
     }
 
@@ -45,7 +48,7 @@ public class ModalityAdapterJpa implements ModalityRepository {
     public Modality save(Modality modality) {
         var entity = ModalityMapper.toEntity(modality);
         var saved = repository.save(entity);
-        return ModalityMapper.toDomain(saved);
+        return ModalityMapper.toDomain(saved, userRepository);
     }
 
     @Override
@@ -53,9 +56,9 @@ public class ModalityAdapterJpa implements ModalityRepository {
         repository.findById(codModalidade).ifPresent(entity -> {
             entity.setCodStatus(codStatus);
             if (idUsuario != null) {
-                br.sptrans.scd.auth.domain.User user = new br.sptrans.scd.auth.domain.User();
+                User user = new User();
                 user.setIdUsuario(idUsuario);
-                entity.setIdUsuarioManutencao(user);
+                entity.setIdUsuarioManutencao(user.getIdUsuario());
             }
             repository.save(entity);
         });

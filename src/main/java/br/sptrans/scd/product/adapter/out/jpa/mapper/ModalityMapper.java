@@ -1,12 +1,13 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
+import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.adapter.out.jpa.entity.ModalityEntityJpa;
 import br.sptrans.scd.product.domain.Modality;
 
 public interface ModalityMapper {
 
-    static Modality toDomain(ModalityEntityJpa entity) {
+    static Modality toDomain(ModalityEntityJpa entity, UserRepository userRepository) {
         if (entity == null) {
             return null;
         }
@@ -16,18 +17,14 @@ public interface ModalityMapper {
         modality.setDtCadastro(entity.getDtCadastro());
         modality.setDtManutencao(entity.getDtManutencao());
         modality.setCodStatus(entity.getCodStatus());
-
         if (entity.getIdUsuarioCadastro() != null) {
-            User user = new User();
-            user.setIdUsuario(entity.getIdUsuarioCadastro().getIdUsuario());
+            var user = userRepository.findById(entity.getIdUsuarioCadastro()).orElse(null);
             modality.setIdUsuarioCadastro(user);
         }
         if (entity.getIdUsuarioManutencao() != null) {
-            User user = new User();
-            user.setIdUsuario(entity.getIdUsuarioManutencao().getIdUsuario());
+            var user = userRepository.findById(entity.getIdUsuarioManutencao()).orElse(null);
             modality.setIdUsuarioManutencao(user);
         }
-
         return modality;
     }
 
@@ -45,12 +42,12 @@ public interface ModalityMapper {
         if (modality.getIdUsuarioCadastro() != null) {
             User user = new User();
             user.setIdUsuario(modality.getIdUsuarioCadastro().getIdUsuario());
-            entity.setIdUsuarioCadastro(user);
+            entity.setIdUsuarioCadastro(user.getIdUsuario());
         }
         if (modality.getIdUsuarioManutencao() != null) {
             User user = new User();
             user.setIdUsuario(modality.getIdUsuarioManutencao().getIdUsuario());
-            entity.setIdUsuarioManutencao(user);
+            entity.setIdUsuarioManutencao(user.getIdUsuario());
         }
 
         return entity;

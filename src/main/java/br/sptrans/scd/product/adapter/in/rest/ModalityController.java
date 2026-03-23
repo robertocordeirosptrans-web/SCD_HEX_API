@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.adapter.in.rest;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.product.adapter.port.in.rest.dto.ModalityResponseDTO;
+import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase.CreateModalityCommand;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase.UpdateModalityCommand;
@@ -75,18 +78,39 @@ public class ModalityController {
 
     @GetMapping("/{codModalidade}")
     @Operation(summary = "Busca modalidade por código")
-    public ResponseEntity<Modality> findByModality(@PathVariable String codModalidade) {
-        return ResponseEntity.ok(modalityManagementUseCase.findByModality(codModalidade));
+    public ResponseEntity<ModalityResponseDTO> findByModality(@PathVariable String codModalidade) {
+        Modality modality = modalityManagementUseCase.findByModality(codModalidade);
+        ModalityResponseDTO dto = new ModalityResponseDTO(
+            modality.getCodModalidade(),
+            modality.getDesModalidade(),
+            modality.getCodStatus(),
+            modality.getDtCadastro(),
+            modality.getDtManutencao(),
+            UserSimpleMapper.toDto(modality.getIdUsuarioCadastro()),
+            UserSimpleMapper.toDto(modality.getIdUsuarioManutencao())
+        );
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping
     @Operation(summary = "Lista todas as modalidades, com filtro opcional de status")
-    public ResponseEntity<PageResponse<Modality>> findAllModalities(
+    public ResponseEntity<PageResponse<ModalityResponseDTO>> findAllModalities(
             @RequestParam(required = false) String codStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<Modality> all = modalityManagementUseCase.findAllModalities(codStatus);
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+        List<ModalityResponseDTO> dtos = all.stream()
+            .map(modality -> new ModalityResponseDTO(
+                modality.getCodModalidade(),
+                modality.getDesModalidade(),
+                modality.getCodStatus(),
+                modality.getDtCadastro(),
+                modality.getDtManutencao(),
+                UserSimpleMapper.toDto(modality.getIdUsuarioCadastro()),
+                UserSimpleMapper.toDto(modality.getIdUsuarioManutencao())
+            ))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
     }
 
     @PatchMapping("/{codModalidade}/activate")
