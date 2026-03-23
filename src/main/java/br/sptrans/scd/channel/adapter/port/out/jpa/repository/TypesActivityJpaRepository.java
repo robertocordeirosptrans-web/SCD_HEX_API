@@ -1,15 +1,14 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.TypesActivityEntityJpa;
-
-
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import java.util.List;
+
+import br.sptrans.scd.channel.adapter.port.out.jpa.entity.TypesActivityEntityJpa;
 
 public interface TypesActivityJpaRepository extends JpaRepository<TypesActivityEntityJpa, String>, JpaSpecificationExecutor<TypesActivityEntityJpa> {
 
@@ -17,11 +16,11 @@ public interface TypesActivityJpaRepository extends JpaRepository<TypesActivityE
 	List<TypesActivityEntityJpa> findAllByCodStatus(@Param("codStatus") String codStatus);
 
 	@Modifying
-	@Query("UPDATE TypesActivityEntityJpa t SET t.desAtividade = :desAtividade, t.dtManutencao = CURRENT_DATE WHERE t.codAtividade = :codAtividade")
+	@Query("UPDATE TypesActivityEntityJpa t SET t.desAtividade = :desAtividade, t.dtManutencao = CURRENT_TIMESTAMP  WHERE t.codAtividade = :codAtividade")
 	void updateDescricao(@Param("codAtividade") String codAtividade, @Param("desAtividade") String desAtividade);
 
 	@Modifying
-	@Query("UPDATE TypesActivityEntityJpa t SET t.codStatus = :codStatus, t.dtManutencao = CURRENT_DATE WHERE t.codAtividade = :codAtividade")
+	@Query("UPDATE TypesActivityEntityJpa t SET t.codStatus = :codStatus, t.dtManutencao = CURRENT_TIMESTAMP  WHERE t.codAtividade = :codAtividade")
 	void updateStatus(@Param("codAtividade") String codAtividade, @Param("codStatus") String codStatus);
 
 }

@@ -1,6 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.in.rest;
 
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 import java.util.List;
 

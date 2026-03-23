@@ -1,5 +1,7 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -28,8 +30,8 @@ public class TypesActivityEntityJpa {
     private String codStatus;
 
     @Column(name = "DT_CADASTRO", nullable = false, length = 20)
-    private String dtCadastro;
+    private LocalDateTime dtCadastro;
 
     @Column(name = "DT_MANUTENCAO", nullable = false, length = 20)
-    private String dtManutencao;
+    private LocalDateTime dtManutencao;
 }

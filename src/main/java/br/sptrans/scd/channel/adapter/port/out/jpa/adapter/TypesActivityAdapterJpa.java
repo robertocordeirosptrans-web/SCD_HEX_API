@@ -1,4 +1,5 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,8 +46,8 @@ public class TypesActivityAdapterJpa implements TypesActivityRepository {
             typesActivityJpaRepository.updateDescricao(entity.getCodAtividade(), entity.getDesAtividade());
         } else {
             entity.setCodStatus("A");
-            entity.setDtCadastro(java.time.LocalDate.now().toString());
-            entity.setDtManutencao(java.time.LocalDate.now().toString());
+            entity.setDtCadastro(LocalDateTime.now());
+            entity.setDtManutencao(LocalDateTime.now());
             typesActivityJpaRepository.save(entity);
         }
         return findById(typesActivity.getCodAtividade()).orElseThrow();
