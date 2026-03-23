@@ -27,10 +27,10 @@ public interface ProductChannelJpaRepository extends JpaRepository<ProductChanne
             p.qtdMaximaRessuprimento = :qtdMaximaRessuprimento,
             p.codOrgaoEmissor = :codOrgaoEmissor,
             p.vlFace = :vlFace,
-            p.stCanaisProdutos = :stCanaisProdutos,
+            p.codStatus = :stCanaisProdutos,
             p.dtManutencao = CURRENT_TIMESTAMP,
             p.codConvenio = :codConvenio,
-            p.tipoOperHm = :tipoOperHm,
+            p.tipoOperHM = :tipoOperHm,
             p.flgCarac = :flgCarac,
             p.idUsuarioManutencao = :idUsuarioManutencao
         WHERE p.id.codCanal = :codCanal AND p.id.codProduto = :codProduto
@@ -52,7 +52,7 @@ public interface ProductChannelJpaRepository extends JpaRepository<ProductChanne
         @Param("codProduto") String codProduto
     );
 
-    @Query("SELECT DISTINCT cp FROM CanaisProdutosJpa cp WHERE cp.id.codCanal = :codCanal AND cp.id.codProduto = :codProduto")
+    @Query("SELECT DISTINCT cp FROM ProductChannelEntityJpa cp WHERE cp.id.codCanal = :codCanal AND cp.id.codProduto = :codProduto")
     Optional<ProductChannelEntityJpa> findByIdOptimized(@Param("codCanal") String codCanal, @Param("codProduto") String codProduto);
 
     @Query(value = """

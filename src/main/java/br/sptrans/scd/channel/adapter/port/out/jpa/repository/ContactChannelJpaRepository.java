@@ -22,6 +22,6 @@ public interface ContactChannelJpaRepository extends JpaRepository<ContactChanne
 	List<ContactChannelEntityJpa> findAllByCodCanal(@Param("codCanal") String codCanal);
 
 	@Query("SELECT c FROM ContactChannelEntityJpa c ORDER BY c.codContato")
-	List<ContactChannelEntityJpa> findAllOrderByCodContato();
+	List<ContactChannelEntityJpa> findAllByOrderByCodContato();;
 
 }
