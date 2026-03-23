@@ -6,15 +6,16 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.product.adapter.out.jpa.entity.FamilyEntityJpa;
+import br.sptrans.scd.product.adapter.out.jpa.mapper.FamilyMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.FamilyJpaRepository;
 import br.sptrans.scd.product.application.port.out.FamilyRepository;
 import br.sptrans.scd.product.domain.Family;
-import br.sptrans.scd.product.adapter.out.jpa.mapper.FamilyMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-
+@Transactional
 public class FamilyAdapterJpa implements FamilyRepository {
 
     private final FamilyJpaRepository repository;
