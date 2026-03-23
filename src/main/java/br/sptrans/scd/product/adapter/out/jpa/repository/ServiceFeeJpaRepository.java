@@ -1,0 +1,7 @@
+package br.sptrans.scd.product.adapter.out.jpa.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import br.sptrans.scd.product.adapter.out.jpa.entity.ServiceFeeEntityJpa;
+
+public interface ServiceFeeJpaRepository extends JpaRepository<ServiceFeeEntityJpa, Long> {
+}
