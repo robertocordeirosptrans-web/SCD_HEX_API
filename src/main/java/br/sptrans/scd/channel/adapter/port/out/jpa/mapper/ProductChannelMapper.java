@@ -7,9 +7,55 @@ import org.springframework.stereotype.Component;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChResponseDTO;
 import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
 
+import br.sptrans.scd.channel.domain.ProductChannel;
+import br.sptrans.scd.channel.domain.ProductChannelKey;
+import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelKeyEntityJpa;
+
 @Component
 public class ProductChannelMapper {
 
+    public ProductChannelEntityJpa toEntity(ProductChannel domain) {
+        if (domain == null) return null;
+        ProductChannelEntityJpa entity = new ProductChannelEntityJpa();
+        entity.setId(toEntityKey(domain.getId()));
+        entity.setQtdLimiteComercializacao(domain.getQtdLimiteComercializacao());
+        entity.setQtdMinimaEstoque(domain.getQtdMinimaEstoque());
+        entity.setQtdMaximaEstoque(domain.getQtdMaximaEstoque());
+        entity.setQtdMinimaRessuprimento(domain.getQtdMinimaRessuprimento());
+        entity.setQtdMaximaRessuprimento(domain.getQtdMaximaRessuprimento());
+        entity.setCodOrgaoEmissor(domain.getCodOrgaoEmissor());
+        entity.setVlFace(domain.getVlFace());
+        entity.setCodStatus(domain.getCodStatus());
+        // Adicione outros campos conforme necessário
+        return entity;
+    }
+
+    public ProductChannel toDomain(ProductChannelEntityJpa entity) {
+        if (entity == null) return null;
+        ProductChannel domain = new ProductChannel();
+        domain.setId(toDomainKey(entity.getId()));
+        domain.setQtdLimiteComercializacao(entity.getQtdLimiteComercializacao());
+        domain.setQtdMinimaEstoque(entity.getQtdMinimaEstoque());
+        domain.setQtdMaximaEstoque(entity.getQtdMaximaEstoque());
+        domain.setQtdMinimaRessuprimento(entity.getQtdMinimaRessuprimento());
+        domain.setQtdMaximaRessuprimento(entity.getQtdMaximaRessuprimento());
+        domain.setCodOrgaoEmissor(entity.getCodOrgaoEmissor());
+        domain.setVlFace(entity.getVlFace());
+        domain.setCodStatus(entity.getCodStatus());
+        // Adicione outros campos conforme necessário
+        return domain;
+    }
+
+    public ProductChannelKeyEntityJpa toEntityKey(ProductChannelKey key) {
+        if (key == null) return null;
+        return new ProductChannelKeyEntityJpa(key.getCodCanal(), key.getCodProduto());
+    }
+
+    public ProductChannelKey toDomainKey(ProductChannelKeyEntityJpa entityKey) {
+        if (entityKey == null) return null;
+        return new ProductChannelKey(entityKey.getCodCanal(), entityKey.getCodProduto());
+    }
     public ProductChResponseDTO toResponseDTO(ProductChannelProjection projection) {
         if (projection == null) {
             return null;
