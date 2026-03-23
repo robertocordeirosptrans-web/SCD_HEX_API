@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.adapter.in.rest;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.product.adapter.port.in.rest.dto.SpeciesResponseDTO;
+import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase.CreateSpeciesCommand;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase.UpdateSpeciesCommand;
@@ -75,18 +78,39 @@ public class SpeciesController {
 
     @GetMapping("/{codEspecie}")
     @Operation(summary = "Busca espécie por código")
-    public ResponseEntity<Species> findBySpecies(@PathVariable String codEspecie) {
-        return ResponseEntity.ok(speciesManagementUseCase.findBySpecies(codEspecie));
+    public ResponseEntity<SpeciesResponseDTO> findBySpecies(@PathVariable String codEspecie) {
+        Species species = speciesManagementUseCase.findBySpecies(codEspecie);
+        SpeciesResponseDTO dto = new SpeciesResponseDTO(
+            species.getCodEspecie(),
+            species.getDesEspecie(),
+            species.getCodStatus(),
+            species.getDtCadastro(),
+            species.getDtManutencao(),
+            UserSimpleMapper.toDto(species.getIdUsuarioCadastro()),
+            UserSimpleMapper.toDto(species.getIdUsuarioManutencao())
+        );
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping
     @Operation(summary = "Lista todas as espécies, com filtro opcional de status")
-    public ResponseEntity<PageResponse<Species>> findAllSpecies(
+    public ResponseEntity<PageResponse<SpeciesResponseDTO>> findAllSpecies(
             @RequestParam(required = false) String codStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<Species> all = speciesManagementUseCase.findAllSpecies(codStatus);
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+        List<SpeciesResponseDTO> dtos = all.stream()
+            .map(species -> new SpeciesResponseDTO(
+                species.getCodEspecie(),
+                species.getDesEspecie(),
+                species.getCodStatus(),
+                species.getDtCadastro(),
+                species.getDtManutencao(),
+                UserSimpleMapper.toDto(species.getIdUsuarioCadastro()),
+                UserSimpleMapper.toDto(species.getIdUsuarioManutencao())
+            ))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
     }
 
     @PatchMapping("/{codEspecie}/activate")

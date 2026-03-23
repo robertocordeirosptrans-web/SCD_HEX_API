@@ -32,4 +32,10 @@ public class SpeciesEntityJpa {
 
     @Column(name = "DT_MANUTENCAO", length = 20)
     private String dtManutencao;
+
+    @Column(name = "ID_USUARIO_CADASTRO", length = 20)
+    private Long idUsuarioCadastro;
+
+    @Column(name = "ID_USUARIO_MANUTENCAO", length = 20)
+    private Long idUsuarioManutencao;
 }

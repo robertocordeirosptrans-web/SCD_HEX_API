@@ -5,10 +5,11 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.product.adapter.out.jpa.mapper.SpeciesMapper;
+import br.sptrans.scd.product.adapter.out.jpa.repository.SpeciesJpaRepository;
 import br.sptrans.scd.product.application.port.out.SpeciesRepository;
 import br.sptrans.scd.product.domain.Species;
-import br.sptrans.scd.product.adapter.out.jpa.repository.SpeciesJpaRepository;
-import br.sptrans.scd.product.adapter.out.jpa.mapper.SpeciesMapper;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -16,11 +17,12 @@ import lombok.RequiredArgsConstructor;
 public class SpeciesAdapterJpa implements SpeciesRepository {
 
     private final SpeciesJpaRepository repository;
+    private final UserRepository userRepository;
 
     @Override
     public Optional<Species> findById(String codEspecie) {
         return repository.findById(codEspecie)
-                .map(SpeciesMapper::toDomain);
+                .map(entity -> SpeciesMapper.toDomain(entity, userRepository));
     }
 
     @Override
@@ -32,21 +34,20 @@ public class SpeciesAdapterJpa implements SpeciesRepository {
     public List<Species> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findAll().stream()
-                    .map(SpeciesMapper::toDomain)
+                    .map(entity -> SpeciesMapper.toDomain(entity, userRepository))
                     .filter(s -> codStatus.equals(s.getCodStatus()))
                     .toList();
         }
         return repository.findAll().stream()
-                .map(SpeciesMapper::toDomain)
+                .map(entity -> SpeciesMapper.toDomain(entity, userRepository))
                 .toList();
     }
 
     @Override
     public Species save(Species species) {
-        // Mapper precisa ser implementado corretamente
         var entity = SpeciesMapper.toEntity(species);
         var saved = repository.save(entity);
-        return SpeciesMapper.toDomain(saved);
+        return SpeciesMapper.toDomain(saved, userRepository);
     }
 
     @Override
