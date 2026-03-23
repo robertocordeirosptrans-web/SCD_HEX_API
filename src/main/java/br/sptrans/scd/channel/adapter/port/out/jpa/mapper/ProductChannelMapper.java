@@ -1,38 +1,85 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.mapper;
 
-import br.sptrans.scd.channel.domain.ProductChannel;
-import br.sptrans.scd.channel.domain.ProductChannelKey;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
+import java.util.List;
 
-@Mapper(componentModel = "spring")
-public interface ProductChannelMapper {
-    ProductChannelMapper INSTANCE = Mappers.getMapper(ProductChannelMapper.class);
+import org.springframework.stereotype.Component;
 
-    // Exemplo de mapeamento: adapte conforme necessário
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "canal", ignore = true)
-    @Mapping(target = "produto", ignore = true)
-    @Mapping(target = "idUsuarioCadastro", source = "idUsuarioCadastro")
-    @Mapping(target = "idUsuarioManutencao", source = "idUsuarioManutencao")
-    br.sptrans.scd.channel.domain.ProductChannel toDomain(br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelEntityJpa entity);
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChResponseDTO;
+import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
 
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "canal", ignore = true)
-    @Mapping(target = "produto", ignore = true)
-    @Mapping(target = "idUsuarioCadastro", source = "idUsuarioCadastro")
-    @Mapping(target = "idUsuarioManutencao", source = "idUsuarioManutencao")
-    br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelEntityJpa toEntity(br.sptrans.scd.channel.domain.ProductChannel domain);
+@Component
+public class ProductChannelMapper {
 
-    // Conversão para chave de entidade JPA
-    default br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelKeyEntityJpa toEntityKey(br.sptrans.scd.channel.domain.ProductChannelKey key) {
-        if (key == null) return null;
-        return new br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelKeyEntityJpa(key.getCodCanal(), key.getCodProduto());
+    public ProductChResponseDTO toResponseDTO(ProductChannelProjection projection) {
+        if (projection == null) {
+            return null;
+        }
+
+        // IMPORTANTE: A ordem dos parâmetros deve ser EXATAMENTE a mesma do Record
+        return new ProductChResponseDTO(
+                // 1-3: Informações básicas do Produto
+                projection.getCodProduto(),
+                projection.getDesProduto(),
+                projection.getStatusProduto(),
+                // 4-5: Informações do Canal
+                projection.getCodCanal(),
+                projection.getStatusCanalProduto(),
+                // 6-15: Informações do Canal-Produto
+                projection.getCodConvenio(),
+                projection.getCodOrgaoEmissor(),
+                projection.getQtdLimiteComercializacao(),
+                projection.getQtdMinimaEstoque(),
+                projection.getQtdMaximaEstoque(),
+                projection.getQtdMinimaRessuprimento(),
+                projection.getQtdMaximaRessuprimento(),
+                projection.getVlFace(),
+                projection.getTipoOperHM(),
+                projection.getFlgCarac(),
+                projection.getCanaisDestino(),
+                // 16-18: Informações da Vigência
+                projection.getInicioValidade(),
+                projection.getFimValidade(),
+                projection.getStatusVigencia(),
+                // 19-24: Limites de Recarga
+                projection.getDtInicioValidadeLimite(),
+                projection.getDtFimValidadeLimite(),
+                projection.getVlMinimoRecarga(),
+                projection.getVlMaximoRecarga(),
+                projection.getVlMaximoSaldo(),
+                projection.getStatusLimite(),
+                // 25-28: Informações de Taxas
+                projection.getIdTaxa(),
+                projection.getTaxaInicio(),
+                projection.getTaxaFim(),
+                projection.getDscTaxa(),
+                // 29-32: Taxa Administrativa
+                projection.getTaxaAdmRecInicial(),
+                projection.getTaxaAdmRecFinal(),
+                projection.getTaxaAdmValFixo(),
+                projection.getTaxaAdmPercentual(),
+                // 33-37: Taxa de Serviço
+                projection.getTaxaServRecInicial(),
+                projection.getTaxaServRecFinal(),
+                projection.getTaxaServValFixo(),
+                projection.getTaxaServPercentual(),
+                projection.getTaxaServValMinimo(),
+                // 38-42: Taxa por Canal
+                projection.getTaxaCanalInicio(),
+                projection.getTaxaCanalFim(),
+                projection.getTaxaCanalVlInicio(),
+                projection.getTaxaCanalVlFinal(),
+                projection.getTaxaCanalPercentual()
+        );
     }
-    // Conversão de chave de entidade JPA para domínio
-    default br.sptrans.scd.channel.domain.ProductChannelKey toDomainKey(br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelKeyEntityJpa key) {
-        if (key == null) return null;
-        return new br.sptrans.scd.channel.domain.ProductChannelKey(key.getCodCanal(), key.getCodProduto());
+
+    public List<ProductChResponseDTO> toResponseDTOList(List<ProductChannelProjection> projections) {
+        if (projections == null || projections.isEmpty()) {
+            return List.of();
+        }
+
+        return projections.stream()
+                .map(this::toResponseDTO)
+                .filter(dto -> dto != null)
+                .toList();
     }
 }
