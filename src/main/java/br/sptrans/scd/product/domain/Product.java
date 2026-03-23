@@ -6,6 +6,7 @@ import br.sptrans.scd.product.domain.enums.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Entidade de domínio: Produto (tipo de crédito).
@@ -26,6 +27,7 @@ import lombok.NoArgsConstructor;
  */
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
