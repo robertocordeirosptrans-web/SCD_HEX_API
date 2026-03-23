@@ -1,6 +1,5 @@
 package br.sptrans.scd.product.application.port.out;
 
-import java.util.List;
 import java.util.Optional;
 
 import br.sptrans.scd.product.domain.ProductVersion;
@@ -17,6 +16,6 @@ public interface ProductVersionRepository {
 
     void updateStatus(String codProduto, String codStatus, Long idUsuario);
 
-    List<ProductVersion> findByProduct(String codProduto);
+    Optional<ProductVersion> findByProduct(String codProduto);
 
 }
