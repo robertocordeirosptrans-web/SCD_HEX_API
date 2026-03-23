@@ -2,7 +2,6 @@ package br.sptrans.scd.product.adapter.out.jpa.entity;
 
 import java.time.LocalDateTime;
 
-import br.sptrans.scd.auth.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -36,9 +35,9 @@ public class TechnologyEntityJpa {
     @Column(name = "DT_MANUTENCAO")
     private LocalDateTime dtManutencao;
 
-    @Column(name = "ID_USUARIO_CADASTRO")
-    private User idUsuarioCadastro;
+    @Column(name = "ID_USUARIO_CADASTRO", length = 50)
+    private Long idUsuarioCadastro;
 
-    @Column(name = "ID_USUARIO_MANUTENCAO")
-    private User idUsuarioManutencao;
+    @Column(name = "ID_USUARIO_MANUTENCAO", length = 50)
+    private Long idUsuarioManutencao;
 }

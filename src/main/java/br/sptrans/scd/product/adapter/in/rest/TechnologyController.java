@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.adapter.in.rest;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.product.adapter.port.in.rest.dto.TechnologyResponseDTO;
+import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.CreateTechnologyCommand;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.UpdateTechnologyCommand;
@@ -75,18 +78,39 @@ public class TechnologyController {
 
     @GetMapping("/{codTecnologia}")
     @Operation(summary = "Busca tecnologia por código")
-    public ResponseEntity<Technology> findByTechnology(@PathVariable String codTecnologia) {
-        return ResponseEntity.ok(technologyManagementUseCase.findByTechnology(codTecnologia));
+    public ResponseEntity<TechnologyResponseDTO> findByTechnology(@PathVariable String codTecnologia) {
+        Technology technology = technologyManagementUseCase.findByTechnology(codTecnologia);
+        TechnologyResponseDTO dto = new TechnologyResponseDTO(
+            technology.getCodTecnologia(),
+            technology.getDesTecnologia(),
+            technology.getCodStatus(),
+            technology.getDtCadastro(),
+            technology.getDtManutencao(),
+            UserSimpleMapper.toDto(technology.getIdUsuarioCadastro()),
+            UserSimpleMapper.toDto(technology.getIdUsuarioManutencao())
+        );
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping
     @Operation(summary = "Lista todas as tecnologias, com filtro opcional de status")
-    public ResponseEntity<PageResponse<Technology>> findAllTechnologies(
+    public ResponseEntity<PageResponse<TechnologyResponseDTO>> findAllTechnologies(
             @RequestParam(required = false) String codStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<Technology> all = technologyManagementUseCase.findAllTechnologies(codStatus);
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+        List<TechnologyResponseDTO> dtos = all.stream()
+            .map(technology -> new TechnologyResponseDTO(
+                technology.getCodTecnologia(),
+                technology.getDesTecnologia(),
+                technology.getCodStatus(),
+                technology.getDtCadastro(),
+                technology.getDtManutencao(),
+                UserSimpleMapper.toDto(technology.getIdUsuarioCadastro()),
+                UserSimpleMapper.toDto(technology.getIdUsuarioManutencao())
+            ))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
     }
 
     @PatchMapping("/{codTecnologia}/activate")

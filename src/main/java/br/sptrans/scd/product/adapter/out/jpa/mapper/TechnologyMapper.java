@@ -1,13 +1,12 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
 import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.product.adapter.out.jpa.entity.ModalityEntityJpa;
+import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.product.adapter.out.jpa.entity.TechnologyEntityJpa;
-import br.sptrans.scd.product.domain.Modality;
 import br.sptrans.scd.product.domain.Technology;
 
 public interface TechnologyMapper {
-    static Technology toDomain(TechnologyEntityJpa entity) {
+    static Technology toDomain(TechnologyEntityJpa entity, UserRepository userRepository) {
         if (entity == null) {
             return null;
         }
@@ -19,13 +18,11 @@ public interface TechnologyMapper {
         tech.setCodStatus(entity.getCodStatus());
 
         if (entity.getIdUsuarioCadastro() != null) {
-            User user = new User();
-            user.setIdUsuario(entity.getIdUsuarioCadastro().getIdUsuario());
+            User user = userRepository.findById(entity.getIdUsuarioCadastro()).orElse(null);
             tech.setIdUsuarioCadastro(user);
         }
         if (entity.getIdUsuarioManutencao() != null) {
-            User user = new User();
-            user.setIdUsuario(entity.getIdUsuarioManutencao().getIdUsuario());
+            User user = userRepository.findById(entity.getIdUsuarioManutencao()).orElse(null);
             tech.setIdUsuarioManutencao(user);
         }
 
@@ -44,14 +41,10 @@ public interface TechnologyMapper {
         entity.setCodStatus(tech.getCodStatus());
 
         if (tech.getIdUsuarioCadastro() != null) {
-            User user = new User();
-            user.setIdUsuario(tech.getIdUsuarioCadastro().getIdUsuario());
-            entity.setIdUsuarioCadastro(user);
+            entity.setIdUsuarioCadastro(tech.getIdUsuarioCadastro().getIdUsuario());
         }
         if (tech.getIdUsuarioManutencao() != null) {
-            User user = new User();
-            user.setIdUsuario(tech.getIdUsuarioManutencao().getIdUsuario());
-            entity.setIdUsuarioManutencao(user);
+            entity.setIdUsuarioManutencao(tech.getIdUsuarioManutencao().getIdUsuario());
         }
 
         return entity;

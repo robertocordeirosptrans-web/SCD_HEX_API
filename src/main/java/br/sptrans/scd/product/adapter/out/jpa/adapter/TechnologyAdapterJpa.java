@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.TechnologyMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.TechnologyJpaRepository;
 import br.sptrans.scd.product.application.port.out.TechnologyRepository;
@@ -19,11 +20,12 @@ import lombok.RequiredArgsConstructor;
 public class TechnologyAdapterJpa implements TechnologyRepository {
 
     private final TechnologyJpaRepository repository;
+    private final UserRepository userRepository;
 
     @Override
     public Optional<Technology> findById(String codTecnologia) {
         return repository.findById(codTecnologia)
-                .map(TechnologyMapper::toDomain);
+                .map(entity -> TechnologyMapper.toDomain(entity, userRepository));
     }
 
     @Override
@@ -35,12 +37,12 @@ public class TechnologyAdapterJpa implements TechnologyRepository {
     public List<Technology> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findAll().stream()
-                    .map(TechnologyMapper::toDomain)
+                    .map(entity -> TechnologyMapper.toDomain(entity, userRepository))
                     .filter(t -> codStatus.equals(t.getCodStatus()))
                     .toList();
         }
         return repository.findAll().stream()
-                .map(TechnologyMapper::toDomain)
+                .map(entity -> TechnologyMapper.toDomain(entity, userRepository))
                 .toList();
     }
 
@@ -48,7 +50,7 @@ public class TechnologyAdapterJpa implements TechnologyRepository {
     public Technology save(Technology technology) {
         var entity = TechnologyMapper.toEntity(technology);
         var saved = repository.save(entity);
-        return TechnologyMapper.toDomain(saved);
+        return TechnologyMapper.toDomain(saved, userRepository);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class TechnologyAdapterJpa implements TechnologyRepository {
             if (idUsuario != null) {
                 User user = new User();
                 user.setIdUsuario(idUsuario);
-                entity.setIdUsuarioManutencao(user);
+                entity.setIdUsuarioManutencao(user.getIdUsuario());
             }
             repository.save(entity);
         });
