@@ -1,4 +1,4 @@
-package br.sptrans.scd.product.adapter.out.jpa;
+package br.sptrans.scd.product.adapter.out.jpa.adapter;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
