@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.adapter.in.rest;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+
+import br.sptrans.scd.product.adapter.port.in.rest.dto.FamilyResponseDTO;
+import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/families")
@@ -75,18 +79,39 @@ public class FamilyController {
 
     @GetMapping("/{codFamilia}")
     @Operation(summary = "Busca família por código")
-    public ResponseEntity<Family> findByFamily(@PathVariable String codFamilia) {
-        return ResponseEntity.ok(familyManagementUseCase.findByFamily(codFamilia));
+    public ResponseEntity<FamilyResponseDTO> findByFamily(@PathVariable String codFamilia) {
+        Family family = familyManagementUseCase.findByFamily(codFamilia);
+        FamilyResponseDTO dto = new FamilyResponseDTO(
+            family.getCodFamilia(),
+            family.getDesFamilia(),
+            family.getStFamilias(),
+            family.getDtCadastro(),
+            family.getDtManutencao(),
+            UserSimpleMapper.toDto(family.getIdUsuarioCadastro()),
+            UserSimpleMapper.toDto(family.getIdUsuarioManutencao())
+        );
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping
     @Operation(summary = "Lista todas as famílias, com filtro opcional de status")
-    public ResponseEntity<PageResponse<Family>> findAllFamilies(
+    public ResponseEntity<PageResponse<FamilyResponseDTO>> findAllFamilies(
             @RequestParam(required = false) String codStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<Family> all = familyManagementUseCase.findAllFamilies(codStatus);
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+        List<FamilyResponseDTO> dtos = all.stream()
+            .map(family -> new FamilyResponseDTO(
+                family.getCodFamilia(),
+                family.getDesFamilia(),
+                family.getStFamilias(),
+                family.getDtCadastro(),
+                family.getDtManutencao(),
+                UserSimpleMapper.toDto(family.getIdUsuarioCadastro()),
+                UserSimpleMapper.toDto(family.getIdUsuarioManutencao())
+            ))
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
     }
 
     @PatchMapping("/{codFamilia}/activate")

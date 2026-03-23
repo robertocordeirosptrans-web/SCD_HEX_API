@@ -36,8 +36,8 @@ public class FamilyEntityJpa {
     private LocalDateTime dtManutencao;
 
     @Column(name = "ID_USUARIO", length = 20)
-    private LocalDateTime idUsuarioCadastro;
+    private Long idUsuarioCadastro;
 
     @Column(name = "ID_USUARIO_MANUTENCAO", length = 20)
-    private LocalDateTime idUsuarioManutencao;
+    private Long idUsuarioManutencao;
 }
