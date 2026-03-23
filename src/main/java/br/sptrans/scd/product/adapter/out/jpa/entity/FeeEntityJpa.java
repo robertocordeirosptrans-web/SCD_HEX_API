@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +19,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class FeeEntityJpa {
 
+    @Id
     @Column(name = "ID_TAXA", nullable = false, length = 20)
     private Long codTaxa;
 
