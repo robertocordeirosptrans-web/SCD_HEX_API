@@ -1,6 +1,5 @@
 package br.sptrans.scd.auth.adapter.port.out.jpa;
 
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Repository
+@SuppressWarnings("null")
 public class GroupAdapterJpa implements GroupRepository, GroupUserRepository, GroupProfileRepository {
 
     private final GroupJpaRepository groupJpaRepository;
@@ -111,6 +111,7 @@ public class GroupAdapterJpa implements GroupRepository, GroupUserRepository, Gr
     }
 
     // Métodos migrados do GroupUserAdapterJpa
+    @Override
     public Optional<GroupUser> findById_IdUsuarioAndId_CodGrupo(Long idUsuario, String codGrupo) {
         var id = new GroupUserEntityJpaId();
         id.setIdUsuario(idUsuario);
@@ -126,6 +127,7 @@ public class GroupAdapterJpa implements GroupRepository, GroupUserRepository, Gr
                 });
     }
 
+    @Override
     public List<GroupUser> findById_IdUsuarioAndCodStatus(Long idUsuario, String codStatus) {
         return groupUserJpaRepository.findAll().stream()
                 .filter(gu -> gu.getId() != null && idUsuario.equals(gu.getId().getIdUsuario()) && codStatus.equals(gu.getCodStatus()))
@@ -140,6 +142,7 @@ public class GroupAdapterJpa implements GroupRepository, GroupUserRepository, Gr
                 .collect(Collectors.toList());
     }
 
+    @Override
     public List<GroupUser> findById_CodGrupoAndCodStatus(String codGrupo, String codStatus) {
         return groupUserJpaRepository.findAll().stream()
                 .filter(gu -> gu.getId() != null && codGrupo.equals(gu.getId().getCodGrupo()) && codStatus.equals(gu.getCodStatus()))
@@ -154,6 +157,7 @@ public class GroupAdapterJpa implements GroupRepository, GroupUserRepository, Gr
                 .collect(Collectors.toList());
     }
 
+    @Override
     public List<GroupUser> findById_IdUsuario(Long idUsuario) {
         return groupUserJpaRepository.findAll().stream()
                 .filter(gu -> gu.getId() != null && idUsuario.equals(gu.getId().getIdUsuario()))
@@ -168,6 +172,7 @@ public class GroupAdapterJpa implements GroupRepository, GroupUserRepository, Gr
                 .collect(Collectors.toList());
     }
 
+    @Override
     public Optional<GroupUser> findById(GroupUserKey id) {
         return findById_IdUsuarioAndId_CodGrupo(id.getIdUsuario(), id.getCodGrupo());
     }
@@ -176,6 +181,7 @@ public class GroupAdapterJpa implements GroupRepository, GroupUserRepository, Gr
         return listGroupUsers();
     }
 
+    @Override
     public GroupUser save(GroupUser entity) {
         // Salva ou atualiza usando o repository JPA
         var id = new GroupUserEntityJpaId();
@@ -190,9 +196,13 @@ public class GroupAdapterJpa implements GroupRepository, GroupUserRepository, Gr
         return entity;
     }
 
+        @Override
+
     public void delete(GroupUser entity) {
         deleteById(entity.getId());
     }
+
+        @Override
 
     public void deleteById(GroupUserKey id) {
         var idJpa = new GroupUserEntityJpaId();
