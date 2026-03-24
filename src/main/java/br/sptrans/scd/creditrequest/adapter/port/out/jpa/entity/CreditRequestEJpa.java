@@ -2,10 +2,13 @@ package br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -88,4 +91,7 @@ public class CreditRequestEJpa {
 
     @Column(name = "FLG_BLOQ", length = 1)
     private String flgBloq;
+
+    @OneToMany(mappedBy = "solicitacao", fetch = FetchType.LAZY)
+    private List<CreditRequestItemsEJpa> itens;
 }

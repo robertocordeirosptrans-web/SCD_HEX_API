@@ -22,7 +22,7 @@ public class UpdateRequestCredit {
 
     @Valid
     @NotNull(message = "A lista de itens permitidos é obrigatória")
-    private List<ItemPermitido> itensPermitidos;
+    private List<AllowedItem> itensPermitidos;
 
     private String observacao;
 
@@ -33,7 +33,7 @@ public class UpdateRequestCredit {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ItemPermitido {
+    public static class AllowedItem {
 
         @NotNull(message = "O número da solicitação é obrigatório")
         private Long numSolicitacao;
@@ -41,13 +41,13 @@ public class UpdateRequestCredit {
         private Long numLote;
 
         @Valid
-        private ItemDetalhe item;
+        private ItemDetail item;
     }
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ItemDetalhe {
+    public static class ItemDetail {
 
         private String codProduto;
         private String codSituacao;

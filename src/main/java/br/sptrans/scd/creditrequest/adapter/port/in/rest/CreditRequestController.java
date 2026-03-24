@@ -11,7 +11,16 @@ import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementU
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageResponse;
-import br.sptrans.scd.creditrequest.application.service.CreditRequestMapper;
+import br.sptrans.scd.creditrequest.adapter.port.in.dto.UpdateRequestCredit;
+import br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper.CreditRequestMapper;
+import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
+import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.BlockCommand;
+import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.UnblockCommand;
+import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.CancelCommand;
+import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.PayCommand;
+import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.PayItemEntry;
+import java.math.BigDecimal;
+import java.util.stream.Collectors;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -133,6 +142,79 @@ public class CreditRequestController {
         return value != null ? Long.parseLong(value) : null;
       } catch (NumberFormatException e) {
         return null;
+      }
+    }
+
+
+    @PostMapping("/alterar-status")
+    @ResponseBody
+    @Operation(summary = "Alterar status de pedidos de crédito", description = "Altera o status dos pedidos conforme ação informada.")
+    public void alterarStatus(@RequestBody UpdateRequestCredit request) {
+      ActionStatus acao = request.getAcao();
+      switch (acao) {
+        case BLOQUEAR -> creditRequestManagementUseCase.block(
+          new BlockCommand(
+            request.getItensPermitidos().stream()
+              .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
+                item.getNumSolicitacao(),
+                request.getCodCanal(),
+                item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
+              ))
+              .collect(Collectors.toList()),
+            null,
+            request.getObservacao()
+          )
+        );
+        case DESBLOQUEAR -> creditRequestManagementUseCase.unblock(
+          new UnblockCommand(
+            request.getItensPermitidos().stream()
+              .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
+                item.getNumSolicitacao(),
+                request.getCodCanal(),
+                item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
+              ))
+              .collect(Collectors.toList()),
+            null,
+            request.getObservacao()
+          )
+        );
+        case CANCELAR -> creditRequestManagementUseCase.cancel(
+          new CancelCommand(
+            request.getItensPermitidos().stream()
+              .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
+                item.getNumSolicitacao(),
+                request.getCodCanal(),
+                item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
+              ))
+              .collect(Collectors.toList()),
+            null,
+            request.getObservacao()
+          )
+        );
+        case PAGO -> creditRequestManagementUseCase.pay(
+          new PayCommand(
+            request.getItensPermitidos().stream()
+              .map(item -> {
+                var detail = item.getItem();
+                return new PayItemEntry(
+                  item.getNumSolicitacao(),
+                  detail != null ? detail.getNumSolicitacaoItem() : null,
+                  request.getCodCanal(),
+                  detail != null ? detail.getCodProduto() : null,
+                  detail != null ? detail.getCodSituacao() : null,
+                  detail != null ? detail.getVlItem() : null,
+                  detail != null ? detail.getVlTxadm() : null,
+                  detail != null ? detail.getVlTxserv() : null
+                );
+              })
+              .collect(Collectors.toList()),
+            null,
+            request.getCodFormaPagto(),
+            request.getVlPago() != null ? BigDecimal.valueOf(request.getVlPago()) : null,
+            null
+          )
+        );
+        default -> throw new IllegalArgumentException("Ação não suportada: " + acao);
       }
     }
 

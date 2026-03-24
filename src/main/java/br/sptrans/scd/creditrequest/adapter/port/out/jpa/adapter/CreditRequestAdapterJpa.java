@@ -1,138 +1,77 @@
 package br.sptrans.scd.creditrequest.adapter.port.out.jpa.adapter;
 
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestEJpa;
+import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestEJpaKey;
+import br.sptrans.scd.creditrequest.adapter.port.out.jpa.repository.CreditRequestJpaRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
+import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
 public class CreditRequestAdapterJpa implements CreditRequestRepository {
 
-    private final JdbcTemplate jdbc;
+    private final CreditRequestJpaRepository jpaRepository;
 
     // ── Consultas existentes ─────────────────────────────────────────
 
     @Override
     public Optional<CreditRequest> findByNumSolicitacaoAndCodCanal(Long numSolicitacao, String codCanal) {
-        String sql = """
-                SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
-                WHERE s.NUM_SOLICITACAO = ? AND s.COD_CANAL = ?
-                """;
-        List<CreditRequest> result = jdbc.query(sql, this::mapRow, numSolicitacao, codCanal);
-        return result.stream().findFirst();
+        return jpaRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal)
+                .map(this::toDomain);
     }
 
     @Override
     public List<CreditRequest> findByCanalAndSituacao(String codCanal, String codSituacao) {
-        if (codCanal != null) {
-            String sql = """
-                    SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
-                    WHERE s.COD_CANAL = ? AND s.COD_SITUACAO = ?
-                    """;
-            return jdbc.query(sql, this::mapRow, codCanal, codSituacao);
-        } else {
-            String sql = """
-                    SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
-                    WHERE s.COD_SITUACAO = ?
-                    """;
-            return jdbc.query(sql, this::mapRow, codSituacao);
-        }
+        return jpaRepository.findByCanalAndSituacao(codCanal, codSituacao).stream().map(this::toDomain).toList();
     }
 
     @Override
     public boolean existsByNumSolicitacao(Long numSolicitacao) {
-        String sql = "SELECT COUNT(1) FROM SPTRANSDBA.SOL_DISTRIBUICOES WHERE NUM_SOLICITACAO = ?";
-        Integer count = jdbc.queryForObject(sql, Integer.class, numSolicitacao);
-        return count != null && count > 0;
+        return jpaRepository.countByNumSolicitacao(numSolicitacao) > 0;
     }
 
     @Override
     public boolean existsByNumLoteAndCodCanal(String numLote, String codCanal) {
-        String sql = "SELECT COUNT(1) FROM SPTRANSDBA.SOL_DISTRIBUICOES WHERE NUM_LOTE = ? AND COD_CANAL = ?";
-        Integer count = jdbc.queryForObject(sql, Integer.class, numLote, codCanal);
-        return count != null && count > 0;
+        return jpaRepository.countByNumLoteAndCodCanal(numLote, codCanal) > 0;
     }
 
     @Override
     public List<CreditRequest> findElegiveisParaLiberacao(String codSituacao, LocalDateTime dtInicio, LocalDateTime dtFim, int limit) {
-        String sql = """
-                SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
-                WHERE s.COD_SITUACAO = ?
-                  AND s.DT_SOLICITACAO >= ? AND s.DT_SOLICITACAO <= ?
-                FETCH FIRST ? ROWS ONLY
-                """;
-        return jdbc.query(sql, this::mapRow, codSituacao, dtInicio, dtFim, limit);
+        return jpaRepository.findElegiveisParaLiberacao(codSituacao, dtInicio, dtFim, limit).stream().map(this::toDomain).toList();
     }
 
     @Override
     public CreditRequest findElegiveisParaProcessamento(String codSituacao) {
-        String sql = """
-                SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
-                WHERE s.COD_SITUACAO = ?
-                """;
-        List<CreditRequest> result = jdbc.query(sql, this::mapRow, codSituacao);
-        return result.stream().findFirst().orElse(null);
+        return jpaRepository.findElegiveisParaProcessamento(codSituacao).stream().findFirst().map(this::toDomain).orElse(null);
     }
 
     @Override
     public List<CreditRequest> findElegiveisParaConfirmacao(String codSituacao, int limit) {
-        String sql = """
-                SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
-                WHERE s.COD_SITUACAO = ?
-                FETCH FIRST ? ROWS ONLY
-                """;
-        return jdbc.query(sql, this::mapRow, codSituacao, limit);
+        return jpaRepository.findElegiveisParaConfirmacao(codSituacao, limit).stream().map(this::toDomain).toList();
     }
 
     // ── Buscas específicas ─────────────────────────────────────────
 
     @Override
     public List<CreditRequest> findByNumSolicitacaoSpecific(Long numSolicitacao, String codCanal) {
-        var sql = new StringBuilder("""
-                SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
-                WHERE s.NUM_SOLICITACAO = ?
-                """);
-        var params = new ArrayList<>();
-        params.add(numSolicitacao);
-        if (codCanal != null) {
-            sql.append(" AND s.COD_CANAL = ?");
-            params.add(codCanal);
-        }
-        return jdbc.query(sql.toString(), this::mapRow, params.toArray());
+        return jpaRepository.findByNumSolicitacaoSpecific(numSolicitacao, codCanal).stream().map(this::toDomain).toList();
     }
 
     @Override
     public List<CreditRequest> findByCodProduto(
             String codProduto, String codCanal,
             LocalDateTime dtInicio, LocalDateTime dtFim, int limit) {
-        var sql = new StringBuilder("""
-                SELECT s.* FROM SPTRANSDBA.SOL_DISTRIBUICOES s
-                INNER JOIN SPTRANSDBA.SOL_DISTRIBUICOES_ITENS i
-                    ON s.NUM_SOLICITACAO = i.NUM_SOLICITACAO
-                   AND s.COD_CANAL = i.COD_CANAL
-                WHERE i.COD_PRODUTO = ?
-                """);
-        var params = new ArrayList<>();
-        params.add(codProduto);
-        appendIfNotNull(sql, params, "AND s.COD_CANAL = ?", codCanal);
-        appendIfNotNull(sql, params, "AND s.DT_SOLICITACAO >= ?", dtInicio);
-        appendIfNotNull(sql, params, "AND s.DT_SOLICITACAO <= ?", dtFim);
-        sql.append(" ORDER BY s.NUM_SOLICITACAO DESC, s.COD_CANAL ASC");
-        sql.append(" FETCH FIRST ? ROWS ONLY");
-        params.add(limit);
-        return jdbc.query(sql.toString(), this::mapRow, params.toArray());
+        return jpaRepository.findByCodProduto(codProduto, codCanal, dtInicio, dtFim, limit).stream().map(this::toDomain).toList();
     }
 
     // ── Busca paginada por cursor ────────────────────────────────────
@@ -158,170 +97,150 @@ public class CreditRequestAdapterJpa implements CreditRequestRepository {
             BigDecimal vlTotalMin,
             BigDecimal vlTotalMax,
             int limit) {
-
-        var sql = new StringBuilder("""
-                SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
-                WHERE 1=1
-                """);
-        var params = new ArrayList<>();
-
-        // Cursor: busca a próxima página
-        if (cursorNumSolicitacao != null) {
-            sql.append("""
-                      AND (s.NUM_SOLICITACAO < ?
-                           OR (s.NUM_SOLICITACAO = ? AND s.COD_CANAL > ?))
-                    """);
-            params.add(cursorNumSolicitacao);
-            params.add(cursorNumSolicitacao);
-            params.add(cursorCodCanal);
-        }
-
-        // Filtros opcionais
-        appendIfNotNull(sql, params, "AND s.COD_CANAL = ?", codCanal);
-        appendIfNotNull(sql, params, "AND s.COD_SITUACAO = ?", codSituacao);
-        appendIfNotNull(sql, params, "AND s.NUM_LOTE = ?", numLote);
-        appendIfNotNull(sql, params, "AND s.COD_FORMA_PAGTO = ?", codFormaPagto);
-        appendIfNotNull(sql, params, "AND s.DT_SOLICITACAO >= ?", dtInicio);
-        appendIfNotNull(sql, params, "AND s.DT_SOLICITACAO <= ?", dtFim);
-        appendIfNotNull(sql, params, "AND s.DT_LIBERACAO_EFETIVA >= ?", dtLiberacaoEfetivaInicio);
-        appendIfNotNull(sql, params, "AND s.DT_LIBERACAO_EFETIVA <= ?", dtLiberacaoEfetivaFim);
-        appendIfNotNull(sql, params, "AND s.DT_PAGTO_ECONOMICA >= ?", dtPagtoEconomicaInicio);
-        appendIfNotNull(sql, params, "AND s.DT_PAGTO_ECONOMICA <= ?", dtPagtoEconomicaFim);
-        appendIfNotNull(sql, params, "AND s.DT_FINANCEIRA >= ?", dtFinanceiraInicio);
-        appendIfNotNull(sql, params, "AND s.DT_FINANCEIRA <= ?", dtFinanceiraFim);
-        appendIfNotNull(sql, params, "AND s.DT_MANUTENCAO >= ?", dtAlteracaoInicio);
-        appendIfNotNull(sql, params, "AND s.DT_MANUTENCAO <= ?", dtAlteracaoFim);
-        appendIfNotNull(sql, params, "AND s.VL_TOTAL >= ?", vlTotalMin);
-        appendIfNotNull(sql, params, "AND s.VL_TOTAL <= ?", vlTotalMax);
-
-        sql.append(" ORDER BY s.NUM_SOLICITACAO DESC, s.COD_CANAL ASC");
-        sql.append(" FETCH FIRST ? ROWS ONLY");
-        params.add(limit);
-
-        return jdbc.query(sql.toString(), this::mapRow, params.toArray());
+        var spec = (Specification<CreditRequestEJpa>) (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+            if (cursorNumSolicitacao != null) {
+                var p1 = cb.lessThan(root.get("id").get("numSolicitacao"), cursorNumSolicitacao);
+                var p2 = cb.and(
+                        cb.equal(root.get("id").get("numSolicitacao"), cursorNumSolicitacao),
+                        cb.greaterThan(root.get("id").get("codCanal"), cursorCodCanal)
+                );
+                predicates.add(cb.or(p1, p2));
+            }
+            if (codCanal != null) predicates.add(cb.equal(root.get("id").get("codCanal"), codCanal));
+            if (codSituacao != null) predicates.add(cb.equal(root.get("codSituacao"), codSituacao));
+            if (numLote != null) predicates.add(cb.equal(root.get("numLote"), numLote));
+            if (codFormaPagto != null) predicates.add(cb.equal(root.get("codFormaPagto"), codFormaPagto));
+            if (dtInicio != null) predicates.add(cb.greaterThanOrEqualTo(root.get("dtSolicitacao"), dtInicio));
+            if (dtFim != null) predicates.add(cb.lessThanOrEqualTo(root.get("dtSolicitacao"), dtFim));
+            if (dtLiberacaoEfetivaInicio != null) predicates.add(cb.greaterThanOrEqualTo(root.get("dtLiberacaoEfetiva"), dtLiberacaoEfetivaInicio));
+            if (dtLiberacaoEfetivaFim != null) predicates.add(cb.lessThanOrEqualTo(root.get("dtLiberacaoEfetiva"), dtLiberacaoEfetivaFim));
+            if (dtPagtoEconomicaInicio != null) predicates.add(cb.greaterThanOrEqualTo(root.get("dtPagtoEconomica"), dtPagtoEconomicaInicio));
+            if (dtPagtoEconomicaFim != null) predicates.add(cb.lessThanOrEqualTo(root.get("dtPagtoEconomica"), dtPagtoEconomicaFim));
+            if (dtFinanceiraInicio != null) predicates.add(cb.greaterThanOrEqualTo(root.get("dtFinanceira"), dtFinanceiraInicio));
+            if (dtFinanceiraFim != null) predicates.add(cb.lessThanOrEqualTo(root.get("dtFinanceira"), dtFinanceiraFim));
+            if (dtAlteracaoInicio != null) predicates.add(cb.greaterThanOrEqualTo(root.get("dtManutencao"), dtAlteracaoInicio));
+            if (dtAlteracaoFim != null) predicates.add(cb.lessThanOrEqualTo(root.get("dtManutencao"), dtAlteracaoFim));
+            if (vlTotalMin != null) predicates.add(cb.greaterThanOrEqualTo(root.get("vlTotal"), vlTotalMin));
+            if (vlTotalMax != null) predicates.add(cb.lessThanOrEqualTo(root.get("vlTotal"), vlTotalMax));
+            query.orderBy(cb.desc(root.get("id").get("numSolicitacao")), cb.asc(root.get("id").get("codCanal")));
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+        var page = org.springframework.data.domain.PageRequest.of(0, limit);
+        return jpaRepository.findAll(spec, page).stream().map(this::toDomain).toList();
     }
 
     // ── Atualizações ─────────────────────────────────────────────────
 
     @Override
     public void update(Long numSolicitacao, String codCanal, CreditRequest cr) {
-        String sql = """
-                UPDATE SPTRANSDBA.SOL_DISTRIBUICOES
-                SET COD_SITUACAO = ?,
-                    COD_FORMA_PAGTO = ?,
-                    DT_ACEITE = ?,
-                    DT_CONFIRMA_PAGTO = ?,
-                    DT_PAGTO_ECONOMICA = ?,
-                    DT_LIBERACAO_EFETIVA = ?,
-                    VL_PAGO = ?,
-                    FLG_CANC = ?,
-                    FLG_BLOQ = ?,
-                    NUM_LOTE = ?,
-                    DT_MANUTENCAO = ?
-                WHERE NUM_SOLICITACAO = ? AND COD_CANAL = ?
-                """;
-        jdbc.update(sql,
-                cr.getCodSituacao(),
-                cr.getCodFormaPagto(),
-                cr.getDtAceite(),
-                cr.getDtConfirmaPagto(),
-                cr.getDtPagtoEconomica(),
-                cr.getDtLiberacaoEfetiva(),
-                cr.getVlPago(),
-                cr.getFlgCanc(),
-                cr.getFlgBloq(),
-                cr.getNumLote(),
-                LocalDateTime.now(),
-                numSolicitacao,
-                codCanal);
-    }
-
-    @Override
-    public Optional<CreditRequest> findByCodTipoDocumentoAndIdUsuarioCadastro(
-            String codTipoDocumento, Long idUsuarioCadastro) {
-        String sql = """
-                SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s
-                WHERE s.COD_TIPO_DOCUMENTO = ? AND s.ID_USUARIO_CADASTRO = ?
-                ORDER BY s.DT_SOLICITACAO DESC
-                FETCH FIRST 1 ROWS ONLY
-                """;
-        List<CreditRequest> result = jdbc.query(sql, this::mapRow, codTipoDocumento, idUsuarioCadastro);
-        return result.stream().findFirst();
-    }
-
-    // ── Helpers ──────────────────────────────────────────────────────
-
-    private void appendIfNotNull(StringBuilder sql, List<Object> params, String clause, Object value) {
-        if (value != null) {
-            sql.append(" ").append(clause);
-            params.add(value);
+        CreditRequestEJpaKey key = new CreditRequestEJpaKey();
+        key.setNumSolicitacao(numSolicitacao);
+        key.setCodCanal(codCanal);
+        Optional<CreditRequestEJpa> entityOpt = jpaRepository.findById(key);
+        if (entityOpt.isPresent()) {
+            CreditRequestEJpa entity = entityOpt.get();
+            // Atualize os campos necessários
+            entity.setCodSituacao(cr.getCodSituacao());
+            entity.setCodFormaPagto(cr.getCodFormaPagto());
+            entity.setDtAceite(cr.getDtAceite());
+            entity.setDtConfirmaPagto(cr.getDtConfirmaPagto());
+            entity.setDtPagtoEconomica(cr.getDtPagtoEconomica());
+            entity.setDtLiberacaoEfetiva(cr.getDtLiberacaoEfetiva());
+            // entity.setVlPago(cr.getVlPago()); // Adicione se existir na entidade
+            entity.setFlgCanc(cr.getFlgCanc());
+            entity.setFlgBloq(cr.getFlgBloq());
+            entity.setNumLote(cr.getNumLote());
+            entity.setDtManutencao(LocalDateTime.now());
+            jpaRepository.save(entity);
         }
     }
 
-    private CreditRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
+    @Override
+        public Optional<CreditRequest> findByCodTipoDocumentoAndIdUsuarioCadastro(
+            String codTipoDocumento, Long idUsuarioCadastro) {
+        return jpaRepository.findByCodTipoDocumentoAndIdUsuarioCadastro(codTipoDocumento, idUsuarioCadastro)
+            .map(this::toDomain);
+        }
+
+    // ── Helpers ──────────────────────────────────────────────────────
+
+    private CreditRequest toDomain(CreditRequestEJpa entity) {
+        if (entity == null) return null;
         var cr = new CreditRequest();
-        cr.setNumSolicitacao(getLong(rs, "NUM_SOLICITACAO"));
-        cr.setCodCanal(rs.getString("COD_CANAL"));
-        cr.setIdUsuarioCadastro(getLong(rs, "ID_USUARIO_CADASTRO"));
-        cr.setCodTipoDocumento(rs.getString("COD_TIPO_DOCUMENTO"));
-        cr.setCodSituacao(rs.getString("COD_SITUACAO"));
-        cr.setCodFormaPagto(rs.getString("COD_FORMA_PAGTO"));
-        cr.setDtSolicitacao(toLocalDateTime(rs.getTimestamp("DT_SOLICITACAO")));
-        cr.setDtPrevLiberacao(toLocalDateTime(rs.getTimestamp("DT_PREV_LIBERACAO")));
-        cr.setDtAceite(toLocalDateTime(rs.getTimestamp("DT_ACEITE")));
-        cr.setDtConfirmaPagto(toLocalDateTime(rs.getTimestamp("DT_CONFIRMA_PAGTO")));
-        cr.setDtPagtoEconomica(toLocalDateTime(rs.getTimestamp("DT_PAGTO_ECONOMICA")));
-        cr.setCodUsuarioPortador(rs.getString("COD_USUARIO_PORTADOR"));
-        cr.setDtLiberacaoEfetiva(toLocalDateTime(rs.getTimestamp("DT_LIBERACAO_EFETIVA")));
-        cr.setCodEnderecoEntrega(rs.getString("COD_ENDERECO_ENTREGA"));
-        cr.setNumLote(rs.getString("NUM_LOTE"));
-        cr.setDtFinanceira(toLocalDateTime(rs.getTimestamp("DT_FINANCEIRA")));
-        cr.setVlTotal(rs.getBigDecimal("VL_TOTAL"));
-        cr.setDtCadastro(toLocalDateTime(rs.getTimestamp("DT_CADASTRO")));
-        cr.setFlgCanc(rs.getString("FLG_CANC"));
-        cr.setDtManutencao(toLocalDateTime(rs.getTimestamp("DT_MANUTENCAO")));
-        cr.setDtEnvioHm(toLocalDateTime(rs.getTimestamp("DT_ENVIO_HM")));
-        cr.setIdUsuarioManutencao(getLong(rs, "ID_USUARIO_MANUTENCAO"));
-        cr.setFlgBloq(rs.getString("FLG_BLOQ"));
-        cr.setVlPago(rs.getBigDecimal("VL_PAGO"));
+        cr.setNumSolicitacao(entity.getId().getNumSolicitacao());
+        cr.setCodCanal(entity.getId().getCodCanal());
+        cr.setIdUsuarioCadastro(entity.getIdUsuarioCadastro());
+        cr.setCodTipoDocumento(entity.getCodTipoDocumento());
+        cr.setCodSituacao(entity.getCodSituacao());
+        cr.setCodFormaPagto(entity.getCodFormaPagto());
+        cr.setDtSolicitacao(entity.getDtSolicitacao());
+        cr.setDtPrevLiberacao(entity.getDtPrevLiberacao());
+        cr.setDtAceite(entity.getDtAceite());
+        cr.setDtConfirmaPagto(entity.getDtConfirmaPagto());
+        cr.setDtPagtoEconomica(entity.getDtPagtoEconomica());
+        cr.setCodUsuarioPortador(entity.getCodUsuarioPortador());
+        cr.setDtLiberacaoEfetiva(entity.getDtLiberacaoEfetiva());
+        cr.setCodEnderecoEntrega(entity.getCodEnderecoEntrega());
+        cr.setNumLote(entity.getNumLote());
+        cr.setDtFinanceira(entity.getDtFinanceira());
+        cr.setVlTotal(entity.getVlTotal());
+        cr.setDtCadastro(entity.getDtCadastro());
+        cr.setFlgCanc(entity.getFlgCanc());
+        cr.setDtManutencao(entity.getDtManutencao());
+        cr.setDtEnvioHm(entity.getDtEnvioHm());
+        cr.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
+        cr.setFlgBloq(entity.getFlgBloq());
+        // cr.setVlPago(entity.getVlPago()); // Adicione se existir na entidade
 
-        // Carregar itens do pedido
-        cr.setItens(loadItens(cr.getNumSolicitacao(), cr.getCodCanal()));
-
+        // Popular os itens do pedido
+        if (entity.getItens() != null) {
+            List<CreditRequestItems> itensDomain = entity.getItens().stream()
+                .map(e -> toDomainCreditRequestItem(e))
+                .toList();
+            cr.setItens(itensDomain);
+        }
         return cr;
+
     }
 
-    // Busca os itens de um pedido
-    private List<br.sptrans.scd.creditrequest.domain.CreditRequestItems> loadItens(Long numSolicitacao, String codCanal) {
-        String sql = "SELECT * FROM SPTRANSDBA.SOL_DISTRIB_ITENS WHERE NUM_SOLICITACAO = ? AND COD_CANAL = ?";
-        return jdbc.query(sql, (rs, rowNum) -> {
-            var item = new br.sptrans.scd.creditrequest.domain.CreditRequestItems();
-            var key = new br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey();
-            key.setNumSolicitacao(rs.getLong("NUM_SOLICITACAO"));
-            key.setNumSolicitacaoItem(rs.getLong("NUM_SOLICITACAO_ITEM"));
-            key.setCodCanal(rs.getString("COD_CANAL"));
-            item.setId(key);
-            item.setCodCanal(rs.getString("COD_CANAL"));
-            item.setCodProduto(rs.getString("COD_PRODUTO"));
-            item.setCodSituacao(rs.getString("COD_SITUACAO"));
-            item.setVlItem(rs.getBigDecimal("VL_ITEM"));
-            item.setDtRecarga(toLocalDateTime(rs.getTimestamp("DT_RECARGA")));
-            item.setVlCarregado(rs.getBigDecimal("VL_CARREGADO"));
-            item.setDtCadastro(toLocalDateTime(rs.getTimestamp("DT_CADASTRO")));
-            item.setDtManutencao(toLocalDateTime(rs.getTimestamp("DT_MANUTENCAO")));
-            item.setVlTxadm(rs.getBigDecimal("VL_TXADM"));
-            item.setVlTxserv(rs.getBigDecimal("VL_TXSERV"));
-            item.setVlTxtotal(rs.getBigDecimal("VL_TXTOTAL"));
-            return item;
-        }, numSolicitacao, codCanal);
-    }
-
-    private LocalDateTime toLocalDateTime(Timestamp ts) {
-        return ts != null ? ts.toLocalDateTime() : null;
-    }
-
-    private Long getLong(ResultSet rs, String column) throws SQLException {
-        long val = rs.getLong(column);
-        return rs.wasNull() ? null : val;
+    // Conversão auxiliar para itens
+    private CreditRequestItems toDomainCreditRequestItem(br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa e) {
+        if (e == null) return null;
+        CreditRequestItems item = new CreditRequestItems();
+        br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey key = new br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey();
+        key.setNumSolicitacao(e.getId().getNumSolicitacao());
+        key.setNumSolicitacaoItem(e.getId().getNumSolicitacaoItem());
+        key.setCodCanal(e.getId().getCodCanal());
+        item.setId(key);
+        item.setCodCanal(e.getCodCanal());
+        item.setIdUsuarioCadastro(e.getIdUsuarioCadastro());
+        item.setCodVersao(e.getCodVersao());
+        item.setNumLogicoCartao(e.getNumLogicoCartao());
+        item.setCodProduto(e.getCodProduto());
+        item.setCodTipoDocumento(e.getCodTipoDocumento());
+        item.setCodSituacao(e.getCodSituacao());
+        item.setQtdItem(e.getQtdItem());
+        item.setVlUnitario(e.getVlUnitario());
+        item.setVlItem(e.getVlItem());
+        item.setDtRecarga(e.getDtRecarga());
+        item.setVlCarregado(e.getVlCarregado());
+        item.setVlAjuste(e.getVlAjuste());
+        item.setFlgAjuste(e.getFlgAjuste());
+        item.setIdFuncionario(e.getIdFuncionario());
+        item.setCodAssinaturaHsm(e.getCodAssinaturaHsm());
+        item.setDtCadastro(e.getDtCadastro());
+        item.setDtManutencao(e.getDtManutencao());
+        item.setSeqRecarga(e.getSeqRecarga());
+        item.setDtEnvioHm(e.getDtEnvioHm());
+        item.setDtRetornoHm(e.getDtRetornoHm());
+        item.setIdUsuarioManutencao(e.getIdUsuarioManutencao());
+        item.setDtAssinatura(e.getDtAssinatura());
+        item.setDtPagtoEconomica(e.getDtPagtoEconomica());
+        item.setSqPid(e.getSqPid());
+        item.setDtInicProcesso(e.getDtInicProcesso());
+        item.setIdUsuarioCartao(e.getIdUsuarioCartao());
+        // Adicione outros campos conforme necessário
+        return item;
     }
 }
