@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "HIS_SOL_ITEM_SITUACOES", schema = "SPTRANSDBA")
+@Table(name = "HIST_SOL_ITEM_SITUACOES", schema = "SPTRANSDBA")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -40,7 +40,7 @@ public class HistCreditRequestItemsEJpa {
     @Column(name = "DT_MANUTENCAO")
     private LocalDateTime dtManutencao;
 
-    @Column(name = "DT_PGTO_ECONOMICA")
+    @Column(name = "DT_PAGTO_ECONOMICA")
     private LocalDateTime dtPgtoEconomica;
 
     @Column(name = "SQ_PID")

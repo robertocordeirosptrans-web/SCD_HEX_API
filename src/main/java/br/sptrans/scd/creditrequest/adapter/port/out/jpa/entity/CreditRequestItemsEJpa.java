@@ -6,12 +6,15 @@ import java.time.LocalDateTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 
 /**
  * JPA Entity para SolDistribItens (Itens do Pedido).
@@ -143,4 +146,11 @@ public class CreditRequestItemsEJpa {
 
     @Column(name = "QTD_DIAS_UTILIZADOS")
     private Integer qtdDiasUtilizados;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+        @JoinColumn(name = "NUM_SOLICITACAO", referencedColumnName = "NUM_SOLICITACAO", insertable = false, updatable = false),
+        @JoinColumn(name = "COD_CANAL", referencedColumnName = "COD_CANAL", insertable = false, updatable = false)
+    })
+    private CreditRequestEJpa solicitacao;
 }

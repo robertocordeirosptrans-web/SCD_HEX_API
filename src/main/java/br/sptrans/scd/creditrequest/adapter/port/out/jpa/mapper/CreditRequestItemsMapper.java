@@ -1,4 +1,4 @@
-package br.sptrans.scd.creditrequest.application.service;
+package br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper;
 
 import org.mapstruct.Mapper;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestItemsDTO;

@@ -3,9 +3,10 @@ package br.sptrans.scd.creditrequest.application.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
 
+import br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorCodec;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
