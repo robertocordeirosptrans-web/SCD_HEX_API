@@ -1,12 +1,13 @@
 package br.sptrans.scd.initializedcards.application.port.out;
 
 import br.sptrans.scd.initializedcards.domain.RequestLotSCP;
+import br.sptrans.scd.initializedcards.domain.RequestLotSCPKey;
 
 public interface RequestLotSCPRepository {
 
     RequestLotSCP save(RequestLotSCP entity);
 
-    RequestLotSCP findById(String codCanal, Long nrSolicitacao);
+    RequestLotSCP findById(RequestLotSCPKey id);
 
     RequestLotSCP delete(String codCanal, Long nrSolicitacao, Long numLote);
 
