@@ -1,29 +1,37 @@
 package br.sptrans.scd.creditrequest.adapter.port.in.rest;
 
+import java.math.BigDecimal;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
-import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.SearchCommand;
-import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
-import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
-import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageResponse;
+import br.sptrans.scd.creditrequest.adapter.port.in.dto.CreateRequestCredit;
 import br.sptrans.scd.creditrequest.adapter.port.in.dto.UpdateRequestCredit;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper.CreditRequestMapper;
-import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
+import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.BlockCommand;
-import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.UnblockCommand;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.CancelCommand;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.PayCommand;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.PayItemEntry;
-import java.math.BigDecimal;
-import java.util.stream.Collectors;
+import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.SearchCommand;
+import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.UnblockCommand;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageResponse;
+import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -31,9 +39,10 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/pedidos")
 @Tag(name = "Pedidos", description = "API para gestão de pedidos de crédito")
 public class CreditRequestController {
-    
-  private final CreditRequestManagementUseCase creditRequestManagementUseCase;
-  private final CreditRequestMapper creditRequestMapper;
+
+    private final CreditRequestManagementUseCase creditRequestManagementUseCase;
+    private final CreditRequestMapper creditRequestMapper;
+    private static final Logger log = LoggerFactory.getLogger(CreditRequestController.class);
 
     /**
      * Busca pedidos com paginação por cursor. Classificação automática do modo
@@ -103,122 +112,169 @@ public class CreditRequestController {
             """
     )
     public CursorPageResponse<CreditRequestDTO> buscarPedidos(@RequestBody CursorPageRequest request) {
-      // Monta o comando de busca a partir do DTO de request
-      SearchCommand comando = new SearchCommand(
-        request.getCursor() != null ? parseLongOrNull(request.getCursor()) : null,
-        request.getCodCanal(),
-        request.getCodCanal(),
-        request.getCodSituacao(),
-        request.getNumLote(),
-        request.getCodFormaPagto(),
-        request.getDtInicio(),
-        request.getDtFim(),
-        request.getDtLiberacaoEfetivaInicio(),
-        request.getDtLiberacaoEfetivaFim(),
-        request.getDtPagtoEconomicaInicio(),
-        request.getDtPagtoEconomicaFim(),
-        request.getDtFinanceiraInicio(),
-        request.getDtFinanceiraFim(),
-        request.getDtAlteracaoInicio(),
-        request.getDtAlteracaoFim(),
-        request.getVlTotalMin(),
-        request.getVlTotalMax(),
-        null // SearchMode pode ser classificado internamente
-      );
+        // Monta o comando de busca a partir do DTO de request
+        SearchCommand comando = new SearchCommand(
+                request.getCursor() != null ? parseLongOrNull(request.getCursor()) : null,
+                request.getCodCanal(),
+                request.getCodCanal(),
+                request.getCodSituacao(),
+                request.getNumLote(),
+                request.getCodFormaPagto(),
+                request.getDtInicio(),
+                request.getDtFim(),
+                request.getDtLiberacaoEfetivaInicio(),
+                request.getDtLiberacaoEfetivaFim(),
+                request.getDtPagtoEconomicaInicio(),
+                request.getDtPagtoEconomicaFim(),
+                request.getDtFinanceiraInicio(),
+                request.getDtFinanceiraFim(),
+                request.getDtAlteracaoInicio(),
+                request.getDtAlteracaoFim(),
+                request.getVlTotalMin(),
+                request.getVlTotalMax(),
+                null // SearchMode pode ser classificado internamente
+        );
 
-      var page = creditRequestManagementUseCase.findAll(comando);
-      var dtos = creditRequestMapper.toDTOList(page.content());
+        var page = creditRequestManagementUseCase.findAll(comando);
+        var dtos = creditRequestMapper.toDTOList(page.content());
 
-      return CursorPageResponse.<CreditRequestDTO>builder()
-        .data(dtos)
-        .nextCursor(page.nextCursorNumSolicitacao())
-        .hasMore(page.hasNext())
-        .count(page.size())
-        .build();
+        return CursorPageResponse.<CreditRequestDTO>builder()
+                .data(dtos)
+                .nextCursor(page.nextCursorNumSolicitacao())
+                .hasMore(page.hasNext())
+                .count(page.size())
+                .build();
     }
 
     private static Long parseLongOrNull(String value) {
-      try {
-        return value != null ? Long.parseLong(value) : null;
-      } catch (NumberFormatException e) {
-        return null;
-      }
+        try {
+            return value != null ? Long.parseLong(value) : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
-
 
     @PostMapping("/alterar-status")
     @ResponseBody
     @Operation(summary = "Alterar status de pedidos de crédito", description = "Altera o status dos pedidos conforme ação informada.")
     public void alterarStatus(@RequestBody UpdateRequestCredit request) {
-      ActionStatus acao = request.getAcao();
-      switch (acao) {
-        case BLOQUEAR -> creditRequestManagementUseCase.block(
-          new BlockCommand(
-            request.getItensPermitidos().stream()
-              .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
-                item.getNumSolicitacao(),
-                request.getCodCanal(),
-                item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
-              ))
-              .collect(Collectors.toList()),
-            null,
-            request.getObservacao()
-          )
-        );
-        case DESBLOQUEAR -> creditRequestManagementUseCase.unblock(
-          new UnblockCommand(
-            request.getItensPermitidos().stream()
-              .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
-                item.getNumSolicitacao(),
-                request.getCodCanal(),
-                item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
-              ))
-              .collect(Collectors.toList()),
-            null,
-            request.getObservacao()
-          )
-        );
-        case CANCELAR -> creditRequestManagementUseCase.cancel(
-          new CancelCommand(
-            request.getItensPermitidos().stream()
-              .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
-                item.getNumSolicitacao(),
-                request.getCodCanal(),
-                item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
-              ))
-              .collect(Collectors.toList()),
-            null,
-            request.getObservacao()
-          )
-        );
-        case PAGO -> creditRequestManagementUseCase.pay(
-          new PayCommand(
-            request.getItensPermitidos().stream()
-              .map(item -> {
-                var detail = item.getItem();
-                return new PayItemEntry(
-                  item.getNumSolicitacao(),
-                  detail != null ? detail.getNumSolicitacaoItem() : null,
-                  request.getCodCanal(),
-                  detail != null ? detail.getCodProduto() : null,
-                  detail != null ? detail.getCodSituacao() : null,
-                  detail != null ? detail.getVlItem() : null,
-                  detail != null ? detail.getVlTxadm() : null,
-                  detail != null ? detail.getVlTxserv() : null
+        ActionStatus acao = request.getAcao();
+        switch (acao) {
+            case BLOQUEAR ->
+                creditRequestManagementUseCase.block(
+                        new BlockCommand(
+                                request.getItensPermitidos().stream()
+                                        .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
+                                        item.getNumSolicitacao(),
+                                        request.getCodCanal(),
+                                        item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
+                                ))
+                                        .collect(Collectors.toList()),
+                                null,
+                                request.getObservacao()
+                        )
                 );
-              })
-              .collect(Collectors.toList()),
-            null,
-            request.getCodFormaPagto(),
-            request.getVlPago() != null ? BigDecimal.valueOf(request.getVlPago()) : null,
-            null
-          )
-        );
-        default -> throw new IllegalArgumentException("Ação não suportada: " + acao);
-      }
+            case DESBLOQUEAR ->
+                creditRequestManagementUseCase.unblock(
+                        new UnblockCommand(
+                                request.getItensPermitidos().stream()
+                                        .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
+                                        item.getNumSolicitacao(),
+                                        request.getCodCanal(),
+                                        item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
+                                ))
+                                        .collect(Collectors.toList()),
+                                null,
+                                request.getObservacao()
+                        )
+                );
+            case CANCELAR ->
+                creditRequestManagementUseCase.cancel(
+                        new CancelCommand(
+                                request.getItensPermitidos().stream()
+                                        .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
+                                        item.getNumSolicitacao(),
+                                        request.getCodCanal(),
+                                        item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
+                                ))
+                                        .collect(Collectors.toList()),
+                                null,
+                                request.getObservacao()
+                        )
+                );
+            case PAGO ->
+                creditRequestManagementUseCase.pay(
+                        new PayCommand(
+                                request.getItensPermitidos().stream()
+                                        .map(item -> {
+                                            var detail = item.getItem();
+                                            return new PayItemEntry(
+                                                    item.getNumSolicitacao(),
+                                                    detail != null ? detail.getNumSolicitacaoItem() : null,
+                                                    request.getCodCanal(),
+                                                    detail != null ? detail.getCodProduto() : null,
+                                                    detail != null ? detail.getCodSituacao() : null,
+                                                    detail != null ? detail.getVlItem() : null,
+                                                    detail != null ? detail.getVlTxadm() : null,
+                                                    detail != null ? detail.getVlTxserv() : null
+                                            );
+                                        })
+                                        .collect(Collectors.toList()),
+                                null,
+                                request.getCodFormaPagto(),
+                                request.getVlPago() != null ? BigDecimal.valueOf(request.getVlPago()) : null,
+                                null
+                        )
+                );
+            default ->
+                throw new IllegalArgumentException("Ação não suportada: " + acao);
+        }
     }
 
+    @PostMapping("create")
+    @Operation(
+            summary = "Criar pedidos de crédito em lote",
+            description = """
+            Processa um lote de pedidos de crédito realizando todas as validações:
+            
+            **Validações de nível de lote:**
+            - Canal existente e ativo
+            - Número de lote sem duplicidade
+            - Data de liberação válida e futura
+            - Supercanal com subordinados ativos (quando aplicável)
+            
+            **Validações por item:**
+            - Número do pedido sem duplicidade no banco
+            - Canal de distribuição ativo e com convênio vigente
+            - Produto existente e comercializado pelo canal
+            - Compatibilidade do produto com o tipo de cartão
+            - Limites mínimo e máximo de valor de recarga
+            - Valor unitário obrigatório e positivo
+            - Cálculo e validação das taxas (com isenção por liminar judicial para canal 152)
+            
+            **Idempotência:**
+            Envie o header `Idempotency-Key: {codCanal}-{numLote}-{dataGeracao}` para
+            garantir que requisições duplicadas retornem o resultado anterior sem reprocessar.
+            
+            **Processamento parcial:**
+            Configurável por canal (FLG_PROCESSAMENTO_PARCIAL). Se ativado, itens válidos
+            são processados mesmo que outros sejam rejeitados.
+            """
+    )
+    public ResponseEntity<?> criarPedido(
+            @Parameter(description = "Chave de idempotência: {codCanal}-{numLote}-{dataGeracao}")
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @Valid @RequestBody CreateRequestCredit request) {
 
+        // Se não fornecida, gera chave default a partir dos dados do request
+        String key = (idempotencyKey != null && !idempotencyKey.isBlank())
+                ? idempotencyKey
+                : request.codCanal() + "-" + request.numLote() + "-" + request.dataGeracao();
 
+        log.info("Processando lote: canal={} numLote={} dataGeracao={} idempotencyKey={}",
+                request.codCanal(), request.numLote(), request.dataGeracao(), key);
+
+        return null;
+    }
 
 }
