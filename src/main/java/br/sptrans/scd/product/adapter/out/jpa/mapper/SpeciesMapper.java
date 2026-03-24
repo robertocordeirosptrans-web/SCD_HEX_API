@@ -11,16 +11,7 @@ public interface SpeciesMapper {
 
 	static Species toDomain(SpeciesEntityJpa entity, UserRepository userRepository) {
 		if (entity == null) return null;
-		LocalDateTime dtCadastro = null;
-		LocalDateTime dtManutencao = null;
-		try {
-			if (entity.getDtCadastro() != null)
-				dtCadastro = LocalDateTime.parse(entity.getDtCadastro());
-			if (entity.getDtManutencao() != null)
-				dtManutencao = LocalDateTime.parse(entity.getDtManutencao());
-		} catch (Exception e) {
-			// Ignorar parse error, manter null
-		}
+		
 		User usuarioCadastro = null;
 		User usuarioManutencao = null;
 		if (entity.getIdUsuarioCadastro() != null) {
@@ -33,8 +24,8 @@ public interface SpeciesMapper {
 				entity.getCodEspecie(),
 				entity.getDesEspecie(),
 				entity.getCodStatus(),
-				dtCadastro,
-				dtManutencao,
+				entity.getDtCadastro() != null ? entity.getDtCadastro() : LocalDateTime.now(),
+					entity.getDtManutencao() != null ? entity.getDtCadastro() : LocalDateTime.now(),
 				usuarioCadastro,
 				usuarioManutencao
 		);
@@ -42,14 +33,13 @@ public interface SpeciesMapper {
 
 	static SpeciesEntityJpa toEntity(Species domain) {
 		if (domain == null) return null;
-		String dtCadastro = domain.getDtCadastro() != null ? domain.getDtCadastro().toString() : null;
-		String dtManutencao = domain.getDtManutencao() != null ? domain.getDtManutencao().toString() : null;
+	
 		SpeciesEntityJpa entity = new SpeciesEntityJpa();
 		entity.setCodEspecie(domain.getCodEspecie());
 		entity.setDesEspecie(domain.getDesEspecie());
 		entity.setCodStatus(domain.getCodStatus());
-		entity.setDtCadastro(dtCadastro);
-		entity.setDtManutencao(dtManutencao);
+		entity.setDtCadastro(domain.getDtCadastro());
+		entity.setDtManutencao(domain.getDtManutencao());
 		if (domain.getIdUsuarioCadastro() != null) {
 			entity.setIdUsuarioCadastro(domain.getIdUsuarioCadastro().getIdUsuario());
 		}
