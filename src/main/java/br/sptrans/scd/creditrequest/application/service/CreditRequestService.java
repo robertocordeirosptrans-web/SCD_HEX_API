@@ -320,6 +320,10 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             } else if (acao == ActionStatus.CANCELAR) {
                 solicitacao.setFlgCanc("S");
                 log.info("Setting FLG_CANC='S' para solicitação {} por ação CANCELAR", numSolicitacao);
+                creditRequestRepository.update(numSolicitacao, codCanal, solicitacao);
+                historyService.saveRequestStatusHistory(solicitacao, numSolicitacao, codCanal, ORIGEM_TRANSICAO);
+                log.info("Histórico de cancelamento registrado para solicitação {}", numSolicitacao);
+                return;
             } else if (acao == ActionStatus.PAGO || acao == ActionStatus.ACEITO_PENDENTE_LIQUIDACAO) {
                 // Apply transition-specific fields
                 solicitacao.setCodSituacao(novoStatusSolicitacao);
