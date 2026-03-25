@@ -2,7 +2,6 @@ package br.sptrans.scd.creditrequest.application.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -18,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpaKey;
@@ -39,8 +37,8 @@ import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
+import br.sptrans.scd.shared.exception.ValidationException;
 import br.sptrans.scd.shared.idempotency.IdempotencyStore;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -177,6 +175,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         return response;
     }
 
+
     private void processarItemComTryCatch(
             SalesChannel canal,
             CreateRequestCredit.CreditRequest pedido,
@@ -205,14 +204,12 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                         "Item não encontrado para o pedido " + numSolicitacao));
                 return;
             }
-            
+
+            // Nova validação de item
+            validarItem(canal, pedido, item, request);
 
             // Persistência dentro da transação (atomicidade por item)
-            CreditRequest creditRequest = criarCreditRequest(pedido, item, request, canal);
-            creditRequestRepository.save(creditRequest);
 
-            CreditRequestItems creditRequestItem = criarCreditRequestItem(creditRequest, item);
-            itemRepository.save(creditRequestItem);
 
             processados.add(new ItemProcessado(
                     numSolicitacao,
@@ -220,7 +217,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                     codProduto,
                     "03"));
 
-        } catch (ValidacaoItemException e) {
+        } catch (ValidationException e) {
             // Erros de validação específicos
             rejeitados.add(new ItemRejeitado(
                     numSolicitacao, numLogicoCartao, codProduto,
@@ -233,6 +230,38 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                     numSolicitacao, numLogicoCartao, codProduto,
                     "Erro interno: " + e.getMessage()));
         }
+    }
+
+    /**
+     * Valida um item de pedido de crédito usando o validationService.
+     * Lança ValidationException em caso de erro de validação.
+     */
+    private void validarItem(
+            SalesChannel canal,
+            CreateRequestCredit.CreditRequest pedido,
+            ItemRequest item,
+            CreateRequestCredit request) {
+                
+        var produtoCanal = validationService.validarProdutoNoCanal(
+                pedido.numSolicitacao(),
+                item.numLogicoCartao(),
+                item.codProduto(),
+                pedido.canaisDistribuicao(),
+                item.codProduto(),
+                new ArrayList<>());
+        if (produtoCanal == null) {
+            throw new ValidationException("Produto não comercializado ou inativo no canal");
+        }
+
+        // Validar limites de recarga
+        String erroLimite = validationService.validarLimites(
+                pedido.canaisDistribuicao(),
+                item.codProduto(),
+                item.valorTotal());
+        if (erroLimite != null) {
+            throw new ValidationException(erroLimite);
+        }
+    
     }
 
 
@@ -727,49 +756,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
 
-    private SalesChannel validarCanal(String codCanal) {
-        SalesChannel canal = salesChannelRepository.findById(codCanal)
-                .orElseThrow(() -> new IllegalStateException(
-                "Canal não encontrado: " + codCanal));
-        if (!"A".equalsIgnoreCase(canal.getStCanais())) {
-            throw new IllegalStateException("Canal inativo: " + codCanal);
-        }
-        return canal;
-    }
 
-    private void validarNumLote(String numLote, String codCanal) {
-        if (creditRequestRepository.existsByNumLoteAndCodCanal(numLote, codCanal)) {
-            throw new IllegalStateException(
-                    "Número de lote já utilizado para este canal: " + numLote);
-        }
-    }
-
-    private void validarDataLiberacao(LocalDateTime dataLiberacao) {
-        if (dataLiberacao == null) {
-            throw new IllegalStateException("Data de liberação de crédito é obrigatória");
-        }
-        LocalDateTime hoje = LocalDateTime.now();
-        if (dataLiberacao.isBefore(hoje)) {
-            throw new IllegalStateException(
-                    "Data de liberação inválida: " + dataLiberacao
-                    + " é anterior à data atual " + hoje);
-        }
-    }
-
-    private void validarSubordinadosSupercanal(String codCanal) {
-        List<SalesChannel> subordinados = salesChannelRepository.findByCodCanalSuperior(codCanal);
-        boolean temSubordinadoAtivo = subordinados.stream()
-                .anyMatch(s -> "A".equalsIgnoreCase(s.getStCanais()));
-        if (!temSubordinadoAtivo) {
-            throw new IllegalStateException(
-                    "Supercanal " + codCanal + " não possui subordinados ativos");
-        }
-    }
-
-    // ...método removido, utilize validationService.validarVigenciadoCanal(...)
-
-    // ...método removido, utilize validationService.validarProdutoNoCanal(...)
-
-    // ...método removido, utilize validationService.validarLimites(...)
 
 }

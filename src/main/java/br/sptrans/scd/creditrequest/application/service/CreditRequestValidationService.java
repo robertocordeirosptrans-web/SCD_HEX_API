@@ -1,22 +1,24 @@
 package br.sptrans.scd.creditrequest.application.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
 import br.sptrans.scd.channel.application.port.out.AgreementValidityRepository;
 import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelRepository;
 import br.sptrans.scd.channel.application.port.out.ProductChannelRepository;
 import br.sptrans.scd.channel.application.port.out.RechargeLimitRepository;
 import br.sptrans.scd.channel.application.port.out.SalesChannelRepository;
 import br.sptrans.scd.channel.domain.ProductChannel;
+import br.sptrans.scd.channel.domain.ProductChannelKey;
 import br.sptrans.scd.channel.domain.RechargeLimit;
+import br.sptrans.scd.channel.domain.RechargeLimitKey;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemRejeitado;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -80,7 +82,7 @@ public class CreditRequestValidationService {
             return;
         }
         // Convênio vigente para o canal de distribuição
-         agreeValidRepository.findById(codCanalDistrib, codProduto)
+         agreeValidRepository.findByIdOtimized(codCanalDistrib, codProduto)
                 .ifPresentOrElse(conv -> {
                   LocalDateTime agora = LocalDateTime.now();
                    boolean vigente = "A".equalsIgnoreCase(conv.getStatus())
@@ -100,8 +102,9 @@ public class CreditRequestValidationService {
     public ProductChannel validarProdutoNoCanal(Long numSolicitacao, String cartao, String produto,
                                                 String codCanal, String codProduto,
                                                 List<ItemRejeitado> rejeitados) {
+        ProductChannelKey key = new ProductChannelKey(codCanal, codProduto);
         Optional<ProductChannel> cpOpt = productChannelRepository
-                .findById(codCanal, codProduto);
+                .findById(key);
         if (cpOpt.isEmpty()) {
             rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, produto,
                     "Produto " + codProduto + " não comercializado pelo canal " + codCanal));
@@ -117,7 +120,8 @@ public class CreditRequestValidationService {
     }
 
     public String validarLimites(String codCanal, String codProduto, BigDecimal valorTotal) {
-        Optional<RechargeLimit> limiteOpt = rechargeLimitRepository.findById(codCanal, codProduto);
+        RechargeLimitKey key = new RechargeLimitKey(codCanal, codProduto);
+        Optional<RechargeLimit> limiteOpt = rechargeLimitRepository.findById(key);
         if (limiteOpt.isEmpty()) {
             return null; // Sem limites configurados → não bloqueia
         }
