@@ -150,7 +150,7 @@ public interface ProductChannelJpaRepository extends JpaRepository<ProductChanne
         t.ID_TAXA,
         td.COD_CANALDESTINO
         """, nativeQuery = true)
-    List<ProductChannelProjection> findCompletoByCanal(@Param("codCanal") Integer codCanal);
+    List<ProductChannelProjection> findCompletoByCanal(@Param("codCanal") String codCanal);
 
     @Query(value = """
        SELECT DISTINCT 

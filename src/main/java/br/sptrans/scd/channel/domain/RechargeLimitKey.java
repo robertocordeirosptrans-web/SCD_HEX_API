@@ -14,7 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RechargeLimitKey implements Serializable {
-        private String codCanal;
+
+    private String codCanal;
 
     private String codProduto;
 }

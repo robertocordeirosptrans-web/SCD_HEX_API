@@ -34,12 +34,6 @@ public class RechargeLimitService implements RechargeLimitUseCase {
         }
 
         User usuario = resolveUser(cmd.idUsuario());
-        SalesChannel canal = new SalesChannel(
-                cmd.codCanal(), null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null, null);
-        ProductChannel canalProduto = new ProductChannel();
-        canalProduto.setId(new ProductChannelKey(cmd.codCanal(), cmd.codProduto()));
 
         RechargeLimit entity = new RechargeLimit();
         entity.setId(key);
@@ -49,9 +43,7 @@ public class RechargeLimitService implements RechargeLimitUseCase {
         entity.setVlMaximoRecarga(cmd.vlMaximoRecarga());
         entity.setVlMaximoSaldo(cmd.vlMaximoSaldo());
         entity.setCodStatus(cmd.codStatus());
-        entity.setIdUsuarioCadastro(usuario);
-        entity.setCanal(canal);
-        entity.setCanalProduto(canalProduto);
+        entity.setIdUsuarioCadastro(usuario.getIdUsuario());
 
         return repository.save(entity);
     }
@@ -71,7 +63,7 @@ public class RechargeLimitService implements RechargeLimitUseCase {
         existing.setVlMaximoRecarga(cmd.vlMaximoRecarga());
         existing.setVlMaximoSaldo(cmd.vlMaximoSaldo());
         existing.setCodStatus(cmd.codStatus());
-        existing.setIdUsuarioCadastro(usuario);
+        existing.setIdUsuarioCadastro(usuario.getIdUsuario());
 
         return repository.save(existing);
     }
@@ -112,7 +104,9 @@ public class RechargeLimitService implements RechargeLimitUseCase {
     }
 
     private User resolveUser(Long idUsuario) {
-        if (idUsuario == null) return null;
+        if (idUsuario == null) {
+            return null;
+        }
         return userRepository.findById(idUsuario).orElse(null);
     }
 }

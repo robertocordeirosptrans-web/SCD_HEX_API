@@ -68,6 +68,7 @@ public record ProductChResponseDTO(
         BigDecimal taxaCanalVlInicio,
         BigDecimal taxaCanalVlFinal,
         BigDecimal taxaCanalPercentual
+        // Usuários detalhados (apenas id, login e nom
         ) {
 
     public ProductChResponseDTO                                           {

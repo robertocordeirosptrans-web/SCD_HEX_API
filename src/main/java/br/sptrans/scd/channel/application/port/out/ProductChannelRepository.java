@@ -3,6 +3,7 @@ package br.sptrans.scd.channel.application.port.out;
 import java.util.List;
 import java.util.Optional;
 
+import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
 
@@ -12,6 +13,8 @@ public interface ProductChannelRepository {
     Optional<ProductChannel> findByIdOtimized(String codCanal,String codProduto);
 
     List<ProductChannel> findAll();
+
+    List<ProductChannelProjection>findCompletoByCanal(String codCanal);
 
     List<ProductChannel> findByCodCanal(String codCanal);
 

@@ -15,11 +15,6 @@ import lombok.Setter;
 public class AgreementValidity {
 
     private AgreementValidityKey id;
-    private SalesChannel canal;
-
-    private Product produto;
-
-    private ProductChannel canalProduto;
 
     private LocalDateTime dataFimValidade;
 

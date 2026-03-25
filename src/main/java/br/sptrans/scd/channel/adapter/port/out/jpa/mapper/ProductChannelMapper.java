@@ -4,19 +4,22 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChResponseDTO;
-import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
-
-import br.sptrans.scd.channel.domain.ProductChannel;
-import br.sptrans.scd.channel.domain.ProductChannelKey;
 import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelKeyEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
+import br.sptrans.scd.channel.domain.ProductChannel;
+import br.sptrans.scd.channel.domain.ProductChannelKey;
 
 @Component
 public class ProductChannelMapper {
 
     public ProductChannelEntityJpa toEntity(ProductChannel domain) {
-        if (domain == null) return null;
+        if (domain == null) {
+            return null;
+        }
         ProductChannelEntityJpa entity = new ProductChannelEntityJpa();
         entity.setId(toEntityKey(domain.getId()));
         entity.setQtdLimiteComercializacao(domain.getQtdLimiteComercializacao());
@@ -31,8 +34,10 @@ public class ProductChannelMapper {
         return entity;
     }
 
-    public ProductChannel toDomain(ProductChannelEntityJpa entity) {
-        if (entity == null) return null;
+    public ProductChannel toDomain(ProductChannelEntityJpa entity, UserRepository userR) {
+        if (entity == null) {
+            return null;
+        }
         ProductChannel domain = new ProductChannel();
         domain.setId(toDomainKey(entity.getId()));
         domain.setQtdLimiteComercializacao(entity.getQtdLimiteComercializacao());
@@ -43,19 +48,38 @@ public class ProductChannelMapper {
         domain.setCodOrgaoEmissor(entity.getCodOrgaoEmissor());
         domain.setVlFace(entity.getVlFace());
         domain.setCodStatus(entity.getCodStatus());
+        domain.setTipoOperHM(entity.getTipoOperHM());
+        domain.setDtCadastro(entity.getDtCadastro());
+        domain.setDtManutencao(entity.getDtManutencao());
+        domain.setFlgCarac(entity.getFlgCarac());
+        domain.setCodConvenio(entity.getCodConvenio());
+        if (entity.getIdUsuarioCadastro() != null) {
+            User user = userR.findById(entity.getIdUsuarioCadastro()).orElse(null);
+            domain.setIdUsuarioCadastro(user);
+        }
+
+        if (entity.getIdUsuarioManutencao()!= null) {
+            User user = userR.findById(entity.getIdUsuarioManutencao()).orElse(null);
+            domain.setIdUsuarioManutencao(user);
+        }
         // Adicione outros campos conforme necessário
         return domain;
     }
 
     public ProductChannelKeyEntityJpa toEntityKey(ProductChannelKey key) {
-        if (key == null) return null;
+        if (key == null) {
+            return null;
+        }
         return new ProductChannelKeyEntityJpa(key.getCodCanal(), key.getCodProduto());
     }
 
     public ProductChannelKey toDomainKey(ProductChannelKeyEntityJpa entityKey) {
-        if (entityKey == null) return null;
+        if (entityKey == null) {
+            return null;
+        }
         return new ProductChannelKey(entityKey.getCodCanal(), entityKey.getCodProduto());
     }
+
     public ProductChResponseDTO toResponseDTO(ProductChannelProjection projection) {
         if (projection == null) {
             return null;

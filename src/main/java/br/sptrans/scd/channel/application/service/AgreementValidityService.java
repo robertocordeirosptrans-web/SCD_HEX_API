@@ -1,5 +1,6 @@
 package br.sptrans.scd.channel.application.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -30,23 +31,12 @@ public class AgreementValidityService implements AgreementValidityUseCase {
             throw new ChannelException(ChannelErrorType.AGREEMENT_VALIDITY_ALREADY_EXISTS);
         }
 
-        SalesChannel canal = new SalesChannel(
-                cmd.codCanal(), null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null, null);
-
-        ProductChannel canalProduto = new ProductChannel();
-        canalProduto.setId(new ProductChannelKey(cmd.codCanal(), cmd.codProduto()));
-
         AgreementValidity entity = new AgreementValidity(
                 key,
-                canal,
-                null,
-                canalProduto,
                 cmd.dataFimValidade(),
                 cmd.dataInicioValidade(),
                 cmd.status(),
-                null,
+                LocalDateTime.now(),
                 cmd.idUsuario());
 
         return repository.save(entity);

@@ -2,6 +2,7 @@ package br.sptrans.scd.channel.application.port.in;
 
 import java.util.List;
 
+import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 
 public interface ProductChannelUseCase {
@@ -17,6 +18,8 @@ public interface ProductChannelUseCase {
     List<ProductChannel> findByCodCanal(String codCanal);
 
     List<ProductChannel> findByCodProduto(String codProduto);
+
+    List<ProductChannelProjection>findProjections( String codCanal, String codProduto);
 
     void deleteProductChannel(String codCanal, String codProduto);
 
