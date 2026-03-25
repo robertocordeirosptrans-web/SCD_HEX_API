@@ -8,7 +8,7 @@ import br.sptrans.scd.channel.domain.RechargeLimitKey;
 
 public interface RechargeLimitRepository {
 
-    Optional<RechargeLimit> findById(RechargeLimitKey id);
+    Optional<RechargeLimit> findById(String id, String codProduto);
 
     List<RechargeLimit> findAll();
 
