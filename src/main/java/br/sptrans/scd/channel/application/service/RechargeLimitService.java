@@ -79,7 +79,8 @@ public class RechargeLimitService implements RechargeLimitUseCase {
     @Override
     @Transactional(readOnly = true)
     public RechargeLimit findRechargeLimit(String codCanal, String codProduto) {
-        return repository.findById(new RechargeLimitKey(codCanal, codProduto))
+        RechargeLimitKey key = new RechargeLimitKey(codCanal, codProduto);
+        return repository.findById(key)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.RECHARGE_LIMIT_NOT_FOUND));
     }
 

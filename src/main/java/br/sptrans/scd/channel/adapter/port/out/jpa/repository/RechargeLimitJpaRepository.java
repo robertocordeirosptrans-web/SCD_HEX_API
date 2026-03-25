@@ -28,5 +28,5 @@ public interface RechargeLimitJpaRepository extends JpaRepository<RechargeLimitE
     @Query("SELECT COUNT(r) > 0 FROM RechargeLimitEntityJpa r WHERE r.id.codCanal = :codCanal AND r.id.codProduto = :codProduto")
     boolean existsByCodCanalAndCodProduto(@Param("codCanal") String codCanal, @Param("codProduto") String codProduto);
 
-    // save e deleteById já são providos pelo JpaRepository
+
 }
