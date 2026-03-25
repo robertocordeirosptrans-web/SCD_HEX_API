@@ -8,7 +8,7 @@ import br.sptrans.scd.channel.domain.AgreementValidityKey;
 
 public interface AgreementValidityRepository {
 
-    Optional<AgreementValidity> findById(AgreementValidityKey id);
+    Optional<AgreementValidity> findById( String id, String codProduto);
 
     List<AgreementValidity> findAll();
 

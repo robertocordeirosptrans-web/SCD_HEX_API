@@ -24,6 +24,12 @@ public class CreditRequestAdapterJpa implements CreditRequestRepository {
 
     // ── Consultas existentes ─────────────────────────────────────────
 
+    
+    @Override
+    public CreditRequest save(CreditRequest cdr) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     @Override
     public Optional<CreditRequest> findByNumSolicitacaoAndCodCanal(Long numSolicitacao, String codCanal) {
         return jpaRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal)
@@ -243,4 +249,5 @@ public class CreditRequestAdapterJpa implements CreditRequestRepository {
         // Adicione outros campos conforme necessário
         return item;
     }
+
 }

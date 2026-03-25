@@ -2,6 +2,7 @@ package br.sptrans.scd.creditrequest.application.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -17,9 +18,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import br.sptrans.scd.channel.domain.ProductChannel;
+import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpaKey;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit.ItemRequest;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemProcessado;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemRejeitado;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
@@ -31,37 +39,32 @@ import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
+import br.sptrans.scd.shared.idempotency.IdempotencyStore;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class CreditRequestService implements CreditRequestManagementUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(CreditRequestService.class);
 
-    /** Identificador de origem usado em {@code ID_ORIGEM_TRANSICAO} de todos os registros
-     *  de histórico gerados por esta API. */
+    /**
+     * Identificador de origem usado em {@code ID_ORIGEM_TRANSICAO} de todos os
+     * registros de histórico gerados por esta API.
+     */
     static final String ORIGEM_TRANSICAO = "pedido_credito_scd";
 
+    private final CreditRequestValidationService validationService;
     private final CreditRequestRepository creditRequestRepository;
     private final CreditRequestItemsRepository itemRepository;
     private final HistCreditRequestService historyService;
     private final TransitionSituationValidator transitionValidator;
     private final SituationAscertainedService situationAscertainedService;
-
-    public CreditRequestService(
-            CreditRequestRepository creditRequestRepository,
-            CreditRequestItemsRepository itemRepository,
-            HistCreditRequestService historyService) {
-        this.creditRequestRepository = creditRequestRepository;
-        this.itemRepository = itemRepository;
-        this.historyService = historyService;
-        this.transitionValidator = new TransitionSituationValidator();
-        this.situationAscertainedService = new SituationAscertainedService();
-    }
+    private final IdempotencyStore idempotencyStore;
 
     // ── Ações de mudança de status ───────────────────────────────────
-
     @Override
     @Transactional
     public void block(BlockCommand comando) {
@@ -108,8 +111,133 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 null, null, null, comando.dtAceite());
     }
 
-    // ── Consultas ────────────────────────────────────────────────────
+    /**
+     * Cria um novo pedido de crédito em lote, processando cada item e
+     * retornando o resultado detalhado.
+     *
+     * @param request dados do pedido e itens
+     * @return resposta com itens processados e rejeitados
+     */
+    @Transactional
+    public CreateRequestResponse createCreditRequest(
+            CreateRequestCredit request,
+            String idempotencyKey) {
 
+        // 1. Idempotência
+        Optional<CreateRequestResponse> cached = idempotencyStore.get(idempotencyKey);
+        if (cached.isPresent()) {
+            log.info("Idempotência: retornando resultado em cache para chave '{}'", idempotencyKey);
+            return cached.get();
+        }
+
+        // 2. Validações prévias (do segundo método)
+        SalesChannel canal = validationService.validarCanal(request.codCanal());
+        validationService.validarNumLote(request.numLote(), request.codCanal(), creditRequestRepository);
+        validationService.validarDataLiberacao(request.dataLiberacaoCredito());
+
+        if ("S".equalsIgnoreCase(canal.getFlgSupercanal())) {
+            validationService.validarSubordinadosSupercanal(request.codCanal());
+        }
+
+        // 3. Configurações de processamento
+        boolean processamentoParcialPermitido = "S".equalsIgnoreCase(canal.getFlgProcessamentoParcial());
+
+        List<CreateRequestResponse.ItemProcessado> processados = new ArrayList<>();
+        List<CreateRequestResponse.ItemRejeitado> rejeitados = new ArrayList<>();
+
+        int totalItens = request.itens().size();
+
+        for (int idx = 0; idx < totalItens; idx++) {
+            var pedido = (idx < request.pedidos().size()) ? request.pedidos().get(idx) : null;
+            var item = request.itens().get(idx);
+
+            processarItemComTryCatch(canal, pedido, item, request,
+                    processados, rejeitados, idx);
+
+        }
+
+        // 5. Validação pós-processamento (do segundo método)
+        if (processados.isEmpty() && !rejeitados.isEmpty() && !processamentoParcialPermitido) {
+            String motivos = rejeitados.stream()
+                    .map(r -> r.numSolicitacao() + ": " + r.motivoRejeicao())
+                    .reduce((a, b) -> a + "; " + b)
+                    .orElse("Motivo desconhecido");
+            throw new IllegalStateException("Todos os pedidos foram rejeitados: " + motivos);
+        }
+
+        // 6. Cache e resposta
+        CreateRequestResponse response = new CreateRequestResponse(
+                totalItens,
+                processados.size(),
+                rejeitados.size(),
+                processados,
+                rejeitados
+        );
+
+        return response;
+    }
+
+    private void processarItemComTryCatch(
+            SalesChannel canal,
+            CreateRequestCredit.CreditRequest pedido,
+            ItemRequest item,
+            CreateRequestCredit request,
+            List<ItemProcessado> processados,
+            List<ItemRejeitado> rejeitados,
+            int index) {
+
+        Long numSolicitacao = pedido != null ? pedido.numSolicitacao() : null;
+        String numLogicoCartao = item != null ? item.numLogicoCartao() : null;
+        String codProduto = item != null ? item.codProduto() : null;
+
+        try {
+            // Validações por item (melhor que apenas null check)
+            if (pedido == null) {
+                rejeitados.add(new ItemRejeitado(
+                        null, numLogicoCartao, codProduto,
+                        "Pedido não encontrado para o índice " + index));
+                return;
+            }
+
+            if (item == null) {
+                rejeitados.add(new ItemRejeitado(
+                        numSolicitacao, null, null,
+                        "Item não encontrado para o pedido " + numSolicitacao));
+                return;
+            }
+            
+
+            // Persistência dentro da transação (atomicidade por item)
+            CreditRequest creditRequest = criarCreditRequest(pedido, item, request, canal);
+            creditRequestRepository.save(creditRequest);
+
+            CreditRequestItems creditRequestItem = criarCreditRequestItem(creditRequest, item);
+            itemRepository.save(creditRequestItem);
+
+            processados.add(new ItemProcessado(
+                    numSolicitacao,
+                    numLogicoCartao,
+                    codProduto,
+                    "03"));
+
+        } catch (ValidacaoItemException e) {
+            // Erros de validação específicos
+            rejeitados.add(new ItemRejeitado(
+                    numSolicitacao, numLogicoCartao, codProduto,
+                    "Validação: " + e.getMessage()));
+
+        } catch (Exception e) {
+            // Erros inesperados
+            log.error("Erro ao processar pedido {}: {}", numSolicitacao, e.getMessage(), e);
+            rejeitados.add(new ItemRejeitado(
+                    numSolicitacao, numLogicoCartao, codProduto,
+                    "Erro interno: " + e.getMessage()));
+        }
+    }
+
+
+
+    // ── Consultas ────────────────────────────────────────────────────
     @Override
     public CreditRequest findById(String codTipoDocumento, Long idUsuarioCadastro) {
         return creditRequestRepository
@@ -162,7 +290,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     // ── Core batch processing ────────────────────────────────────────
-
     private void processarAlteracaoStatus(
             ActionStatus acao,
             List<OrderItemEntry> entries,
@@ -278,7 +405,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     // ── Consolidação de status da solicitação ────────────────────────
-
     private void consolidarStatusSolicitacao(
             Long numSolicitacao, String codCanal, ActionStatus acao,
             String codFormaPagto, BigDecimal vlPago,
@@ -396,8 +522,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             }
 
             // Legacy: mistura com sucesso → ATENDIDO_PARCIALMENTE
-            boolean temSucesso = statusItens.stream().anyMatch(s ->
-                    SituationCreditRequestItems.RECARREGADO.getCode().equals(s)
+            boolean temSucesso = statusItens.stream().anyMatch(s
+                    -> SituationCreditRequestItems.RECARREGADO.getCode().equals(s)
                     || SituationCreditRequestItems.PAGO.getCode().equals(s)
                     || SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode().equals(s));
             long statusUnicos = statusItens.stream().distinct().count();
@@ -412,8 +538,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         return resultado;
     }
 
-    // ── Validações ───────────────────────────────────────────────────
-
+    // ── Validações de Transações ───────────────────────────────────────────────────
     private void validarTransicoes(ActionStatus acao, OrderItemEntry entry) {
         for (Long numSolicitacaoItem : entry.numSolicitacaoItems()) {
             CreditRequestItemsEJpaKey itemId = new CreditRequestItemsEJpaKey(
@@ -478,22 +603,27 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     // ── Helpers de status ────────────────────────────────────────────
-
     private String determinarNovoStatus(ActionStatus acao) {
         return switch (acao) {
-            case BLOQUEAR -> SituationCreditRequestItems.BLOQUEADO.getCode();
-            case DESBLOQUEAR -> SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode();
-            case CANCELAR -> SituationCreditRequestItems.CANCELADO.getCode();
-            case PAGO -> SituationCreditRequestItems.PAGO.getCode();
-            case ACEITO_PENDENTE_LIQUIDACAO -> SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO.getCode();
-            case LIBERAR_RECARGA -> SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode();
+            case BLOQUEAR ->
+                SituationCreditRequestItems.BLOQUEADO.getCode();
+            case DESBLOQUEAR ->
+                SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode();
+            case CANCELAR ->
+                SituationCreditRequestItems.CANCELADO.getCode();
+            case PAGO ->
+                SituationCreditRequestItems.PAGO.getCode();
+            case ACEITO_PENDENTE_LIQUIDACAO ->
+                SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO.getCode();
+            case LIBERAR_RECARGA ->
+                SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode();
         };
     }
 
     private String findStatusBeforeBloqueio(Long numSolicitacao, Long numSolicitacaoItem, String codCanal) {
         try {
-            List<HistCreditRequestItems> history =
-                    historyService.findItemStatusHistory(numSolicitacao, numSolicitacaoItem, codCanal);
+            List<HistCreditRequestItems> history
+                    = historyService.findItemStatusHistory(numSolicitacao, numSolicitacaoItem, codCanal);
 
             for (HistCreditRequestItems record : history) {
                 String status = record.getCodSituacao();
@@ -512,8 +642,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     private String findSolicitacaoStatusBeforeBloqueio(Long numSolicitacao, String codCanal) {
         try {
-            List<HistCreditRequest> history =
-                    historyService.findRequestStatusHistory(numSolicitacao, codCanal);
+            List<HistCreditRequest> history
+                    = historyService.findRequestStatusHistory(numSolicitacao, codCanal);
 
             for (HistCreditRequest record : history) {
                 String status = record.getCodSituacao();
@@ -531,7 +661,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     // ── Conversão PayItemEntry → OrderItemEntry ──────────────────────
-
     private List<OrderItemEntry> convertPayItemEntries(List<PayItemEntry> payItems) {
         Map<String, List<Long>> grouped = new LinkedHashMap<>();
         for (PayItemEntry item : payItems) {
@@ -547,8 +676,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     // ── Mapeamento EJpa → Domain ─────────────────────────────────────
-
     private CreditRequestItems toDomain(CreditRequestItemsEJpa e) {
+
         CreditRequestItems item = new CreditRequestItems();
         CreditRequestItemsKey key = new CreditRequestItemsKey();
         key.setNumSolicitacao(e.getId().getNumSolicitacao());
@@ -596,4 +725,51 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         item.setQtdDiasUtilizados(e.getQtdDiasUtilizados());
         return item;
     }
+
+
+    private SalesChannel validarCanal(String codCanal) {
+        SalesChannel canal = salesChannelRepository.findById(codCanal)
+                .orElseThrow(() -> new IllegalStateException(
+                "Canal não encontrado: " + codCanal));
+        if (!"A".equalsIgnoreCase(canal.getStCanais())) {
+            throw new IllegalStateException("Canal inativo: " + codCanal);
+        }
+        return canal;
+    }
+
+    private void validarNumLote(String numLote, String codCanal) {
+        if (creditRequestRepository.existsByNumLoteAndCodCanal(numLote, codCanal)) {
+            throw new IllegalStateException(
+                    "Número de lote já utilizado para este canal: " + numLote);
+        }
+    }
+
+    private void validarDataLiberacao(LocalDateTime dataLiberacao) {
+        if (dataLiberacao == null) {
+            throw new IllegalStateException("Data de liberação de crédito é obrigatória");
+        }
+        LocalDateTime hoje = LocalDateTime.now();
+        if (dataLiberacao.isBefore(hoje)) {
+            throw new IllegalStateException(
+                    "Data de liberação inválida: " + dataLiberacao
+                    + " é anterior à data atual " + hoje);
+        }
+    }
+
+    private void validarSubordinadosSupercanal(String codCanal) {
+        List<SalesChannel> subordinados = salesChannelRepository.findByCodCanalSuperior(codCanal);
+        boolean temSubordinadoAtivo = subordinados.stream()
+                .anyMatch(s -> "A".equalsIgnoreCase(s.getStCanais()));
+        if (!temSubordinadoAtivo) {
+            throw new IllegalStateException(
+                    "Supercanal " + codCanal + " não possui subordinados ativos");
+        }
+    }
+
+    // ...método removido, utilize validationService.validarVigenciadoCanal(...)
+
+    // ...método removido, utilize validationService.validarProdutoNoCanal(...)
+
+    // ...método removido, utilize validationService.validarLimites(...)
+
 }
