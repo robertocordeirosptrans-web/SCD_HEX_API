@@ -18,6 +18,7 @@ import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemRejeitado;
+import br.sptrans.scd.shared.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -74,29 +75,28 @@ public class CreditRequestValidationService {
                                        String codCanalDistrib, String codProduto,
                                        List<ItemRejeitado> rejeitados) {
         boolean canalDistribAtivo = mdChannelRepository
-                .findActiveByCanalDistrib(codCanalDistrib)
-                .isPresent();
+            .findActiveByCanalDistrib(codCanalDistrib)
+            .isPresent();
         if (!canalDistribAtivo) {
-            rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, produto,
-                    "Canal de distribuição inativo ou não encontrado: " + codCanalDistrib));
-            return;
+            throw new ValidationException(
+            "Canal de distribuição inativo ou não encontrado: " + codCanalDistrib);
         }
         // Convênio vigente para o canal de distribuição
-         agreeValidRepository.findByIdOtimized(codCanalDistrib, codProduto)
-                .ifPresentOrElse(conv -> {
-                  LocalDateTime agora = LocalDateTime.now();
-                   boolean vigente = "A".equalsIgnoreCase(conv.getStatus())
-                           && (conv.getDataInicioValidade() == null
-                           || !conv.getDataInicioValidade().isAfter(agora))
-                           && (conv.getDataFimValidade() == null
-                           || !conv.getDataFimValidade().isBefore(agora));
-                   if (!vigente) {
-                       rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, produto,
-                               "Convênio não vigente para canal de distribuição: " + codCanalDistrib));
-                   }
-               }, () -> {
-                   // Sem convênio cadastrado — não bloqueia, apenas avisa
-               });
+        agreeValidRepository.findByIdOtimized(codCanalDistrib, codProduto)
+            .ifPresentOrElse(conv -> {
+                LocalDateTime agora = LocalDateTime.now();
+                boolean vigente = "A".equalsIgnoreCase(conv.getStatus())
+                    && (conv.getDataInicioValidade() == null
+                    || !conv.getDataInicioValidade().isAfter(agora))
+                    && (conv.getDataFimValidade() == null
+                    || !conv.getDataFimValidade().isBefore(agora));
+                if (!vigente) {
+                throw new ValidationException(
+                    "Convênio não vigente para canal de distribuição: " + codCanalDistrib);
+                }
+            }, () -> {
+                // Sem convênio cadastrado — não bloqueia, apenas avisa
+            });
     }
 
     public ProductChannel validarProdutoNoCanal(Long numSolicitacao, String cartao, String produto,
@@ -123,18 +123,21 @@ public class CreditRequestValidationService {
         RechargeLimitKey key = new RechargeLimitKey(codCanal, codProduto);
         Optional<RechargeLimit> limiteOpt = rechargeLimitRepository.findById(key);
         if (limiteOpt.isEmpty()) {
-            return null; // Sem limites configurados → não bloqueia
+            throw new ValidationException(
+                "Não há limites configurados para o canal " + codCanal + " e produto " + codProduto);
         }
         RechargeLimit limite = limiteOpt.get();
         if (limite.getVlMinimoRecarga() != null
                 && valorTotal.compareTo(limite.getVlMinimoRecarga()) < 0) {
-            return "Valor " + valorTotal + " abaixo do limite mínimo de recarga "
-                    + limite.getVlMinimoRecarga();
+            throw new ValidationException(
+                "Valor " + valorTotal + " abaixo do limite mínimo de recarga "
+                        + limite.getVlMinimoRecarga());
         }
         if (limite.getVlMaximoRecarga() != null
                 && valorTotal.compareTo(limite.getVlMaximoRecarga()) > 0) {
-            return "Valor " + valorTotal + " acima do limite máximo de recarga "
-                    + limite.getVlMaximoRecarga();
+            throw new ValidationException(
+                "Valor " + valorTotal + " acima do limite máximo de recarga "
+                        + limite.getVlMaximoRecarga());
         }
         return null;
     }

@@ -21,7 +21,12 @@ public class AgreementValidityAdapterJpa implements AgreementValidityRepository 
 
     @Override
     public Optional<AgreementValidity> findById(AgreementValidityKey id) {
-        throw new UnsupportedOperationException("Unimplemented method 'findById'");
+        if (id == null) {
+            return Optional.empty();
+        }
+        AgreementValidityKeyEntityJpa entityKey = new AgreementValidityKeyEntityJpa(id.getCodCanal(), id.getCodProduto());
+        return jpaRepository.findById(entityKey)
+                .map(AgreementValidityMapper::toDomain);
     }
 
     @Override
