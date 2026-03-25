@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
+
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 
@@ -16,6 +18,8 @@ import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
  * {@code PCK_MVE_SITUACAOPEDIDO}, implementando todas as regras de negócio de
  * consolidação de status definidas no legado.</p>
  */
+
+@Component
 public class SituationAscertainedService {
 
     /**
