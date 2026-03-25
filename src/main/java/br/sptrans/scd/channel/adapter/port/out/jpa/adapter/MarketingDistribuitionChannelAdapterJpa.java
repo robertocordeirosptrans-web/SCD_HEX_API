@@ -3,14 +3,12 @@ package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Repository;
+
 import br.sptrans.scd.channel.adapter.port.out.jpa.entity.MarketingDistribuitionChannelEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.jpa.entity.MarketingDistribuitionChannelKeyEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.MarketingDistribuitionChannelMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.MarketingDistribuitionChannelJpaRepository;
-
-import org.springframework.stereotype.Repository;
-
-
 import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelRepository;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannelKey;
@@ -66,6 +64,18 @@ public class MarketingDistribuitionChannelAdapterJpa implements MarketingDistrib
     public boolean existsById(MarketingDistribuitionChannelKey id) {
         MarketingDistribuitionChannelKeyEntityJpa entityKey = mapper.toEntityKey(id);
         return jpaRepository.existsById(entityKey);
+    }
+
+    @Override
+    public Optional<MarketingDistribuitionChannel> findActiveByCanalDistrib(String codCanalDistrib) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findActiveByCanalDistrib'");
+    }
+
+    @Override
+    public Optional<MarketingDistribuitionChannel> findByIdOtimized(String codCanal, String codProduto) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByIdOtimized'");
     }
 
  

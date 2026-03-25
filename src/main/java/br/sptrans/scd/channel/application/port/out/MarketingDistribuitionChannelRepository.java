@@ -10,6 +10,8 @@ public interface MarketingDistribuitionChannelRepository {
 
     Optional<MarketingDistribuitionChannel> findById(MarketingDistribuitionChannelKey id);
 
+    Optional<MarketingDistribuitionChannel> findByIdOtimized(String codCanal, String codProduto);
+
     List<MarketingDistribuitionChannel> findAll();
 
     List<MarketingDistribuitionChannel> findByCodCanalComercializacao(String codCanalComercializacao);
