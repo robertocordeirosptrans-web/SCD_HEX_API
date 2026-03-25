@@ -80,7 +80,7 @@ public class CreditRequestValidationService {
             return;
         }
         // Convênio vigente para o canal de distribuição
-         agreeValidRepository.findByIdOptimized(codCanalDistrib, codProduto)
+         agreeValidRepository.findById(codCanalDistrib, codProduto)
                 .ifPresentOrElse(conv -> {
                   LocalDateTime agora = LocalDateTime.now();
                    boolean vigente = "A".equalsIgnoreCase(conv.getStatus())
