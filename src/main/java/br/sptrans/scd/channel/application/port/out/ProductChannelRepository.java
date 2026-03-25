@@ -8,7 +8,8 @@ import br.sptrans.scd.channel.domain.ProductChannelKey;
 
 public interface ProductChannelRepository {
 
-    Optional<ProductChannel> findById(String codCanal,String codProduto);
+    Optional<ProductChannel> findById(ProductChannelKey id);
+    Optional<ProductChannel> findByIdOtimized(String codCanal,String codProduto);
 
     List<ProductChannel> findAll();
 

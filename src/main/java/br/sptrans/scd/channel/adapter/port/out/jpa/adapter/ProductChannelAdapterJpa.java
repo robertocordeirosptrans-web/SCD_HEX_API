@@ -1,6 +1,5 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 
-
 import java.util.List;
 import java.util.Optional;
 
@@ -16,9 +15,9 @@ import lombok.RequiredArgsConstructor;
 @Repository
 @RequiredArgsConstructor
 public class ProductChannelAdapterJpa implements ProductChannelRepository {
+
     private final ProductChannelMapper productChannelMapper;
     private final ProductChannelJpaRepository productChannelJpaRepository;
-
 
     @Override
     public Optional<ProductChannel> findById(ProductChannelKey id) {
@@ -26,14 +25,12 @@ public class ProductChannelAdapterJpa implements ProductChannelRepository {
                 .map(productChannelMapper::toDomain);
     }
 
-
     @Override
     public List<ProductChannel> findAll() {
         return productChannelJpaRepository.findAll().stream()
                 .map(productChannelMapper::toDomain)
                 .toList();
     }
-
 
     @Override
     public List<ProductChannel> findByCodCanal(String codCanal) {
@@ -43,7 +40,6 @@ public class ProductChannelAdapterJpa implements ProductChannelRepository {
                 .toList();
     }
 
-
     @Override
     public List<ProductChannel> findByCodProduto(String codProduto) {
         return productChannelJpaRepository.findAll().stream()
@@ -51,7 +47,6 @@ public class ProductChannelAdapterJpa implements ProductChannelRepository {
                 .map(productChannelMapper::toDomain)
                 .toList();
     }
-
 
     @Override
     public ProductChannel save(ProductChannel domain) {
@@ -70,5 +65,9 @@ public class ProductChannelAdapterJpa implements ProductChannelRepository {
         return productChannelJpaRepository.existsById(productChannelMapper.toEntityKey(id));
     }
 
+    @Override
+    public Optional<ProductChannel> findByIdOtimized(String codCanal, String codProduto) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 }
