@@ -5,12 +5,12 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.channel.adapter.port.out.jpa.entity.AgreementValidityKeyEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.AgreementValidityMapper;
+import br.sptrans.scd.channel.adapter.port.out.jpa.repository.AgreementValidityJpaRepository;
 import br.sptrans.scd.channel.application.port.out.AgreementValidityRepository;
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.channel.domain.AgreementValidityKey;
-import br.sptrans.scd.channel.adapter.port.out.jpa.repository.AgreementValidityJpaRepository;
-import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.AgreementValidityMapper;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.AgreementValidityKeyEntityJpa;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -21,7 +21,12 @@ public class AgreementValidityAdapterJpa implements AgreementValidityRepository 
 
     @Override
     public Optional<AgreementValidity> findById(AgreementValidityKey id) {
-        return jpaRepository.findByCodCanalAndCodProduto(id.getCodCanal(), id.getCodProduto())
+        throw new UnsupportedOperationException("Unimplemented method 'findById'");
+    }
+
+    @Override
+    public Optional<AgreementValidity> findByIdOtimized(String codCanal, String codProduto) {
+        return jpaRepository.findByCodCanalAndCodProduto(codCanal, codProduto)
                 .map(AgreementValidityMapper::toDomain);
     }
 
@@ -64,4 +69,5 @@ public class AgreementValidityAdapterJpa implements AgreementValidityRepository 
     public boolean existsById(AgreementValidityKey id) {
         return jpaRepository.existsByCodCanalAndCodProduto(id.getCodCanal(), id.getCodProduto());
     }
+
 }
