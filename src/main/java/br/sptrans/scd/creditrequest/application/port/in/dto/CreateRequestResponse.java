@@ -1,4 +1,4 @@
-package br.sptrans.scd.creditrequest.adapter.port.in.dto;
+package br.sptrans.scd.creditrequest.application.port.in.dto;
 
 import java.util.List;
 

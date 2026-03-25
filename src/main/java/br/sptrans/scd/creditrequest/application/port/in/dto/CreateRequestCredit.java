@@ -1,7 +1,7 @@
-package br.sptrans.scd.creditrequest.adapter.port.in.dto;
+package br.sptrans.scd.creditrequest.application.port.in.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -19,24 +19,24 @@ public record CreateRequestCredit(
         @NotBlank(message = "Número do lote é obrigatório")
         String numLote,
         @NotNull(message = "Data de geração é obrigatória")
-        @JsonFormat(pattern = "yyyy-MM-dd")
-        LocalDate dataGeracao,
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss[.SSS]")
+        LocalDateTime dataGeracao,
         @NotNull(message = "Data de liberação de crédito é obrigatória")
-        @JsonFormat(pattern = "yyyy-MM-dd")
-        LocalDate dataLiberacaoCredito,
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss[.SSS]")
+        LocalDateTime dataLiberacaoCredito,
         @NotBlank(message = "Responsável é obrigatório")
         String responsavel,
         @NotNull(message = "Lista de pedidos é obrigatória")
         @Size(min = 1, message = "Ao menos um pedido deve ser informado")
         @Valid
-        List<PedidoRequest> pedidos,
+        List<CreditRequest> pedidos,
         @NotNull(message = "Lista de itens é obrigatória")
         @Size(min = 1, message = "Ao menos um item deve ser informado")
         @Valid
         List<ItemRequest> itens
         ) {
 
-    public record PedidoRequest(
+    public record CreditRequest(
             @NotNull(message = "Número da solicitação é obrigatório")
             Long numSolicitacao,
             @NotBlank(message = "Canal de distribuição é obrigatório")
@@ -47,11 +47,11 @@ public record CreateRequestCredit(
 
     public record ItemRequest(
             @NotBlank(message = "ID do usuário cartão é obrigatório")
-            String idUsuarioCartao,
+            Long idUsuarioCartao,
             @NotBlank(message = "Número lógico do cartão é obrigatório")
             String numLogicoCartao,
             @NotNull(message = "Código do produto é obrigatório")
-            Integer codProduto,
+            String codProduto,
             @NotNull(message = "Valor unitário é obrigatório")
             @Positive(message = "Valor unitário deve ser positivo")
             BigDecimal vlUnitario,

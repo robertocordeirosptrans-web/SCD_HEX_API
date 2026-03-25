@@ -1,10 +1,13 @@
 package br.sptrans.scd.creditrequest.adapter.port.in.rest;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.creditrequest.adapter.port.in.dto.CreateRequestCredit;
-import br.sptrans.scd.creditrequest.adapter.port.in.dto.UpdateRequestCredit;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.BlockCommand;
@@ -23,10 +24,14 @@ import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementU
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.PayItemEntry;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.SearchCommand;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.UnblockCommand;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageResponse;
+import br.sptrans.scd.creditrequest.application.port.in.dto.UpdateRequestCredit;
 import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
+import br.sptrans.scd.shared.idempotency.IdempotencyStore;
+import br.sptrans.scd.shared.idempotency.InMemoryIdempotencyStore;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -43,6 +48,9 @@ public class CreditRequestController {
     private final CreditRequestManagementUseCase creditRequestManagementUseCase;
     private final CreditRequestMapper creditRequestMapper;
     private static final Logger log = LoggerFactory.getLogger(CreditRequestController.class);
+
+    // Idempotency store (in-memory, para produção use uma implementação persistente)
+    private static final IdempotencyStore<ResponseEntity<?>> idempotencyStore = new InMemoryIdempotencyStore<>();
 
     /**
      * Busca pedidos com paginação por cursor. Classificação automática do modo
@@ -167,7 +175,7 @@ public class CreditRequestController {
                                         .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
                                         item.getNumSolicitacao(),
                                         request.getCodCanal(),
-                                        item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
+                                        item.getItem() != null ? List.of(item.getItem().getNumSolicitacaoItem()) : List.of()
                                 ))
                                         .collect(Collectors.toList()),
                                 null,
@@ -181,7 +189,7 @@ public class CreditRequestController {
                                         .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
                                         item.getNumSolicitacao(),
                                         request.getCodCanal(),
-                                        item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
+                                        item.getItem() != null ? List.of(item.getItem().getNumSolicitacaoItem()) : List.of()
                                 ))
                                         .collect(Collectors.toList()),
                                 null,
@@ -195,7 +203,7 @@ public class CreditRequestController {
                                         .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
                                         item.getNumSolicitacao(),
                                         request.getCodCanal(),
-                                        item.getItem() != null ? java.util.List.of(item.getItem().getNumSolicitacaoItem()) : java.util.List.of()
+                                        item.getItem() != null ? List.of(item.getItem().getNumSolicitacaoItem()) : List.of()
                                 ))
                                         .collect(Collectors.toList()),
                                 null,
@@ -261,6 +269,7 @@ public class CreditRequestController {
             são processados mesmo que outros sejam rejeitados.
             """
     )
+
     public ResponseEntity<?> criarPedido(
             @Parameter(description = "Chave de idempotência: {codCanal}-{numLote}-{dataGeracao}")
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
@@ -274,7 +283,20 @@ public class CreditRequestController {
         log.info("Processando lote: canal={} numLote={} dataGeracao={} idempotencyKey={}",
                 request.codCanal(), request.numLote(), request.dataGeracao(), key);
 
-        return null;
+        // Verifica se já existe resposta para esta chave
+        Optional<ResponseEntity<?>> previous = idempotencyStore.get(key);
+        if (previous.isPresent()) {
+            log.info("Requisição idempotente detectada. Retornando resposta armazenada para a chave: {}", key);
+            return previous.get();
+        }
+
+        // Aqui segue o processamento normal do pedido
+        // TODO: Substitua pelo processamento real do pedido
+        ResponseEntity<?> response = ResponseEntity.status(HttpStatus.CREATED).body("Pedido criado com sucesso");
+
+        // Armazena a resposta para futuras requisições idempotentes
+        idempotencyStore.put(key, response);
+        return response;
     }
 
 }
