@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpaKey;
+import br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit.ItemRequest;
@@ -57,6 +57,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     private final CreditRequestValidationService validationService;
     private final CreditRequestRepository creditRequestRepository;
     private final CreditRequestItemsRepository itemRepository;
+    private final CreditRequestMapper creditRequestMapper;
     private final HistCreditRequestService historyService;
     private final TransitionSituationValidator transitionValidator;
     private final SituationAscertainedService situationAscertainedService;
@@ -375,24 +376,26 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
             for (Long numSolicitacaoItem : entry.numSolicitacaoItems()) {
                 try {
-                    CreditRequestItemsEJpaKey itemId = new CreditRequestItemsEJpaKey(
-                            numSolicitacao, numSolicitacaoItem, codCanal);
+                    CreditRequestItemsKey itemId = new CreditRequestItemsKey();
+                    itemId.setNumSolicitacao(numSolicitacao);
+                    itemId.setNumSolicitacaoItem(numSolicitacaoItem);   
+                    itemId.setCodCanal(codCanal);
 
-                    Optional<CreditRequestItemsEJpa> itemOpt = itemRepository.findById(itemId);
+                    Optional<CreditRequestItems> itemOpt = itemRepository.findById(itemId);
                     if (itemOpt.isEmpty()) {
                         log.warn("Item não encontrado: Solicitação={}, Item={}, CodCanal={}",
                                 numSolicitacao, numSolicitacaoItem, codCanal);
                         continue;
                     }
 
-                    CreditRequestItemsEJpa item = itemOpt.get();
+                    CreditRequestItems item = itemOpt.get();
                     String statusAnterior = item.getCodSituacao();
 
                     if (acao == ActionStatus.DESBLOQUEAR) {
                         item.setCodSituacao(SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode());
                         itemRepository.save(item);
-                        historyService.saveItemStatusHistory(toDomain(item), ORIGEM_TRANSICAO);
-                        itensParaRestaurar.add(item);
+                        historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
+                        itensParaRestaurar.add(creditRequestMapper.toEntityItem(item));
                     } else {
                         String novoStatus = determinarNovoStatus(acao);
                         item.setCodSituacao(novoStatus);
@@ -402,7 +405,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                         }
 
                         itemRepository.save(item);
-                        historyService.saveItemStatusHistory(toDomain(item), ORIGEM_TRANSICAO);
+                        historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
 
                         log.info("Item atualizado - Solicitação={}, Item={}, StatusAnterior={}, NovoStatus={}",
                                 numSolicitacao, numSolicitacaoItem, statusAnterior, novoStatus);
@@ -443,7 +446,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
                     if (statusAntesBloqueio != null) {
                         item.setCodSituacao(statusAntesBloqueio);
-                        itemRepository.save(item);
+                        // Converter para domínio antes de salvar
+                        itemRepository.save(creditRequestMapper.toDomainItem(item));
                         log.info("Item desbloqueado e restaurado - Solicitação={}, Item={}, Status={}",
                                 item.getId().getNumSolicitacao(),
                                 item.getId().getNumSolicitacaoItem(),
@@ -471,8 +475,27 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             String codFormaPagto, BigDecimal vlPago,
             LocalDateTime dtConfirmaPagto, LocalDateTime dtAceite) {
 
-        List<CreditRequestItemsEJpa> itens = itemRepository.findById_NumSolicitacaoAndCodCanal(
-                numSolicitacao, codCanal);
+
+        // Buscar itens individualmente usando findById
+        List<CreditRequestItemsEJpa> itens = new ArrayList<>();
+        // Supondo que você tenha uma lista de numSolicitacaoItem para buscar
+        // Aqui é necessário obter todos os itens relacionados à solicitação e canal
+        // Se não houver essa lista, será necessário adaptar conforme sua modelagem
+        // Exemplo genérico:
+        for (long numSolicitacaoItem = 1;; numSolicitacaoItem++) {
+            CreditRequestItemsKey key = new CreditRequestItemsKey();
+            key.setNumSolicitacao(numSolicitacao);
+            key.setNumSolicitacaoItem(numSolicitacaoItem);
+            key.setCodCanal(codCanal);
+            Optional<CreditRequestItems> opt = itemRepository.findById(key);
+            if (opt.isPresent()) {
+                // Se necessário converter para EJpa:
+                itens.add(creditRequestMapper.toEntityItem(opt.get()));
+                // Ou se quiser trabalhar só com domínio, adapte o restante do método
+            } else {
+                break; // Sai do loop quando não encontrar mais itens
+            }
+        }
         if (itens.isEmpty()) {
             log.warn("Nenhum item encontrado para a solicitação {} e canal {}", numSolicitacao, codCanal);
             return;
@@ -602,9 +625,13 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     // ── Validações de Transações ───────────────────────────────────────────────────
     private void validarTransicoes(ActionStatus acao, OrderItemEntry entry) {
         for (Long numSolicitacaoItem : entry.numSolicitacaoItems()) {
-            CreditRequestItemsEJpaKey itemId = new CreditRequestItemsEJpaKey(
-                    entry.numSolicitacao(), numSolicitacaoItem, entry.codCanal());
-            Optional<CreditRequestItemsEJpa> itemOpt = itemRepository.findById(itemId);
+
+            CreditRequestItemsKey itemId = new CreditRequestItemsKey();
+            itemId.setNumSolicitacao(entry.numSolicitacao());
+            itemId.setNumSolicitacaoItem(numSolicitacaoItem);
+            itemId.setCodCanal(entry.codCanal());
+
+            Optional<CreditRequestItems> itemOpt = itemRepository.findById(itemId);
             if (itemOpt.isEmpty()) {
                 continue;
             }
@@ -637,8 +664,15 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 Long numSolicitacao = Long.parseLong(parts[0]);
                 String codCanal = parts[1];
 
-                List<CreditRequestItemsEJpa> itens = itemRepository
-                        .findById_NumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
+                List<CreditRequestItemsEJpa> itens = new ArrayList<>();
+                for (PayItemEntry payItem : entry.getValue()) {
+                    CreditRequestItemsKey key = new CreditRequestItemsKey();
+                    key.setNumSolicitacao(numSolicitacao);
+                    key.setNumSolicitacaoItem(payItem.numSolicitacaoItem());
+                    key.setCodCanal(codCanal);
+                    Optional<CreditRequestItems> opt = itemRepository.findById(key);
+                    opt.ifPresent(domainItem -> itens.add(creditRequestMapper.toEntityItem(domainItem)));
+                }
 
                 if (!itens.isEmpty()) {
                     BigDecimal totalCalculado = itens.stream()
@@ -736,55 +770,55 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 .toList();
     }
 
-    // ── Mapeamento EJpa → Domain ─────────────────────────────────────
-    private CreditRequestItems toDomain(CreditRequestItemsEJpa e) {
+    // // ── Mapeamento EJpa → Domain ─────────────────────────────────────
+    // private CreditRequestItems toDomain(CreditRequestItemsEJpa e) {
 
-        CreditRequestItems item = new CreditRequestItems();
-        CreditRequestItemsKey key = new CreditRequestItemsKey();
-        key.setNumSolicitacao(e.getId().getNumSolicitacao());
-        key.setNumSolicitacaoItem(e.getId().getNumSolicitacaoItem());
-        key.setCodCanal(e.getId().getCodCanal());
-        item.setId(key);
-        item.setCodCanal(e.getCodCanal());
-        item.setIdUsuarioCadastro(e.getIdUsuarioCadastro());
-        item.setCodVersao(e.getCodVersao());
-        item.setNumLogicoCartao(e.getNumLogicoCartao());
-        item.setCodProduto(e.getCodProduto());
-        item.setCodTipoDocumento(e.getCodTipoDocumento());
-        item.setCodSituacao(e.getCodSituacao());
-        item.setQtdItem(e.getQtdItem());
-        item.setVlUnitario(e.getVlUnitario());
-        item.setVlItem(e.getVlItem());
-        item.setDtRecarga(e.getDtRecarga());
-        item.setVlCarregado(e.getVlCarregado());
-        item.setVlAjuste(e.getVlAjuste());
-        item.setFlgAjuste(e.getFlgAjuste());
-        item.setIdFuncionario(e.getIdFuncionario());
-        item.setCodAssinaturaHsm(e.getCodAssinaturaHsm());
-        item.setDtCadastro(e.getDtCadastro());
-        item.setDtManutencao(e.getDtManutencao());
-        item.setSeqRecarga(e.getSeqRecarga());
-        item.setDtEnvioHm(e.getDtEnvioHm());
-        item.setDtRetornoHm(e.getDtRetornoHm());
-        item.setIdUsuarioManutencao(e.getIdUsuarioManutencao());
-        item.setDtAssinatura(e.getDtAssinatura());
-        item.setDtPagtoEconomica(e.getDtPagtoEconomica());
-        item.setSqPid(e.getSqPid());
-        item.setDtInicProcesso(e.getDtInicProcesso());
-        item.setIdUsuarioCartao(e.getIdUsuarioCartao());
-        item.setSqRecarga(e.getSqRecarga());
-        item.setVlTxadm(e.getVlTxadm());
-        item.setVlTxserv(e.getVlTxserv());
-        item.setVlTxtotal(e.getVlTxtotal());
-        item.setFlgEvento(e.getFlgEvento());
-        item.setVlEvento(e.getVlEvento());
-        item.setFlgOutrasVias(e.getFlgOutrasVias());
-        item.setCodAssdigRecarga(e.getCodAssdigRecarga());
-        item.setVlAutorizacaoHm(e.getVlAutorizacaoHm());
-        item.setFlgLiminarLoja(e.getFlgLiminarLoja());
-        item.setCodProdutoHm(e.getCodProdutoHm());
-        item.setQtdDiasUtilizados(e.getQtdDiasUtilizados());
-        return item;
-    }
+    //     CreditRequestItems item = new CreditRequestItems();
+    //     CreditRequestItemsKey key = new CreditRequestItemsKey();
+    //     key.setNumSolicitacao(e.getId().getNumSolicitacao());
+    //     key.setNumSolicitacaoItem(e.getId().getNumSolicitacaoItem());
+    //     key.setCodCanal(e.getId().getCodCanal());
+    //     item.setId(key);
+    //     item.setCodCanal(e.getCodCanal());
+    //     item.setIdUsuarioCadastro(e.getIdUsuarioCadastro());
+    //     item.setCodVersao(e.getCodVersao());
+    //     item.setNumLogicoCartao(e.getNumLogicoCartao());
+    //     item.setCodProduto(e.getCodProduto());
+    //     item.setCodTipoDocumento(e.getCodTipoDocumento());
+    //     item.setCodSituacao(e.getCodSituacao());
+    //     item.setQtdItem(e.getQtdItem());
+    //     item.setVlUnitario(e.getVlUnitario());
+    //     item.setVlItem(e.getVlItem());
+    //     item.setDtRecarga(e.getDtRecarga());
+    //     item.setVlCarregado(e.getVlCarregado());
+    //     item.setVlAjuste(e.getVlAjuste());
+    //     item.setFlgAjuste(e.getFlgAjuste());
+    //     item.setIdFuncionario(e.getIdFuncionario());
+    //     item.setCodAssinaturaHsm(e.getCodAssinaturaHsm());
+    //     item.setDtCadastro(e.getDtCadastro());
+    //     item.setDtManutencao(e.getDtManutencao());
+    //     item.setSeqRecarga(e.getSeqRecarga());
+    //     item.setDtEnvioHm(e.getDtEnvioHm());
+    //     item.setDtRetornoHm(e.getDtRetornoHm());
+    //     item.setIdUsuarioManutencao(e.getIdUsuarioManutencao());
+    //     item.setDtAssinatura(e.getDtAssinatura());
+    //     item.setDtPagtoEconomica(e.getDtPagtoEconomica());
+    //     item.setSqPid(e.getSqPid());
+    //     item.setDtInicProcesso(e.getDtInicProcesso());
+    //     item.setIdUsuarioCartao(e.getIdUsuarioCartao());
+    //     item.setSqRecarga(e.getSqRecarga());
+    //     item.setVlTxadm(e.getVlTxadm());
+    //     item.setVlTxserv(e.getVlTxserv());
+    //     item.setVlTxtotal(e.getVlTxtotal());
+    //     item.setFlgEvento(e.getFlgEvento());
+    //     item.setVlEvento(e.getVlEvento());
+    //     item.setFlgOutrasVias(e.getFlgOutrasVias());
+    //     item.setCodAssdigRecarga(e.getCodAssdigRecarga());
+    //     item.setVlAutorizacaoHm(e.getVlAutorizacaoHm());
+    //     item.setFlgLiminarLoja(e.getFlgLiminarLoja());
+    //     item.setCodProdutoHm(e.getCodProdutoHm());
+    //     item.setQtdDiasUtilizados(e.getQtdDiasUtilizados());
+    //     return item;
+    // }
 
 }

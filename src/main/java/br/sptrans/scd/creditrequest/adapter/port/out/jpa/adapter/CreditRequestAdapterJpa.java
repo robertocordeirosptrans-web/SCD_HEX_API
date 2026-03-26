@@ -27,7 +27,43 @@ public class CreditRequestAdapterJpa implements CreditRequestRepository {
     
     @Override
     public CreditRequest save(CreditRequest cdr) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // Conversão do domínio para entidade JPA
+        CreditRequestEJpa entity = toEntity(cdr);
+        CreditRequestEJpa saved = jpaRepository.save(entity);
+        return toDomain(saved);
+    }
+
+    // Conversão do domínio para entidade JPA
+    private CreditRequestEJpa toEntity(CreditRequest cdr) {
+        if (cdr == null) return null;
+        CreditRequestEJpa entity = new CreditRequestEJpa();
+        CreditRequestEJpaKey key = new CreditRequestEJpaKey();
+        key.setNumSolicitacao(cdr.getNumSolicitacao());
+        key.setCodCanal(cdr.getCodCanal());
+        entity.setId(key);
+        entity.setIdUsuarioCadastro(cdr.getIdUsuarioCadastro());
+        entity.setCodTipoDocumento(cdr.getCodTipoDocumento());
+        entity.setCodSituacao(cdr.getCodSituacao());
+        entity.setCodFormaPagto(cdr.getCodFormaPagto());
+        entity.setDtSolicitacao(cdr.getDtSolicitacao());
+        entity.setDtPrevLiberacao(cdr.getDtPrevLiberacao());
+        entity.setDtAceite(cdr.getDtAceite());
+        entity.setDtConfirmaPagto(cdr.getDtConfirmaPagto());
+        entity.setDtPagtoEconomica(cdr.getDtPagtoEconomica());
+        entity.setCodUsuarioPortador(cdr.getCodUsuarioPortador());
+        entity.setDtLiberacaoEfetiva(cdr.getDtLiberacaoEfetiva());
+        entity.setCodEnderecoEntrega(cdr.getCodEnderecoEntrega());
+        entity.setNumLote(cdr.getNumLote());
+        entity.setDtFinanceira(cdr.getDtFinanceira());
+        entity.setVlTotal(cdr.getVlTotal());
+        entity.setDtCadastro(cdr.getDtCadastro());
+        entity.setFlgCanc(cdr.getFlgCanc());
+        entity.setDtManutencao(cdr.getDtManutencao());
+        entity.setDtEnvioHm(cdr.getDtEnvioHm());
+        entity.setIdUsuarioManutencao(cdr.getIdUsuarioManutencao());
+        entity.setFlgBloq(cdr.getFlgBloq());
+        // Adicione outros campos conforme necessário
+        return entity;
     }
 
     @Override

@@ -9,6 +9,7 @@ import org.mapstruct.ReportingPolicy;
 
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestEJpa;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa;
+import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpaKey;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestItemsDTO;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
@@ -17,6 +18,31 @@ import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CreditRequestMapper {
+    // Conversão de domínio para entidade JPA
+    default CreditRequestItemsEJpa toEntityItem(CreditRequestItems items) {
+        if (items == null) {
+            return null;
+        }
+        CreditRequestItemsEJpa entity = new CreditRequestItemsEJpa();
+        CreditRequestItemsEJpaKey key = new CreditRequestItemsEJpaKey();
+        key.setNumSolicitacao(items.getId().getNumSolicitacao());
+        key.setNumSolicitacaoItem(items.getId().getNumSolicitacaoItem());
+        key.setCodCanal(items.getId().getCodCanal());
+        entity.setId(key);
+        entity.setCodProduto(items.getCodProduto());
+        entity.setCodSituacao(items.getCodSituacao());
+        entity.setVlItem(items.getVlItem());
+        entity.setDtRecarga(items.getDtRecarga());
+        entity.setVlCarregado(items.getVlCarregado());
+        entity.setDtCadastro(items.getDtCadastro());
+        entity.setDtManutencao(items.getDtManutencao());
+        entity.setVlTxadm(items.getVlTxadm());
+        entity.setVlTxserv(items.getVlTxserv());
+        entity.setVlTxtotal(items.getVlTxtotal());
+        entity.setCodVersao(items.getCodVersao());
+        // Adicione outros campos conforme necessário
+        return entity;
+    }
 
 
     @Mapping(target = "itens", source = "itens", qualifiedByName = "mapItens")
@@ -111,6 +137,8 @@ public interface CreditRequestMapper {
         item.setVlTxadm(itemJpa.getVlTxadm());
         item.setVlTxserv(itemJpa.getVlTxserv());
         item.setVlTxtotal(itemJpa.getVlTxtotal());
+        item.setCodVersao(itemJpa.getCodVersao());
+    
         // Adicione outros campos conforme necessário
         return item;
     }
