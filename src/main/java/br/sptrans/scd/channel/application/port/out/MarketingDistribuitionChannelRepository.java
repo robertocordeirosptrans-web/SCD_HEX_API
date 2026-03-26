@@ -10,13 +10,10 @@ public interface MarketingDistribuitionChannelRepository {
 
     Optional<MarketingDistribuitionChannel> findById(MarketingDistribuitionChannelKey id);
 
-    Optional<MarketingDistribuitionChannel> findByIdOtimized(String codCanal, String codProduto);
+
 
     List<MarketingDistribuitionChannel> findAll();
 
-    List<MarketingDistribuitionChannel> findByCodCanalComercializacao(String codCanalComercializacao);
-
-    List<MarketingDistribuitionChannel> findByCodCanalDistribuicao(String codCanalDistribuicao);
 
     /**
      * Busca CanaisComerDistrib ativo para um canal de distribuição.
@@ -24,7 +21,7 @@ public interface MarketingDistribuitionChannelRepository {
      * @param codCanalDistrib código do canal de distribuição
      * @return Optional com a entidade ativa se encontrada
      */
-    Optional<MarketingDistribuitionChannel> findActiveByCanalDistrib(String codCanalDistrib);
+    Optional<MarketingDistribuitionChannel> findActiveByCanalDistrib(String codCanal,String codCanalDistrib);
 
     MarketingDistribuitionChannel save(MarketingDistribuitionChannel entity);
 

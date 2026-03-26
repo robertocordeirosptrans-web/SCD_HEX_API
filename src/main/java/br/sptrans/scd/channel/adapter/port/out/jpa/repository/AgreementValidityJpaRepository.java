@@ -22,5 +22,5 @@ public interface AgreementValidityJpaRepository extends JpaRepository<AgreementV
     @Query("SELECT COUNT(a) > 0 FROM AgreementValidityEntityJpa a WHERE a.id.codCanal = :codCanal AND a.id.codProduto = :codProduto")
     boolean existsByCodCanalAndCodProduto(@Param("codCanal") String codCanal, @Param("codProduto") String codProduto);
 
-    // save e deleteById já são providos pelo JpaRepository
+
 }

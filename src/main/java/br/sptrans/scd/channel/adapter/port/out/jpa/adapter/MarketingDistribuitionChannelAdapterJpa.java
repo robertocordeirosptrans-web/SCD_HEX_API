@@ -35,17 +35,9 @@ public class MarketingDistribuitionChannelAdapterJpa implements MarketingDistrib
         return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
     }
 
-    @Override
-    public List<MarketingDistribuitionChannel> findByCodCanalComercializacao(String codCanalComercializacao) {
-        return jpaRepository.findByCodCanalComercializacao(codCanalComercializacao)
-                .stream().map(mapper::toDomain).toList();
-    }
 
-    @Override
-    public List<MarketingDistribuitionChannel> findByCodCanalDistribuicao(String codCanalDistribuicao) {
-        return jpaRepository.findByCodCanalDistribuicao(codCanalDistribuicao)
-                .stream().map(mapper::toDomain).toList();
-    }
+
+
 
     @Override
     public MarketingDistribuitionChannel save(MarketingDistribuitionChannel entity) {
@@ -67,16 +59,14 @@ public class MarketingDistribuitionChannelAdapterJpa implements MarketingDistrib
     }
 
     @Override
-    public Optional<MarketingDistribuitionChannel> findActiveByCanalDistrib(String codCanalDistrib) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findActiveByCanalDistrib'");
+    public Optional<MarketingDistribuitionChannel> findActiveByCanalDistrib(String codCanal, String codCanalDistrib) {
+        return jpaRepository.findActiveByCanalDistribuicao(codCanal, codCanalDistrib)
+                .stream()
+                .findFirst()
+                .map(mapper::toDomain);
     }
 
-    @Override
-    public Optional<MarketingDistribuitionChannel> findByIdOtimized(String codCanal, String codProduto) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByIdOtimized'");
-    }
+
 
  
 }

@@ -121,37 +121,44 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             CreateRequestCredit request,
             String idempotencyKey) {
 
+        log.info("[createCreditRequest] INICIADO - idempotencyKey={}, request={}", idempotencyKey, request);
+
         // 1. Idempotência
         Optional<CreateRequestResponse> cached = idempotencyStore.get(idempotencyKey);
         if (cached.isPresent()) {
-            log.info("Idempotência: retornando resultado em cache para chave '{}'", idempotencyKey);
+            log.info("[createCreditRequest] Idempotência: retornando resultado em cache para chave '{}'", idempotencyKey);
             return cached.get();
         }
 
         // 2. Validações prévias (do segundo método)
+        log.info("[createCreditRequest] Validando canal, lote e data de liberação...");
         SalesChannel canal = validationService.validarCanal(request.codCanal());
         validationService.validarNumLote(request.numLote(), request.codCanal(), creditRequestRepository);
         validationService.validarDataLiberacao(request.dataLiberacaoCredito());
 
         if ("S".equalsIgnoreCase(canal.getFlgSupercanal())) {
+            log.info("[createCreditRequest] Canal é supercanal, validando subordinados...");
             validationService.validarSubordinadosSupercanal(request.codCanal());
         }
 
         // 3. Configurações de processamento
         boolean processamentoParcialPermitido = "S".equalsIgnoreCase(canal.getFlgProcessamentoParcial());
+        log.info("[createCreditRequest] Processamento parcial permitido? {}", processamentoParcialPermitido);
 
         List<CreateRequestResponse.ItemProcessado> processados = new ArrayList<>();
         List<CreateRequestResponse.ItemRejeitado> rejeitados = new ArrayList<>();
 
         int totalItens = request.itens().size();
+        log.info("[createCreditRequest] Total de itens a processar: {}", totalItens);
 
         for (int idx = 0; idx < totalItens; idx++) {
             var pedido = (idx < request.pedidos().size()) ? request.pedidos().get(idx) : null;
             var item = request.itens().get(idx);
 
+            log.info("[createCreditRequest] Processando idx={}, pedido={}, item={}", idx, pedido, item);
             processarItemComTryCatch(canal, pedido, item, request,
                     processados, rejeitados, idx);
-
+            log.info("[createCreditRequest] Parcial: processados={}, rejeitados={}", processados.size(), rejeitados.size());
         }
 
         // 5. Validação pós-processamento (do segundo método)
@@ -160,6 +167,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                     .map(r -> r.numSolicitacao() + ": " + r.motivoRejeicao())
                     .reduce((a, b) -> a + "; " + b)
                     .orElse("Motivo desconhecido");
+            log.warn("[createCreditRequest] Todos os pedidos rejeitados: {}", motivos);
             throw new IllegalStateException("Todos os pedidos foram rejeitados: " + motivos);
         }
 
@@ -172,9 +180,9 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 rejeitados
         );
 
+        log.info("[createCreditRequest] FINALIZADO - processados={}, rejeitados={}, response={}", processados.size(), rejeitados.size(), response);
         return response;
     }
-
 
     private void processarItemComTryCatch(
             SalesChannel canal,
@@ -209,8 +217,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             validarItem(canal, pedido, item, request);
 
             // Persistência dentro da transação (atomicidade por item)
-
-
             processados.add(new ItemProcessado(
                     numSolicitacao,
                     numLogicoCartao,
@@ -233,38 +239,50 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     /**
-     * Valida um item de pedido de crédito usando o validationService.
-     * Lança ValidationException em caso de erro de validação.
+     * Valida um item de pedido de crédito usando o validationService. Lança
+     * ValidationException em caso de erro de validação.
      */
     private void validarItem(
             SalesChannel canal,
             CreateRequestCredit.CreditRequest pedido,
             ItemRequest item,
             CreateRequestCredit request) {
-                
+        // Validar Comercialização de Produto com o Canal
+        List<CreateRequestResponse.ItemRejeitado> rejeitados = new ArrayList<>();
         var produtoCanal = validationService.validarProdutoNoCanal(
                 pedido.numSolicitacao(),
                 item.numLogicoCartao(),
                 item.codProduto(),
-                pedido.canaisDistribuicao(),
+                request.codCanal(),
                 item.codProduto(),
-                new ArrayList<>());
+                rejeitados);
         if (produtoCanal == null) {
             throw new ValidationException("Produto não comercializado ou inativo no canal");
         }
 
         // Validar limites de recarga
         String erroLimite = validationService.validarLimites(
-                pedido.canaisDistribuicao(),
+                request.codCanal(),
                 item.codProduto(),
                 item.valorTotal());
         if (erroLimite != null) {
             throw new ValidationException(erroLimite);
         }
-    
+
+        // Validar vigência do convênio do canal
+        validationService.validarVigenciadoCanal(
+                pedido.numSolicitacao(),
+                item.numLogicoCartao(),
+                item.codProduto(),
+                request.codCanal(),
+                pedido.canaisDistribuicao(),
+                item.codProduto(),
+                rejeitados);
+        if (!rejeitados.isEmpty()) {
+            // Lança a primeira mensagem de rejeição encontrada
+            throw new ValidationException(rejeitados.get(0).motivoRejeicao());
+        }
     }
-
-
 
     // ── Consultas ────────────────────────────────────────────────────
     @Override
@@ -754,8 +772,5 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         item.setQtdDiasUtilizados(e.getQtdDiasUtilizados());
         return item;
     }
-
-
-
 
 }

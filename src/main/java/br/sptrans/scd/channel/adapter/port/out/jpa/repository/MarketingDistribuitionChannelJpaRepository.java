@@ -28,5 +28,7 @@ public interface MarketingDistribuitionChannelJpaRepository extends JpaRepositor
   @Query("SELECT COUNT(c) > 0 FROM MarketingDistribuitionChannelEntityJpa c WHERE c.id.codCanalComercializacao = :codCanalComercializacao AND c.id.codCanalDistribuicao = :codCanalDistribuicao")
   boolean existsByCodCanalComercializacaoAndCodCanalDistribuicao(@Param("codCanalComercializacao") String codCanalComercializacao, @Param("codCanalDistribuicao") String codCanalDistribuicao);
 
+  @Query("SELECT c FROM MarketingDistribuitionChannelEntityJpa c WHERE c.id.codCanalComercializacao = :codCanalComercializacao AND c.id.codCanalDistribuicao = :codCanalDistribuicao AND c.codStatus = 'A'")
+  List<MarketingDistribuitionChannelEntityJpa> findActiveByCanalDistribuicao(@Param("codCanalComercializacao") String codCanalComercializacao, @Param("codCanalDistribuicao") String codCanalDistribuicao);
  
 }

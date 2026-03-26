@@ -85,17 +85,8 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
         return repository.findAll();
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<MarketingDistribuitionChannel> findByCodCanalComercializacao(String codCanalComercializacao) {
-        return repository.findByCodCanalComercializacao(codCanalComercializacao);
-    }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<MarketingDistribuitionChannel> findByCodCanalDistribuicao(String codCanalDistribuicao) {
-        return repository.findByCodCanalDistribuicao(codCanalDistribuicao);
-    }
+
 
     @Override
     public void deleteMarketingDistribuitionChannel(String codCanalComercializacao, String codCanalDistribuicao) {
