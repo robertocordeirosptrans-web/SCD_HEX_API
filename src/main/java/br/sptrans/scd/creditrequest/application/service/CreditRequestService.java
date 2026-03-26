@@ -478,10 +478,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
         // Buscar itens individualmente usando findById
         List<CreditRequestItemsEJpa> itens = new ArrayList<>();
-        // Supondo que você tenha uma lista de numSolicitacaoItem para buscar
-        // Aqui é necessário obter todos os itens relacionados à solicitação e canal
-        // Se não houver essa lista, será necessário adaptar conforme sua modelagem
-        // Exemplo genérico:
+
         for (long numSolicitacaoItem = 1;; numSolicitacaoItem++) {
             CreditRequestItemsKey key = new CreditRequestItemsKey();
             key.setNumSolicitacao(numSolicitacao);

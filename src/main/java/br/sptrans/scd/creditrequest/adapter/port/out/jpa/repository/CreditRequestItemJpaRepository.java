@@ -82,4 +82,19 @@ public interface CreditRequestItemJpaRepository extends JpaRepository<CreditRequ
             @Param("numSolicitacao") Long numSolicitacao,
             @Param("codCanal") String codCanal,
             @Param("numLote") String numLote);
+
+    @Query(value = """
+                SELECT i.*
+                FROM SPTRANSDBA.SOL_DISTRIB_ITENS i
+                JOIN SPTRANSDBA.SOL_DISTRIBUICOES s
+                        ON i.NUM_SOLICITACAO = s.NUM_SOLICITACAO AND i.COD_CANAL = s.COD_CANAL
+                WHERE i.NUM_SOLICITACAO = :numSolicitacao
+                        AND i.COD_CANAL = :codCanal
+                        AND s.NUM_LOTE = :numLote
+                ORDER BY i.NUM_SOLICITACAO_ITEM
+                """, nativeQuery = true)
+    List<CreditRequestItemsEJpa> findProcessRechargeService(
+            @Param("numSolicitacao") Long numSolicitacao,
+            @Param("codCanal") String codCanal,
+            @Param("numLote") String numLote);
 }

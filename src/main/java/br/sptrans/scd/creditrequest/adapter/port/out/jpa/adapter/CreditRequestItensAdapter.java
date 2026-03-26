@@ -28,11 +28,6 @@ public class CreditRequestItensAdapter implements CreditRequestItemsRepository {
     }
 
     @Override
-    public List<Long> findNumSolicitacaoItemsBySolicitacaoCanalLote(Long numSolicitacao, String codCanal, String numLote) {
-        return itemJpaRepository.findNumSolicitacaoItemsBySolicitacaoCanalLote(numSolicitacao, codCanal, numLote);
-    }
-
-    @Override
     public Optional<CreditRequestItems> findById(CreditRequestItemsKey id) {
         if (id == null) {
             return Optional.empty();
@@ -40,6 +35,17 @@ public class CreditRequestItensAdapter implements CreditRequestItemsRepository {
         CreditRequestItemsEJpaKey entityKey = new CreditRequestItemsEJpaKey(id.getNumSolicitacao(), id.getNumSolicitacaoItem(), id.getCodCanal());
         return itemJpaRepository.findById(entityKey)
                 .map(creditRequestMapper::toDomainItem);
+    }
+
+    @Override
+    public List<Long> findNumSolicitacaoItemsBySolicitacaoCanalLote(Long numSolicitacao, String codCanal, String numLote) {
+        return itemJpaRepository.findNumSolicitacaoItemsBySolicitacaoCanalLote(numSolicitacao, codCanal, numLote);
+    }
+
+    @Override
+    public List<CreditRequestItemsEJpa> findProcessRechargeService(Long numSolicitacao, String codCanal,
+            String numLote) {
+        return itemJpaRepository.findProcessRechargeService(numSolicitacao, codCanal, numLote);
     }
 
 }

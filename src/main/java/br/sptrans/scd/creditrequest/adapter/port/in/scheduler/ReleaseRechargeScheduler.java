@@ -60,7 +60,7 @@ public class ReleaseRechargeScheduler {
     /**
      * Tamanho de cada lote de solicitações processadas por execução.
      */
-    @Value("${scheduler.liberar-recarga.tamanho-lote:100}")
+    @Value("${scheduler.liberar-recarga.tamanho-lote:2}")
     private int tamanhoLote;
 
     /**
@@ -92,6 +92,7 @@ public class ReleaseRechargeScheduler {
         for (CreditRequest solicitacao : solicitacoes) {
             Long numSolicitacao = solicitacao.getNumSolicitacao();
             String codCanal = solicitacao.getCodCanal();
+            String numLote = solicitacao.getNumLote();
 
             // Revalida condições de elegibilidade (evita corrida com alteração manual)
             if (!SituationCreditRequest.PAGO.getCode().equals(solicitacao.getCodSituacao())) {
@@ -117,7 +118,7 @@ public class ReleaseRechargeScheduler {
             }
 
             try {
-                releaseRechargeUseCase.liberarRecargaPorSolicitacao(numSolicitacao, codCanal);
+                releaseRechargeUseCase.liberarRecargaPorSolicitacao(numSolicitacao,numLote, codCanal);
                 processadas++;
                 log.info("Solicitação {}/{} liberada para recarga.", numSolicitacao, codCanal);
             } catch (Exception e) {
@@ -135,8 +136,9 @@ public class ReleaseRechargeScheduler {
      * {@link SituationCreditRequestItems#PAGO}.
      */
     boolean possuiItensElegiveis(CreditRequest solicitacao) {
-        List<CreditRequestItemsEJpa> itens = itemRepository.findById_NumSolicitacaoAndCodCanal(
-                solicitacao.getNumSolicitacao(), solicitacao.getCodCanal());
+        
+
+        List<CreditRequestItemsEJpa> itens = itemRepository.findProcessRechargeService(solicitacao.getNumSolicitacao(), solicitacao.getCodCanal(), solicitacao.getNumLote());
         if (itens == null || itens.isEmpty()) {
             return false;
         }

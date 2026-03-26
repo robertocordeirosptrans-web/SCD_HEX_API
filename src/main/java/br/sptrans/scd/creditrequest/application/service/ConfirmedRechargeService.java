@@ -1,6 +1,6 @@
 package br.sptrans.scd.creditrequest.application.service;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,8 +16,8 @@ import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
-
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Implementação do use case de confirmação de recarga.
@@ -31,6 +31,7 @@ import jakarta.transaction.Transactional;
  * consolidada do pedido.</p>
  */
 @Service
+@RequiredArgsConstructor
 public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(ConfirmedRechargeService.class);
@@ -41,53 +42,54 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
     private final HistCreditRequestService historyService;
     private final SituationAscertainedService situationAscertainedService;
 
-    public ConfirmedRechargeService(
-            CreditRequestRepository creditRequestRepository,
-            CreditRequestItemsRepository itemRepository,
-            HistCreditRequestService historyService) {
-        this.creditRequestRepository = creditRequestRepository;
-        this.itemRepository = itemRepository;
-        this.historyService = historyService;
-        this.situationAscertainedService = new SituationAscertainedService();
-    }
+
 
     @Override
     @Transactional
     public void confirmarRecarga(Long numSolicitacao, String codCanal) {
         log.debug("Confirmando recarga para solicitação {}/{}", numSolicitacao, codCanal);
 
-        List<CreditRequestItemsEJpa> itens = itemRepository
-                .findById_NumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
-
-        if (itens.isEmpty()) {
-            log.warn("Nenhum item encontrado para solicitação {}/{}", numSolicitacao, codCanal);
+        // Obtém o numLote da solicitação
+        CreditRequest solicitacao = creditRequestRepository
+                .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal)
+                .orElse(null);
+        if (solicitacao == null) {
+            log.warn("Solicitação não encontrada para numSolicitacao={}, codCanal={}", numSolicitacao, codCanal);
+            return;
+        }
+        String numLote = solicitacao.getNumLote();
+        List<Long> numSolicitacaoItens = itemRepository.findNumSolicitacaoItemsBySolicitacaoCanalLote(numSolicitacao, codCanal, numLote);
+        if (numSolicitacaoItens == null || numSolicitacaoItens.isEmpty()) {
+            log.warn("Nenhum item encontrado para solicitação {}/{} e lote {}", numSolicitacao, codCanal, numLote);
             return;
         }
 
         int confirmados = 0;
-
-        for (CreditRequestItemsEJpa item : itens) {
-            if (!SituationCreditRequestItems.EM_PROCESSO_DE_RECARGA.getCode()
-                    .equals(item.getCodSituacao())) {
+        List<CreditRequestItemsEJpa> itens = new ArrayList<>();
+        for (Long numSolicitacaoItem : numSolicitacaoItens) {
+            CreditRequestItemsKey key = new CreditRequestItemsKey();
+            key.setNumSolicitacao(numSolicitacao);
+            key.setNumSolicitacaoItem(numSolicitacaoItem);
+            key.setCodCanal(codCanal);
+            var optItem = itemRepository.findById(key);
+            if (optItem.isEmpty()) continue;
+            CreditRequestItems item = optItem.get();
+            if (!SituationCreditRequestItems.EM_PROCESSO_DE_RECARGA.getCode().equals(item.getCodSituacao())) {
                 continue;
             }
-
             if (item.getDtRetornoHm() == null) {
                 continue;
             }
-
             String statusAnterior = item.getCodSituacao();
             item.setCodSituacao(SituationCreditRequestItems.RECARREGADO.getCode());
-            item.setDtManutencao(LocalDateTime.now());
+            item.setDtManutencao(java.time.LocalDateTime.now());
             itemRepository.save(item);
-
-            historyService.saveItemStatusHistory(toDomain(item), ORIGEM_TRANSICAO);
+            historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
             confirmados++;
-
-            log.info("Item confirmado - Solicitação={}, Item={}, StatusAnterior={}, NovoStatus={}",
-                    numSolicitacao,
-                    item.getId().getNumSolicitacaoItem(),
-                    statusAnterior,
+            // Adiciona para consolidação
+            itens.add(toEntity(item));
+            log.info("Item confirmado - Solicitação={}, Item={}, StatusAnterior={}, NovoStatus={}", numSolicitacao,
+                    item.getId().getNumSolicitacaoItem(), statusAnterior,
                     SituationCreditRequestItems.RECARREGADO.getCode());
         }
 
@@ -97,6 +99,56 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
 
         log.debug("Confirmação de recarga concluída para solicitação {}/{} - {} itens confirmados",
                 numSolicitacao, codCanal, confirmados);
+    }
+
+    // Helper para converter domínio para EJpa (ajuste conforme seu projeto)
+    private CreditRequestItemsEJpa toEntity(CreditRequestItems item) {
+        // Se já tiver um mapper, use-o. Caso contrário, converta manualmente.
+        CreditRequestItemsEJpa entity = new CreditRequestItemsEJpa();
+        CreditRequestItemsKey key = item.getId();
+        entity.setId(new br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpaKey(
+                key.getNumSolicitacao(), key.getNumSolicitacaoItem(), key.getCodCanal()
+        ));
+        entity.setCodCanal(item.getCodCanal());
+        entity.setIdUsuarioCadastro(item.getIdUsuarioCadastro());
+        entity.setCodVersao(item.getCodVersao());
+        entity.setNumLogicoCartao(item.getNumLogicoCartao());
+        entity.setCodProduto(item.getCodProduto());
+        entity.setCodTipoDocumento(item.getCodTipoDocumento());
+        entity.setCodSituacao(item.getCodSituacao());
+        entity.setQtdItem(item.getQtdItem());
+        entity.setVlUnitario(item.getVlUnitario());
+        entity.setVlItem(item.getVlItem());
+        entity.setDtRecarga(item.getDtRecarga());
+        entity.setVlCarregado(item.getVlCarregado());
+        entity.setVlAjuste(item.getVlAjuste());
+        entity.setFlgAjuste(item.getFlgAjuste());
+        entity.setIdFuncionario(item.getIdFuncionario());
+        entity.setCodAssinaturaHsm(item.getCodAssinaturaHsm());
+        entity.setDtCadastro(item.getDtCadastro());
+        entity.setDtManutencao(item.getDtManutencao());
+        entity.setSeqRecarga(item.getSeqRecarga());
+        entity.setDtEnvioHm(item.getDtEnvioHm());
+        entity.setDtRetornoHm(item.getDtRetornoHm());
+        entity.setIdUsuarioManutencao(item.getIdUsuarioManutencao());
+        entity.setDtAssinatura(item.getDtAssinatura());
+        entity.setDtPagtoEconomica(item.getDtPagtoEconomica());
+        entity.setSqPid(item.getSqPid());
+        entity.setDtInicProcesso(item.getDtInicProcesso());
+        entity.setIdUsuarioCartao(item.getIdUsuarioCartao());
+        entity.setSqRecarga(item.getSqRecarga());
+        entity.setVlTxadm(item.getVlTxadm());
+        entity.setVlTxserv(item.getVlTxserv());
+        entity.setVlTxtotal(item.getVlTxtotal());
+        entity.setFlgEvento(item.getFlgEvento());
+        entity.setVlEvento(item.getVlEvento());
+        entity.setFlgOutrasVias(item.getFlgOutrasVias());
+        entity.setCodAssdigRecarga(item.getCodAssdigRecarga());
+        entity.setVlAutorizacaoHm(item.getVlAutorizacaoHm());
+        entity.setFlgLiminarLoja(item.getFlgLiminarLoja());
+        entity.setCodProdutoHm(item.getCodProdutoHm());
+        entity.setQtdDiasUtilizados(item.getQtdDiasUtilizados());
+        return entity;
     }
 
     private void consolidarStatusSolicitacao(Long numSolicitacao, String codCanal,
@@ -127,54 +179,5 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
             log.info("Status da solicitação {}/{} consolidado - StatusAnterior={}, NovoStatus={}",
                     numSolicitacao, codCanal, statusAnterior, novoStatus);
         }
-    }
-
-    private CreditRequestItems toDomain(CreditRequestItemsEJpa e) {
-        CreditRequestItems item = new CreditRequestItems();
-        CreditRequestItemsKey key = new CreditRequestItemsKey();
-        key.setNumSolicitacao(e.getId().getNumSolicitacao());
-        key.setNumSolicitacaoItem(e.getId().getNumSolicitacaoItem());
-        key.setCodCanal(e.getId().getCodCanal());
-        item.setId(key);
-        item.setCodCanal(e.getCodCanal());
-        item.setIdUsuarioCadastro(e.getIdUsuarioCadastro());
-        item.setCodVersao(e.getCodVersao());
-        item.setNumLogicoCartao(e.getNumLogicoCartao());
-        item.setCodProduto(e.getCodProduto());
-        item.setCodTipoDocumento(e.getCodTipoDocumento());
-        item.setCodSituacao(e.getCodSituacao());
-        item.setQtdItem(e.getQtdItem());
-        item.setVlUnitario(e.getVlUnitario());
-        item.setVlItem(e.getVlItem());
-        item.setDtRecarga(e.getDtRecarga());
-        item.setVlCarregado(e.getVlCarregado());
-        item.setVlAjuste(e.getVlAjuste());
-        item.setFlgAjuste(e.getFlgAjuste());
-        item.setIdFuncionario(e.getIdFuncionario());
-        item.setCodAssinaturaHsm(e.getCodAssinaturaHsm());
-        item.setDtCadastro(e.getDtCadastro());
-        item.setDtManutencao(e.getDtManutencao());
-        item.setSeqRecarga(e.getSeqRecarga());
-        item.setDtEnvioHm(e.getDtEnvioHm());
-        item.setDtRetornoHm(e.getDtRetornoHm());
-        item.setIdUsuarioManutencao(e.getIdUsuarioManutencao());
-        item.setDtAssinatura(e.getDtAssinatura());
-        item.setDtPagtoEconomica(e.getDtPagtoEconomica());
-        item.setSqPid(e.getSqPid());
-        item.setDtInicProcesso(e.getDtInicProcesso());
-        item.setIdUsuarioCartao(e.getIdUsuarioCartao());
-        item.setSqRecarga(e.getSqRecarga());
-        item.setVlTxadm(e.getVlTxadm());
-        item.setVlTxserv(e.getVlTxserv());
-        item.setVlTxtotal(e.getVlTxtotal());
-        item.setFlgEvento(e.getFlgEvento());
-        item.setVlEvento(e.getVlEvento());
-        item.setFlgOutrasVias(e.getFlgOutrasVias());
-        item.setCodAssdigRecarga(e.getCodAssdigRecarga());
-        item.setVlAutorizacaoHm(e.getVlAutorizacaoHm());
-        item.setFlgLiminarLoja(e.getFlgLiminarLoja());
-        item.setCodProdutoHm(e.getCodProdutoHm());
-        item.setQtdDiasUtilizados(e.getQtdDiasUtilizados());
-        return item;
     }
 }
