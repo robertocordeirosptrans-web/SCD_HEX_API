@@ -64,7 +64,22 @@ public interface CreditRequestItemJpaRepository extends JpaRepository<CreditRequ
             @Param("dataFim") String dataFim,
             @Param("codProdutos") List<String> codProdutos);
 
-    List<CreditRequestItemsEJpa> findById_NumSolicitacaoAndCodCanal(
-            Long numSolicitacao,
-            String codCanal);
+    /**
+     * Busca todos os números de solicitação de item para uma solicitação, canal
+     * e lote.
+     */
+    @Query(value = """
+                                SELECT i.NUM_SOLICITACAO_ITEM
+                                FROM SPTRANSDBA.SOL_DISTRIB_ITENS i
+                                JOIN SPTRANSDBA.SOL_DISTRIBUICOES s
+                                        ON i.NUM_SOLICITACAO = s.NUM_SOLICITACAO AND i.COD_CANAL = s.COD_CANAL
+                                WHERE i.NUM_SOLICITACAO = :numSolicitacao
+                                        AND i.COD_CANAL = :codCanal
+                                        AND s.NUM_LOTE = :numLote
+                                ORDER BY i.NUM_SOLICITACAO_ITEM
+                                """, nativeQuery = true)
+    List<Long> findNumSolicitacaoItemsBySolicitacaoCanalLote(
+            @Param("numSolicitacao") Long numSolicitacao,
+            @Param("codCanal") String codCanal,
+            @Param("numLote") String numLote);
 }
