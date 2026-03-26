@@ -121,6 +121,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             CreateRequestCredit request,
             String idempotencyKey) {
 
+
         log.info("[createCreditRequest] INICIADO - idempotencyKey={}, request={}", idempotencyKey, request);
 
         // 1. Idempotência
@@ -129,6 +130,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             log.info("[createCreditRequest] Idempotência: retornando resultado em cache para chave '{}'", idempotencyKey);
             return cached.get();
         }
+
 
         // 2. Validações prévias (do segundo método)
         log.info("[createCreditRequest] Validando canal, lote e data de liberação...");
@@ -213,6 +215,16 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 return;
             }
 
+            // Nova validação: verificar se já existe solicitação para o canal
+            boolean isExists = creditRequestRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, request.codCanal())
+                    .isPresent();
+            if (isExists) {
+                rejeitados.add(new ItemRejeitado(
+                        numSolicitacao, numLogicoCartao, codProduto,
+                        "Já existe N° de Solicitação para este Canal."));
+                return;
+            }
+
             // Nova validação de item
             validarItem(canal, pedido, item, request);
 
@@ -237,6 +249,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                     "Erro interno: " + e.getMessage()));
         }
     }
+
+
 
     /**
      * Valida um item de pedido de crédito usando o validationService. Lança
