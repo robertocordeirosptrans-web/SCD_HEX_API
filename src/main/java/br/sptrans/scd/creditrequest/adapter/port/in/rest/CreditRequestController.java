@@ -2,7 +2,6 @@ package br.sptrans.scd.creditrequest.adapter.port.in.rest;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -275,27 +274,11 @@ public class CreditRequestController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody CreateRequestCredit request) {
 
-        // Se não fornecida, gera chave default a partir dos dados do request
-        String key = (idempotencyKey != null && !idempotencyKey.isBlank())
-                ? idempotencyKey
-                : request.codCanal() + "-" + request.numLote() + "-" + request.dataGeracao();
+        // Chama o caso de uso para criar o pedido de crédito
+        var result = creditRequestManagementUseCase.createCreditRequest(request, idempotencyKey);
+        ResponseEntity<?> response = ResponseEntity.status(HttpStatus.CREATED).body(result);
 
-        log.info("Processando lote: canal={} numLote={} dataGeracao={} idempotencyKey={}",
-                request.codCanal(), request.numLote(), request.dataGeracao(), key);
-
-        // Verifica se já existe resposta para esta chave
-        Optional<ResponseEntity<?>> previous = idempotencyStore.get(key);
-        if (previous.isPresent()) {
-            log.info("Requisição idempotente detectada. Retornando resposta armazenada para a chave: {}", key);
-            return previous.get();
-        }
-
-        // Aqui segue o processamento normal do pedido
-        // TODO: Substitua pelo processamento real do pedido
-        ResponseEntity<?> response = ResponseEntity.status(HttpStatus.CREATED).body("Pedido criado com sucesso");
-
-        // Armazena a resposta para futuras requisições idempotentes
-        idempotencyStore.put(key, response);
+        idempotencyStore.put(idempotencyKey, response);
         return response;
     }
 

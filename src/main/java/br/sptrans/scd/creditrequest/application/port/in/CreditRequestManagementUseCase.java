@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 
@@ -19,6 +21,9 @@ public interface CreditRequestManagementUseCase {
     void pay(PayCommand comando);
 
     void acceptPendingSettlement(AcceptPendingCommand comando);
+
+    // ── Ações de criação ──────────────────────────────────────────────
+    CreateRequestResponse createCreditRequest(CreateRequestCredit request, String idempotencyKey);
 
     // ── Consultas ────────────────────────────────────────────────────
     CreditRequest findById(String codTipoDocumento, Long idUsuarioCadastro);

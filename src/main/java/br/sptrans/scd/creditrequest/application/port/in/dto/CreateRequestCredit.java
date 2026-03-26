@@ -46,7 +46,7 @@ public record CreateRequestCredit(
     }
 
     public record ItemRequest(
-            @NotBlank(message = "ID do usuário cartão é obrigatório")
+            @NotNull(message = "ID do usuário cartão é obrigatório")
             Long idUsuarioCartao,
             @NotBlank(message = "Número lógico do cartão é obrigatório")
             String numLogicoCartao,
