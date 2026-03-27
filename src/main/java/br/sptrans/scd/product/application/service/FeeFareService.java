@@ -16,6 +16,9 @@ import br.sptrans.scd.product.application.port.out.repository.FareRepository;
 import br.sptrans.scd.product.application.port.out.repository.FeeRepository;
 import br.sptrans.scd.product.application.port.out.repository.ProductRepository;
 import br.sptrans.scd.product.application.port.out.repository.ServiceFeeRepository;
+import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import br.sptrans.scd.product.domain.AdministrativeFee;
 import br.sptrans.scd.product.domain.DestinyFee;
 import br.sptrans.scd.product.domain.Fare;
@@ -39,6 +42,81 @@ public class FeeFareService implements FeeFareManagementUseCase {
     private final DestinyFeeRepository destinyFeeRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final LiminarGateway liminarGateway;
+    /**
+     * Calcula as taxas administrativas e de serviço para um pedido, aplicando isenção por liminar judicial quando aplicável.
+     *
+     * @param valorTotal valor base para cálculo das taxas
+     * @param codigoCanal código do canal
+     * @param numeroPedido número do pedido (para verificação de liminar)
+     * @param idTaxa identificador da taxa vigente para canal/produto
+     * @return objeto com valores calculados das taxas
+     */
+    @Transactional(readOnly = true)
+    public TaxaCalculada calcularTaxas(BigDecimal valorTotal, String codigoCanal, String numeroPedido, Long idTaxa) {
+        // Canal 152: verifica liminar antes de buscar as taxas
+        final int CANAL_LOJA_VIRTUAL = 152;
+        try {
+            if (Integer.parseInt(codigoCanal) == CANAL_LOJA_VIRTUAL
+                && liminarGateway.empresaPossuiIsencaoTaxa(numeroPedido)) {
+            // Tem liminar → zera tudo
+            return TaxaCalculada.isenta();
+            }
+        } catch (NumberFormatException e) {
+            // Canal não numérico → não aplica regra de liminar
+        }
+
+        // Sem liminar → busca taxas normais no banco
+        AdministrativeFee taxaAdm = administrativeFeeRepository.findAdmById(idTaxa)
+            .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
+        ServiceFee taxaServ = serviceFeeRepository.findSrvById(idTaxa)
+            .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
+
+        BigDecimal base = valorTotal != null ? valorTotal : BigDecimal.ZERO;
+
+        BigDecimal valorTaxaAdm = (taxaAdm.getValFixo() != null ? taxaAdm.getValFixo() : BigDecimal.ZERO)
+            .add((taxaAdm.getValPercentual() != null ? taxaAdm.getValPercentual() : BigDecimal.ZERO)
+                .multiply(base)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+
+        BigDecimal valorTaxaServ = (taxaServ.getValFixo() != null ? taxaServ.getValFixo() : BigDecimal.ZERO)
+            .add((taxaServ.getValPercentual() != null ? taxaServ.getValPercentual() : BigDecimal.ZERO)
+                .multiply(base)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+
+        // Aplica mínimo de taxa de serviço
+        if (taxaServ.getValMinimo() != null
+            && taxaServ.getValMinimo().compareTo(valorTaxaServ) > 0) {
+            valorTaxaServ = taxaServ.getValMinimo();
+        }
+
+        return new TaxaCalculada(valorTaxaAdm, valorTaxaServ);
+    }
+
+    /**
+     * DTO para retorno do cálculo de taxas.
+     */
+    public static class TaxaCalculada {
+        private final BigDecimal valorTaxaAdm;
+        private final BigDecimal valorTaxaServ;
+
+        public TaxaCalculada(BigDecimal valorTaxaAdm, BigDecimal valorTaxaServ) {
+            this.valorTaxaAdm = valorTaxaAdm;
+            this.valorTaxaServ = valorTaxaServ;
+        }
+
+        public static TaxaCalculada isenta() {
+            return new TaxaCalculada(BigDecimal.ZERO, BigDecimal.ZERO);
+        }
+
+        public BigDecimal getValorTaxaAdm() {
+            return valorTaxaAdm;
+        }
+
+        public BigDecimal getValorTaxaServ() {
+            return valorTaxaServ;
+        }
+    }
 
     // =========================================================================
     // Gestão de Tarifas (Fare)

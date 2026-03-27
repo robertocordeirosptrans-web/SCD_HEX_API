@@ -31,11 +31,11 @@ import lombok.Setter;
 public class RechargeLogEJpa {
 
     @Id
-    @Column(name = "NUM_LOGICO_CARTAO", nullable = false, length = 15)
-    private String numLogicoCartao;
-
     @Column(name = "SEQ_RECARGA", nullable = false, length = 6)
     private Integer seqRecarga;
+    
+    @Column(name = "NUM_LOGICO_CARTAO", nullable = false, length = 15)
+    private String numLogicoCartao;
 
     @Column(name = "DT_SOLIC_RECARGA", nullable = false)
     private LocalDateTime dtSolicRecarga;

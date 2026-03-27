@@ -51,6 +51,7 @@ public interface CreditRequestMapper {
         entity.setSeqRecarga(items.getSeqRecarga());
         entity.setDtEnvioHm(items.getDtEnvioHm());
         entity.setDtRetornoHm(items.getDtRetornoHm());
+        entity.setIdUsuarioCadastro(items.getIdUsuarioCadastro());
         entity.setIdUsuarioManutencao(items.getIdUsuarioManutencao());
         entity.setDtAssinatura(items.getDtAssinatura());
         entity.setDtPagtoEconomica(items.getDtPagtoEconomica());

@@ -834,6 +834,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         cri.setVlUnitario(item.vlUnitario());
         cri.setVlItem(item.valorTotal());
         cri.setDtCadastro(LocalDateTime.now());
+        cri.setDtManutencao(LocalDateTime.now());
         cri.setVlTxadm(item.vlTxadm());
         cri.setVlTxserv(item.vlTxserv());
         cri.setVlTxtotal(item.vlTxadm().add(item.vlTxserv()));
