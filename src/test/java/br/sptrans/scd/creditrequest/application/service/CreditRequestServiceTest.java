@@ -26,6 +26,7 @@ class CreditRequestServiceTest {
     void testCreateCreditRequest_doesNotSaveToDatabase() {
         // Arrange
         String idempotencyKey = "test-key";
+        Long userId = 1L;
         var now = java.time.LocalDateTime.now();
         CreateRequestCredit.CreditRequest pedido = new CreateRequestCredit.CreditRequest(
                 115168L,
@@ -35,6 +36,7 @@ class CreditRequestServiceTest {
                 9000000000021593L,
                 "212809436",
                 "701",
+                "1",
                 BigDecimal.valueOf(10),
                 BigDecimal.valueOf(10),
                 BigDecimal.ZERO,
@@ -50,14 +52,12 @@ class CreditRequestServiceTest {
                 List.of(item)
         );
 
-
         // Act
-        CreateRequestResponse response = service.createCreditRequest(request, idempotencyKey);
+        CreateRequestResponse response = service.createCreditRequest(request, idempotencyKey, userId);
 
         // Assert
         assertNotNull(response);
         assertEquals(1, response.pedidosProcessados().size());
         assertEquals(0, response.pedidosRejeitados().size());
-   
     }
 }

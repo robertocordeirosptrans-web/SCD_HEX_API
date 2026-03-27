@@ -52,6 +52,8 @@ public record CreateRequestCredit(
             String numLogicoCartao,
             @NotNull(message = "Código do produto é obrigatório")
             String codProduto,
+            @NotNull(message = "Código da versão é obrigatório")
+            String codVersao,
             @NotNull(message = "Valor unitário é obrigatório")
             @Positive(message = "Valor unitário deve ser positivo")
             BigDecimal vlUnitario,

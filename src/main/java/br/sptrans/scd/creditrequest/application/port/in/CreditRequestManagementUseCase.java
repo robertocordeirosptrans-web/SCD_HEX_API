@@ -23,7 +23,7 @@ public interface CreditRequestManagementUseCase {
     void acceptPendingSettlement(AcceptPendingCommand comando);
 
     // ── Ações de criação ──────────────────────────────────────────────
-    CreateRequestResponse createCreditRequest(CreateRequestCredit request, String idempotencyKey);
+    CreateRequestResponse createCreditRequest(CreateRequestCredit request, String idempotencyKey, Long userId);
 
     // ── Consultas ────────────────────────────────────────────────────
     CreditRequest findById(String codTipoDocumento, Long idUsuarioCadastro);

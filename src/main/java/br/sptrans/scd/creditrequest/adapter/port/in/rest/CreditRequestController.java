@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.BlockCommand;
@@ -42,14 +45,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/pedidos")
 @Tag(name = "Pedidos", description = "API para gestão de pedidos de crédito")
+
 public class CreditRequestController {
 
-    private final CreditRequestManagementUseCase creditRequestManagementUseCase;
-    private final CreditRequestMapper creditRequestMapper;
-    private static final Logger log = LoggerFactory.getLogger(CreditRequestController.class);
+        private final CreditRequestManagementUseCase creditRequestManagementUseCase;
+        private final CreditRequestMapper creditRequestMapper;
+        private final UserRepository userRepository;
+        private static final Logger log = LoggerFactory.getLogger(CreditRequestController.class);
 
-    // Idempotency store (in-memory, para produção use uma implementação persistente)
-    private static final IdempotencyStore<ResponseEntity<?>> idempotencyStore = new InMemoryIdempotencyStore<>();
+        // Idempotency store (in-memory, para produção use uma implementação persistente)
+        private static final IdempotencyStore<ResponseEntity<?>> idempotencyStore = new InMemoryIdempotencyStore<>();
 
     /**
      * Busca pedidos com paginação por cursor. Classificação automática do modo
@@ -269,17 +274,32 @@ public class CreditRequestController {
             """
     )
 
-    public ResponseEntity<?> criarPedido(
-            @Parameter(description = "Chave de idempotência: {codCanal}-{numLote}-{dataGeracao}")
-            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
-            @Valid @RequestBody CreateRequestCredit request) {
 
-        // Chama o caso de uso para criar o pedido de crédito
-        var result = creditRequestManagementUseCase.createCreditRequest(request, idempotencyKey);
-        ResponseEntity<?> response = ResponseEntity.status(HttpStatus.CREATED).body(result);
+        public ResponseEntity<?> criarPedido(
+                        @Parameter(description = "Chave de idempotência: {codCanal}-{numLote}-{dataGeracao}")
+                        @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+                        @Valid @RequestBody CreateRequestCredit request) {
 
-        idempotencyStore.put(idempotencyKey, response);
-        return response;
-    }
+                // Recupera o login do usuário autenticado
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String login = (authentication != null) ? (String) authentication.getPrincipal() : null;
+                if (login == null) {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não autenticado");
+                }
+
+                // Busca o usuário e obtém o idUsuario
+                var userOpt = userRepository.findByCodLogin(login);
+                if (userOpt.isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário não encontrado");
+                }
+                Long userId = userOpt.get().getIdUsuario();
+
+                // Chama o caso de uso para criar o pedido de crédito
+                var result = creditRequestManagementUseCase.createCreditRequest(request, idempotencyKey, userId);
+                ResponseEntity<?> response = ResponseEntity.status(HttpStatus.CREATED).body(result);
+
+                idempotencyStore.put(idempotencyKey, response);
+                return response;
+        }
 
 }

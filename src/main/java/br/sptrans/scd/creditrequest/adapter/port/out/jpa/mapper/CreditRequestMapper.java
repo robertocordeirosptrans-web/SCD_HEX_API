@@ -40,6 +40,31 @@ public interface CreditRequestMapper {
         entity.setVlTxserv(items.getVlTxserv());
         entity.setVlTxtotal(items.getVlTxtotal());
         entity.setCodVersao(items.getCodVersao());
+        entity.setNumLogicoCartao(items.getNumLogicoCartao());
+        entity.setQtdItem(items.getQtdItem());
+        entity.setIdUsuarioCartao(items.getIdUsuarioCartao());
+        entity.setCodTipoDocumento(items.getCodTipoDocumento());
+        entity.setVlAjuste(items.getVlAjuste());
+        entity.setFlgAjuste(items.getFlgAjuste());
+        entity.setIdFuncionario(items.getIdFuncionario());
+        entity.setCodAssinaturaHsm(items.getCodAssinaturaHsm());
+        entity.setSeqRecarga(items.getSeqRecarga());
+        entity.setDtEnvioHm(items.getDtEnvioHm());
+        entity.setDtRetornoHm(items.getDtRetornoHm());
+        entity.setIdUsuarioManutencao(items.getIdUsuarioManutencao());
+        entity.setDtAssinatura(items.getDtAssinatura());
+        entity.setDtPagtoEconomica(items.getDtPagtoEconomica());
+        entity.setSqPid(items.getSqPid());
+        entity.setDtInicProcesso(items.getDtInicProcesso());
+        entity.setSqRecarga(items.getSqRecarga());
+        entity.setFlgEvento(items.getFlgEvento());
+        entity.setVlEvento(items.getVlEvento());
+        entity.setFlgOutrasVias(items.getFlgOutrasVias());
+        entity.setCodAssdigRecarga(items.getCodAssdigRecarga());
+        entity.setVlAutorizacaoHm(items.getVlAutorizacaoHm());
+        entity.setFlgLiminarLoja(items.getFlgLiminarLoja());
+        entity.setCodProdutoHm(items.getCodProdutoHm());
+        entity.setQtdDiasUtilizados(items.getQtdDiasUtilizados());
         // Adicione outros campos conforme necessário
         return entity;
     }
