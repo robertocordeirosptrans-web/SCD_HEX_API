@@ -81,7 +81,7 @@ public class HistCreditRequestService implements HistCreditRequestManagementUseC
             history.setDtTransicao(LocalDateTime.now());
             history.setIdOrigemTransicao(origemTransicao);
             history.setDtCadastro(item.getDtCadastro());
-            history.setDtManutencao(item.getDtManutencao());
+            history.setDtManutencao(LocalDateTime.now());
             history.setDtPgtoEconomica(item.getDtPagtoEconomica());
             history.setSqPID(item.getSqPid());
             history.setDtInicProcesso(item.getDtInicProcesso());
@@ -138,7 +138,7 @@ public class HistCreditRequestService implements HistCreditRequestManagementUseC
             history.setDtTransicao(LocalDateTime.now());
             history.setIdOrigemTransicao(origemTransicao);
             history.setDtCadastro(request.getDtCadastro());
-            history.setDtManutencao(request.getDtManutencao());
+            history.setDtManutencao(LocalDateTime.now());
             history.setDtPgtoEconomica(request.getDtPagtoEconomica());
             history.setSqPID(request.getSqPid());
             history.setDtInicProcesso(request.getDtInicProcesso());

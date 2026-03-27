@@ -1,10 +1,12 @@
 package br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper;
 
+import org.springframework.stereotype.Component;
+
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.HistCreditRequestEJpa;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.HistCreditRequestKeyEJpa;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequest;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestKey;
-import org.springframework.stereotype.Component;
 
 @Component
 public class HistCreditRequestMapperImpl implements HistCreditRequestMapper {
@@ -23,7 +25,12 @@ public class HistCreditRequestMapperImpl implements HistCreditRequestMapper {
         domain.setSqPID(entity.getSqPID());
         domain.setDtInicProcesso(entity.getDtInicProcesso());
         domain.setDtFimProcesso(entity.getDtFimProcesso());
-        // domain.setIdUsuarioTransicao(...); // Ajuste conforme o domínio
+        
+        if (entity.getIdUsuarioTransicao() != null) {
+            var user = new User();
+            user.setIdUsuario(entity.getIdUsuarioTransicao());
+            domain.setIdUsuarioTransicao(user);
+        }
         return domain;
     }
 
@@ -42,7 +49,9 @@ public class HistCreditRequestMapperImpl implements HistCreditRequestMapper {
         entity.setSqPID(domain.getSqPID());
         entity.setDtInicProcesso(domain.getDtInicProcesso());
         entity.setDtFimProcesso(domain.getDtFimProcesso());
-        // entity.setIdUsuarioTransicao(...); // Ajuste conforme o domínio
+        if (domain.getIdUsuarioTransicao() != null) {
+            entity.setIdUsuarioTransicao(domain.getIdUsuarioTransicao().getIdUsuario());
+        }
         return entity;
     }
 
