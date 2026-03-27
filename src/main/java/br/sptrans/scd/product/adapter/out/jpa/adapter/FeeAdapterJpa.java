@@ -21,11 +21,11 @@ import br.sptrans.scd.product.adapter.out.jpa.repository.ChannelFeeJpaRepository
 import br.sptrans.scd.product.adapter.out.jpa.repository.DestinyFeeJpaRepository;
 import br.sptrans.scd.product.adapter.out.jpa.repository.FeeJpaRepository;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ServiceFeeJpaRepository;
-import br.sptrans.scd.product.application.port.out.AdministrativeFeeRepository;
-import br.sptrans.scd.product.application.port.out.ChannelFeeRepository;
-import br.sptrans.scd.product.application.port.out.DestinyFeeRepository;
-import br.sptrans.scd.product.application.port.out.FeeRepository;
-import br.sptrans.scd.product.application.port.out.ServiceFeeRepository;
+import br.sptrans.scd.product.application.port.out.repository.AdministrativeFeeRepository;
+import br.sptrans.scd.product.application.port.out.repository.ChannelFeeRepository;
+import br.sptrans.scd.product.application.port.out.repository.DestinyFeeRepository;
+import br.sptrans.scd.product.application.port.out.repository.FeeRepository;
+import br.sptrans.scd.product.application.port.out.repository.ServiceFeeRepository;
 import br.sptrans.scd.product.domain.AdministrativeFee;
 import br.sptrans.scd.product.domain.ChannelFee;
 import br.sptrans.scd.product.domain.ChannelFeeKey;

@@ -1,4 +1,4 @@
-package br.sptrans.scd.product.application.port.out;
+package br.sptrans.scd.product.application.port.out.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;

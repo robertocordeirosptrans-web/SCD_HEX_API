@@ -9,7 +9,7 @@ import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ModalityMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ModalityJpaRepository;
-import br.sptrans.scd.product.application.port.out.ModalityRepository;
+import br.sptrans.scd.product.application.port.out.repository.ModalityRepository;
 import br.sptrans.scd.product.domain.Modality;
 import lombok.RequiredArgsConstructor;
 

@@ -9,7 +9,7 @@ import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.product.adapter.out.jpa.entity.ProductTypesEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductsTypeMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductsTypeJpaRepository;
-import br.sptrans.scd.product.application.port.out.ProductsTypeRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductsTypeRepository;
 import br.sptrans.scd.product.domain.ProductType;
 import lombok.RequiredArgsConstructor;
 

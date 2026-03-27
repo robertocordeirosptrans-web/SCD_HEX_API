@@ -1,4 +1,4 @@
-package br.sptrans.scd.creditrequest.application.port.out;
+package br.sptrans.scd.product.application.port.out.gateway;
 
 /**
  * Output Port — Gateway para verificação de liminares judiciais de isenção de taxa

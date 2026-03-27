@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductJpaRepository;
-import br.sptrans.scd.product.application.port.out.ProductRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductRepository;
 import br.sptrans.scd.product.domain.Product;
 import lombok.RequiredArgsConstructor;
 

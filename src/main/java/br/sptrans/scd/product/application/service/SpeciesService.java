@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase;
-import br.sptrans.scd.product.application.port.out.SpeciesRepository;
+import br.sptrans.scd.product.application.port.out.repository.SpeciesRepository;
 import br.sptrans.scd.product.domain.Species;
 import br.sptrans.scd.product.domain.enums.DomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;

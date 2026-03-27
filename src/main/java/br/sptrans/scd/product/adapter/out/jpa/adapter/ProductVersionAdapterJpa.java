@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductVersionMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductVersionJpaRepository;
-import br.sptrans.scd.product.application.port.out.ProductVersionRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductVersionRepository;
 import br.sptrans.scd.product.domain.ProductVersion;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

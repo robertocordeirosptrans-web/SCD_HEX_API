@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.SpeciesMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.SpeciesJpaRepository;
-import br.sptrans.scd.product.application.port.out.SpeciesRepository;
+import br.sptrans.scd.product.application.port.out.repository.SpeciesRepository;
 import br.sptrans.scd.product.domain.Species;
 import lombok.RequiredArgsConstructor;
 

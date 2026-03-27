@@ -5,11 +5,11 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.TechnologyMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.TechnologyJpaRepository;
-import br.sptrans.scd.product.application.port.out.TechnologyRepository;
+import br.sptrans.scd.product.application.port.out.repository.TechnologyRepository;
 import br.sptrans.scd.product.domain.Technology;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
