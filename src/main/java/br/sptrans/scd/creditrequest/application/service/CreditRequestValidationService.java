@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.creditrequest.application.service;
 
 import java.math.BigDecimal;
@@ -21,6 +22,8 @@ import br.sptrans.scd.channel.domain.RechargeLimitKey;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemRejeitado;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductVersionRepository;
+import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.shared.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +36,7 @@ public class CreditRequestValidationService {
     private final ProductChannelRepository productChannelRepository;
     private final RechargeLimitRepository rechargeLimitRepository;
     private final SalesChannelRepository salesChannelRepository;
+    private final ProductVersionRepository productVersionRepository;
 
     public SalesChannel validarCanal(String codCanal) {
         SalesChannel canal = salesChannelRepository.findById(codCanal)
@@ -72,6 +76,29 @@ public class CreditRequestValidationService {
                     "Supercanal " + codCanal + " não possui subordinados ativos");
         }
     }
+
+        /**
+         * Valida a vigência da versão do produto para um item do pedido de crédito.
+         * Se a vigência estiver expirada, adiciona motivo à lista de rejeitados.
+         */
+        public void validarVigenciaVersaoProduto(Long numSolicitacao, String cartao, String codProduto,
+                String codCanal, String codVersao, LocalDateTime dataSolicitacao,
+                List<ItemRejeitado> rejeitados) {
+            // Busca a versão do produto
+            Optional<ProductVersion> versaoOpt = productVersionRepository.findById(codProduto);
+            if (versaoOpt.isEmpty()) {
+                rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, codProduto,
+                    "Versão do produto não encontrada para o produto " + codProduto));
+                return;
+            }
+            ProductVersion versao = versaoOpt.get();
+            LocalDateTime validade = versao.getDtValidade();
+            LocalDateTime data = dataSolicitacao != null ? dataSolicitacao : LocalDateTime.now();
+            if (validade != null && data.isAfter(validade)) {
+                rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, codProduto,
+                    "Versão do produto " + codVersao + " expirada para o produto " + codProduto));
+            }
+        }
 
     public void validarVigenciadoCanal(Long numSolicitacao, String cartao, String produto,
             String codCanal, String codCanalDistrib, String codProduto,

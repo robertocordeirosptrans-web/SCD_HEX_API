@@ -293,34 +293,44 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         // Validar Comercialização de Produto com o Canal
         List<CreateRequestResponse.ItemRejeitado> rejeitados = new ArrayList<>();
         var produtoCanal = validationService.validarProdutoNoCanal(
-                pedido.numSolicitacao(),
-                item.numLogicoCartao(),
-                item.codProduto(),
-                request.codCanal(),
-                item.codProduto(),
-                rejeitados);
+            pedido.numSolicitacao(),
+            item.numLogicoCartao(),
+            item.codProduto(),
+            request.codCanal(),
+            item.codProduto(),
+            rejeitados);
         if (produtoCanal == null) {
             throw new ValidationException("Produto não comercializado ou inativo no canal");
         }
 
+        // Validar vigência da versão do produto
+        validationService.validarVigenciaVersaoProduto(
+            pedido.numSolicitacao(),
+            item.numLogicoCartao(),
+            item.codProduto(),
+            request.codCanal(),
+            item.codVersao(),
+            request.dataLiberacaoCredito(),
+            rejeitados);
+
         // Validar limites de recarga
         String erroLimite = validationService.validarLimites(
-                request.codCanal(),
-                item.codProduto(),
-                item.valorTotal());
+            request.codCanal(),
+            item.codProduto(),
+            item.valorTotal());
         if (erroLimite != null) {
             throw new ValidationException(erroLimite);
         }
 
         // Validar vigência do convênio do canal
         validationService.validarVigenciadoCanal(
-                pedido.numSolicitacao(),
-                item.numLogicoCartao(),
-                item.codProduto(),
-                request.codCanal(),
-                pedido.canaisDistribuicao(),
-                item.codProduto(),
-                rejeitados);
+            pedido.numSolicitacao(),
+            item.numLogicoCartao(),
+            item.codProduto(),
+            request.codCanal(),
+            pedido.canaisDistribuicao(),
+            item.codProduto(),
+            rejeitados);
         if (!rejeitados.isEmpty()) {
             // Lança a primeira mensagem de rejeição encontrada
             throw new ValidationException(rejeitados.get(0).motivoRejeicao());
