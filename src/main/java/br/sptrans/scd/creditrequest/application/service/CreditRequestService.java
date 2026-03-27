@@ -136,7 +136,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         // 2. Validações prévias (do segundo método)
         log.info("[createCreditRequest] Validando canal, lote e data de liberação...");
         SalesChannel canal = validationService.validarCanal(request.codCanal());
-        validationService.validarNumLote(request.numLote(), request.codCanal(), creditRequestRepository);
+        // validationService.validarNumLote(request.numLote(), request.codCanal(), creditRequestRepository);
         validationService.validarDataLiberacao(request.dataLiberacaoCredito());
 
         if ("S".equalsIgnoreCase(canal.getFlgSupercanal())) {
@@ -151,17 +151,28 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         List<CreateRequestResponse.ItemProcessado> processados = new ArrayList<>();
         List<CreateRequestResponse.ItemRejeitado> rejeitados = new ArrayList<>();
 
-        int totalItens = request.itens().size();
+        int totalItens = request.pedidos().stream().mapToInt(p -> p.itens().size()).sum();
         log.info("[createCreditRequest] Total de itens a processar: {}", totalItens);
 
-        for (int idx = 0; idx < totalItens; idx++) {
-            var pedido = (idx < request.pedidos().size()) ? request.pedidos().get(idx) : null;
-            var item = request.itens().get(idx);
+        for (CreateRequestCredit.CreditRequest pedido : request.pedidos()) {
+            //Validar o numero de lote para cada pedido
+            validationService.validarNumLote(pedido.numLote(), request.codCanal(), creditRequestRepository);
 
-            log.info("[createCreditRequest] Processando idx={}, pedido={}, item={}", idx, pedido, item);
-            processarItemComTryCatch(canal, pedido, item, request,
-                    processados, rejeitados, idx, userId);
-            log.info("[createCreditRequest] Parcial: processados={}, rejeitados={}", processados.size(), rejeitados.size());
+            // Verificar se já existe a solicitação na base (SOL_DISTRIBUICOES)
+            boolean solicitacaoExiste = creditRequestRepository.findByNumSolicitacaoAndCodCanal(pedido.numSolicitacao(), request.codCanal()).isPresent();
+            if (solicitacaoExiste) {
+                log.warn("[createCreditRequest] Solicitação {} já existe para o canal {}. Não será criado novo pedido.", pedido.numSolicitacao(), request.codCanal());
+                throw new IllegalStateException("Já existe solicitação para este canal: " + pedido.numSolicitacao());
+            }
+
+            long numSolicitacaoItemSeq = 1L;
+            for (ItemRequest item : pedido.itens()) {
+                log.info("[createCreditRequest] Processando pedido={}, item={}, numSolicitacaoItem={}", pedido, item, numSolicitacaoItemSeq);
+                processarItemComTryCatchSequencial(canal, pedido, item, request,
+                        processados, rejeitados, 0, userId, numSolicitacaoItemSeq);
+                numSolicitacaoItemSeq++;
+                log.info("[createCreditRequest] Parcial: processados={}, rejeitados={}", processados.size(), rejeitados.size());
+            }
         }
 
         // 5. Validação pós-processamento (do segundo método)
@@ -187,7 +198,9 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         return response;
     }
 
-    private void processarItemComTryCatch(
+
+    // Novo método para processar item com numSolicitacaoItem sequencial
+    private void processarItemComTryCatchSequencial(
             SalesChannel canal,
             CreateRequestCredit.CreditRequest pedido,
             ItemRequest item,
@@ -195,7 +208,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             List<ItemProcessado> processados,
             List<ItemRejeitado> rejeitados,
             int index,
-            Long userId) {
+            Long userId,
+            long numSolicitacaoItemSeq) {
 
         Long numSolicitacao = pedido != null ? pedido.numSolicitacao() : null;
         String numLogicoCartao = item != null ? item.numLogicoCartao() : null;
@@ -217,16 +231,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 return;
             }
 
-            // Nova validação: verificar se já existe solicitação para o canal
-            boolean isExists = creditRequestRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, request.codCanal())
-                    .isPresent();
-            if (isExists) {
-                rejeitados.add(new ItemRejeitado(
-                        numSolicitacao, numLogicoCartao, codProduto,
-                        "Já existe N° de Solicitação para este Canal."));
-                return;
-            }
-
             // Nova validação de item
             validarItem(canal, pedido, item, request);
 
@@ -243,14 +247,15 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 creditRequest = existingRequest.get();
             }
 
-            // 2. Salvar item
-            CreditRequestItems creditRequestItem = mapToCreditRequestItem(pedido, item, request, creditRequest, userId);
-            log.info("[DEBUG] Antes de salvar item: numSolicitacao={}, idUsuarioCartao={}, numLogicoCartao={}, codProduto={}, creditRequestItem.numLogicoCartao={}",
+            // 2. Salvar item com numSolicitacaoItem sequencial
+            CreditRequestItems creditRequestItem = mapToCreditRequestItemSequencial(pedido, item, request, creditRequest, userId, numSolicitacaoItemSeq);
+            log.info("[DEBUG] Antes de salvar item: numSolicitacao={}, idUsuarioCartao={}, numLogicoCartao={}, codProduto={}, creditRequestItem.numLogicoCartao={}, numSolicitacaoItem={}",
                     numSolicitacao,
                     item.idUsuarioCartao(),
                     item.numLogicoCartao(),
                     item.codProduto(),
-                    creditRequestItem.getNumLogicoCartao()
+                    creditRequestItem.getNumLogicoCartao(),
+                    numSolicitacaoItemSeq
             );
             itemRepository.save(creditRequestItem);
             historyService.saveItemStatusHistory(creditRequestItem, ORIGEM_TRANSICAO);
@@ -797,7 +802,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         CreditRequest cr = new CreditRequest();
         cr.setNumSolicitacao(pedido.numSolicitacao());
         cr.setCodCanal(request.codCanal());
-        cr.setNumLote(request.numLote());
+        cr.setNumLote(pedido.numLote());
         cr.setDtCadastro(LocalDateTime.now());
         cr.setDtManutencao(LocalDateTime.now());
         cr.setDtSolicitacao(request.dataGeracao());
@@ -814,11 +819,13 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
      * Mapeia os dados do pedido e item do request para a entidade de domínio
      * CreditRequestItems.
      */
-    private CreditRequestItems mapToCreditRequestItem(CreateRequestCredit.CreditRequest pedido, ItemRequest item, CreateRequestCredit request, CreditRequest creditRequest, Long userId) {
+
+    // Novo método para mapear item com numSolicitacaoItem sequencial
+    private CreditRequestItems mapToCreditRequestItemSequencial(CreateRequestCredit.CreditRequest pedido, ItemRequest item, CreateRequestCredit request, CreditRequest creditRequest, Long userId, long numSolicitacaoItemSeq) {
         CreditRequestItems cri = new CreditRequestItems();
         CreditRequestItemsKey key = new CreditRequestItemsKey();
         key.setNumSolicitacao(pedido.numSolicitacao());
-        key.setNumSolicitacaoItem(1L); // Ajuste se necessário
+        key.setNumSolicitacaoItem(numSolicitacaoItemSeq);
         key.setCodCanal(request.codCanal());
         cri.setId(key);
         cri.setSolicitacao(creditRequest);
@@ -828,7 +835,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         cri.setIdUsuarioCartao(item.idUsuarioCartao());
         cri.setNumLogicoCartao(item.numLogicoCartao());
         cri.setCodProduto(item.codProduto());
-        cri.setCodVersao(item.codVersao());;
+        cri.setCodVersao(item.codVersao());
         cri.setCodSituacao("03"); // Situação inicial, ajustar conforme regra
         cri.setQtdItem(0); // Ajuste se necessário
         cri.setVlUnitario(item.vlUnitario());

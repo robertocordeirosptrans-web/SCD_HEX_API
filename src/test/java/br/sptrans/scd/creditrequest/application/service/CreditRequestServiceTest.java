@@ -28,10 +28,7 @@ class CreditRequestServiceTest {
         String idempotencyKey = "test-key";
         Long userId = 1L;
         var now = java.time.LocalDateTime.now();
-        CreateRequestCredit.CreditRequest pedido = new CreateRequestCredit.CreditRequest(
-                115168L,
-                "23"
-        );
+
         CreateRequestCredit.ItemRequest item = new CreateRequestCredit.ItemRequest(
                 9000000000021593L,
                 "212809436",
@@ -42,14 +39,18 @@ class CreditRequestServiceTest {
                 BigDecimal.ZERO,
                 BigDecimal.ZERO
         );
+        CreateRequestCredit.CreditRequest pedido = new CreateRequestCredit.CreditRequest(
+                "115168",
+                115168L,
+                "23",
+                List.of(item)
+        );
         CreateRequestCredit request = new CreateRequestCredit(
                 "10",
-                "115168",
                 now,
                 LocalDateTime.of(2026, 3, 27, 14, 30, 0),
                 "Teste do SCD",
-                List.of(pedido),
-                List.of(item)
+                List.of(pedido)
         );
 
         // Act

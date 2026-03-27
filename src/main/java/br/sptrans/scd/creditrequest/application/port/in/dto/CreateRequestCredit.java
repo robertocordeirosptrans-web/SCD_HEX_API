@@ -13,11 +13,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+
 public record CreateRequestCredit(
         @NotBlank(message = "Código do canal é obrigatório")
         String codCanal,
-        @NotBlank(message = "Número do lote é obrigatório")
-        String numLote,
         @NotNull(message = "Data de geração é obrigatória")
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss[.SSS]")
         LocalDateTime dataGeracao,
@@ -29,21 +28,22 @@ public record CreateRequestCredit(
         @NotNull(message = "Lista de pedidos é obrigatória")
         @Size(min = 1, message = "Ao menos um pedido deve ser informado")
         @Valid
-        List<CreditRequest> pedidos,
-        @NotNull(message = "Lista de itens é obrigatória")
-        @Size(min = 1, message = "Ao menos um item deve ser informado")
-        @Valid
-        List<ItemRequest> itens
-        ) {
+        List<CreditRequest> pedidos
+) {
+
 
     public record CreditRequest(
+            @NotNull(message = "Número do lote é obrigatório")
+            String numLote,
             @NotNull(message = "Número da solicitação é obrigatório")
             Long numSolicitacao,
             @NotBlank(message = "Canal de distribuição é obrigatório")
-            String canaisDistribuicao
-            ) {
-
-    }
+            String canaisDistribuicao,
+            @NotNull(message = "Lista de itens é obrigatória")
+            @Size(min = 1, message = "Ao menos um item deve ser informado")
+            @Valid
+            List<ItemRequest> itens
+    ) {}
 
     public record ItemRequest(
             @NotNull(message = "ID do usuário cartão é obrigatório")
