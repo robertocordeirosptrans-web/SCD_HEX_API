@@ -21,4 +21,6 @@ public interface RechargeLogRepository {
      */
     Optional<RechargeLog> findByNumLogicoCartao(String numLogicoCartao);
 
+    Optional<Integer>findMaxSeqRecarga();
+
 }

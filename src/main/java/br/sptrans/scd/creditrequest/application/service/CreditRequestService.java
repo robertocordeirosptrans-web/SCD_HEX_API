@@ -55,6 +55,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     static final String ORIGEM_TRANSICAO = "pedido_credito_scd";
 
     private final CreditRequestValidationService validationService;
+    private final RechargeLogService rechargeLogService;
     private final CreditRequestRepository creditRequestRepository;
     private final CreditRequestItemsRepository itemRepository;
     private final CreditRequestMapper creditRequestMapper;
@@ -136,7 +137,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         // 2. Validações prévias (do segundo método)
         log.info("[createCreditRequest] Validando canal, lote e data de liberação...");
         SalesChannel canal = validationService.validarCanal(request.codCanal());
-        // validationService.validarNumLote(request.numLote(), request.codCanal(), creditRequestRepository);
         validationService.validarDataLiberacao(request.dataLiberacaoCredito());
 
         if ("S".equalsIgnoreCase(canal.getFlgSupercanal())) {
@@ -198,7 +198,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         return response;
     }
 
-
     // Novo método para processar item com numSolicitacaoItem sequencial
     private void processarItemComTryCatchSequencial(
             SalesChannel canal,
@@ -257,6 +256,19 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                     creditRequestItem.getNumLogicoCartao(),
                     numSolicitacaoItemSeq
             );
+
+             log.info("[DEBUG] Antes de salvar item:  idUsuarioCartao={}, numLogicoCartao={}",
+        
+                    item.idUsuarioCartao(),
+                    item.numLogicoCartao());
+            int seqRecarga = rechargeLogService.upsertLogRecarga(
+                    item.numLogicoCartao(),
+                    userId,
+                    LocalDateTime.now(),
+                    LocalDateTime.now(),
+                    LocalDateTime.now(),
+                    userId);
+            creditRequestItem.setSeqRecarga(seqRecarga);
             itemRepository.save(creditRequestItem);
             historyService.saveItemStatusHistory(creditRequestItem, ORIGEM_TRANSICAO);
 
@@ -304,14 +316,14 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         }
 
         // Validar vigência da versão do produto
-        validationService.validarVigenciaVersaoProduto(
-            pedido.numSolicitacao(),
-            item.numLogicoCartao(),
-            item.codProduto(),
-            request.codCanal(),
-            item.codVersao(),
-            request.dataLiberacaoCredito(),
-            rejeitados);
+        // validationService.validarVigenciaVersaoProduto(
+        //     pedido.numSolicitacao(),
+        //     item.numLogicoCartao(),
+        //     item.codProduto(),
+        //     request.codCanal(),
+        //     item.codVersao(),
+        //     request.dataLiberacaoCredito(),
+        //     rejeitados);
 
         // Validar limites de recarga
         String erroLimite = validationService.validarLimites(
@@ -324,13 +336,13 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
         // Validar vigência do convênio do canal
         validationService.validarVigenciadoCanal(
-            pedido.numSolicitacao(),
-            item.numLogicoCartao(),
-            item.codProduto(),
-            request.codCanal(),
-            pedido.canaisDistribuicao(),
-            item.codProduto(),
-            rejeitados);
+                pedido.numSolicitacao(),
+                item.numLogicoCartao(),
+                item.codProduto(),
+                request.codCanal(),
+                pedido.canaisDistribuicao(),
+                item.codProduto(),
+                rejeitados);
         if (!rejeitados.isEmpty()) {
             // Lança a primeira mensagem de rejeição encontrada
             throw new ValidationException(rejeitados.get(0).motivoRejeicao());
@@ -349,6 +361,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     public CursorPage<CreditRequest> findAll(SearchCommand comando) {
         SearchMode mode = comando.searchMode() != null
                 ? comando.searchMode() : SearchMode.OPERATIONAL;
+
         int limit = mode.getMaxPageSize() + 1;
 
         List<CreditRequest> results = creditRequestRepository.findWithCursor(
@@ -829,7 +842,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
      * Mapeia os dados do pedido e item do request para a entidade de domínio
      * CreditRequestItems.
      */
-
     // Novo método para mapear item com numSolicitacaoItem sequencial
     private CreditRequestItems mapToCreditRequestItemSequencial(CreateRequestCredit.CreditRequest pedido, ItemRequest item, CreateRequestCredit request, CreditRequest creditRequest, Long userId, long numSolicitacaoItemSeq) {
         CreditRequestItems cri = new CreditRequestItems();

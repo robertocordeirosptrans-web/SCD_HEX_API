@@ -1,4 +1,4 @@
-package br.sptrans.scd.product.adapter.out.jpa.adapter;
+package br.sptrans.scd.creditrequest.adapter.port.out.jpa.adapter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.creditrequest.application.port.out.HmGateway;
-import br.sptrans.scd.product.adapter.out.jpa.adapter.LiminarGatewayJpa;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 

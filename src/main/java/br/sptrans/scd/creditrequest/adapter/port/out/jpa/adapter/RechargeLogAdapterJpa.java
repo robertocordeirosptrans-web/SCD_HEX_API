@@ -37,5 +37,13 @@ public class  RechargeLogAdapterJpa implements  RechargeLogRepository {
         return rechargeLogJpaRepository.findByNumLogicoCartao(numLogicoCartao)
                 .map(RechargeLogMapper::toDomain);
     }
+
+    @Override
+    public Optional<Integer> findMaxSeqRecarga() {
+        int lastSeq = rechargeLogJpaRepository.nextSeqRecarga() - 1;
+        return lastSeq > 0 ? Optional.of(lastSeq) : Optional.empty();
+    }
+
+
     
 }

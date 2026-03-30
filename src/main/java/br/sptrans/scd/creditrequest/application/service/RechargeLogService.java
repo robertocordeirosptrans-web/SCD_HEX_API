@@ -1,5 +1,6 @@
 package br.sptrans.scd.creditrequest.application.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -12,34 +13,50 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class RechargeLogService implements LogRechargeUseCase {
+
     private final RechargeLogRepository rechargeLogRepository;
 
-    private static final int SEQ_RECARGA_INICIAL = 0;
 
     @Override
-    public int upsertLogRecarga(LogRechargeCommand command) {
-        Optional<RechargeLog> existingOpt = rechargeLogRepository.findByNumLogicoCartao(command.numLogicoCartao());
+    public int upsertLogRecarga(String numLogicoCartao,
+            Long idUsuarioCadastro,
+            LocalDateTime dtSolicRecarga,
+            LocalDateTime dtCadastro,
+            LocalDateTime dtManutencao,
+            Long idUsuarioManutencao) {
+
+        // Gera sempre um novo SEQ único — independente de INSERT ou UPDATE
+        int novoSeq = rechargeLogRepository.findMaxSeqRecarga()
+                .map(maxSeq -> maxSeq + 1)
+                .orElse(1);
+
+        Optional<RechargeLog> existingOpt
+                = rechargeLogRepository.findByNumLogicoCartao(numLogicoCartao);
+
         if (existingOpt.isPresent()) {
+            // UPDATE — atualiza todos os campos E gera novo SEQ
             RechargeLog existing = existingOpt.get();
-            int seq = existing.getSeqRecarga() != null ? existing.getSeqRecarga() : SEQ_RECARGA_INICIAL;
-            existing.setIdUsuarioCadastro(command.idUsuarioCadastro());
-            existing.setDtSolicRecarga(command.dtSolicRecarga());
-            existing.setDtCadastro(command.dtCadastro());
-            existing.setDtManutencao(command.dtManutencao());
-            existing.setIdUsuarioManutencao(null);
+            existing.setSeqRecarga(novoSeq);              // ← novo SEQ
+            existing.setIdUsuarioCadastro(idUsuarioCadastro);
+            existing.setDtSolicRecarga(dtSolicRecarga);
+            existing.setDtCadastro(LocalDateTime.now());
+            existing.setDtManutencao(LocalDateTime.now());
+            existing.setIdUsuarioManutencao(null);         // ← NULL conforme deduzido
             rechargeLogRepository.save(existing);
-            return seq;
+
         } else {
+            // INSERT — cartão ainda não existe em LOG_RECARGAS
             RechargeLog novo = new RechargeLog();
-            novo.setNumLogicoCartao(command.numLogicoCartao());
-            novo.setSeqRecarga(SEQ_RECARGA_INICIAL);
-            novo.setIdUsuarioCadastro(command.idUsuarioCadastro());
-            novo.setDtSolicRecarga(command.dtSolicRecarga());
-            novo.setDtCadastro(command.dtCadastro());
-            novo.setDtManutencao(command.dtManutencao());
-            novo.setIdUsuarioManutencao(command.idUsuarioManutencao());
+            novo.setNumLogicoCartao(numLogicoCartao);
+            novo.setSeqRecarga(novoSeq);                  // ← novo SEQ único
+            novo.setIdUsuarioCadastro(idUsuarioCadastro);
+            novo.setDtSolicRecarga(dtSolicRecarga);
+            novo.setDtCadastro(LocalDateTime.now());
+            novo.setDtManutencao(LocalDateTime.now());
+            novo.setIdUsuarioManutencao(idUsuarioManutencao);
             rechargeLogRepository.save(novo);
-            return SEQ_RECARGA_INICIAL;
         }
+
+        return novoSeq;  // ← sempre retorna o SEQ recém gerado
     }
 }

@@ -4,16 +4,11 @@ import java.time.LocalDateTime;
 
 public interface LogRechargeUseCase {
 
-    int upsertLogRecarga(LogRechargeCommand command);
-
-    record LogRechargeCommand(
-            String numLogicoCartao,
+    int upsertLogRecarga(String numLogicoCartao,
             Long idUsuarioCadastro,
             LocalDateTime dtSolicRecarga,
             LocalDateTime dtCadastro,
             LocalDateTime dtManutencao,
-            Long idUsuarioManutencao
-            ) {
+            Long idUsuarioManutencao);
 
-    }
 }

@@ -1,6 +1,5 @@
 package br.sptrans.scd.creditrequest.adapter.port.out.jpa.repository;
 
-
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +12,9 @@ public interface RechargeLogJpaRepository extends JpaRepository<RechargeLogEJpa,
 
     @Query("SELECT r FROM RechargeLogEJpa r WHERE r.numLogicoCartao = :numLogicoCartao")
     Optional<RechargeLogEJpa> findByNumLogicoCartao(String numLogicoCartao);
+
+    @Query(value = "SELECT SQ_LOG_RECARGAS.NEXTVAL FROM DUAL",
+            nativeQuery = true)
+    int nextSeqRecarga();
+
 }
