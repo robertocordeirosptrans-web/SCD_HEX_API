@@ -1,5 +1,7 @@
 package br.sptrans.scd.product.application.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -10,15 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.FeeFareManagementUseCase;
+import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
 import br.sptrans.scd.product.application.port.out.repository.AdministrativeFeeRepository;
 import br.sptrans.scd.product.application.port.out.repository.DestinyFeeRepository;
 import br.sptrans.scd.product.application.port.out.repository.FareRepository;
 import br.sptrans.scd.product.application.port.out.repository.FeeRepository;
 import br.sptrans.scd.product.application.port.out.repository.ProductRepository;
 import br.sptrans.scd.product.application.port.out.repository.ServiceFeeRepository;
-import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import br.sptrans.scd.product.domain.AdministrativeFee;
 import br.sptrans.scd.product.domain.DestinyFee;
 import br.sptrans.scd.product.domain.Fare;
@@ -168,10 +168,16 @@ public class FeeFareService implements FeeFareManagementUseCase {
     public List<Fare> listFares(String codProduto, String codCanal) {
         return fareRepository.listByProductChannel(codProduto, codCanal);
     }
+    
 
     // =========================================================================
     // Gestão de Taxas (Fee)
     // =========================================================================
+
+    @Override
+    public List<Fee> findByCanalProduto(String codCanal, String codProduto) {
+        return feeRepository.findByCanalProduto(codCanal, codProduto);
+    }
 
     @Override
     public Fee createFee(RegisterFeeCommand command) {
@@ -219,6 +225,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
 
         return feeRepository.findByIdFee(savedFee.getCodTaxa()).orElse(savedFee);
     }
+
+
 
     @Override
     public Fee updateFee(Long codTaxa, UpdateFeeCommand command) {

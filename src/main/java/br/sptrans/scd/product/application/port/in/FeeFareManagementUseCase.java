@@ -113,4 +113,6 @@ public interface FeeFareManagementUseCase {
     record RegisterDestinyFeeCommand(
             String codCanalDestino) {
     }
+
+    List<Fee> findByCanalProduto(String codCanal, String codProduto);
 }

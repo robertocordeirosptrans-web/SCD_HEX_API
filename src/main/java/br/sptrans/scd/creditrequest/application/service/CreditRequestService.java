@@ -37,6 +37,8 @@ import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
+import br.sptrans.scd.product.application.service.FeeFareService;
+import br.sptrans.scd.product.domain.Fee;
 import br.sptrans.scd.shared.exception.ValidationException;
 import br.sptrans.scd.shared.idempotency.IdempotencyStore;
 import jakarta.transaction.Transactional;
@@ -63,6 +65,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     private final TransitionSituationValidator transitionValidator;
     private final SituationAscertainedService situationAscertainedService;
     private final IdempotencyStore idempotencyStore;
+    private final FeeFareService feeFareService;
 
     // ── Ações de mudança de status ───────────────────────────────────
     @Override
@@ -347,7 +350,38 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             // Lança a primeira mensagem de rejeição encontrada
             throw new ValidationException(rejeitados.get(0).motivoRejeicao());
         }
+
+        // ===== Validação de Taxas conforme plano =====
+        // Buscar taxa vigente para canal/produto e data atual
+        Optional<Fee> taxaOpt = feeFareService.findByCanalProduto(request.codCanal(), item.codProduto())
+            .stream()
+            .filter(f -> f.getDtFinal() == null || f.getDtFinal().isAfter(LocalDateTime.now()))
+            .findFirst();
+        if (taxaOpt.isEmpty()) {
+            throw new ValidationException("Taxa não encontrada para canal/produto vigente");
+        }
+        Fee taxa = taxaOpt.get();
+        // Calcular taxas
+        FeeFareService.TaxaCalculada taxas = feeFareService.calcularTaxas(
+            item.valorTotal(),
+            request.codCanal(),
+            pedido.numSolicitacao() != null ? pedido.numSolicitacao().toString() : null,
+            taxa.getCodTaxa()
+        );
+        // Log dos valores calculados
+        log.info("[TAXAS] Pedido: {}, Cartao: {}, Produto: {}, TaxaAdm Calculada: {}, TaxaServ Calculada: {}", 
+            pedido.numSolicitacao(), item.numLogicoCartao(), item.codProduto(), taxas.getValorTaxaAdm(), taxas.getValorTaxaServ());
+        // Comparar com valores informados
+        BigDecimal vlTxadmInformado = item.vlTxadm() != null ? item.vlTxadm() : BigDecimal.ZERO;
+        BigDecimal vlTxservInformado = item.vlTxserv() != null ? item.vlTxserv() : BigDecimal.ZERO;
+        if (taxas.getValorTaxaAdm().compareTo(vlTxadmInformado) != 0) {
+            throw new ValidationException("303 - Taxa administrativa incorreta");
+        }
+        if (taxas.getValorTaxaServ().compareTo(vlTxservInformado) != 0) {
+            throw new ValidationException("304 - Taxa de serviço incorreta");
+        }
     }
+    
 
     // ── Consultas ────────────────────────────────────────────────────
     @Override

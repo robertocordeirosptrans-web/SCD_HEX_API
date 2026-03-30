@@ -1,0 +1,89 @@
+{
+  "codCanal": "10",
+  "dataGeracao": "2026-03-25T14:30:00.000",
+  "dataLiberacaoCredito": "2026-03-31T14:30:00.000",
+  "responsavel": "João da Silva",
+  "pedidos": [
+    {
+      "numLote": "115168",
+      "numSolicitacao": 115168,
+      "canaisDistribuicao": "23",
+      "itens": [
+        {
+          "idUsuarioCartao": 900000000002159,
+          "numLogicoCartao": "230894958",
+          "codProduto": "701",
+          "codVersao": "4",
+          "vlUnitario": 10.0,
+          "valorTotal": 10.0,
+          "vlTxserv": 0.5,
+          "vlTxadm": 0.2
+        },
+        {
+          "idUsuarioCartao": 900000000002159,
+          "numLogicoCartao": "243248963",
+          "codProduto": "701",
+          "codVersao": "4",
+          "vlUnitario": 20.0,
+          "valorTotal": 10.0,
+          "vlTxserv": 0.5,
+          "vlTxadm": 0.2
+        }
+      ]
+    },
+    {
+      "numLote": "115169",
+      "numSolicitacao": 115169,
+      "canaisDistribuicao": "23",
+      "itens": [
+        {
+          "idUsuarioCartao": 900000000002159,
+          "numLogicoCartao": "212809436",
+          "codProduto": "701",
+          "codVersao": "4",
+          "vlUnitario": 30.0,
+          "valorTotal": 10.0,
+          "vlTxserv": 0.5,
+          "vlTxadm": 0.2
+        },
+        {
+          "idUsuarioCartao": 900000000002159,
+          "numLogicoCartao": "298765432",
+          "codProduto": "701",
+          "codVersao": "4",
+          "vlUnitario": 15.0,
+          "valorTotal": 15.0,
+          "vlTxserv": 0.3,
+          "vlTxadm": 0.1
+        }
+      ]
+    },
+    {
+      "numLote": "115170",
+      "numSolicitacao": 115170,
+      "canaisDistribuicao": "23",
+      "itens": [
+        {
+          "idUsuarioCartao": 900000000002159,
+          "numLogicoCartao": "287654321",
+          "codProduto": "701",
+          "codVersao": "4",
+          "vlUnitario": 25.0,
+          "valorTotal": 25.0,
+          "vlTxserv": 0.5,
+          "vlTxadm": 0.2
+        },
+        {
+          "idUsuarioCartao": 900000000002159,
+          "numLogicoCartao": "276543210",
+          "codProduto": "701",
+          "codVersao": "4",
+          "vlUnitario": 40.0,
+          "valorTotal": 40.0,
+          "vlTxserv": 0.8,
+          "vlTxadm": 0.3
+        }
+      ]
+    }
+  ]
+}

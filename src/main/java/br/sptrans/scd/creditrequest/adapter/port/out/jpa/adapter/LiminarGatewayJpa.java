@@ -36,7 +36,7 @@ public class LiminarGatewayJpa implements LiminarGateway {
         try {
             StoredProcedureQuery query = em
                     .createStoredProcedureQuery(
-                            "PKG_EMPRESA_LIMINAR.FIND_TAXA_ISENTA_BY_PEDIDO@dblink_sca")
+                            "PKG_EMPRESA_LIMINAR.FIND_TAXA_ISENTA_BY_PEDIDO@DBLINK_SCA")
                     .registerStoredProcedureParameter(1, String.class, ParameterMode.IN)
                     .registerStoredProcedureParameter(2, Integer.class, ParameterMode.OUT)
                     .setParameter(1, numeroPedido);
@@ -57,7 +57,7 @@ public class LiminarGatewayJpa implements LiminarGateway {
         try {
             StoredProcedureQuery query = em
                     .createStoredProcedureQuery(
-                            "PKG_EMPRESA_LIMINAR.FIND_BY_PEDIDO@dblink_sca")
+                            "PKG_EMPRESA_LIMINAR.FIND_BY_PEDIDO@DBLINK_SCA")
                     .registerStoredProcedureParameter(1, String.class, ParameterMode.IN)
                     .registerStoredProcedureParameter(2, Integer.class, ParameterMode.OUT)
                     .setParameter(1, numeroPedido);
@@ -81,7 +81,7 @@ public class LiminarGatewayJpa implements LiminarGateway {
         try {
             StoredProcedureQuery query = em
                     .createStoredProcedureQuery(
-                            "PKG_CARTAO_LIMINAR.FIND_BY_CARTAO@dblink_sca")
+                            "PKG_CARTAO_LIMINAR.FIND_BY_CARTAO@DBLINK_SCA")
                     .registerStoredProcedureParameter(1, String.class, ParameterMode.IN)
                     .registerStoredProcedureParameter(2, Integer.class, ParameterMode.OUT)
                     .setParameter(1, numeroCartao);
