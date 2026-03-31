@@ -1,5 +1,6 @@
 package br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.mapstruct.Mapper;
@@ -131,6 +132,8 @@ public interface CreditRequestMapper {
         cr.setDtEnvioHm(entity.getDtEnvioHm());
         cr.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
         cr.setFlgBloq(entity.getFlgBloq());
+        cr.setCodFormaPagto(entity.getCodFormaPagto());
+
         // Adicione outros campos conforme necessário
         cr.setItens(toDomainItens(entity.getItens()));
         return cr;
@@ -159,13 +162,39 @@ public interface CreditRequestMapper {
         item.setDtRecarga(itemJpa.getDtRecarga());
         item.setVlCarregado(itemJpa.getVlCarregado());
         item.setDtCadastro(itemJpa.getDtCadastro());
-        item.setDtManutencao(itemJpa.getDtManutencao());
+        item.setDtManutencao(LocalDateTime.now());
         item.setVlTxadm(itemJpa.getVlTxadm());
         item.setVlTxserv(itemJpa.getVlTxserv());
         item.setVlTxtotal(itemJpa.getVlTxtotal());
         item.setCodVersao(itemJpa.getCodVersao());
-    
-        // Adicione outros campos conforme necessário
+        item.setNumLogicoCartao(itemJpa.getNumLogicoCartao());
+        item.setQtdItem(itemJpa.getQtdItem());
+        item.setIdUsuarioCartao(itemJpa.getIdUsuarioCartao());
+        item.setCodTipoDocumento(itemJpa.getCodTipoDocumento());
+        item.setVlAjuste(itemJpa.getVlAjuste());
+        item.setFlgAjuste(itemJpa.getFlgAjuste());
+        item.setIdFuncionario(itemJpa.getIdFuncionario());
+        item.setCodAssinaturaHsm(itemJpa.getCodAssinaturaHsm());
+        item.setSeqRecarga(itemJpa.getSeqRecarga());
+        item.setDtEnvioHm(itemJpa.getDtEnvioHm());
+        item.setDtRetornoHm(itemJpa.getDtRetornoHm());
+        item.setIdUsuarioCadastro(itemJpa.getIdUsuarioCadastro());
+        item.setIdUsuarioManutencao(itemJpa.getIdUsuarioManutencao());
+        item.setDtAssinatura(itemJpa.getDtAssinatura());
+        item.setDtPagtoEconomica(itemJpa.getDtPagtoEconomica());
+        item.setSqPid(itemJpa.getSqPid());
+        item.setDtInicProcesso(itemJpa.getDtInicProcesso());
+        item.setSqRecarga(itemJpa.getSqRecarga());
+        item.setFlgEvento(itemJpa.getFlgEvento());
+        item.setVlEvento(itemJpa.getVlEvento());
+        item.setFlgOutrasVias(itemJpa.getFlgOutrasVias());
+        item.setCodAssdigRecarga(itemJpa.getCodAssdigRecarga());
+        item.setVlAutorizacaoHm(itemJpa.getVlAutorizacaoHm());
+        item.setFlgLiminarLoja(itemJpa.getFlgLiminarLoja());
+        item.setCodProdutoHm(itemJpa.getCodProdutoHm());
+        item.setQtdDiasUtilizados(itemJpa.getQtdDiasUtilizados());
+        item.setCodTipoDocumento(itemJpa.getCodTipoDocumento());
+ 
         return item;
     }
 

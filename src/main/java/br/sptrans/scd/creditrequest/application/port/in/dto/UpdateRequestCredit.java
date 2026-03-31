@@ -21,8 +21,8 @@ public class UpdateRequestCredit {
     private String codCanal;
 
     @Valid
-    @NotNull(message = "A lista de itens permitidos é obrigatória")
-    private List<AllowedItem> itensPermitidos;
+    @NotNull(message = "A lista de pedidos permitidos é obrigatória")
+    private List<AllowedItem> pedidosPermitidos;
 
     private String observacao;
 
@@ -41,7 +41,9 @@ public class UpdateRequestCredit {
         private Long numLote;
 
         @Valid
-        private ItemDetail item;
+        @NotNull(message = "A lista de itens de pedidos permitidos é obrigatória")
+        private List<ItemDetail> itens;
+
     }
 
     @Data
@@ -51,13 +53,8 @@ public class UpdateRequestCredit {
 
         private String codProduto;
         private String codSituacao;
-        private String dtRecarga;
-        private String flgAjuste;
-        private Long numLogicoCartao;
+        private String numLogicoCartao;
         private Long numSolicitacaoItem;
-        private Integer qtdItem;
-        private Double vlAjuste;
-        private Double vlCarregado;
         private Double vlItem;
         private Double vlTxadm;
         private Double vlTxserv;

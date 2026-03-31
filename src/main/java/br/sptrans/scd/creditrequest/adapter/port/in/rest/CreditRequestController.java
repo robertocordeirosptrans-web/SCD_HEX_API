@@ -175,11 +175,11 @@ public class CreditRequestController {
             case BLOQUEAR ->
                 creditRequestManagementUseCase.block(
                         new BlockCommand(
-                                request.getItensPermitidos().stream()
+                                request.getPedidosPermitidos().stream()
                                         .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
                                         item.getNumSolicitacao(),
                                         request.getCodCanal(),
-                                        item.getItem() != null ? List.of(item.getItem().getNumSolicitacaoItem()) : List.of()
+                                        item.getItens() != null ? item.getItens().stream().map(UpdateRequestCredit.ItemDetail::getNumSolicitacaoItem).collect(Collectors.toList()) : List.of()
                                 ))
                                         .collect(Collectors.toList()),
                                 null,
@@ -189,11 +189,11 @@ public class CreditRequestController {
             case DESBLOQUEAR ->
                 creditRequestManagementUseCase.unblock(
                         new UnblockCommand(
-                                request.getItensPermitidos().stream()
+                                request.getPedidosPermitidos().stream()
                                         .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
                                         item.getNumSolicitacao(),
                                         request.getCodCanal(),
-                                        item.getItem() != null ? List.of(item.getItem().getNumSolicitacaoItem()) : List.of()
+                                        item.getItens() != null ? item.getItens().stream().map(UpdateRequestCredit.ItemDetail::getNumSolicitacaoItem).collect(Collectors.toList()) : List.of()
                                 ))
                                         .collect(Collectors.toList()),
                                 null,
@@ -203,11 +203,11 @@ public class CreditRequestController {
             case CANCELAR ->
                 creditRequestManagementUseCase.cancel(
                         new CancelCommand(
-                                request.getItensPermitidos().stream()
+                                request.getPedidosPermitidos().stream()
                                         .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
                                         item.getNumSolicitacao(),
                                         request.getCodCanal(),
-                                        item.getItem() != null ? List.of(item.getItem().getNumSolicitacaoItem()) : List.of()
+                                        item.getItens() != null ? item.getItens().stream().map(UpdateRequestCredit.ItemDetail::getNumSolicitacaoItem).collect(Collectors.toList()) : List.of()
                                 ))
                                         .collect(Collectors.toList()),
                                 null,
@@ -217,9 +217,9 @@ public class CreditRequestController {
             case PAGO ->
                 creditRequestManagementUseCase.pay(
                         new PayCommand(
-                                request.getItensPermitidos().stream()
+                                request.getPedidosPermitidos().stream()
                                         .map(item -> {
-                                            var detail = item.getItem();
+                                            var detail = item.getItens() != null && !item.getItens().isEmpty() ? item.getItens().get(0) : null;
                                             return new PayItemEntry(
                                                     item.getNumSolicitacao(),
                                                     detail != null ? detail.getNumSolicitacaoItem() : null,

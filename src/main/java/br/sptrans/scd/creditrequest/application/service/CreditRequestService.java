@@ -486,6 +486,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                         item.setCodSituacao(novoStatus);
 
                         if (acao == ActionStatus.PAGO) {
+                            log.warn("Item encontrado: NumLogicoCartao={}, CodCanal={}",
+                                    item.getNumLogicoCartao(), codCanal);
                             item.setDtPagtoEconomica(LocalDateTime.now());
                         }
 
