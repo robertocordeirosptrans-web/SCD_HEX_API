@@ -1,5 +1,6 @@
 package br.sptrans.scd.creditrequest.adapter.port.out.jpa.repository;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +13,23 @@ import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestIte
 import br.sptrans.scd.creditrequest.application.port.out.projection.ProductPeriodReportProjection;
 
 public interface CreditRequestItemJpaRepository extends JpaRepository<CreditRequestItemsEJpa, CreditRequestItemsEJpaKey>, JpaSpecificationExecutor<CreditRequestItemsEJpa> {
+        /**
+         * Busca os primeiros 100 itens de recarga com situação '04' e data de pagamento econômica no intervalo informado.
+         */
+        @Query(value = """
+                SELECT i.*
+                FROM SPTRANSDBA.SOL_DISTRIB_ITENS i
+                WHERE i.COD_SITUACAO = :codSituacao
+                  AND i.DT_PAGTO_ECONOMICA >= :dtInicio
+                  AND i.DT_PAGTO_ECONOMICA <= :dtFim
+                FETCH FIRST :limit ROWS ONLY
+                """, nativeQuery = true)
+        List<CreditRequestItemsEJpa> findFirstBySituacaoAndDtPagtoEconomicaBetween(
+                        @Param("codSituacao") String codSituacao,
+                        @Param("dtInicio") Timestamp dtInicio,
+                        @Param("dtFim") Timestamp dtFim,
+                        @Param("limit") int limit
+        );
 
     @Query(value = """
             SELECT

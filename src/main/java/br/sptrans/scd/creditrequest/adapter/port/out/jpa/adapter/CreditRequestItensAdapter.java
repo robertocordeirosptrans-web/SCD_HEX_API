@@ -1,5 +1,6 @@
 package br.sptrans.scd.creditrequest.adapter.port.out.jpa.adapter;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +26,11 @@ public class CreditRequestItensAdapter implements CreditRequestItemsRepository {
     public CreditRequestItems save(CreditRequestItems items) {
         CreditRequestItemsEJpa saved = itemJpaRepository.save(creditRequestMapper.toEntityItem(items));
         return creditRequestMapper.toDomainItem(saved);
+    }
+
+    @Override
+    public List<CreditRequestItemsEJpa> findFirstBySituacaoAndDtPagtoEconomicaBetween(String codSituacao, Timestamp dtInicio, Timestamp dtFim, Integer limit) {
+        return itemJpaRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim, limit);
     }
 
     @Override

@@ -488,7 +488,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                         if (acao == ActionStatus.PAGO) {
                             log.warn("Item encontrado: NumLogicoCartao={}, CodCanal={}",
                                     item.getNumLogicoCartao(), codCanal);
-                            item.setDtPagtoEconomica(LocalDateTime.now());
+                            item.setDtPagtoEconomica(dtConfirmaPagto != null ? dtConfirmaPagto : LocalDateTime.now());
                         }
 
                         itemRepository.save(item);
@@ -514,6 +514,20 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             Long numSolicitacao = Long.parseLong(parts[0]);
             String codCanal = parts[1];
             try {
+                // Atualizar campos do pedido durante o pagamento
+                if (acao == ActionStatus.PAGO) {
+                    Optional<CreditRequest> pedidoOpt = creditRequestRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
+                    if (pedidoOpt.isPresent()) {
+                        CreditRequest pedido = pedidoOpt.get();
+                        // Atualiza os campos
+                        pedido.setDtPagtoEconomica(dtConfirmaPagto != null ? dtConfirmaPagto : LocalDateTime.now());
+                        pedido.setDtConfirmaPagto(dtConfirmaPagto);
+                        pedido.setCodFormaPagto(codFormaPagto);
+                        creditRequestRepository.save(pedido);
+                        // Registra no histórico da solicitação
+                        historyService.saveRequestStatusHistory(pedido, numSolicitacao, codCanal, ORIGEM_TRANSICAO);
+                    }
+                }
                 consolidarStatusSolicitacao(numSolicitacao, codCanal, acao,
                         codFormaPagto, vlPago, dtConfirmaPagto, dtAceite);
                 solicitacoesAtualizadas++;
@@ -622,8 +636,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 solicitacao.setCodSituacao(novoStatusSolicitacao);
                 if (acao == ActionStatus.PAGO) {
                     solicitacao.setCodFormaPagto(codFormaPagto);
-                    solicitacao.setDtConfirmaPagto(
-                            dtConfirmaPagto != null ? dtConfirmaPagto : LocalDateTime.now());
+                    solicitacao.setDtConfirmaPagto(LocalDateTime.now());
+                    solicitacao.setDtPagtoEconomica(LocalDateTime.now());
                     solicitacao.setVlPago(vlPago != null ? vlPago : solicitacao.getVlTotal());
                 } else {
                     solicitacao.setDtAceite(dtAceite != null ? dtAceite : LocalDateTime.now());

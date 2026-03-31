@@ -75,8 +75,8 @@ public class CreditRequestItemsEJpa {
     @Column(name = "ID_FUNCIONARIO", length = 50)
     private String idFuncionario;
 
-    @Column(name = "COD_ASSINATURA_HSM", length = 500)
-    private String codAssinaturaHsm;
+    // @Column(name = "COD_ASSINATURA_HSM", length = 500)
+    // private String codAssinaturaHsm;
 
     @Column(name = "DT_CADASTRO")
     private LocalDateTime dtCadastro;
@@ -132,8 +132,6 @@ public class CreditRequestItemsEJpa {
     @Column(name = "FLG_OUTRAS_VIAS", length = 1)
     private String flgOutrasVias;
 
-    @Column(name = "COD_ASSDIG_RECARGA", length = 500)
-    private String codAssdigRecarga;
 
     @Column(name = "VL_AUTORIZACAO_HM", precision = 15, scale = 2)
     private BigDecimal vlAutorizacaoHm;

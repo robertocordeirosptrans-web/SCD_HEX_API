@@ -1,5 +1,6 @@
 package br.sptrans.scd.creditrequest.adapter.port.in.scheduler;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,7 +13,6 @@ import br.sptrans.scd.creditrequest.application.port.in.ReleaseRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
-import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +60,7 @@ public class ReleaseRechargeScheduler {
     /**
      * Tamanho de cada lote de solicitações processadas por execução.
      */
-    @Value("${scheduler.liberar-recarga.tamanho-lote:2}")
+    @Value("${scheduler.liberar-recarga.tamanho-lote:100}")
     private int tamanhoLote;
 
     /**
@@ -79,46 +79,31 @@ public class ReleaseRechargeScheduler {
 
         log.debug("Iniciando job LiberarRecarga. Janela: [{} - {}]", dtInicio, dtFim);
 
-        List<CreditRequest> solicitacoes = creditRequestRepository.findElegiveisParaLiberacao(
-                SituationCreditRequest.PAGO.getCode(),
-                dtInicio,
-                dtFim,
-                tamanhoLote);
+        // Busca diretamente os itens elegíveis conforme a nova query
+        String codSituacao = "04";
+        List<CreditRequestItemsEJpa> itensElegiveis = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(
+                codSituacao,
+                Timestamp.valueOf(dtInicio),
+                Timestamp.valueOf(dtFim),
+                tamanhoLote
+        );
 
-        int totalEncontradas = solicitacoes.size();
+        int totalEncontradas = itensElegiveis != null ? itensElegiveis.size() : 0;
         int processadas = 0;
         int ignoradas = 0;
 
-        for (CreditRequest solicitacao : solicitacoes) {
-            Long numSolicitacao = solicitacao.getNumSolicitacao();
-            String codCanal = solicitacao.getCodCanal();
-            String numLote = solicitacao.getNumLote();
+        if (itensElegiveis == null || itensElegiveis.isEmpty()) {
+            log.info("Nenhum item elegível encontrado para liberação de recarga na janela informada.");
+            return;
+        }
 
-            // Revalida condições de elegibilidade (evita corrida com alteração manual)
-            if (!SituationCreditRequest.PAGO.getCode().equals(solicitacao.getCodSituacao())) {
-                log.debug("Solicitação {}/{} ignorada: status atual é {}", numSolicitacao, codCanal, solicitacao.getCodSituacao());
-                ignoradas++;
-                continue;
-            }
-            if ("S".equals(solicitacao.getFlgCanc())) {
-                log.debug("Solicitação {}/{} ignorada: flgCanc=S", numSolicitacao, codCanal);
-                ignoradas++;
-                continue;
-            }
-            if ("S".equals(solicitacao.getFlgBloq())) {
-                log.debug("Solicitação {}/{} ignorada: flgBloq=S", numSolicitacao, codCanal);
-                ignoradas++;
-                continue;
-            }
-
-            if (!possuiItensElegiveis(solicitacao)) {
-                log.debug("Solicitação {}/{} ignorada: sem itens elegíveis em PAGO", numSolicitacao, codCanal);
-                ignoradas++;
-                continue;
-            }
+        for (CreditRequestItemsEJpa item : itensElegiveis) {
+            Long numSolicitacao = item.getId().getNumSolicitacao();
+            String codCanal = item.getId().getCodCanal();
+            String numLote = null; // Ajuste se necessário para obter o lote
 
             try {
-                releaseRechargeUseCase.liberarRecargaPorSolicitacao(numSolicitacao,numLote, codCanal);
+                releaseRechargeUseCase.liberarRecargaPorSolicitacao(numSolicitacao, numLote, codCanal);
                 processadas++;
                 log.info("Solicitação {}/{} liberada para recarga.", numSolicitacao, codCanal);
             } catch (Exception e) {
@@ -136,13 +121,11 @@ public class ReleaseRechargeScheduler {
      * {@link SituationCreditRequestItems#PAGO}.
      */
     boolean possuiItensElegiveis(CreditRequest solicitacao) {
-        
-
-        List<CreditRequestItemsEJpa> itens = itemRepository.findProcessRechargeService(solicitacao.getNumSolicitacao(), solicitacao.getCodCanal(), solicitacao.getNumLote());
-        if (itens == null || itens.isEmpty()) {
-            return false;
-        }
-        String codPago = SituationCreditRequestItems.PAGO.getCode();
-        return itens.stream().anyMatch(item -> codPago.equals(item.getCodSituacao()));
+        // Busca o primeiro item com situação '04' e data de pagamento econômica no intervalo
+        String codSituacao = "04";
+        Timestamp dtInicio = Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
+        Timestamp dtFim = Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
+        List<CreditRequestItemsEJpa> itens = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim,tamanhoLote);
+        return itens != null && !itens.isEmpty();
     }
 }

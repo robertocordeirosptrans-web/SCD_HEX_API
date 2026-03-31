@@ -10,10 +10,12 @@ import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestEJpa;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestEJpaKey;
+import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.repository.CreditRequestJpaRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
+import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -247,10 +249,10 @@ public class CreditRequestAdapterJpa implements CreditRequestRepository {
     }
 
     // Conversão auxiliar para itens
-    private CreditRequestItems toDomainCreditRequestItem(br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa e) {
+    private CreditRequestItems toDomainCreditRequestItem(CreditRequestItemsEJpa e) {
         if (e == null) return null;
         CreditRequestItems item = new CreditRequestItems();
-        br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey key = new br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey();
+        CreditRequestItemsKey key = new CreditRequestItemsKey();
         key.setNumSolicitacao(e.getId().getNumSolicitacao());
         key.setNumSolicitacaoItem(e.getId().getNumSolicitacaoItem());
         key.setCodCanal(e.getId().getCodCanal());
@@ -270,7 +272,7 @@ public class CreditRequestAdapterJpa implements CreditRequestRepository {
         item.setVlAjuste(e.getVlAjuste());
         item.setFlgAjuste(e.getFlgAjuste());
         item.setIdFuncionario(e.getIdFuncionario());
-        item.setCodAssinaturaHsm(e.getCodAssinaturaHsm());
+        // item.setCodAssinaturaHsm(e.getCodAssinaturaHsm());
         item.setDtCadastro(e.getDtCadastro());
         item.setDtManutencao(e.getDtManutencao());
         item.setSeqRecarga(e.getSeqRecarga());

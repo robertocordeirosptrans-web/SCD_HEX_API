@@ -48,7 +48,7 @@ public interface CreditRequestMapper {
         entity.setVlAjuste(items.getVlAjuste());
         entity.setFlgAjuste(items.getFlgAjuste());
         entity.setIdFuncionario(items.getIdFuncionario());
-        entity.setCodAssinaturaHsm(items.getCodAssinaturaHsm());
+        // entity.setCodAssinaturaHsm(items.getCodAssinaturaHsm());
         entity.setSeqRecarga(items.getSeqRecarga());
         entity.setDtEnvioHm(items.getDtEnvioHm());
         entity.setDtRetornoHm(items.getDtRetornoHm());
@@ -62,7 +62,7 @@ public interface CreditRequestMapper {
         entity.setFlgEvento(items.getFlgEvento());
         entity.setVlEvento(items.getVlEvento());
         entity.setFlgOutrasVias(items.getFlgOutrasVias());
-        entity.setCodAssdigRecarga(items.getCodAssdigRecarga());
+        // entity.setCodAssdigRecarga(items.getCodAssdigRecarga());
         entity.setVlAutorizacaoHm(items.getVlAutorizacaoHm());
         entity.setFlgLiminarLoja(items.getFlgLiminarLoja());
         entity.setCodProdutoHm(items.getCodProdutoHm());
@@ -174,7 +174,7 @@ public interface CreditRequestMapper {
         item.setVlAjuste(itemJpa.getVlAjuste());
         item.setFlgAjuste(itemJpa.getFlgAjuste());
         item.setIdFuncionario(itemJpa.getIdFuncionario());
-        item.setCodAssinaturaHsm(itemJpa.getCodAssinaturaHsm());
+        // item.setCodAssinaturaHsm(itemJpa.getCodAssinaturaHsm());
         item.setSeqRecarga(itemJpa.getSeqRecarga());
         item.setDtEnvioHm(itemJpa.getDtEnvioHm());
         item.setDtRetornoHm(itemJpa.getDtRetornoHm());
@@ -188,7 +188,7 @@ public interface CreditRequestMapper {
         item.setFlgEvento(itemJpa.getFlgEvento());
         item.setVlEvento(itemJpa.getVlEvento());
         item.setFlgOutrasVias(itemJpa.getFlgOutrasVias());
-        item.setCodAssdigRecarga(itemJpa.getCodAssdigRecarga());
+        // item.setCodAssdigRecarga(itemJpa.getCodAssdigRecarga());
         item.setVlAutorizacaoHm(itemJpa.getVlAutorizacaoHm());
         item.setFlgLiminarLoja(itemJpa.getFlgLiminarLoja());
         item.setCodProdutoHm(itemJpa.getCodProdutoHm());

@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.ReleaseRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
@@ -38,7 +37,6 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
 
     private final CreditRequestRepository creditRequestRepository;
     private final CreditRequestItemsRepository itemRepository;
-    private final CreditRequestMapper creditRequestMapper;
     private final HistCreditRequestService historyService;
     private final SituationAscertainedService situationAscertainedService;
 
@@ -93,27 +91,32 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
 
     @Transactional
     public void liberarRecargaPorSolicitacao(Long numSolicitacao, String codCanal, String numLote, String origemTransicao) {
-        log.debug("Liberando recarga para solicitação {}/{}", numSolicitacao, codCanal);
+        log.debug("Liberando recarga para solicitação {}/{} (novo método SQL)", numSolicitacao, codCanal);
 
-        // Busca todos os possíveis itens (por exemplo, IDs de 1 até N)
-        // Aqui, normalmente você teria uma forma de saber quantos itens buscar. Como não temos,
-        // vamos supor que existe um método para obter todos os numSolicitacaoItem para a solicitação.
-        // Caso contrário, será necessário adaptar para o seu contexto.
-        // Exemplo: supondo que existe um método para buscar todos os IDs dos itens
-        List<Long> numSolicitacaoItens = itemRepository.findNumSolicitacaoItemsBySolicitacaoCanalLote(numSolicitacao, codCanal, numLote);
-        if (numSolicitacaoItens == null || numSolicitacaoItens.isEmpty()) {
-            log.warn("Nenhum item encontrado para solicitação {}/{}", numSolicitacao, codCanal);
+        // Busca o primeiro item elegível conforme a nova query SQL
+        String codSituacao = "04";
+        // Para obter a data de pagamento econômica, normalmente seria necessário buscar na solicitação ou item
+        // Aqui, vamos assumir que o campo dtPagtoEconomica está disponível na solicitação (ajuste se necessário)
+        CreditRequest solicitacao = creditRequestRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal).orElse(null);
+        if (solicitacao == null || solicitacao.getDtPagtoEconomica() == null) {
+            log.warn("Solicitação ou data de pagamento econômica não encontrada para {}/{}", numSolicitacao, codCanal);
+            return;
+        }
+        java.sql.Timestamp dtInicio = java.sql.Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
+        java.sql.Timestamp dtFim = java.sql.Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
+        List<CreditRequestItemsEJpa> itens = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim,100);
+        if (itens == null || itens.isEmpty()) {
+            log.warn("Nenhum item elegível encontrado para solicitação {}/{} na data {}", numSolicitacao, codCanal, solicitacao.getDtPagtoEconomica());
             return;
         }
 
         int liberados = 0;
-        List<CreditRequestItemsEJpa> itens = new java.util.ArrayList<>();
-        for (Long numSolicitacaoItem : numSolicitacaoItens) {
+        for (CreditRequestItemsEJpa itemEJpa : itens) {
             CreditRequestItemsKey key = new CreditRequestItemsKey();
-            key.setNumSolicitacao(numSolicitacao);
-            key.setNumSolicitacaoItem(numSolicitacaoItem);
-            key.setCodCanal(codCanal);
-           
+            key.setNumSolicitacao(itemEJpa.getId().getNumSolicitacao());
+            key.setNumSolicitacaoItem(itemEJpa.getId().getNumSolicitacaoItem());
+            key.setCodCanal(itemEJpa.getId().getCodCanal());
+
             var optItem = itemRepository.findById(key);
             if (optItem.isEmpty()) {
                 continue;
@@ -127,7 +130,6 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
             itemRepository.save(item);
             historyService.saveItemStatusHistory(item, origemTransicao);
             liberados++;
-            itens.add(creditRequestMapper.toEntityItem(item));
             log.info("Item liberado - Solicitação={}, Item={}, NovoStatus={}",
                     numSolicitacao,
                     item.getId().getNumSolicitacaoItem(),

@@ -124,7 +124,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
         entity.setVlAjuste(item.getVlAjuste());
         entity.setFlgAjuste(item.getFlgAjuste());
         entity.setIdFuncionario(item.getIdFuncionario());
-        entity.setCodAssinaturaHsm(item.getCodAssinaturaHsm());
+        // entity.setCodAssinaturaHsm(item.getCodAssinaturaHsm());
         entity.setDtCadastro(item.getDtCadastro());
         entity.setDtManutencao(item.getDtManutencao());
         entity.setSeqRecarga(item.getSeqRecarga());
@@ -143,7 +143,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
         entity.setFlgEvento(item.getFlgEvento());
         entity.setVlEvento(item.getVlEvento());
         entity.setFlgOutrasVias(item.getFlgOutrasVias());
-        entity.setCodAssdigRecarga(item.getCodAssdigRecarga());
+        // entity.setCodAssdigRecarga(item.getCodAssdigRecarga());
         entity.setVlAutorizacaoHm(item.getVlAutorizacaoHm());
         entity.setFlgLiminarLoja(item.getFlgLiminarLoja());
         entity.setCodProdutoHm(item.getCodProdutoHm());

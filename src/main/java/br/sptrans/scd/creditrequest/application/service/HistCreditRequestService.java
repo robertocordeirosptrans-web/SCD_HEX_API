@@ -139,6 +139,7 @@ public class HistCreditRequestService implements HistCreditRequestManagementUseC
             history.setIdOrigemTransicao(origemTransicao);
             history.setDtCadastro(request.getDtCadastro());
             history.setDtManutencao(LocalDateTime.now());
+            log.info("[HISTORICO] Gravando dtPagtoEconomica no histórico: {} para solicitação {}", request.getDtPagtoEconomica(), numSolicitacao);
             history.setDtPgtoEconomica(request.getDtPagtoEconomica());
             history.setSqPID(request.getSqPid());
             history.setDtInicProcesso(request.getDtInicProcesso());
