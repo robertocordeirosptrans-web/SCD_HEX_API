@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
+import br.sptrans.scd.auth.application.port.in.PasswordValidator;
 import br.sptrans.scd.auth.application.port.out.GatewayEmail;
 import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenRepository;
@@ -19,6 +20,7 @@ import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.auth.domain.vo.PasswordValidationResult;
 import br.sptrans.scd.shared.exception.AccountBlockedException;
 import br.sptrans.scd.shared.exception.AuthenticationFailedException;
 import br.sptrans.scd.shared.exception.InactiveUserException;
@@ -34,17 +36,6 @@ import lombok.RequiredArgsConstructor;
 public class AuthService implements AuthUseCase {
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    // Padrões de validação de complexidade de senha
-    private static final java.util.regex.Pattern TEM_MAIUSCULA   = java.util.regex.Pattern.compile(".*[A-Z].*");
-    private static final java.util.regex.Pattern TEM_MINUSCULA   = java.util.regex.Pattern.compile(".*[a-z].*");
-    private static final java.util.regex.Pattern TEM_NUMERO      = java.util.regex.Pattern.compile(".*\\d.*");
-    private static final java.util.regex.Pattern TEM_ESPECIAL    = java.util.regex.Pattern.compile(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*");
-    private static final java.util.regex.Pattern TEM_SEQUENCIAL  = java.util.regex.Pattern.compile(
-            ".*(012|123|234|345|456|567|678|789|890"
-            + "|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz"
-            + "|ABC|BCD|CDE|DEF|EFG|FGH|GHI|HIJ|IJK|JKL|KLM|LMN|MNO|NOP|OPQ|PQR|QRS|RST|STU|TUV|UVW|VWX|WXY|XYZ).*"
-    );
-
     @Value("${scd.auth.token-ttl-minutos:15}")
     private long tokenTtlMinutos;
 
@@ -52,6 +43,7 @@ public class AuthService implements AuthUseCase {
     private final GroupUserRepository groupUserRepository;
     private final PasswordTokenRepository tokenRepository;
     private final GatewayEmail gatewayEmail;
+    private final PasswordValidator passwordValidator;
 
 
     // ── Autenticando um usuario ───────────────────────────────────────────────────────────
@@ -173,7 +165,10 @@ public class AuthService implements AuthUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", tokenObj.getIdUsuario()));
 
         // Valida complexidade
-        validarComplexidadeSenha(comando.novaSenha());
+        PasswordValidationResult validacao = passwordValidator.validate(comando.novaSenha(), user.getCodSenha());
+        if (!validacao.isValid()) {
+            throw new ValidationException(validacao.getErrorsAsString());
+        }
 
         // Persiste nova senha com BCrypt
         user.setSenhaAntiga(user.getCodSenha());
@@ -185,26 +180,5 @@ public class AuthService implements AuthUseCase {
         tokenRepository.invalidateTokensForUser(user.getIdUsuario());
     }
 
-    // ── Validações ───────────────────────────────────────────────────────
-    private void validarComplexidadeSenha(String senha) {
-        if (senha == null || senha.length() < 8) {
-            throw new ValidationException("A senha deve ter no mínimo 8 caracteres.");
-        }
-        if (!TEM_MAIUSCULA.matcher(senha).matches()) {
-            throw new ValidationException("A senha deve conter ao menos uma letra maiúscula.");
-        }
-        if (!TEM_MINUSCULA.matcher(senha).matches()) {
-            throw new ValidationException("A senha deve conter ao menos uma letra minúscula.");
-        }
-        if (!TEM_NUMERO.matcher(senha).matches()) {
-            throw new ValidationException("A senha deve conter ao menos um número.");
-        }
-        if (!TEM_ESPECIAL.matcher(senha).matches()) {
-            throw new ValidationException("A senha deve conter ao menos um caractere especial (!@#$% etc.).");
-        }
-        if (TEM_SEQUENCIAL.matcher(senha.toLowerCase()).matches()) {
-            throw new ValidationException("A senha não pode conter sequências óbvias (abc, 123 etc.).");
-        }
-    }
-
 }
+
