@@ -18,7 +18,6 @@ import br.sptrans.scd.auth.application.port.out.GatewayEmail;
 import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenRepository;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
-import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 import br.sptrans.scd.auth.domain.User;
@@ -159,10 +158,6 @@ public class AuthService implements AuthUseCase {
             resetToken.getToken());
     }
 
-    @Override
-    public Set<Functionality> loadPermissions(Long idUsuario) {
-              return userRepository.carregarFuncionalidadesEfetivas(idUsuario);
-    }
 
     @Override
     public AuthUseCase.UserContext loadUserContext(String codLogin) {

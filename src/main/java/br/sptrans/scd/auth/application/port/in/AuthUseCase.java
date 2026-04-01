@@ -2,7 +2,6 @@ package br.sptrans.scd.auth.application.port.in;
 
 import java.util.Set;
 
-import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.User;
 
 /**
@@ -34,7 +33,6 @@ public interface AuthUseCase {
      *
      * @return conjunto de funcionalidades efetivas do usuário
      */
-    Set<Functionality> loadPermissions(Long idUsuario);
 
     UserContext loadUserContext(String codLogin);
 
