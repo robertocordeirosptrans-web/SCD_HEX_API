@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UpdateUserDTO;
-import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO;
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserRequestDTO;
 import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserResponseDTO;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
@@ -49,7 +48,7 @@ public class UserController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public PageResponse<UserResponseDTO> listUsers(
-            @ModelAttribute UserFilterRequestDTO filtro,
+            @ModelAttribute UserManagementUseCase.UserFilterRequest filtro,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "idUsuario") String sortBy,

@@ -14,15 +14,16 @@ import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.enums.UserStatus;
 import br.sptrans.scd.shared.exception.BusinessException;
 import br.sptrans.scd.shared.exception.DuplicateResourceException;
-import br.sptrans.scd.shared.exception.EncryptorException;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
-import br.sptrans.scd.shared.security.Criptografia;
+import br.sptrans.scd.shared.security.PasswordHashUtil;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class UserManagementService implements UserManagementUseCase {
+
+    private static final String TEMP_PASSWORD = "SBEReset@#2026";
 
     private final UserRepository userRepository;
 
@@ -35,14 +36,7 @@ public class UserManagementService implements UserManagementUseCase {
             throw new DuplicateResourceException("Login", "codLogin", cmd.codLogin());
         }
 
-        String tempPassword = "SBEReset@#2026";
-
-        String passwordHash;
-        try {
-            passwordHash = Criptografia.encripta(tempPassword);
-        } catch (br.sptrans.scd.shared.exception.EncryptorException e) {
-            throw new RuntimeException("Erro ao gerar hash JWT da senha", e);
-        }
+        String passwordHash = PasswordHashUtil.hashBcrypt(TEMP_PASSWORD);
 
         User user = new User();
         user.setCodLogin(cmd.codLogin().trim().toLowerCase());
@@ -61,10 +55,8 @@ public class UserManagementService implements UserManagementUseCase {
         user.setDtExpiraSenha(LocalDateTime.now().plusMonths(3));
         user.setDtCriacao(LocalDateTime.now());
         user.setDtModi(LocalDateTime.now());
-        // Força troca de senha se senha temporária for SBEReset@#2026
-        if (tempPassword.equals("SBEReset@#2026")) {
-            user.setDtExpiraSenha(LocalDateTime.now());
-        }
+        // Força troca de senha no primeiro acesso com a senha temporária
+        user.setDtExpiraSenha(LocalDateTime.now());
 
         userRepository.save(user);
         return user;
@@ -139,20 +131,12 @@ public class UserManagementService implements UserManagementUseCase {
     public String adminResetPassword(AdminResetPasswordCommand cmd) {
         User user = findUserOrThrow(cmd.idUsuario());
 
-        // Nova senha temporária
-        String tempPassword = "SBEReset@#2026";
-
-        String newHash;
-        try {
-            newHash = Criptografia.encripta(tempPassword);
-        } catch (EncryptorException e) {
-            throw new RuntimeException("Erro ao gerar hash JWT da senha", e);
-        }
+        String newHash = PasswordHashUtil.hashBcrypt(TEMP_PASSWORD);
         String oldHash = user.getCodSenha(); // preserva senha atual como "anterior"
 
         userRepository.updatePassword(cmd.idUsuario(), newHash, oldHash, LocalDateTime.now());
 
-        return tempPassword;
+        return TEMP_PASSWORD;
     }
 
     // ── updateAccessSchedule ──────────────────────────────────────────────────
@@ -172,7 +156,7 @@ public class UserManagementService implements UserManagementUseCase {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "usuarios", key = "(#filtro.codStatus() ?: 'ALL') + '_' + (#filtro.nomUsuario() ?: '') + '_' + (#filtro.nomEmail() ?: '') + '_' + (#filtro.codPerfil() ?: '') + '_' + #page + '_' + #size + '_' + #sortBy + '_' + #sortDir")
-    public List<User> listUsersPaginated(br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO filtro, int page, int size, String sortBy, String sortDir) {
+    public List<User> listUsersPaginated(UserManagementUseCase.UserFilterRequest filtro, int page, int size, String sortBy, String sortDir) {
         int offset = page * size;
         // Adapte o repositório para aceitar os novos filtros se necessário
         return userRepository.findAllPaginated(
@@ -191,7 +175,7 @@ public class UserManagementService implements UserManagementUseCase {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "usuarios", key = "'count_' + (#filtro.codStatus() ?: 'ALL') + '_' + (#filtro.nomUsuario() ?: '') + '_' + (#filtro.nomEmail() ?: '') + '_' + (#filtro.codPerfil() ?: '')")
-    public long countUsers(br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO filtro) {
+    public long countUsers(UserManagementUseCase.UserFilterRequest filtro) {
         // Adapte o repositório para aceitar os novos filtros se necessário
         return userRepository.countAll(
             filtro.codStatus(),

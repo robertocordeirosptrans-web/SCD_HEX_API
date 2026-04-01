@@ -2,6 +2,11 @@ package br.sptrans.scd.auth.domain;
 
 import java.time.LocalDateTime;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class PasswordResetToken {
 
     private Long id;
@@ -23,44 +28,6 @@ public class PasswordResetToken {
         this.usado = true;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getIdUsuario() {
-        return idUsuario;
-    }
-
-    public void setIdUsuario(Long idUsuario) {
-        this.idUsuario = idUsuario;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public LocalDateTime getDtExpiracao() {
-        return dtExpiracao;
-    }
-
-    public void setDtExpiracao(LocalDateTime dtExpiracao) {
-        this.dtExpiracao = dtExpiracao;
-    }
-
-    public LocalDateTime getDtCriacao() {
-        return dtCriacao;
-    }
-
-    public void setDtCriacao(LocalDateTime dtCriacao) {
-        this.dtCriacao = dtCriacao;
-    }
+   
 
 }

@@ -4,13 +4,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
@@ -26,6 +24,7 @@ import br.sptrans.scd.shared.exception.AuthenticationFailedException;
 import br.sptrans.scd.shared.exception.InactiveUserException;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
 import br.sptrans.scd.shared.exception.ValidationException;
+import br.sptrans.scd.shared.security.PasswordHashUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -35,12 +34,12 @@ import lombok.RequiredArgsConstructor;
 public class AuthService implements AuthUseCase {
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    // Padrões de validação de senha
-    private static final Pattern TEM_MAIUSCULA = Pattern.compile(".*[A-Z].*");
-    private static final Pattern TEM_MINUSCULA = Pattern.compile(".*[a-z].*");
-    private static final Pattern TEM_NUMERO = Pattern.compile(".*\\d.*");
-    private static final Pattern TEM_ESPECIAL = Pattern.compile(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*");
-    private static final Pattern TEM_SEQUENCIAL = Pattern.compile(
+    // Padrões de validação de complexidade de senha
+    private static final java.util.regex.Pattern TEM_MAIUSCULA   = java.util.regex.Pattern.compile(".*[A-Z].*");
+    private static final java.util.regex.Pattern TEM_MINUSCULA   = java.util.regex.Pattern.compile(".*[a-z].*");
+    private static final java.util.regex.Pattern TEM_NUMERO      = java.util.regex.Pattern.compile(".*\\d.*");
+    private static final java.util.regex.Pattern TEM_ESPECIAL    = java.util.regex.Pattern.compile(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*");
+    private static final java.util.regex.Pattern TEM_SEQUENCIAL  = java.util.regex.Pattern.compile(
             ".*(012|123|234|345|456|567|678|789|890"
             + "|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz"
             + "|ABC|BCD|CDE|DEF|EFG|FGH|GHI|HIJ|IJK|JKL|KLM|LMN|MNO|NOP|OPQ|PQR|QRS|RST|STU|TUV|UVW|VWX|WXY|XYZ).*"
@@ -64,60 +63,31 @@ public class AuthService implements AuthUseCase {
                 log.warn("Usuário não encontrado: {}", comando.codLogin());
                 return new AuthenticationFailedException("Usuário ou senha inválidos.");
             });
-        log.info("Usuário encontrado: {} (status: {})", user.getCodLogin(), user.getCodStatus());
         // Conta bloqueada
         if (user.isBlocked()) {
-            log.warn("Usuário bloqueado: {}", user.getCodLogin());
+            log.warn("Tentativa de acesso em conta bloqueada. Login: {}", user.getCodLogin());
             throw new AccountBlockedException("Conta bloqueada por excesso de tentativas. Contate o administrador.");
         }
         // Conta inativa
         if (user.isInactive()) {
-            log.warn("Usuário inativo: {}", user.getCodLogin());
+            log.warn("Tentativa de acesso em conta inativa. Login: {}", user.getCodLogin());
             throw new InactiveUserException("Conta inativa. Contate o administrador.");
         }
 
-        String senhaRecebida = comando.senha();
         String hashArmazenado = user.getCodSenha() != null ? user.getCodSenha().trim() : null;
-        boolean isMd5 = senhaRecebida.matches("^[a-fA-F0-9]{32}$");
-        boolean isBcrypt = hashArmazenado != null && hashArmazenado.startsWith("$2a$");
-        log.info("Hash armazenado (primeiros 10 chars): {}", hashArmazenado != null ? hashArmazenado.substring(0, Math.min(10, hashArmazenado.length())) : "null");
-        log.info("Tipo de senha detectado: {}", isMd5 ? "MD5" : isBcrypt ? "BCrypt" : "JWT/OUTRO");
 
-        if (isMd5) {
-            log.info("Validando senha MD5 para usuário: {}", user.getCodLogin());
-            if (!senhaRecebida.equalsIgnoreCase(hashArmazenado)) {
-                log.warn("Senha MD5 inválida para usuário: {}", user.getCodLogin());
-                user.registrarTentativaFalha();
-                userRepository.atualizarTentativasEStatus(
+        if (!PasswordHashUtil.verificar(comando.senha(), hashArmazenado)) {
+            log.warn("Credenciais inválidas para o login: {}", user.getCodLogin());
+            user.registrarTentativaFalha();
+            userRepository.atualizarTentativasEStatus(
                     user.getIdUsuario(),
                     user.getNumTentativasFalha(),
                     user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
-                if (user.isBlocked()) {
-                    log.warn("Usuário bloqueado após tentativas inválidas: {}", user.getCodLogin());
-                    throw new AccountBlockedException("Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
-                }
-                throw new AuthenticationFailedException("Usuário ou senha inválidos. Tentativa " + user.getNumTentativasFalha() + " de 3.");
+            if (user.isBlocked()) {
+                log.warn("Conta bloqueada após excesso de tentativas. Login: {}", user.getCodLogin());
+                throw new AccountBlockedException("Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
             }
-            log.info("Senha MD5 válida para usuário: {}", user.getCodLogin());
-        } else if (isBcrypt) {
-            log.info("Validando senha BCrypt para usuário: {}", user.getCodLogin());
-            if (!BCrypt.checkpw(senhaRecebida, hashArmazenado)) {
-                log.warn("Senha BCrypt inválida para usuário: {}", user.getCodLogin());
-                user.registrarTentativaFalha();
-                userRepository.atualizarTentativasEStatus(
-                        user.getIdUsuario(),
-                        user.getNumTentativasFalha(),
-                        user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
-                if (user.isBlocked()) {
-                    log.warn("Usuário bloqueado após tentativas inválidas: {}", user.getCodLogin());
-                    throw new AccountBlockedException("Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
-                }
-                throw new AuthenticationFailedException("Usuário ou senha inválidos. Tentativa " + user.getNumTentativasFalha() + " de 3.");
-            }
-            log.info("Senha BCrypt válida para usuário: {}", user.getCodLogin());
-        } else {
-            log.warn("Tipo de senha não suportado para usuário: {}", user.getCodLogin());
-            throw new AuthenticationFailedException("Usuário ou senha inválidos.");
+            throw new AuthenticationFailedException("Usuário ou senha inválidos. Tentativa " + user.getNumTentativasFalha() + " de 3.");
         }
 
         // Valida jornada de acesso
@@ -206,9 +176,9 @@ public class AuthService implements AuthUseCase {
         // Valida complexidade
         validarComplexidadeSenha(comando.novaSenha());
 
-        // Persiste nova senha (aqui você deve definir a lógica desejada para salvar a nova senha, pois a lógica de JWT foi removida)
+        // Persiste nova senha com BCrypt
         user.setSenhaAntiga(user.getCodSenha());
-        user.setCodSenha(comando.novaSenha());
+        user.setCodSenha(PasswordHashUtil.hashBcrypt(comando.novaSenha()));
         userRepository.save(user);
 
         // Invalida o token
