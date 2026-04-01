@@ -23,7 +23,6 @@ import br.sptrans.scd.shared.exception.AuthenticationFailedException;
 import br.sptrans.scd.shared.exception.InactiveUserException;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
 import br.sptrans.scd.shared.exception.ValidationException;
-import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 
 @Service

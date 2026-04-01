@@ -535,11 +535,15 @@ public class GlobalExceptionHandler {
     }
 
 
+
     /**
-     * Handler genérico para exceções de módulos que implementam ModuleException
+     * Trata exceções genéricas não tratadas
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleModuleException(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleGenericException(
+            Exception ex,
+            HttpServletRequest request) {
+        // Se for uma exceção de módulo, tratar de forma diferenciada
         if (ex instanceof ModuleException moduleEx) {
             HttpStatus status = moduleEx.getHttpStatus();
             String errorCode = moduleEx.getErrorCode();
@@ -553,21 +557,9 @@ public class GlobalExceptionHandler {
             log.warn("Module error at URI: {} - Code: {} - Message: {}", request.getRequestURI(), errorCode, moduleEx.getMessage());
             return ResponseEntity.status(status).body(errorResponse);
         }
-        // fallback para outros tipos de exceção
-        return null;
-    }
-
-    /**
-     * Trata exceções genéricas não tratadas
-     */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(
-            Exception ex,
-            HttpServletRequest request) {
-
         // Log seguro da exceção sem expor detalhes sensíveis
         log.error("Internal server error at URI: {} - Exception type: {}", 
-                  request.getRequestURI(), 
+                  request.getRequestURI(),
                   ex.getClass().getSimpleName(), 
                   ex);
 

@@ -1,7 +1,7 @@
 package br.sptrans.scd.auth.adapter.port.in.rest.dto;
 
 import java.time.LocalDateTime;
-import java.util.Date;
+
 
 public record UserRequestDTO(
     String codLogin,

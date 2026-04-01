@@ -3,7 +3,7 @@ package br.sptrans.scd.auth.domain;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Calendar;
-import java.util.Date;
+
 
 /**
  * Objeto de Valor: regras de acesso por jornada. Encapsula a lógica de
