@@ -36,8 +36,8 @@ public class User {
     private String codRg;
     private String nomEmail;
     private String codEmpresa;
-    private Date dt_jornada_ini;
-    private Date dt_jornada_fim;
+    private LocalDateTime dt_jornada_ini;
+    private LocalDateTime dt_jornada_fim;
     private ClassificationPerson codClassificacaoPessoa;
     private String oldSenha;
     private Integer numTentativasFalha = 0;

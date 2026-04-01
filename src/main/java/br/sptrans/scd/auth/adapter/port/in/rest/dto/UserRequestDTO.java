@@ -1,5 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.in.rest.dto;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public record UserRequestDTO(
@@ -9,7 +10,7 @@ public record UserRequestDTO(
     String codCpf,
     String codRg,
     String numDiasSemanasPermitidos,
-    Date dtJornadaIni,
-    Date dtJornadaFim,
+    LocalDateTime dtJornadaIni,
+    LocalDateTime dtJornadaFim,
     Long idUsuarioLogado
 ) {}

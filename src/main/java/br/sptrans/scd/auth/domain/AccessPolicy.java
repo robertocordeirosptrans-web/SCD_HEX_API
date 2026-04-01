@@ -1,5 +1,7 @@
 package br.sptrans.scd.auth.domain;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -13,10 +15,10 @@ import java.util.Date;
 public class AccessPolicy {
 
     private final String diasPermitidos;  // ex: "2,3,4,5,6" = seg-sex
-    private final Date jornadaInicio;
-    private final Date jornadaFim;
+    private final LocalDateTime jornadaInicio;
+    private final LocalDateTime jornadaFim;
 
-    public AccessPolicy(String diasPermitidos, Date jornadaInicio, Date jornadaFim) {
+    public AccessPolicy(String diasPermitidos, LocalDateTime jornadaInicio, LocalDateTime jornadaFim) {
         this.diasPermitidos = diasPermitidos;
         this.jornadaInicio = jornadaInicio;
         this.jornadaFim = jornadaFim;
@@ -52,8 +54,8 @@ public class AccessPolicy {
         Calendar inicio = Calendar.getInstance();
         Calendar fim = Calendar.getInstance();
 
-        inicio.setTime(jornadaInicio);
-        fim.setTime(jornadaFim);
+        inicio.setTime(Timestamp.valueOf(jornadaInicio));
+        fim.setTime(Timestamp.valueOf(jornadaFim));
 
         // Comparação apenas de hora/minuto
         int minutosAgora = agora.get(Calendar.HOUR_OF_DAY) * 60 + agora.get(Calendar.MINUTE);

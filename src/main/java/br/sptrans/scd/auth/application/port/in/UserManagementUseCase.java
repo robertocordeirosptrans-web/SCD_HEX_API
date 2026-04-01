@@ -1,5 +1,6 @@
 package br.sptrans.scd.auth.application.port.in;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -115,8 +116,8 @@ public interface UserManagementUseCase {
             String codCpf,
             String codRg,
             String numDiasSemanasPermitidos, // ex: "2,3,4,5,6"
-            Date dtJornadaIni,
-            Date dtJornadaFim,
+            LocalDateTime dtJornadaIni,
+            LocalDateTime dtJornadaFim,
             Long idUsuarioLogado) {
 
     }
