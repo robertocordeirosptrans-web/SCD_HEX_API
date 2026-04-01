@@ -1,5 +1,8 @@
 package br.sptrans.scd.shared.security;
 
+
+import java.security.MessageDigest;
+
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +51,7 @@ public class Criptografia {
     public static String getMD5(String s) {
         try {
             byte[] bbb = s.getBytes();
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance("MD5");
             md.update(bbb);
             byte[] digest = md.digest();
             s = "";

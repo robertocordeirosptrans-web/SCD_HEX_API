@@ -1,11 +1,11 @@
 package br.sptrans.scd.auth.domain;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 import br.sptrans.scd.auth.domain.enums.UserStatus;
+import br.sptrans.scd.auth.domain.vo.AccessPolicy;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
