@@ -7,9 +7,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.product.adapter.out.jpa.entity.FareEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.FareMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.FareJpaRepository;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.FareEntityJpa;
 import br.sptrans.scd.product.application.port.out.repository.FareRepository;
 import br.sptrans.scd.product.domain.Fare;
 import jakarta.transaction.Transactional;

@@ -1,6 +1,6 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
-import br.sptrans.scd.product.adapter.out.jpa.entity.ProductVersionEntityJpa;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.ProductVersionEntityJpa;
 import br.sptrans.scd.product.domain.ProductVersion;
 
 public interface ProductVersionMapper {

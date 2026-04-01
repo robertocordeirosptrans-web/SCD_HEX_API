@@ -1,4 +1,4 @@
-package br.sptrans.scd.product.adapter.in.rest;
+package br.sptrans.scd.product.adapter.port.in.rest;
 
 // ...
 

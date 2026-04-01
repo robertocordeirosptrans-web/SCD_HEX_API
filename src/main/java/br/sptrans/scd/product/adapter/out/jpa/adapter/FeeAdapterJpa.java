@@ -5,12 +5,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.product.adapter.out.jpa.entity.AdministrativeFeeEntityJpa;
-import br.sptrans.scd.product.adapter.out.jpa.entity.ChannelFeeEntityJpa;
-import br.sptrans.scd.product.adapter.out.jpa.entity.ChannelFeeKeyEntityJpa;
-import br.sptrans.scd.product.adapter.out.jpa.entity.DestinyFeeEntityJpa;
-import br.sptrans.scd.product.adapter.out.jpa.entity.FeeEntityJpa;
-import br.sptrans.scd.product.adapter.out.jpa.entity.ServiceFeeEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.AdministrativeFeeMapper;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ChannelFeeMapper;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.DestinyFeeMapper;
@@ -21,6 +15,12 @@ import br.sptrans.scd.product.adapter.out.jpa.repository.ChannelFeeJpaRepository
 import br.sptrans.scd.product.adapter.out.jpa.repository.DestinyFeeJpaRepository;
 import br.sptrans.scd.product.adapter.out.jpa.repository.FeeJpaRepository;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ServiceFeeJpaRepository;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.AdministrativeFeeEntityJpa;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.ChannelFeeEntityJpa;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.ChannelFeeKeyEntityJpa;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.DestinyFeeEntityJpa;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.FeeEntityJpa;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.ServiceFeeEntityJpa;
 import br.sptrans.scd.product.application.port.out.repository.AdministrativeFeeRepository;
 import br.sptrans.scd.product.application.port.out.repository.ChannelFeeRepository;
 import br.sptrans.scd.product.application.port.out.repository.DestinyFeeRepository;

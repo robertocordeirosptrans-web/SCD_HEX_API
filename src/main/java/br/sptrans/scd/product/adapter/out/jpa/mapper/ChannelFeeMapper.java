@@ -1,7 +1,7 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
-import br.sptrans.scd.product.adapter.out.jpa.entity.ChannelFeeEntityJpa;
-import br.sptrans.scd.product.adapter.out.jpa.entity.ChannelFeeKeyEntityJpa;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.ChannelFeeEntityJpa;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.ChannelFeeKeyEntityJpa;
 import br.sptrans.scd.product.domain.ChannelFee;
 import br.sptrans.scd.product.domain.ChannelFeeKey;
 

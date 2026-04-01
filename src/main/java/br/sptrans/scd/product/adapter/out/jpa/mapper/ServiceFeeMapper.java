@@ -1,7 +1,7 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.ServiceFeeEntityJpa;
 import br.sptrans.scd.product.domain.ServiceFee;
-import br.sptrans.scd.product.adapter.out.jpa.entity.ServiceFeeEntityJpa;
 
 public interface ServiceFeeMapper {
     static ServiceFee toDomain(ServiceFeeEntityJpa entity) {

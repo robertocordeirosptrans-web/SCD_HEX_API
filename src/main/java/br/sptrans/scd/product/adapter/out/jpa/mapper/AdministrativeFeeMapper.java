@@ -2,8 +2,8 @@ package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
 
 
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.AdministrativeFeeEntityJpa;
 import br.sptrans.scd.product.domain.AdministrativeFee;
-import br.sptrans.scd.product.adapter.out.jpa.entity.AdministrativeFeeEntityJpa;
 
 public interface AdministrativeFeeMapper {
 	static AdministrativeFee toDomain(AdministrativeFeeEntityJpa entity) {

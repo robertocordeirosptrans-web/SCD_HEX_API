@@ -1,7 +1,7 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.DestinyFeeEntityJpa;
 import br.sptrans.scd.product.domain.DestinyFee;
-import br.sptrans.scd.product.adapter.out.jpa.entity.DestinyFeeEntityJpa;
 
 public interface DestinyFeeMapper {
     static DestinyFee toDomain(DestinyFeeEntityJpa entity) {

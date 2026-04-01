@@ -1,4 +1,4 @@
-package br.sptrans.scd.product.adapter.out.jpa.entity;
+package br.sptrans.scd.product.adapter.port.out.persistence.entity;
 
 import java.time.LocalDateTime;
 
@@ -12,27 +12,27 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "MODALIDADES", schema = "SPTRANSDBA")
+@Table(name = "TECNOLOGIAS", schema = "SPTRANSDBA")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ModalityEntityJpa {
+public class TechnologyEntityJpa {
 
     @Id
-    @Column(name = "COD_MODALIDADE", nullable = false, length = 20)
-    private String codModalidade;
+    @Column(name = "COD_TECNOLOGIA", nullable = false, length = 20)
+    private String codTecnologia;
 
-    @Column(name = "DES_MODALIDADE", length = 20)
-    private String desModalidade;
+    @Column(name = "DES_TECNOLOGIA", length = 60)
+    private String desTecnologia;
 
-    @Column(name = "ST_MODALIDADES", length = 1)
+    @Column(name = "ST_TECNOLOGIAS", length = 1)
     private String codStatus;
 
-    @Column(name = "DT_CADASTRO", length = 20)
+    @Column(name = "DT_CADASTRO")
     private LocalDateTime dtCadastro;
 
-    @Column(name = "DT_MANUTENCAO", length = 20)
+    @Column(name = "DT_MANUTENCAO")
     private LocalDateTime dtManutencao;
 
     @Column(name = "ID_USUARIO_CADASTRO", length = 50)

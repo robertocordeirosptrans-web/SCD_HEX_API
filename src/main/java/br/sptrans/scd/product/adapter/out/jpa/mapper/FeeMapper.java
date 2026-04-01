@@ -1,7 +1,7 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.FeeEntityJpa;
 import br.sptrans.scd.product.domain.Fee;
-import br.sptrans.scd.product.adapter.out.jpa.entity.FeeEntityJpa;
 
 public interface FeeMapper {
 

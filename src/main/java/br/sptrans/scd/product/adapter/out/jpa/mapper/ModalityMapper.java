@@ -2,7 +2,7 @@ package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.product.adapter.out.jpa.entity.ModalityEntityJpa;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.ModalityEntityJpa;
 import br.sptrans.scd.product.domain.Modality;
 
 public interface ModalityMapper {

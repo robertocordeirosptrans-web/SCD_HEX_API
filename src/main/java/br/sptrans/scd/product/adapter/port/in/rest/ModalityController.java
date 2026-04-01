@@ -1,4 +1,4 @@
-package br.sptrans.scd.product.adapter.in.rest;
+package br.sptrans.scd.product.adapter.port.in.rest;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,4 +1,4 @@
-package br.sptrans.scd.product.adapter.out.jpa.entity;
+package br.sptrans.scd.product.adapter.port.out.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,17 +10,17 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "TAXAS_DESTINO", schema = "SPTRANSDBA")
+@Table(name = "LNK_SCP_TB_TPCARTAO")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DestinyFeeEntityJpa {
+public class CardsTypeEntityJpa {
 
     @Id
-    @Column(name = "ID_TAXA", nullable = false)
-    private Long codTaxaDes;
+    @Column(name = "NI_IDTPCARTAO", length = 10)
+    private String codTipoCartao;
 
-    @Column(name = "COD_CANALDESTINO", length = 20)
-    private String codCanalDestino;
+    @Column(name = "VC_DESC", length = 10)
+    private String descTipoCartao;
 }

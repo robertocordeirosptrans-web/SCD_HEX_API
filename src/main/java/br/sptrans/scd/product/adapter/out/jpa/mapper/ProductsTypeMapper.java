@@ -1,7 +1,7 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
-import br.sptrans.scd.product.adapter.out.jpa.entity.ModalityEntityJpa;
-import br.sptrans.scd.product.adapter.out.jpa.entity.ProductTypesEntityJpa;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.ModalityEntityJpa;
+import br.sptrans.scd.product.adapter.port.out.persistence.entity.ProductTypesEntityJpa;
 import br.sptrans.scd.product.domain.Modality;
 import br.sptrans.scd.product.domain.ProductType;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
