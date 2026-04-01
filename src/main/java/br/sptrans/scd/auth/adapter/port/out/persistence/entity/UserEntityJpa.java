@@ -78,10 +78,10 @@ public class UserEntityJpa {
     private String codEmpresa;
 
     @Column(name = "DT_JORNADA_INI")
-    private Date dt_jornada_ini;
+    private LocalDateTime dt_jornada_ini;
 
     @Column(name = "DT_JORNADA_FIM")
-    private Date dt_jornada_fim;
+    private LocalDateTime dt_jornada_fim;
 
     @Column(name = "COD_CLASSIFICACAO_PESSOA")
     private String codClassificacaoPessoa;
