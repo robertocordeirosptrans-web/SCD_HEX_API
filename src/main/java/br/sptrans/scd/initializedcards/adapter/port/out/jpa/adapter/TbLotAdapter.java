@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity.TbLotSCDEntityJpa;
 import br.sptrans.scd.initializedcards.adapter.port.out.jpa.mapper.TbLotSCDMapper;
 import br.sptrans.scd.initializedcards.adapter.port.out.jpa.repository.TbLotJpaRepository;
+import br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity.TbLotSCDEntityJpa;
 import br.sptrans.scd.initializedcards.application.port.out.TbLotRepository;
 import br.sptrans.scd.initializedcards.domain.TbLotSCD;
 import jakarta.transaction.Transactional;

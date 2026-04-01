@@ -4,8 +4,8 @@ import org.springframework.stereotype.Repository;
 import lombok.RequiredArgsConstructor;
 import br.sptrans.scd.initializedcards.application.port.out.HistRequestInitializedRepository;
 import br.sptrans.scd.initializedcards.domain.HistRequestInitializedCards;
-import br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity.HistRICEntityJpa;
 import br.sptrans.scd.initializedcards.adapter.port.out.jpa.repository.HistRequestIniJpaRepository;
+import br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity.HistRICEntityJpa;
 import br.sptrans.scd.initializedcards.adapter.port.out.jpa.mapper.HistRequestInitializedMapper;
 
 import java.util.Optional;

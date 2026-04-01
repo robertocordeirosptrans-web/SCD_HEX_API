@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity.RICEntityJpa;
 import br.sptrans.scd.initializedcards.adapter.port.out.jpa.mapper.RequestInitializedMapper;
 import br.sptrans.scd.initializedcards.adapter.port.out.jpa.repository.RequestIniJpaRepository;
+import br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity.RICEntityJpa;
 import br.sptrans.scd.initializedcards.application.port.out.RequestInitializedRepository;
 import br.sptrans.scd.initializedcards.domain.RequestInitializedCards;
 import lombok.RequiredArgsConstructor;

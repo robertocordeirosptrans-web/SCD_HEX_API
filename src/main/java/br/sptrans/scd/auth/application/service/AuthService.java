@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
+import br.sptrans.scd.auth.adapter.port.out.security.ProviderJwtToken;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.out.GatewayEmail;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenRepository;
@@ -23,7 +24,6 @@ import br.sptrans.scd.shared.exception.AuthenticationFailedException;
 import br.sptrans.scd.shared.exception.InactiveUserException;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
 import br.sptrans.scd.shared.exception.ValidationException;
-import br.sptrans.scd.shared.security.ProviderJwtToken;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 

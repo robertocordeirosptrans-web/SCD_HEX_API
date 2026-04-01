@@ -2,7 +2,7 @@ package br.sptrans.scd.initializedcards.adapter.port.out.jpa.mapper;
 
 import org.springframework.stereotype.Component;
 
-import br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity.TbLotSCDEntityJpa;
+import br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity.TbLotSCDEntityJpa;
 import br.sptrans.scd.initializedcards.domain.TbLotSCD;
 
 @Component

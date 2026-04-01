@@ -1,6 +1,6 @@
 package br.sptrans.scd.initializedcards.adapter.port.out.jpa.mapper;
 
-import br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity.HistRICEntityJpa;
+import br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity.HistRICEntityJpa;
 import br.sptrans.scd.initializedcards.domain.HistRequestInitializedCards;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

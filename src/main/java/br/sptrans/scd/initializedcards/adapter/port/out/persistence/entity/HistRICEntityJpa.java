@@ -1,4 +1,4 @@
-package br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity;
+package br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity;
 
 import java.util.Date;
 
@@ -12,15 +12,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "SOLICITA_CARTAO_INICIALIZADO", schema = "SPTRANSDBA")
+@Table(name = "HIST_SOLIC_CARTAO_INICIALIZADO", schema = "SPTRANSDBA")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RICEntityJpa {
+public class HistRICEntityJpa {
 
     @EmbeddedId
-    private RICEntityJpaKey id;
+    private HistRICEntityJpaKey id;
 
     @Column(name = "COD_ADQUIRENTE", length = 20)
     private String codAdquirente;

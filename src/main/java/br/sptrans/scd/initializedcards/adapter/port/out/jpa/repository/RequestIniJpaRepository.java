@@ -2,12 +2,12 @@ package br.sptrans.scd.initializedcards.adapter.port.out.jpa.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-
-import br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity.RICEntityJpa;
-import br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity.RICEntityJpaKey;
-
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity.RICEntityJpa;
+import br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity.RICEntityJpaKey;
+
 import java.util.Optional;
 
 public interface RequestIniJpaRepository extends JpaRepository<RICEntityJpa, RICEntityJpaKey>, JpaSpecificationExecutor<RICEntityJpa> {

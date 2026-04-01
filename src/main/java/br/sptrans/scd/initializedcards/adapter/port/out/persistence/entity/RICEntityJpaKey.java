@@ -1,4 +1,4 @@
-package br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity;
+package br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity;
 
 import java.io.Serializable;
 

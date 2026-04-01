@@ -1,4 +1,4 @@
-package br.sptrans.scd.shared.security;
+package br.sptrans.scd.shared.config;
 
 import java.util.Properties;
 

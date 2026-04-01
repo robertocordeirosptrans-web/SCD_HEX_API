@@ -4,10 +4,10 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity.RequestLotSCPEntityJpa;
-import br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity.RequestLotSCPEntityJpaKey;
 import br.sptrans.scd.initializedcards.adapter.port.out.jpa.mapper.RequestLotMapper;
 import br.sptrans.scd.initializedcards.adapter.port.out.jpa.repository.RequestLotJpaRepository;
+import br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity.RequestLotSCPEntityJpa;
+import br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity.RequestLotSCPEntityJpaKey;
 import br.sptrans.scd.initializedcards.application.port.out.RequestLotSCPRepository;
 import br.sptrans.scd.initializedcards.domain.RequestLotSCP;
 import br.sptrans.scd.initializedcards.domain.RequestLotSCPKey;

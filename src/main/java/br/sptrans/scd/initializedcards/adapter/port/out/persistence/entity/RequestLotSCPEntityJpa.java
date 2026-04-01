@@ -1,4 +1,4 @@
-package br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity;
+package br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
