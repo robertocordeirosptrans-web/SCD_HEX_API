@@ -112,12 +112,11 @@ public class AuthService implements AuthUseCase {
         // Invalida token anterior, se existir
         tokenRepository.invalidateTokensForUser(user.getIdUsuario());
 
-        // Cria novo token com TTL
+        // Cria novo token com TTL (inicialmente como "não utilizado")
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setIdUsuario(user.getIdUsuario());
         resetToken.setToken(UUID.randomUUID().toString());
         resetToken.setDtExpiracao(LocalDateTime.now().plusMinutes(tokenTtlMinutos));
-        resetToken.marcarComoUsado();
 
         tokenRepository.save(resetToken);
 
@@ -181,7 +180,8 @@ public class AuthService implements AuthUseCase {
         user.setCodSenha(PasswordHashUtil.hashBcrypt(comando.novaSenha()));
         userRepository.save(user);
 
-        // Invalida o token
+        // Marca token como utilizado e invalida todos os demais
+        tokenObj.markAsUsed();
         tokenRepository.invalidateTokensForUser(user.getIdUsuario());
     }
 

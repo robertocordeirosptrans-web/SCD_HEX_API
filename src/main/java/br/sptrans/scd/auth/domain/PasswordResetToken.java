@@ -24,7 +24,7 @@ public class PasswordResetToken {
         return !isExpired() && !this.usado;
     }
 
-    public void marcarComoUsado() {
+    public void markAsUsed() {
         this.usado = true;
     }
 

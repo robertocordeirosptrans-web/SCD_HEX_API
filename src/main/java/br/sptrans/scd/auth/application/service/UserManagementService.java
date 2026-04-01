@@ -155,7 +155,7 @@ public class UserManagementService implements UserManagementUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "usuarios", key = "(#filtro.codStatus() ?: 'ALL') + '_' + (#filtro.nomUsuario() ?: '') + '_' + (#filtro.nomEmail() ?: '') + '_' + (#filtro.codPerfil() ?: '') + '_' + #page + '_' + #size + '_' + #sortBy + '_' + #sortDir")
+    @Cacheable(value = "usuarios", keyGenerator = "listUsersPaginatedKeyGenerator")
     public List<User> listUsersPaginated(UserManagementUseCase.UserFilterRequest filtro, int page, int size, String sortBy, String sortDir) {
         int offset = page * size;
         // Adapte o repositório para aceitar os novos filtros se necessário
@@ -174,7 +174,7 @@ public class UserManagementService implements UserManagementUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "usuarios", key = "'count_' + (#filtro.codStatus() ?: 'ALL') + '_' + (#filtro.nomUsuario() ?: '') + '_' + (#filtro.nomEmail() ?: '') + '_' + (#filtro.codPerfil() ?: '')")
+    @Cacheable(value = "usuarios", keyGenerator = "countUsersKeyGenerator")
     public long countUsers(UserManagementUseCase.UserFilterRequest filtro) {
         // Adapte o repositório para aceitar os novos filtros se necessário
         return userRepository.countAll(
