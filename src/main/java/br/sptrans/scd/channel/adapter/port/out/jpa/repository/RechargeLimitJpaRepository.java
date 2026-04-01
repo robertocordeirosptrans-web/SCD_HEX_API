@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.RechargeLimitEntityJpa;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.RechargeLimitKeyEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.RechargeLimitEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.RechargeLimitKeyEntityJpa;
 
 public interface RechargeLimitJpaRepository extends JpaRepository<RechargeLimitEntityJpa, RechargeLimitKeyEntityJpa>, JpaSpecificationExecutor<RechargeLimitEntityJpa> {
 

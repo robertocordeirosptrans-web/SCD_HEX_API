@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.AddressChannelEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.AddressChannelMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.AddressChannelJpaRepository;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AddressChannelEntityJpa;
 import br.sptrans.scd.channel.application.port.out.AddressChannelRepository;
 import br.sptrans.scd.channel.domain.AddressChannel;
 import lombok.RequiredArgsConstructor;

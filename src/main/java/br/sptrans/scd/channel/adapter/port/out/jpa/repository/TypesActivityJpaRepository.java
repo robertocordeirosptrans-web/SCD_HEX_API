@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.TypesActivityEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.TypesActivityEntityJpa;
 
 public interface TypesActivityJpaRepository extends JpaRepository<TypesActivityEntityJpa, String>, JpaSpecificationExecutor<TypesActivityEntityJpa> {
 

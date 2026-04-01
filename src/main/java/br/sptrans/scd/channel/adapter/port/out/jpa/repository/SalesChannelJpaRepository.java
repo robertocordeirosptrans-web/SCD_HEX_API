@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.SalesChannelEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.SalesChannelEntityJpa;
 
 public interface SalesChannelJpaRepository extends JpaRepository<SalesChannelEntityJpa, String>, JpaSpecificationExecutor<SalesChannelEntityJpa> {
 

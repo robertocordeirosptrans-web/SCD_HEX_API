@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.MarketingDistribuitionChannelEntityJpa;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.MarketingDistribuitionChannelKeyEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.MarketingDistribuitionChannelEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.MarketingDistribuitionChannelKeyEntityJpa;
 
 public interface MarketingDistribuitionChannelJpaRepository extends JpaRepository<MarketingDistribuitionChannelEntityJpa, MarketingDistribuitionChannelKeyEntityJpa>, JpaSpecificationExecutor<MarketingDistribuitionChannelEntityJpa> {
 

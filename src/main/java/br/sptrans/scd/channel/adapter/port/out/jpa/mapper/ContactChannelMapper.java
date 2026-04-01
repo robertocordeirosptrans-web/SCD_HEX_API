@@ -12,8 +12,8 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
 
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ContactChannelEntityJpa;
 import br.sptrans.scd.channel.domain.ContactChannel;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ContactChannelEntityJpa;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ContactChannelMapper {

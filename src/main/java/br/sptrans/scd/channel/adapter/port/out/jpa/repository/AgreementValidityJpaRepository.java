@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.AgreementValidityEntityJpa;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.AgreementValidityKeyEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AgreementValidityEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AgreementValidityKeyEntityJpa;
 
 public interface AgreementValidityJpaRepository extends JpaRepository<AgreementValidityEntityJpa, AgreementValidityKeyEntityJpa>, JpaSpecificationExecutor<AgreementValidityEntityJpa> {
 

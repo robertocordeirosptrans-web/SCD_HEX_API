@@ -6,8 +6,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.TypesActivityEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.TypesActivityJpaRepository;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.TypesActivityEntityJpa;
 import br.sptrans.scd.channel.application.port.out.TypesActivityRepository;
 import br.sptrans.scd.channel.domain.TypesActivity;
 import lombok.RequiredArgsConstructor;

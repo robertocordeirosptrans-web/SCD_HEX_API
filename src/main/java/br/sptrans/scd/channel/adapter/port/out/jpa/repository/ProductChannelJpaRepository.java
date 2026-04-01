@@ -10,9 +10,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelEntityJpa;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelKeyEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ProductChannelEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ProductChannelKeyEntityJpa;
 
 public interface ProductChannelJpaRepository extends JpaRepository<ProductChannelEntityJpa, ProductChannelKeyEntityJpa>, JpaSpecificationExecutor<ProductChannelEntityJpa> {
 

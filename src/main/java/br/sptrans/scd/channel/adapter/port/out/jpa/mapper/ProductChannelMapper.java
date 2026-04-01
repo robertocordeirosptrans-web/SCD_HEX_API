@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChResponseDTO;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelEntityJpa;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelKeyEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ProductChannelEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ProductChannelKeyEntityJpa;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
 

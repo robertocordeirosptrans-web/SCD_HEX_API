@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.AgreementValidityKeyEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.AgreementValidityMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.AgreementValidityJpaRepository;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AgreementValidityKeyEntityJpa;
 import br.sptrans.scd.channel.application.port.out.AgreementValidityRepository;
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.channel.domain.AgreementValidityKey;

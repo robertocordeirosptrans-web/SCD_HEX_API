@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.query.Param;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ContactChannelEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ContactChannelEntityJpa;
 
 public interface ContactChannelJpaRepository extends JpaRepository<ContactChannelEntityJpa, String>, JpaSpecificationExecutor<ContactChannelEntityJpa> {
 

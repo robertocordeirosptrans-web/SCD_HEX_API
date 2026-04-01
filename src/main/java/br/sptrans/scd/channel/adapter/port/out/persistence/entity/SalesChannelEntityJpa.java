@@ -1,4 +1,4 @@
-package br.sptrans.scd.channel.adapter.port.out.jpa.entity;
+package br.sptrans.scd.channel.adapter.port.out.persistence.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

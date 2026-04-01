@@ -1,7 +1,7 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.mapper;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.AgreementValidityEntityJpa;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.AgreementValidityKeyEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AgreementValidityEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AgreementValidityKeyEntityJpa;
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.channel.domain.AgreementValidityKey;
 import org.springframework.lang.NonNull;

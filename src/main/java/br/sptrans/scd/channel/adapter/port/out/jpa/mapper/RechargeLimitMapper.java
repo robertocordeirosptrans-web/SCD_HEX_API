@@ -5,7 +5,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.RechargeLimitEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.RechargeLimitEntityJpa;
 import br.sptrans.scd.channel.domain.RechargeLimit;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)

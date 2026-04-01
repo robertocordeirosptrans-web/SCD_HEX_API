@@ -6,9 +6,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.SalesChannelEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.SalesChannelMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.SalesChannelJpaRepository;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.SalesChannelEntityJpa;
 import br.sptrans.scd.channel.application.port.out.SalesChannelRepository;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import lombok.RequiredArgsConstructor;

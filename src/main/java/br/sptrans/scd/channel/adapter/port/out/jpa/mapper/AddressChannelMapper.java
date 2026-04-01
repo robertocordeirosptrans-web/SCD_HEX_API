@@ -1,8 +1,9 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.mapper;
 
 import org.springframework.stereotype.Component;
+
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AddressChannelEntityJpa;
 import br.sptrans.scd.channel.domain.AddressChannel;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.AddressChannelEntityJpa;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.domain.SalesChannel;
 

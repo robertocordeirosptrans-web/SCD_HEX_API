@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.RechargeLimitKeyEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.RechargeLimitMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.RechargeLimitJpaRepository;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.RechargeLimitKeyEntityJpa;
 import br.sptrans.scd.channel.application.port.out.RechargeLimitRepository;
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
