@@ -10,11 +10,11 @@ public interface ChannelFeeMapper {
         if (entity == null) return null;
         ChannelFee fee = new ChannelFee();
         fee.setId(toDomainKey(entity.getId()));
-        fee.setVltInicio(entity.getVltInicio());
-        fee.setVltFinal(entity.getVltFinal());
-        fee.setVlPercentual(entity.getVlPercentual());
+        fee.setValInicio(entity.getValInicio());
+        fee.setValFim(entity.getValFim());
+        fee.setValPercentual(entity.getValPercentual());
         fee.setDtInicio(entity.getDtInicio());
-        fee.setDtFinal(entity.getDtFinal());
+        fee.setDtFim(entity.getDtFim());
         fee.setDtManutencao(entity.getDtManutencao());
         // fee.setIdUsuarioManutencao(null); // relacionamento não mapeado
         return fee;
@@ -24,11 +24,11 @@ public interface ChannelFeeMapper {
         if (fee == null) return null;
         ChannelFeeEntityJpa entity = new ChannelFeeEntityJpa();
         entity.setId(toEntityKey(fee.getId()));
-        entity.setVltInicio(fee.getVltInicio());
-        entity.setVltFinal(fee.getVltFinal());
-        entity.setVlPercentual(fee.getVlPercentual());
+        entity.setValInicio(fee.getValInicio());
+        entity.setValFim(fee.getValFim());
+        entity.setValPercentual(fee.getValPercentual());
         entity.setDtInicio(fee.getDtInicio());
-        entity.setDtFinal(fee.getDtFinal());
+        entity.setDtFim(fee.getDtFim());
         entity.setDtManutencao(fee.getDtManutencao());
         // entity.setIdUsuarioManutencao(null); // relacionamento não mapeado
         return entity;

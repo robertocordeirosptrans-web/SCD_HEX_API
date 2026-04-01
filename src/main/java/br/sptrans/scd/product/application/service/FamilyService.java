@@ -55,7 +55,7 @@ public class FamilyService implements FamilyManagementUseCase {
         Family updated = new Family(
                 existing.getCodFamilia(),
                 command.desFamilia(),
-                existing.getStFamilias(),
+                existing.getCodStatus(),
                 existing.getDtCadastro(),
                 LocalDateTime.now(),
                 existing.getIdUsuarioCadastro(),

@@ -84,7 +84,7 @@ public class FamilyController {
         FamilyResponseDTO dto = new FamilyResponseDTO(
             family.getCodFamilia(),
             family.getDesFamilia(),
-            family.getStFamilias(),
+            family.getCodStatus(),
             family.getDtCadastro(),
             family.getDtManutencao(),
             UserSimpleMapper.toDto(family.getIdUsuarioCadastro()),
@@ -104,7 +104,7 @@ public class FamilyController {
             .map(family -> new FamilyResponseDTO(
                 family.getCodFamilia(),
                 family.getDesFamilia(),
-                family.getStFamilias(),
+                family.getCodStatus(),
                 family.getDtCadastro(),
                 family.getDtManutencao(),
                 UserSimpleMapper.toDto(family.getIdUsuarioCadastro()),

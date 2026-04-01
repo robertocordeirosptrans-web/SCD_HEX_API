@@ -16,9 +16,9 @@ public interface ProductVersionMapper {
 		v.setDtLancamento(entity.getDtLancamento());
 		v.setDtVendaInicio(entity.getDtVendaInicio());
 		v.setDtVendaFim(entity.getDtVendaFim());
-		v.setDtUsoIni(entity.getDtUsoIni());
+		v.setDtUsoInicio(entity.getDtUsoInicio());
 		v.setDtUsoFim(entity.getDtUsoFim());
-		v.setDtTrocaIni(entity.getDtTrocaIni());
+		v.setDtTrocaInicio(entity.getDtTrocaInicio());
 		v.setDtTrocaFim(entity.getDtTrocaFim());
 		v.setFlgBloqFabricacao(entity.getFlgBloqFabricacao());
 		v.setFlgBloqVenda(entity.getFlgBloqVenda());
@@ -29,7 +29,7 @@ public interface ProductVersionMapper {
 		v.setFlgBloqDevolucao(entity.getFlgBloqDevolucao());
 		v.setDtCadastro(entity.getDtCadastro());
 		v.setDtManutencao(entity.getDtManutencao());
-		v.setStProdutosVersoes(entity.getStProdutosVersoes());
+		v.setCodStatus(entity.getCodStatus());
 		v.setDesProdutoVersoes(entity.getDesProdutoVersoes());
 		v.setIdUsuarioCadastro(null); // Conversão de Long para User se necessário
 		v.setIdUsuarioManutencao(null); // Conversão de Long para User se necessário
@@ -48,9 +48,9 @@ public interface ProductVersionMapper {
 		entity.setDtLancamento(v.getDtLancamento());
 		entity.setDtVendaInicio(v.getDtVendaInicio());
 		entity.setDtVendaFim(v.getDtVendaFim());
-		entity.setDtUsoIni(v.getDtUsoIni());
+		entity.setDtUsoInicio(v.getDtUsoInicio());
 		entity.setDtUsoFim(v.getDtUsoFim());
-		entity.setDtTrocaIni(v.getDtTrocaIni());
+		entity.setDtTrocaInicio(v.getDtTrocaInicio());
 		entity.setDtTrocaFim(v.getDtTrocaFim());
 		entity.setFlgBloqFabricacao(v.getFlgBloqFabricacao());
 		entity.setFlgBloqVenda(v.getFlgBloqVenda());
@@ -61,7 +61,7 @@ public interface ProductVersionMapper {
 		entity.setFlgBloqDevolucao(v.getFlgBloqDevolucao());
 		entity.setDtCadastro(v.getDtCadastro());
 		entity.setDtManutencao(v.getDtManutencao());
-		entity.setStProdutosVersoes(v.getStProdutosVersoes());
+		entity.setCodStatus(v.getCodStatus());
 		entity.setDesProdutoVersoes(v.getDesProdutoVersoes());
 		entity.setIdUsuarioCadastro(null); // Conversão de User para Long se necessário
 		entity.setIdUsuarioManutencao(null); // Conversão de User para Long se necessário

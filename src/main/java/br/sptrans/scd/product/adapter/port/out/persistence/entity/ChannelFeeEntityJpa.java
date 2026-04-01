@@ -24,19 +24,19 @@ public class ChannelFeeEntityJpa {
     private ChannelFeeKeyEntityJpa id;
 
     @Column(name = "VL_T_INICIO")
-    private BigDecimal vltInicio;
+    private BigDecimal valInicio;
 
     @Column(name = "VL_T_FINAL")
-    private BigDecimal vltFinal;
+    private BigDecimal valFim;
 
     @Column(name = "VL_PERCENTUAL")
-    private BigDecimal vlPercentual;
+    private BigDecimal valPercentual;
 
     @Column(name = "DT_INICIO")
     private LocalDateTime dtInicio;
 
     @Column(name = "DT_FIM")
-    private LocalDateTime dtFinal;
+    private LocalDateTime dtFim;
 
     @Column(name = "DT_MODI")
     private LocalDateTime dtManutencao;

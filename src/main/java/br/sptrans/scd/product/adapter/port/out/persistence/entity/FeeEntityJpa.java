@@ -30,12 +30,12 @@ public class FeeEntityJpa {
     private String codProduto;
 
     @Column(name = "DT_INICIAL")
-    private LocalDateTime dtInicial;
+    private LocalDateTime dtInicio;
 
     @Column(name = "DSC_TAXA", length = 20)
-    private String dscTaxa;
+    private String desTaxa;
 
     @Column(name = "DT_FINAL")
-    private LocalDateTime dtFinal;
+    private LocalDateTime dtFim;
 
 }

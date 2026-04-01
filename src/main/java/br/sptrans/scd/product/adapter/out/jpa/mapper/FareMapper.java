@@ -13,14 +13,14 @@ public interface FareMapper {
 		}
 		Fare fare = new Fare();
 		fare.setCodTarifa(entity.getCodTarifa());
-		fare.setDtVigenciaIni(entity.getDtVigenciaIni());
+		fare.setDtVigenciaInicio(entity.getDtVigenciaInicio());
 		fare.setDtVigenciaFim(entity.getDtVigenciaFim());
 		fare.setDtCadastro(entity.getDtCadastro());
 		fare.setDtManutencao(entity.getDtManutencao());
 		fare.setDesTarifa(entity.getDesTarifa());
-		fare.setStTarifas(entity.getStTarifas());
-		if (entity.getVlTarifa() != null) {
-			fare.setVlTarifa(entity.getVlTarifa().intValue());
+		fare.setCodStatus(entity.getCodStatus());
+		if (entity.getValTarifa() != null) {
+			fare.setValTarifa(entity.getValTarifa().intValue());
 		}
 		if (entity.getIdUsuarioCadastro() != null) {
 			User user = new User();
@@ -46,14 +46,14 @@ public interface FareMapper {
 		}
 		FareEntityJpa entity = new FareEntityJpa();
 		entity.setCodTarifa(fare.getCodTarifa());
-		entity.setDtVigenciaIni(fare.getDtVigenciaIni());
+		entity.setDtVigenciaInicio(fare.getDtVigenciaInicio());
 		entity.setDtVigenciaFim(fare.getDtVigenciaFim());
 		entity.setDtCadastro(fare.getDtCadastro());
 		entity.setDtManutencao(fare.getDtManutencao());
 		entity.setDesTarifa(fare.getDesTarifa());
-		entity.setStTarifas(fare.getStTarifas());
-		if (fare.getVlTarifa() != null) {
-			entity.setVlTarifa(fare.getVlTarifa().longValue());
+		entity.setCodStatus(fare.getCodStatus());
+		if (fare.getValTarifa() != null) {
+			entity.setValTarifa(fare.getValTarifa().longValue());
 		}
 		if (fare.getIdUsuarioCadastro() != null) {
 			entity.setIdUsuarioCadastro(fare.getIdUsuarioCadastro().getIdUsuario());

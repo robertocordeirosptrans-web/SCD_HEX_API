@@ -27,7 +27,7 @@ public class FamilyEntityJpa {
     private String desFamilia;
 
     @Column(name = "ST_FAMILIA", length = 1)
-    private String stFamilias;
+    private String codStatus;
 
     @Column(name = "DT_CADASTRO", length = 20)
     private LocalDateTime dtCadastro;

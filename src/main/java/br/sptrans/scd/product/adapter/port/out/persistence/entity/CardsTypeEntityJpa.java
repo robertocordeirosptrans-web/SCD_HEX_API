@@ -22,5 +22,5 @@ public class CardsTypeEntityJpa {
     private String codTipoCartao;
 
     @Column(name = "VC_DESC", length = 10)
-    private String descTipoCartao;
+    private String desTipoCartao;
 }

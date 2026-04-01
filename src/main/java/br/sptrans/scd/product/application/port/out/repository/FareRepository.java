@@ -12,10 +12,10 @@ public interface FareRepository {
 
     Fare save(Fare tarifa);
 
-    void extendsValidity(String codTarifa, LocalDateTime dtFinal, Long idUsuario);
+    void extendsValidity(String codTarifa, LocalDateTime dtFim, Long idUsuario);
 
     /**
-     * Lista tarifas de um produto/canal ordenadas por dtInicial. Se codCanal
+     * Lista tarifas de um produto/canal ordenadas por dtInicio. Se codCanal
      * for null, retorna todas do produto.
      */
     List<Fare> listByProductChannel(String codProduto, String codCanal);
@@ -25,7 +25,7 @@ public interface FareRepository {
      * produto/canal, excluindo o próprio ID (para atualizações).
      */
     boolean isConflictValidity(String codProduto, String codCanal,
-            LocalDateTime dtInicial, LocalDateTime dtFinal,
+            LocalDateTime dtInicio, LocalDateTime dtFim,
             Long excluirIdTaxa);
 
     /**

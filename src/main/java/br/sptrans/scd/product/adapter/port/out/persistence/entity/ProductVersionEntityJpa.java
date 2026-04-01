@@ -48,13 +48,13 @@ public class ProductVersionEntityJpa {
     private LocalDateTime dtVendaFim;
 
     @Column(name = "DT_USO_INICIO")
-    private LocalDateTime dtUsoIni;
+    private LocalDateTime dtUsoInicio;
 
     @Column(name = "DT_USO_FIM")
     private LocalDateTime dtUsoFim;
 
     @Column(name = "DT_TROCA_INICIO")
-    private LocalDateTime dtTrocaIni;
+    private LocalDateTime dtTrocaInicio;
 
     @Column(name = "DT_TROCA_FIM")
     private LocalDateTime dtTrocaFim;
@@ -87,7 +87,7 @@ public class ProductVersionEntityJpa {
     private LocalDateTime dtManutencao;
 
     @Column(name = "ST_PRODUTOS_VERSOES", length = 1)
-    private String stProdutosVersoes;
+    private String codStatus;
 
     @Column(name = "DES_PROD_VERSAO", length = 60)
     private String desProdutoVersoes;

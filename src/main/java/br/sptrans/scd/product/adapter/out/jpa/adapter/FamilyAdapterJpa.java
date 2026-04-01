@@ -41,7 +41,7 @@ public class FamilyAdapterJpa implements FamilyRepository {
 
     public List<Family> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
-            return repository.findByStFamiliasOrderByCodFamilia(codStatus)
+            return repository.findByCodStatusOrderByCodFamilia(codStatus)
                 .stream()
                 .map(entity -> FamilyMapper.toDomain(entity, userRepository))
                 .toList();

@@ -27,7 +27,7 @@ public class FareEntityJpa {
     private String codProduto;
 
     @Column(name = "DT_VIGENCIA_INI", nullable = false)
-    private LocalDateTime dtVigenciaIni;
+    private LocalDateTime dtVigenciaInicio;
 
     @Column(name = "DT_VIGENCIA_FIM", nullable = false)
     private LocalDateTime dtVigenciaFim;
@@ -39,7 +39,7 @@ public class FareEntityJpa {
     private Long idUsuarioCadastro;
 
     @Column(name = "VL_TARIFA", length = 15)
-    private Long vlTarifa;
+    private Long valTarifa;
 
     @Column(name = "DT_CADASTRO", nullable = false)
     private LocalDateTime dtCadastro;
@@ -51,6 +51,6 @@ public class FareEntityJpa {
     private Long idUsuarioManutencao;
 
     @Column(name = "ST_TARIFAS", nullable = false)
-    private String stTarifas;   
+    private String codStatus;   
 
 }

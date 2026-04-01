@@ -6,7 +6,7 @@ import br.sptrans.scd.channel.adapter.port.in.rest.dto.UserSimpleDTO;
 public record FamilyResponseDTO(
     String codFamilia,
     String desFamilia,
-    String stFamilias,
+    String codStatus,
     LocalDateTime dtCadastro,
     LocalDateTime dtManutencao,
     UserSimpleDTO usuarioCadastro,

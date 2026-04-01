@@ -19,7 +19,7 @@ public class Fare {
 
     private String codVersao;
 
-    private LocalDateTime dtVigenciaIni;
+    private LocalDateTime dtVigenciaInicio;
 
     private LocalDateTime dtVigenciaFim;
 
@@ -29,9 +29,9 @@ public class Fare {
 
     private String desTarifa;
 
-    private String stTarifas;
+    private String codStatus;
 
-    private Integer vlTarifa;
+    private Integer valTarifa;
 
     private User idUsuarioCadastro;
 
@@ -40,21 +40,21 @@ public class Fare {
     private Product codProduto;
 
     public boolean isActive() {
-        return DomainStatus.ACTIVE.getCode().equals(this.stTarifas);
+        return DomainStatus.ACTIVE.getCode().equals(this.codStatus);
     }
 
     public boolean isInactive() {
-        return DomainStatus.INACTIVE.getCode().equals(this.stTarifas);
+        return DomainStatus.INACTIVE.getCode().equals(this.codStatus);
     }
 
     public void activate(User idUsuario) {
-        this.stTarifas = DomainStatus.ACTIVE.getCode();
+        this.codStatus = DomainStatus.ACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
 
     public void deactivate(User idUsuario) {
-        this.stTarifas = DomainStatus.INACTIVE.getCode();
+        this.codStatus = DomainStatus.INACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }

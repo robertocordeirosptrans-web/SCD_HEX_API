@@ -11,5 +11,5 @@ public class CardType {
 
     private String codTipoCartao;
 
-    private String descTipoCartao;
+    private String desTipoCartao;
 }

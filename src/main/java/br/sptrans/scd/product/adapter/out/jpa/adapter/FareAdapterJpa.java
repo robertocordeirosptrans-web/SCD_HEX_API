@@ -39,9 +39,9 @@ public class FareAdapterJpa implements FareRepository {
 
 
     @Override
-    public void extendsValidity(String codTarifa, LocalDateTime dtFinal, Long idUsuario) {
+    public void extendsValidity(String codTarifa, LocalDateTime dtFim, Long idUsuario) {
         fareJpaRepository.findById(codTarifa).ifPresent(entity -> {
-            entity.setDtVigenciaFim(dtFinal);
+            entity.setDtVigenciaFim(dtFim);
             entity.setDtManutencao(LocalDateTime.now());
             entity.setIdUsuarioManutencao(idUsuario);
             fareJpaRepository.save(entity);
@@ -53,20 +53,20 @@ public class FareAdapterJpa implements FareRepository {
 
         return fareJpaRepository.findAll().stream()
                 .filter(e -> e.getCodProduto() != null && e.getCodProduto().equals(codProduto))
-                .sorted((a, b) -> a.getDtVigenciaIni().compareTo(b.getDtVigenciaIni()))
+                .sorted((a, b) -> a.getDtVigenciaInicio().compareTo(b.getDtVigenciaInicio()))
                 .map(FareMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
     public boolean isConflictValidity(String codProduto, String codCanal,
-            LocalDateTime dtInicial, LocalDateTime dtFinal, Long excluirIdTaxa) {
+            LocalDateTime dtInicio, LocalDateTime dtFim, Long excluirIdTaxa) {
 
         return fareJpaRepository.findAll().stream()
                 .filter(e -> e.getCodProduto() != null && e.getCodProduto().equals(codProduto))
                 .filter(e -> excluirIdTaxa == null || !e.getCodTarifa().equals(excluirIdTaxa.toString()))
-                .anyMatch(e -> e.getDtVigenciaIni().isBefore(dtFinal)
-                        && (e.getDtVigenciaFim() == null || e.getDtVigenciaFim().isAfter(dtInicial)));
+                .anyMatch(e -> e.getDtVigenciaInicio().isBefore(dtFim)
+                        && (e.getDtVigenciaFim() == null || e.getDtVigenciaFim().isAfter(dtInicio)));
     }
 
     @Override
@@ -75,9 +75,9 @@ public class FareAdapterJpa implements FareRepository {
 
         return fareJpaRepository.findAll().stream()
                 .filter(e -> e.getCodProduto() != null && e.getCodProduto().equals(codProduto))
-                .filter(e -> e.getDtVigenciaIni() != null && !e.getDtVigenciaIni().isAfter(dataOperacao))
+                .filter(e -> e.getDtVigenciaInicio() != null && !e.getDtVigenciaInicio().isAfter(dataOperacao))
                 .filter(e -> e.getDtVigenciaFim() == null || !e.getDtVigenciaFim().isBefore(dataOperacao))
-                .sorted((a, b) -> b.getDtVigenciaIni().compareTo(a.getDtVigenciaIni()))
+                .sorted((a, b) -> b.getDtVigenciaInicio().compareTo(a.getDtVigenciaInicio()))
                 .map(FareMapper::toDomain)
                 .findFirst();
     }

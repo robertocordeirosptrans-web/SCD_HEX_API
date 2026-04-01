@@ -126,7 +126,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
     public Fare createFare(RegisterFareCommand command) {
         boolean conflict = fareRepository.isConflictValidity(
                 command.codProduto(), command.codCanal(),
-                command.dtInicial(), command.dtFinal(), null);
+                command.dtInicio(), command.dtFim(), null);
         if (conflict) {
             throw new ProductException(ProductErrorType.FARE_VALIDITY_CONFLICT);
         }
@@ -138,13 +138,13 @@ public class FeeFareService implements FeeFareManagementUseCase {
         Fare fare = new Fare(
                 UUID.randomUUID().toString(),
                 command.codVersao(),
-                command.dtInicial(),
-                command.dtFinal(),
+                command.dtInicio(),
+                command.dtFim(),
                 LocalDateTime.now(),
                 LocalDateTime.now(),
-                command.dscTarifa(),
+                command.desTarifa(),
                 DomainStatus.ACTIVE.getCode(),
-                command.vlTarifa() != null ? command.vlTarifa().intValue() : null,
+                command.valTarifa() != null ? command.valTarifa().intValue() : null,
                 usuario,
                 null,
                 produto
@@ -158,7 +158,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
         fareRepository.findById(codTarifa)
                 .orElseThrow(() -> new ProductException(ProductErrorType.FARE_NOT_FOUND));
 
-        fareRepository.extendsValidity(codTarifa, command.dtFinal(), command.idUsuario());
+        fareRepository.extendsValidity(codTarifa, command.dtFim(), command.idUsuario());
 
         return fareRepository.findById(codTarifa)
                 .orElseThrow(() -> new ProductException(ProductErrorType.FARE_NOT_FOUND));
@@ -183,9 +183,9 @@ public class FeeFareService implements FeeFareManagementUseCase {
     public Fee createFee(RegisterFeeCommand command) {
         Fee fee = new Fee(
                 null,
-                command.dtInicial(),
-                command.dscTaxa(),
-                command.dtFinal(),
+                command.dtInicio(),
+                command.desTaxa(),
+                command.dtFim(),
                 command.codCanal(),
                 command.codProduto(),
                 null,
@@ -235,9 +235,9 @@ public class FeeFareService implements FeeFareManagementUseCase {
 
         Fee updated = new Fee(
                 existing.getCodTaxa(),
-                existing.getDtInicial(),
-                command.dscTaxa(),
-                command.dtFinal(),
+                existing.getDtInicio(),
+                command.desTaxa(),
+                command.dtFim(),
                 existing.getCodCanal(),
                 existing.getCodProduto(),
                 existing.getCanal(),

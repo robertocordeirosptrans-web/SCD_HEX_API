@@ -20,7 +20,7 @@ public interface FamilyMapper {
         return new Family(
                 entity.getCodFamilia(),
                 entity.getDesFamilia(),
-                entity.getStFamilias(),
+                entity.getCodStatus(),
                 entity.getDtCadastro(),
                 entity.getDtManutencao(),
                 usuarioCadastro,
@@ -35,7 +35,7 @@ public interface FamilyMapper {
         FamilyEntityJpa entity = new FamilyEntityJpa();
         entity.setCodFamilia(family.getCodFamilia());
         entity.setDesFamilia(family.getDesFamilia());
-        entity.setStFamilias(family.getStFamilias());
+        entity.setCodStatus(family.getCodStatus());
         entity.setDtCadastro(family.getDtCadastro());
         entity.setDtManutencao(family.getDtManutencao());
         // idUsuarioCadastro, idUsuarioManutencao: implementar se necessário

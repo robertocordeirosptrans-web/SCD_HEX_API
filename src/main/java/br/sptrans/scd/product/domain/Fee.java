@@ -16,9 +16,9 @@ public class Fee {
 
     private Long codTaxa;
 
-    private LocalDateTime dtInicial;
+    private LocalDateTime dtInicio;
 
-    private String dscTaxa;
+    private String desTaxa;
 
     private LocalDateTime dtFinal;
 

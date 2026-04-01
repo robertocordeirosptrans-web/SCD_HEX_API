@@ -15,15 +15,15 @@ import lombok.Setter;
 public class ChannelFee {
     private ChannelFeeKey id;
 
-    private BigDecimal vltInicio;
+    private BigDecimal valInicio;
 
-    private BigDecimal vltFinal;
+    private BigDecimal valFim;
 
-    private BigDecimal vlPercentual;
+    private BigDecimal valPercentual;
 
     private LocalDateTime dtInicio;
 
-    private LocalDateTime dtFinal;
+    private LocalDateTime dtFim;
 
     private LocalDateTime dtManutencao;
 

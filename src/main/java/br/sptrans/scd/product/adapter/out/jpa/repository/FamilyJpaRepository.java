@@ -12,12 +12,12 @@ import br.sptrans.scd.product.adapter.port.out.persistence.entity.FamilyEntityJp
 
 public interface FamilyJpaRepository extends JpaRepository<FamilyEntityJpa, String>, JpaSpecificationExecutor<FamilyEntityJpa> {
 
-	List<FamilyEntityJpa> findByStFamiliasOrderByCodFamilia(String stFamilias);
+	List<FamilyEntityJpa> findByCodStatusOrderByCodFamilia(String codStatus);
 
 	List<FamilyEntityJpa> findAllByOrderByCodFamilia();
 
 	@Modifying
 	@Transactional
-	@Query("UPDATE FamilyEntityJpa f SET f.stFamilias = :stFamilias, f.dtManutencao = CURRENT_TIMESTAMP, f.idUsuarioManutencao = :idUsuario WHERE f.codFamilia = :codFamilia")
-	void updateStatus(String codFamilia, String stFamilias, Long idUsuario);
+	@Query("UPDATE FamilyEntityJpa f SET f.codStatus = :codStatus, f.dtManutencao = CURRENT_TIMESTAMP, f.idUsuarioManutencao = :idUsuario WHERE f.codFamilia = :codFamilia")
+	void updateStatus(String codFamilia, String codStatus, Long idUsuario);
 }

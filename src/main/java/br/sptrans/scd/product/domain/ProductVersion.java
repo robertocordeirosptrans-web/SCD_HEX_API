@@ -33,11 +33,11 @@ public class ProductVersion {
 
     private LocalDateTime dtVendaFim;
 
-    private LocalDateTime dtUsoIni;
+    private LocalDateTime dtUsoInicio;
 
     private LocalDateTime dtUsoFim;
 
-    private LocalDateTime dtTrocaIni;
+    private LocalDateTime dtTrocaInicio;
 
     private LocalDateTime dtTrocaFim;
 
@@ -59,7 +59,7 @@ public class ProductVersion {
 
     private LocalDateTime dtManutencao;
 
-    private String stProdutosVersoes;
+    private String codStatus;
 
     private String desProdutoVersoes;
 
@@ -73,11 +73,11 @@ public class ProductVersion {
     // -------------------------------------------------------------------------
 
     public boolean isActive() {
-        return ProductVersionStatus.ACTIVE.getCode().equals(this.stProdutosVersoes);
+        return ProductVersionStatus.ACTIVE.getCode().equals(this.codStatus);
     }
 
     public boolean isInactive() {
-        return ProductVersionStatus.INACTIVE.getCode().equals(this.stProdutosVersoes);
+        return ProductVersionStatus.INACTIVE.getCode().equals(this.codStatus);
     }
 
         // -------------------------------------------------------------------------
@@ -85,13 +85,13 @@ public class ProductVersion {
     // -------------------------------------------------------------------------
 
     public void activate(User idUsuario) {
-        this.stProdutosVersoes = ProductVersionStatus.ACTIVE.getCode();
+        this.codStatus = ProductVersionStatus.ACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
 
     public void deactivate(User idUsuario) {
-        this.stProdutosVersoes = ProductVersionStatus.INACTIVE.getCode();
+        this.codStatus = ProductVersionStatus.INACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }

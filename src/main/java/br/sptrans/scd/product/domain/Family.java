@@ -15,28 +15,28 @@ public class Family {
 
     private String codFamilia;
     private String desFamilia;
-    private String stFamilias;
+    private String codStatus;
     private LocalDateTime dtCadastro;
     private LocalDateTime dtManutencao;
     private User idUsuarioCadastro;
     private User idUsuarioManutencao;
 
     public boolean isActive() {
-        return DomainStatus.ACTIVE.getCode().equals(this.stFamilias);
+        return DomainStatus.ACTIVE.getCode().equals(this.codStatus);
     }
 
     public boolean isInactive() {
-        return DomainStatus.INACTIVE.getCode().equals(this.stFamilias);
+        return DomainStatus.INACTIVE.getCode().equals(this.codStatus);
     }
 
     public void activate(User idUsuario) {
-        this.stFamilias = DomainStatus.ACTIVE.getCode();
+        this.codStatus = DomainStatus.ACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
 
     public void deactivate(User idUsuario) {
-        this.stFamilias = DomainStatus.INACTIVE.getCode();
+        this.codStatus = DomainStatus.INACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
