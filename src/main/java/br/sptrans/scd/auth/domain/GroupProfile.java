@@ -17,7 +17,7 @@ public class GroupProfile {
     private Long idUsuarioManutencao;
     private String codStatus;
     private LocalDate dtModi;
-    private Group group;
-    private Profile profile;
+    private Group grupo;
+    private Profile perfil;
 
 }

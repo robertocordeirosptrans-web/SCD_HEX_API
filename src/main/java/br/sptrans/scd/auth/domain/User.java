@@ -36,10 +36,10 @@ public class User {
     private String codRg;
     private String nomEmail;
     private String codEmpresa;
-    private LocalDateTime dt_jornada_ini;
-    private LocalDateTime dt_jornada_fim;
+    private LocalDateTime dtJornadaIni;
+    private LocalDateTime dtJornadaFim;
     private ClassificationPerson codClassificacaoPessoa;
-    private String oldSenha;
+    private String senhaAntiga;
     private Integer numTentativasFalha = 0;
     private String numDiasSemanasPermitidos = null;
 
@@ -96,8 +96,8 @@ public class User {
     public boolean acessoPermitidoAgora() {
         return new AccessPolicy(
                 this.numDiasSemanasPermitidos,
-                this.dt_jornada_ini,
-                this.dt_jornada_fim
+                this.dtJornadaIni,
+                this.dtJornadaFim
         ).validarAcesso();
     }
 

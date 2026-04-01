@@ -51,12 +51,12 @@ public class UserManagementService implements UserManagementUseCase {
         user.setCodCpf(cmd.codCpf());
         user.setCodRg(cmd.codRg());
         user.setCodSenha(passwordHash);
-        user.setOldSenha(null);
+        user.setSenhaAntiga(null);
         user.setCodStatus(UserStatus.ACTIVE);
         user.setNumTentativasFalha(0);
         user.setNumDiasSemanasPermitidos(cmd.numDiasSemanasPermitidos());
-        user.setDt_jornada_ini(cmd.dtJornadaIni());
-        user.setDt_jornada_fim(cmd.dtJornadaFim());
+        user.setDtJornadaIni(cmd.dtJornadaIni());
+        user.setDtJornadaFim(cmd.dtJornadaFim());
         // DT_EXPIRA_SENHA = 3 meses após criação
         user.setDtExpiraSenha(LocalDateTime.now().plusMonths(3));
         user.setDtCriacao(LocalDateTime.now());

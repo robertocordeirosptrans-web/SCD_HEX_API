@@ -6,21 +6,21 @@ public class PasswordResetToken {
 
     private Long id;
     private Long idUsuario;
-    private String token;               // UUID único gerado pelo sistema
-    private LocalDateTime expiryDate;   // now + TTL configurável (padrão: 15 min)
-    private boolean used;               // true após redefinição bem-sucedida
+    private String token;                  // UUID único gerado pelo sistema
+    private LocalDateTime dtExpiracao;     // now + TTL configurável (padrão: 15 min)
+    private boolean usado;                 // true após redefinição bem-sucedida
     private LocalDateTime dtCriacao;
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(this.expiryDate);
+        return LocalDateTime.now().isAfter(this.dtExpiracao);
     }
 
     public boolean isValid() {
-        return !isExpired() && !this.used;
+        return !isExpired() && !this.usado;
     }
 
-    public void isUsed() {
-        this.used = true;
+    public void marcarComoUsado() {
+        this.usado = true;
     }
 
     public Long getId() {
@@ -47,12 +47,12 @@ public class PasswordResetToken {
         this.token = token;
     }
 
-    public LocalDateTime getExpiryDate() {
-        return expiryDate;
+    public LocalDateTime getDtExpiracao() {
+        return dtExpiracao;
     }
 
-    public void setExpiryDate(LocalDateTime expiryDate) {
-        this.expiryDate = expiryDate;
+    public void setDtExpiracao(LocalDateTime dtExpiracao) {
+        this.dtExpiracao = dtExpiracao;
     }
 
     public LocalDateTime getDtCriacao() {

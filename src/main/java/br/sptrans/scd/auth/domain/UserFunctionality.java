@@ -19,7 +19,7 @@ public class UserFunctionality {
     private LocalDateTime dtModi;
     private String codStatusUsuFun;
     private Functionality funcionalidade;
-    private User user;
+    private User usuario;
 
    
 }

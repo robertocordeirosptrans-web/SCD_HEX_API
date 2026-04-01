@@ -32,8 +32,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/auth")
 @Tag(name = "Autenticação v1", description = "Endpoints para autenticação e gerenciamento de usuários - Versão 1")
 public class AuthController {
@@ -43,12 +45,6 @@ public class AuthController {
     private final UserRepository userRepository;
     private final GroupUserRepository groupUserRepository;
 
-    public AuthController(AuthUseCase casoUso, TokenGeneratorPort tokenGenerator, UserRepository userRepository, GroupUserRepository groupUserRepository) {
-        this.casoUso = casoUso;
-        this.tokenGenerator = tokenGenerator;
-        this.userRepository = userRepository;
-        this.groupUserRepository = groupUserRepository;
-    }
 
     @PostMapping("/login")
     @Operation(summary = "Login do usuário", description = "Autentica o usuário e retorna um token JWT com payload mínimo")

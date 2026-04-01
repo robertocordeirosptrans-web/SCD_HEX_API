@@ -18,7 +18,7 @@ public class GroupUser {
     private Long idUsuarioManutencao;
     private String codStatus;
     private LocalDateTime dtModi;
-    private User user;
+    private User usuario;
     private Group grupo;
 
     public void setId(GroupUserKey id) {
@@ -49,12 +49,12 @@ public class GroupUser {
         this.dtModi = dtModi;
     }
 
-    public User getUser() {
-        return user;
+    public User getUsuario() {
+        return usuario;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUsuario(User usuario) {
+        this.usuario = usuario;
     }
 
 

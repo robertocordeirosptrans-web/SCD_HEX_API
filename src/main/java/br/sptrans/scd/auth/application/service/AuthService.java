@@ -24,9 +24,11 @@ import br.sptrans.scd.shared.exception.InactiveUserException;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
 import br.sptrans.scd.shared.exception.ValidationException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AuthService implements AuthUseCase {
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
@@ -48,14 +50,6 @@ public class AuthService implements AuthUseCase {
     private final PasswordTokenRepository tokenRepository;
     private final GatewayEmail gatewayEmail;
 
-    public AuthService(
-            UserRepository userRepository,
-            PasswordTokenRepository tokenRepository,
-            GatewayEmail gatewayEmail) {
-        this.userRepository = userRepository;
-        this.tokenRepository = tokenRepository;
-        this.gatewayEmail = gatewayEmail;
-    }
 
     // ── Autenticando um usuario ───────────────────────────────────────────────────────────
     @Override
@@ -148,8 +142,8 @@ public class AuthService implements AuthUseCase {
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setIdUsuario(user.getIdUsuario());
         resetToken.setToken(UUID.randomUUID().toString());
-        resetToken.setExpiryDate(LocalDateTime.now().plusMinutes(tokenTtlMinutos));
-        resetToken.isUsed();
+        resetToken.setDtExpiracao(LocalDateTime.now().plusMinutes(tokenTtlMinutos));
+        resetToken.marcarComoUsado();
 
         tokenRepository.save(resetToken);
 
@@ -186,7 +180,7 @@ public class AuthService implements AuthUseCase {
         validarComplexidadeSenha(comando.novaSenha());
 
         // Persiste nova senha (aqui você deve definir a lógica desejada para salvar a nova senha, pois a lógica de JWT foi removida)
-        user.setOldSenha(user.getCodSenha());
+        user.setSenhaAntiga(user.getCodSenha());
         user.setCodSenha(comando.novaSenha());
         userRepository.save(user);
 

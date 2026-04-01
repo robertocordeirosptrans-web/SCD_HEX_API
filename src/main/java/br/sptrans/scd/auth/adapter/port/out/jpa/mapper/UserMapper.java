@@ -24,8 +24,8 @@ public class UserMapper {
         user.setCodRg(entity.getCodRg());
         user.setNomEmail(entity.getNomEmail());
         user.setCodEmpresa(entity.getCodEmpresa());
-        user.setDt_jornada_ini(entity.getDt_jornada_ini());
-        user.setDt_jornada_fim(entity.getDt_jornada_fim());
+        user.setDtJornadaIni(entity.getDt_jornada_ini());
+        user.setDtJornadaFim(entity.getDt_jornada_fim());
         user.setCodStatus(UserStatus.valueOfCode(entity.getCodStatus()));
         return user;
     }
@@ -49,8 +49,8 @@ public class UserMapper {
         entity.setCodRg(user.getCodRg());
         entity.setNomEmail(user.getNomEmail());
         entity.setCodEmpresa(user.getCodEmpresa());
-        entity.setDt_jornada_ini(user.getDt_jornada_ini());
-        entity.setDt_jornada_fim(user.getDt_jornada_fim());
+        entity.setDt_jornada_ini(user.getDtJornadaIni());
+        entity.setDt_jornada_fim(user.getDtJornadaFim());
         entity.setCodClassificacaoPessoa(user.getCodClassificacaoPessoa().getCodClassificacaoPessoa());
         entity.setCodClassificacaoPessoa(user.getCodClassificacaoPessoa().getDesClassificacaoPessoa());
         return entity;

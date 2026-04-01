@@ -71,8 +71,8 @@ public class GroupProfileController {
 
         public GroupProfileResponseDTO(GroupProfile grupoPerfil) {
             this(
-                    grupoPerfil.getGroup() != null ? grupoPerfil.getGroup().getCodGrupo() : null,
-                    grupoPerfil.getProfile() != null ? grupoPerfil.getProfile().getCodPerfil() : null,
+                    grupoPerfil.getGrupo() != null ? grupoPerfil.getGrupo().getCodGrupo() : null,
+                    grupoPerfil.getPerfil() != null ? grupoPerfil.getPerfil().getCodPerfil() : null,
                     grupoPerfil.getIdUsuarioManutencao(),
                     grupoPerfil.getCodStatus(),
                     grupoPerfil.getDtModi()
