@@ -2,30 +2,33 @@ package br.sptrans.scd.auth.domain.vo;
 
 import java.time.LocalDateTime;
 
-
-import lombok.RequiredArgsConstructor;
-
+import lombok.Value;
 
 /**
- * Objeto de Valor: regras de acesso por jornada. Encapsula a lógica de
- * validação de DT_JORNADA_INI, DT_JORNADA_FIM e NUM_DIAS_SEMANAS_PERMITIDOS da
- * tabela USUARIOS.
- *
- * Dias da semana no padrão Calendar: 1=Domingo, 2=Segunda, ..., 7=Sábado.
+ * Value Object imutável: política de acesso por jornada de trabalho.
+ * Encapsula dias permitidos ({@link DayPattern}) e intervalo de horário ({@link TimeRange}).
  */
-
-@RequiredArgsConstructor
+@Value
 public class AccessPolicy {
 
-    private static final int DAYS_IN_WEEK = 7;
-    private static final char ALLOWED = '1';
-    private static final char BLOCKED = '0';
-    
-    private final DayPattern allowedDays;
-    private final TimeRange journeyHours;
-    
-    public boolean isAccessAllowedAt(LocalDateTime dateTime) {
-        return allowedDays.contains(dateTime.getDayOfWeek())
-            && journeyHours.contains(dateTime.toLocalTime());
+    DayPattern diasPermitidos;
+    TimeRange jornadaHoraria;
+
+    /**
+     * Verifica se o acesso é permitido para o momento informado.
+     */
+    public boolean isAcessoPermitidoEm(LocalDateTime dataHora) {
+        return diasPermitidos.contemDia(dataHora.getDayOfWeek())
+                && jornadaHoraria.contemHora(dataHora.toLocalTime());
+    }
+
+    /** Política sem nenhuma restrição (todos os dias, qualquer horário). */
+    public static AccessPolicy semRestricao() {
+        return new AccessPolicy(DayPattern.todosDias(), TimeRange.semRestricao());
+    }
+
+    /** Política padrão: dias úteis em horário comercial. */
+    public static AccessPolicy diasUteis() {
+        return new AccessPolicy(DayPattern.diasUteis(), TimeRange.horarioComercial());
     }
 }

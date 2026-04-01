@@ -1,11 +1,14 @@
 package br.sptrans.scd.auth.domain;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
 import br.sptrans.scd.auth.domain.enums.UserStatus;
 import br.sptrans.scd.auth.domain.vo.AccessPolicy;
+import br.sptrans.scd.auth.domain.vo.DayPattern;
+import br.sptrans.scd.auth.domain.vo.TimeRange;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -94,11 +97,14 @@ public class User {
      * DT_JORNADA_FIM e NUM_DIAS_SEMANAS_PERMITIDOS.
      */
     public boolean acessoPermitidoAgora() {
-        return new AccessPolicy(
-                this.numDiasSemanasPermitidos,
-                this.dtJornadaIni,
-                this.dtJornadaFim
-        ).validarAcesso();
+        if (numDiasSemanasPermitidos == null) {
+            return true;
+        }
+        DayPattern dias = new DayPattern(numDiasSemanasPermitidos);
+        LocalTime inicio = dtJornadaIni != null ? dtJornadaIni.toLocalTime() : null;
+        LocalTime fim = dtJornadaFim != null ? dtJornadaFim.toLocalTime() : null;
+        TimeRange jornada = new TimeRange(inicio, fim);
+        return new AccessPolicy(dias, jornada).isAcessoPermitidoEm(LocalDateTime.now());
     }
 
     /**
