@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
-import br.sptrans.scd.auth.adapter.port.out.security.ProviderJwtToken;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.out.GatewayEmail;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenRepository;
@@ -120,20 +119,8 @@ public class AuthService implements AuthUseCase {
             }
             log.info("Senha BCrypt válida para usuário: {}", user.getCodLogin());
         } else {
-            log.info("Validando senha JWT para usuário: {}", user.getCodLogin());
-            try {
-                ProviderJwtToken jwtProvider = new ProviderJwtToken();
-                Claims claims = jwtProvider.validarEExtrairClaims(senhaRecebida);
-                String subject = claims.getSubject();
-                if (!subject.equalsIgnoreCase(user.getCodLogin())) {
-                    log.warn("JWT inválido: subject não corresponde ao login");
-                    throw new AuthenticationFailedException("Senha invalida.");
-                }
-                log.info("JWT válido para usuário: {}", user.getCodLogin());
-            } catch (Exception e) {
-                log.error("Erro ao validar JWT: {}", e.getMessage());
-                throw new AuthenticationFailedException("Senha invalida.");
-            }
+            log.warn("Tipo de senha não suportado para usuário: {}", user.getCodLogin());
+            throw new AuthenticationFailedException("Usuário ou senha inválidos.");
         }
 
         // Valida jornada de acesso
@@ -196,26 +183,12 @@ public class AuthService implements AuthUseCase {
         User user = userRepository.findById(tokenObj.getIdUsuario())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", tokenObj.getIdUsuario()));
 
-        // Impede reutilização da senha anterior comparando JWTs
-        ProviderJwtToken jwtProvider = new ProviderJwtToken();
-        String novaSenhaJwt = jwtProvider.gerarToken(user.getIdUsuario(), user.getCodLogin());
-        String oldSenhaJwt = user.getOldSenha();
-
-        // Se oldSenhaJwt não for nulo, comparar os hashes dos JWTs
-        if (oldSenhaJwt != null && !oldSenhaJwt.isEmpty()) {
-            String hashNova = Integer.toHexString(novaSenhaJwt.hashCode());
-            String hashOld = Integer.toHexString(oldSenhaJwt.hashCode());
-            if (hashNova.equals(hashOld)) {
-                throw new ValidationException("A nova senha não pode ser igual à senha anterior.");
-            }
-        }
-
         // Valida complexidade
         validarComplexidadeSenha(comando.novaSenha());
 
-        // Persiste nova senha como JWT
+        // Persiste nova senha (aqui você deve definir a lógica desejada para salvar a nova senha, pois a lógica de JWT foi removida)
         user.setOldSenha(user.getCodSenha());
-        user.setCodSenha(novaSenhaJwt);
+        user.setCodSenha(comando.novaSenha());
         userRepository.save(user);
 
         // Invalida o token
