@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.PasswordTokenEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.PasswordTokenEntityJpa;
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 
 /**

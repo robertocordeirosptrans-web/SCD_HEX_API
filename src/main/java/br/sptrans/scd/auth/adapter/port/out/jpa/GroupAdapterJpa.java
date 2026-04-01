@@ -6,14 +6,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupProfileEntityJpa;
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupProfileEntityJpaId;
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupUserEntityJpa;
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupUserEntityJpaId;
 import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.GroupMapper;
 import br.sptrans.scd.auth.adapter.port.out.jpa.repository.GroupJpaRepository;
 import br.sptrans.scd.auth.adapter.port.out.jpa.repository.GroupProfileJpaRepository;
 import br.sptrans.scd.auth.adapter.port.out.jpa.repository.GroupUserJpaRepository;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupProfileEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupProfileEntityJpaId;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupUserEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupUserEntityJpaId;
 import br.sptrans.scd.auth.application.port.out.GroupProfileRepository;
 import br.sptrans.scd.auth.application.port.out.GroupRepository;
 import br.sptrans.scd.auth.application.port.out.GroupUserRepository;

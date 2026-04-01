@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.UserProfileJpa;
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.UserProfileJpaId;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserProfileJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserProfileJpaId;
 
 @Repository
 public interface UserProfileJpaRepository extends JpaRepository<UserProfileJpa, UserProfileJpaId>, JpaSpecificationExecutor<UserProfileJpa> {

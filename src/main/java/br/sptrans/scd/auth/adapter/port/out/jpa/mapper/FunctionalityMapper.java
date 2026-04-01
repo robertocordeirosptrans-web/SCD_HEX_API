@@ -1,6 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.out.jpa.mapper;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.FunctionalityEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.FunctionalityEntityJpa;
 import br.sptrans.scd.auth.domain.Functionality;
 
 public class FunctionalityMapper {

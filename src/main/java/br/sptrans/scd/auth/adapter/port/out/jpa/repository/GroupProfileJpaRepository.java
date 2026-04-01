@@ -10,8 +10,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupProfileEntityJpa;
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupProfileEntityJpaId;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupProfileEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupProfileEntityJpaId;
 import br.sptrans.scd.auth.domain.GroupProfile;
 
 @Repository

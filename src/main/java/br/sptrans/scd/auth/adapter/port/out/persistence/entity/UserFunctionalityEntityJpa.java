@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.port.out.jpa.entity;
+package br.sptrans.scd.auth.adapter.port.out.persistence.entity;
 
 import java.time.LocalDateTime;
 
@@ -13,9 +13,13 @@ import jakarta.persistence.MapsId;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "USUARIO_FUNCIONALIDADES", schema = "SPTRANSDBA")
+@Getter
+@Setter
 public class UserFunctionalityEntityJpa {
 
     @EmbeddedId

@@ -1,6 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.out.jpa.mapper;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupEntityJpa;
 import br.sptrans.scd.auth.domain.Group;
 
 public class GroupMapper {

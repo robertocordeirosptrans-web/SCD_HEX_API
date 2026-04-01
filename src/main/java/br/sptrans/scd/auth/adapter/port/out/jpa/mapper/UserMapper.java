@@ -1,6 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.out.jpa.mapper;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.UserEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.enums.UserStatus;
 

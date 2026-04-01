@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupEntityJpa;
 
 
 public interface GroupJpaRepository extends JpaRepository<GroupEntityJpa, String>, JpaSpecificationExecutor<GroupEntityJpa> {

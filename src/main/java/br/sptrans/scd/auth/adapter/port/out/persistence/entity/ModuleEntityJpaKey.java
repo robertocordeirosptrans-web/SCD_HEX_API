@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.port.out.jpa.entity;
+package br.sptrans.scd.auth.adapter.port.out.persistence.entity;
 
 import java.io.Serializable;
 
@@ -12,12 +12,11 @@ import lombok.RequiredArgsConstructor;
 @EqualsAndHashCode
 @RequiredArgsConstructor
 @Getter
-public class RoutineEntityJpaKey implements Serializable {
+public class ModuleEntityJpaKey implements Serializable {
 
     @Column(name = "COD_SISTEMA", length = 10)
     private String codSistema;
     @Column(name = "COD_MODULO", length = 10)
     private String codModulo;
-    @Column(name = "COD_ROTINA", length = 10)
-    private String codRotina;
+
 }

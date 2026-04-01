@@ -1,14 +1,10 @@
-package br.sptrans.scd.auth.adapter.port.out.jpa.entity;
+package br.sptrans.scd.auth.adapter.port.out.persistence.entity;
 
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -18,31 +14,26 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "GRUPO_PERFIS", schema = "SPTRANSDBA")
-public class GroupProfileEntityJpa {
+@Table(name = "FUNCIONALIDADES", schema = "SPTRANSDBA")
+public class FunctionalityEntityJpa {
 
     @EmbeddedId
-    private GroupProfileEntityJpaId id;
+    private FunctionalityEntityJpaKey id;
+
+    @Column(name = "NOM_FUNCIONALIDADE", length = 100)
+    private String nomFuncionalidade;
 
     @Column(name = "COD_STATUS", length = 1)
     private String codStatus;
 
-
-    @Column(name = "DT_MODI")
+    @Column(name = "DT_CADASTRO")
+    private LocalDateTime dtCadastro;
+    @Column(name = "DT_MANUTENCAO")
     private LocalDateTime dtManutencao;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("codGrupo")
-    @JoinColumn(name = "COD_GRUPO")
-    private GroupEntityJpa grupo;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("codPerfil")
-    @JoinColumn(name = "COD_PERFIL")
-    private ProfileEntityJpa perfil;
 
     @PrePersist
     protected void aoInserir() {
+        this.dtCadastro = LocalDateTime.now();
         this.dtManutencao = LocalDateTime.now();
     }
 
@@ -50,7 +41,5 @@ public class GroupProfileEntityJpa {
     protected void aoAtualizar() {
         this.dtManutencao = LocalDateTime.now();
     }
-
- 
 
 }

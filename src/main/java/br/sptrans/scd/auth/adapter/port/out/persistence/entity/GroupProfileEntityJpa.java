@@ -1,47 +1,48 @@
-package br.sptrans.scd.auth.adapter.port.out.jpa.entity;
+package br.sptrans.scd.auth.adapter.port.out.persistence.entity;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+@Entity
 @Getter
 @Setter
-@Entity
-@Table(name = "PERFIS", schema = "SPTRANSDBA")
-public class ProfileEntityJpa {
+@Table(name = "GRUPO_PERFIS", schema = "SPTRANSDBA")
+public class GroupProfileEntityJpa {
 
-    @Id
-    @Column(name = "COD_PERFIL", length = 20)
-    private String codPerfil;
-
-    @Column(name = "NOM_PERFIL", length = 100)
-    private String nomPerfil;
+    @EmbeddedId
+    private GroupProfileEntityJpaId id;
 
     @Column(name = "COD_STATUS", length = 1)
     private String codStatus;
 
+
     @Column(name = "DT_MODI")
     private LocalDateTime dtManutencao;
-    @Column(name = "ID_USUARIO_MANUTENCAO")
-    private Long idUsuarioManutencao;
 
-    @OneToMany(mappedBy = "perfil", fetch = FetchType.LAZY)
-    private Set<ProfileFunctionalityJpa> perfilFuncionalidades = new HashSet<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("codGrupo")
+    @JoinColumn(name = "COD_GRUPO")
+    private GroupEntityJpa grupo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("codPerfil")
+    @JoinColumn(name = "COD_PERFIL")
+    private ProfileEntityJpa perfil;
 
     @PrePersist
     protected void aoInserir() {
-  
         this.dtManutencao = LocalDateTime.now();
     }
 
@@ -50,6 +51,6 @@ public class ProfileEntityJpa {
         this.dtManutencao = LocalDateTime.now();
     }
 
-    
+ 
 
 }

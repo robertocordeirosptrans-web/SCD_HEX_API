@@ -4,8 +4,8 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.FunctionalityEntityJpa;
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.FunctionalityEntityJpaKey;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.FunctionalityEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.FunctionalityEntityJpaKey;
 
 
 

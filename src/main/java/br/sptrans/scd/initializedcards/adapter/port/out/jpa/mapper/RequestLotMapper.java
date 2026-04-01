@@ -6,8 +6,8 @@ import java.util.Date;
 
 import org.springframework.stereotype.Component;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.UserEntityJpa;
 import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.UserMapper;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity.RequestLotSCPEntityJpa;
 import br.sptrans.scd.initializedcards.adapter.port.out.jpa.entity.RequestLotSCPEntityJpaKey;
 import br.sptrans.scd.initializedcards.domain.RequestLotSCP;

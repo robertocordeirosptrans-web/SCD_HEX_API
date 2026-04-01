@@ -9,9 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.ProfileEntityJpa;
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.ProfileFunctionalityJpa;
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.ProfileFunctionalityJpaId;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.ProfileEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.ProfileFunctionalityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.ProfileFunctionalityJpaId;
 
 @Repository
 public interface ProfileFunctionalityJpaRepository extends JpaRepository<ProfileFunctionalityJpa, ProfileFunctionalityJpaId>, JpaSpecificationExecutor<ProfileFunctionalityJpa> {

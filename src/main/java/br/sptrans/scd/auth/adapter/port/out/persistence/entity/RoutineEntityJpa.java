@@ -1,27 +1,26 @@
-package br.sptrans.scd.auth.adapter.port.out.jpa.entity;
+package br.sptrans.scd.auth.adapter.port.out.persistence.entity;
 
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 
 @Entity
 @Getter
 @Table(name = "ROTINAS", schema = "SPTRANSDBA")
-public class SystemsEntityJpa {
+public class RoutineEntityJpa {
 
-    @Id
-    @Column(name = "COD_SISTEMA", length = 10)
-    private String codSistema;
+    @EmbeddedId
+    private RoutineEntityJpaKey id;
 
-    @Column(name = "NOM_SISTEMA", length = 10)
-    private String nomSistema;
+    @Column(name = "NOM_ROTINA", length = 60)
+    private String nomRotina;
 
-    @Column(name = "NOM_CAMINHO_DIRETORIO", length = 1)
-    private String nomCaminhoDiretorio;
+    @Column(name = "NOM_LINK", length = 60)
+    private String nomLink;
 
     @Column(name = "COD_STATUS", length = 1)
     private String codStatus;

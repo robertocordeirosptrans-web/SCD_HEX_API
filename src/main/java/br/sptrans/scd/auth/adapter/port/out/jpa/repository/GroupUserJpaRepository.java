@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupUserEntityJpa;
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.GroupUserEntityJpaId;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupUserEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupUserEntityJpaId;
 
 public interface GroupUserJpaRepository extends JpaRepository<GroupUserEntityJpa, GroupUserEntityJpaId> {
 

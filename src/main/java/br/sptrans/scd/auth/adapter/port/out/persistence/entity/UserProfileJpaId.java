@@ -1,4 +1,4 @@
-package br.sptrans.scd.auth.adapter.port.out.jpa.entity;
+package br.sptrans.scd.auth.adapter.port.out.persistence.entity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

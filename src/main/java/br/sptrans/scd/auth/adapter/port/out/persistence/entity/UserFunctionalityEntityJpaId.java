@@ -1,23 +1,26 @@
-package br.sptrans.scd.auth.adapter.port.out.jpa.entity;
+package br.sptrans.scd.auth.adapter.port.out.persistence.entity;
 
 import java.io.Serializable;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Embeddable
+@EqualsAndHashCode
 @Getter
 @Setter
-@EqualsAndHashCode
-@RequiredArgsConstructor
-public class ProfileFunctionalityJpaId implements Serializable {
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserFunctionalityEntityJpaId implements Serializable{
 
-    @Column(name = "COD_PERFIL")
-    private String codPerfil;
+    @Column(name = "ID_USUARIO")
+    private Long idUsuario;
     @Column(name = "COD_SISTEMA")
     private String codSistema;
     @Column(name = "COD_MODULO")

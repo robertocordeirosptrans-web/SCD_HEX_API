@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.UserEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserEntityJpa;
 
 public interface UserRepositoryJpa extends JpaRepository<UserEntityJpa, Long>, JpaSpecificationExecutor<UserEntityJpa>  {
     // Verifica existência por login
