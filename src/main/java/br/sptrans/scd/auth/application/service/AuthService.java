@@ -1,9 +1,11 @@
 package br.sptrans.scd.auth.application.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +15,11 @@ import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.out.GatewayEmail;
+import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenRepository;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.Functionality;
+import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.shared.exception.AccountBlockedException;
@@ -47,6 +51,7 @@ public class AuthService implements AuthUseCase {
     private long tokenTtlMinutos;
 
     private final UserRepository userRepository;
+    private final GroupUserRepository groupUserRepository;
     private final PasswordTokenRepository tokenRepository;
     private final GatewayEmail gatewayEmail;
 
@@ -157,6 +162,33 @@ public class AuthService implements AuthUseCase {
     @Override
     public Set<Functionality> loadPermissions(Long idUsuario) {
               return userRepository.carregarFuncionalidadesEfetivas(idUsuario);
+    }
+
+    @Override
+    public AuthUseCase.UserContext loadUserContext(String codLogin) {
+        User user = userRepository.findByCodLogin(codLogin)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "login", codLogin));
+
+        // Carrega perfis e funcionalidades para o contexto do usuário
+        Set<String> roles = userRepository.carregarPerfisEfetivos(user.getIdUsuario())
+                .stream()
+                .map(profile -> profile.getCodPerfil())
+                .collect(Collectors.toSet());
+
+        Set<String> permissions = userRepository.carregarFuncionalidadesEfetivas(user.getIdUsuario())
+                .stream()
+                .map(func -> func.canonicalKey())
+                .collect(Collectors.toSet());
+
+                // Buscar grupos ativos do usuário
+        List<GroupUser> gruposUsuario = groupUserRepository.findById_IdUsuarioAndCodStatus(user.getIdUsuario(), "A");
+        Set<String> grupos = gruposUsuario.stream()
+                .map(gu -> gu.getId().getCodGrupo())
+                .collect(Collectors.toSet());
+
+        
+
+        return new AuthUseCase.UserContext(user.getIdUsuario(), user.getNomUsuario(), roles, permissions, grupos);
     }
 
     // ── redefinirSenha ───────────────────────────────────────────────────────

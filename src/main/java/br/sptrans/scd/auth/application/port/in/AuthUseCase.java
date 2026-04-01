@@ -36,6 +36,8 @@ public interface AuthUseCase {
      */
     Set<Functionality> loadPermissions(Long idUsuario);
 
+    UserContext loadUserContext(String codLogin);
+
     /**
      * US001 — Solicitar redefinição de senha. Regras: - Verifica NOM_EMAIL na
      * tabela USUARIOS antes de qualquer ação - Gera token UUID único; persiste
@@ -55,13 +57,23 @@ public interface AuthUseCase {
      * @throws AuthenticationException se token inválido, expirado ou senha
      * rejeitada
      */
-
     void resetPassword(ResetPasswordComand comando);
 
+    record UserContext(Long id, String name, Set<String> roles, Set<String> permissions, Set<String> groups) {
 
-    record AuthComand(String codLogin, String senha) {}
-    record ResetRequestComand(String email) {}
-    record ResetPasswordComand(String token, String novaSenha) {}
+    }
+
+    record AuthComand(String codLogin, String senha) {
+
+    }
+
+    record ResetRequestComand(String email) {
+
+    }
+
+    record ResetPasswordComand(String token, String novaSenha) {
+
+    }
 
     // ── Exceção de domínio ───────────────────────────────────────────────────
     class AuthenticationException extends RuntimeException {
