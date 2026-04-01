@@ -3,14 +3,14 @@ package br.sptrans.scd.auth.domain;
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = "codPerfil")
 public class Profile {
 
     private String codPerfil;

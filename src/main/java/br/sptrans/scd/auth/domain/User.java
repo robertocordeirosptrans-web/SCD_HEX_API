@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import br.sptrans.scd.auth.domain.enums.UserStatus;
-import lombok.EqualsAndHashCode;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(of = "idUsuario")
+@AllArgsConstructor
 public class User {
 
 

@@ -2,9 +2,16 @@ package br.sptrans.scd.auth.domain;
 
 import java.io.Serializable;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode
 public class GroupProfileKey implements Serializable{
 
@@ -12,29 +19,5 @@ public class GroupProfileKey implements Serializable{
 
     private String codPerfil;
 
-    // Default constructor
-    public GroupProfileKey() {
-    }
-
-    public GroupProfileKey(String codGrupo, String codPerfil) {
-        this.codGrupo = codGrupo;
-        this.codPerfil = codPerfil;
-    }
-
-    public String getCodGrupo() {
-        return codGrupo;
-    }
-
-    public void setCodGrupo(String codGrupo) {
-        this.codGrupo = codGrupo;
-    }
-
-    public String getCodPerfil() {
-        return codPerfil;
-    }
-
-    public void setCodPerfil(String codPerfil) {
-        this.codPerfil = codPerfil;
-    }
 
 }
