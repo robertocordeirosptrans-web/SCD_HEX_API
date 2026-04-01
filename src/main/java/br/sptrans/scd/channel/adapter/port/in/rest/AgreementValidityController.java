@@ -56,9 +56,9 @@ public class AgreementValidityController {
                 new CreateAgreementValidityCommand(
                         request.codCanal(),
                         request.codProduto(),
-                        request.dataFimValidade(),
-                        request.dataInicioValidade(),
-                        request.status(),
+                        request.dtFimValidade(),
+                        request.dtInicioValidade(),
+                        request.codStatus(),
                         idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
@@ -77,9 +77,9 @@ public class AgreementValidityController {
         Long idUsuario = resolveUserId(authentication);
         AgreementValidity result = agreementValidityUseCase.updateAgreementValidity(codCanal, codProduto,
                 new UpdateAgreementValidityCommand(
-                        request.dataFimValidade(),
-                        request.dataInicioValidade(),
-                        request.status(),
+                        request.dtFimValidade(),
+                        request.dtInicioValidade(),
+                        request.codStatus(),
                         idUsuario));
         return ResponseEntity.ok(result);
     }
@@ -130,12 +130,12 @@ public class AgreementValidityController {
     public record CreateAgreementValidityRequest(
             String codCanal,
             String codProduto,
-            LocalDateTime dataFimValidade,
-            LocalDateTime dataInicioValidade,
-            String status) {}
+            LocalDateTime dtFimValidade,
+            LocalDateTime dtInicioValidade,
+            String codStatus) {}
 
     public record UpdateAgreementValidityRequest(
-            LocalDateTime dataFimValidade,
-            LocalDateTime dataInicioValidade,
-            String status) {}
+            LocalDateTime dtFimValidade,
+            LocalDateTime dtInicioValidade,
+            String codStatus) {}
 }

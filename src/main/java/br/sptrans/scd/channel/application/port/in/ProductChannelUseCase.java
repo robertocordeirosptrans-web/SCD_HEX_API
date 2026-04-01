@@ -37,7 +37,7 @@ public interface ProductChannelUseCase {
             Integer vlFace,
             String codStatus,
             Integer codConvenio,
-            Integer tipoOperHM,
+            Integer codTipoOperHM,
             String flgCarac,
             Long idUsuarioCadastro) {}
 
@@ -51,7 +51,7 @@ public interface ProductChannelUseCase {
             Integer vlFace,
             String codStatus,
             Integer codConvenio,
-            Integer tipoOperHM,
+            Integer codTipoOperHM,
             String flgCarac,
             Long idUsuarioManutencao) {}
 }

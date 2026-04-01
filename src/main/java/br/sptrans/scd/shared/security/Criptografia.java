@@ -4,16 +4,16 @@ import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.shared.exception.EncryptorException;
+import lombok.NoArgsConstructor;
+
 
 
 
 @Component
+@NoArgsConstructor
 public class Criptografia {
 
-    private Criptografia() {
-        //
-    }
-
+ 
     private static StandardPBEStringEncryptor encryptor;
 
     public static String encripta(String texto) throws EncryptorException {

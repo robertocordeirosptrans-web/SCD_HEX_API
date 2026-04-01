@@ -14,10 +14,10 @@ public class AgreementValidityMapper {
             domain.getId().getCodCanal(),
             domain.getId().getCodProduto()
         ));
-        entity.setDataFimValidade(domain.getDataFimValidade());
-        entity.setDataInicioValidade(domain.getDataInicioValidade());
-        entity.setStatus(domain.getStatus());
-        entity.setDataManutencao(domain.getDataManutencao());
+        entity.setDtFimValidade(domain.getDtFimValidade());
+        entity.setDtInicioValidade(domain.getDtInicioValidade());
+        entity.setCodStatus(domain.getCodStatus());
+        entity.setDtManutencao(domain.getDtManutencao());
         entity.setIdUsuario(domain.getIdUsuario());
         return entity;
     }
@@ -29,10 +29,10 @@ public class AgreementValidityMapper {
             entity.getId().getCodCanal(),
             entity.getId().getCodProduto()
         ));
-        domain.setDataFimValidade(entity.getDataFimValidade());
-        domain.setDataInicioValidade(entity.getDataInicioValidade());
-        domain.setStatus(entity.getStatus());
-        domain.setDataManutencao(entity.getDataManutencao());
+        domain.setDtFimValidade(entity.getDtFimValidade());
+        domain.setDtInicioValidade(entity.getDtInicioValidade());
+        domain.setCodStatus(entity.getCodStatus());
+        domain.setDtManutencao(entity.getDtManutencao());
         domain.setIdUsuario(entity.getIdUsuario());
         // Os campos canal, produto, canalProduto não são mapeados diretamente
         return domain;

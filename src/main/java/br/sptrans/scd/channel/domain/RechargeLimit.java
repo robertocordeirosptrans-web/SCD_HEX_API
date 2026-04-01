@@ -3,7 +3,7 @@ package br.sptrans.scd.channel.domain;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import br.sptrans.scd.auth.domain.User;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

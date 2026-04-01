@@ -73,7 +73,7 @@ public class ProductChannelController {
                         request.vlFace(),
                         request.codStatus(),
                         request.codConvenio(),
-                        request.tipoOperHM(),
+                        request.codTipoOperHM(),
                         request.flgCarac(),
                         idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -102,7 +102,7 @@ public class ProductChannelController {
                         request.vlFace(),
                         request.codStatus(),
                         request.codConvenio(),
-                        request.tipoOperHM(),
+                        request.codTipoOperHM(),
                         request.flgCarac(),
                         idUsuario));
         return ResponseEntity.ok(result);
@@ -137,7 +137,7 @@ public class ProductChannelController {
                 channel.getDtCadastro() != null ? channel.getDtCadastro().toString() : null,
                 channel.getDtManutencao() != null ? channel.getDtManutencao().toString() : null,
                 channel.getCodConvenio(),
-                channel.getTipoOperHM(),
+                channel.getCodTipoOperHM(),
                 channel.getFlgCarac(),
                 channel.getId() != null ? channel.getId().getCodProduto() : null,
                 channel.getId() != null ? channel.getId().getCodCanal() : null,
@@ -189,7 +189,7 @@ public class ProductChannelController {
             Integer vlFace,
             String codStatus,
             Integer codConvenio,
-            Integer tipoOperHM,
+            Integer codTipoOperHM,
             String flgCarac) {
 
     }
@@ -204,7 +204,7 @@ public class ProductChannelController {
             Integer vlFace,
             String codStatus,
             Integer codConvenio,
-            Integer tipoOperHM,
+            Integer codTipoOperHM,
             String flgCarac) {
 
     }

@@ -64,7 +64,7 @@ public class ProductVersionAdapterJpa implements ProductVersionRepository {
         repository.deleteById(codVersao);
     }
 
-    // @Override
+    @Override
     public Optional<ProductVersion> findByProduct(String codProduto) {
         // Exemplo: buscar a primeira versão pelo código do produto
         return repository.findAll().stream()

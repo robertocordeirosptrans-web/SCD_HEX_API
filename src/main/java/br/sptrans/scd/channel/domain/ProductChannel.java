@@ -38,7 +38,7 @@ public class ProductChannel {
 
     private Integer codConvenio;
 
-    private Integer tipoOperHM;
+    private Integer codTipoOperHM;
 
     private String flgCarac;
 

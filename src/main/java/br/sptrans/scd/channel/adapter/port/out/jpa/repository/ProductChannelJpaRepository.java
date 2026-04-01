@@ -30,7 +30,7 @@ public interface ProductChannelJpaRepository extends JpaRepository<ProductChanne
             p.codStatus = :stCanaisProdutos,
             p.dtManutencao = CURRENT_TIMESTAMP,
             p.codConvenio = :codConvenio,
-            p.tipoOperHM = :tipoOperHm,
+            p.codTipoOperHM = :tipoOperHm,
             p.flgCarac = :flgCarac,
             p.idUsuarioManutencao = :idUsuarioManutencao
         WHERE p.id.codCanal = :codCanal AND p.id.codProduto = :codProduto

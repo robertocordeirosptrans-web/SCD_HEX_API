@@ -118,7 +118,7 @@ public class CreditRequestValidationService {
         AgreementValidityKey key = new AgreementValidityKey(codCanal, codProduto);
 
         Optional<AgreementValidity> convOpt = agreeValidRepository.findById(key);
-        if (convOpt.isEmpty() || convOpt.get().getDataFimValidade().isBefore(LocalDateTime.now())) {
+        if (convOpt.isEmpty() || convOpt.get().getDtInicioValidade().isBefore(LocalDateTime.now())) {
             rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, produto,
                     "Convênio não vigente para canal de distribuição " + codCanal
                     + " e produto " + codProduto));

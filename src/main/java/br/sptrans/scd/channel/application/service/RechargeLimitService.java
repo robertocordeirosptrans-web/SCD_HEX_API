@@ -9,11 +9,10 @@ import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase;
 import br.sptrans.scd.channel.application.port.out.RechargeLimitRepository;
-import br.sptrans.scd.channel.domain.ProductChannel;
-import br.sptrans.scd.channel.domain.ProductChannelKey;
+
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
-import br.sptrans.scd.channel.domain.SalesChannel;
+
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import lombok.RequiredArgsConstructor;

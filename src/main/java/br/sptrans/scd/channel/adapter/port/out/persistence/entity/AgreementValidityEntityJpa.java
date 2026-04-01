@@ -23,16 +23,16 @@ public class AgreementValidityEntityJpa {
     private AgreementValidityKeyEntityJpa id;
 
     @Column(name = "DT_FIM_VALIDADE")
-    private LocalDateTime dataFimValidade;
+    private LocalDateTime dtFimValidade;
 
     @Column(name = "DT_INICIO_VALIDADE")
-    private LocalDateTime dataInicioValidade;
+    private LocalDateTime dtInicioValidade;
 
     @Column(name = "COD_STATUS", length = 1)
-    private String status;
+    private String codStatus;
 
     @Column(name = "DT_MANUTENCAO")
-    private LocalDateTime dataManutencao;
+    private LocalDateTime dtManutencao;
 
     @Column(name = "ID_USUARIO")
     private Long idUsuario;

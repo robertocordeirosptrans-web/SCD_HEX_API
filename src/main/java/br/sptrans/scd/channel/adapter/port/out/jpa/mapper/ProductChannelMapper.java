@@ -48,7 +48,7 @@ public class ProductChannelMapper {
         domain.setCodOrgaoEmissor(entity.getCodOrgaoEmissor());
         domain.setVlFace(entity.getVlFace());
         domain.setCodStatus(entity.getCodStatus());
-        domain.setTipoOperHM(entity.getTipoOperHM());
+        domain.setCodTipoOperHM(entity.getCodTipoOperHM());
         domain.setDtCadastro(entity.getDtCadastro());
         domain.setDtManutencao(entity.getDtManutencao());
         domain.setFlgCarac(entity.getFlgCarac());

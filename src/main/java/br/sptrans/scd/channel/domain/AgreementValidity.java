@@ -15,13 +15,13 @@ public class AgreementValidity {
 
     private AgreementValidityKey id;
 
-    private LocalDateTime dataFimValidade;
+    private LocalDateTime dtFimValidade;
 
-    private LocalDateTime dataInicioValidade;
+    private LocalDateTime dtInicioValidade;
 
-    private String status;
+    private String codStatus;
 
-    private LocalDateTime dataManutencao;
+    private LocalDateTime dtManutencao;
 
     private Long idUsuario;
 }

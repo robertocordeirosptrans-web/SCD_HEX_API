@@ -68,7 +68,7 @@ public class ProductChannelService implements ProductChannelUseCase {
         entity.setVlFace(cmd.vlFace());
         entity.setCodStatus(cmd.codStatus());
         entity.setCodConvenio(cmd.codConvenio());
-        entity.setTipoOperHM(cmd.tipoOperHM());
+        entity.setCodTipoOperHM(cmd.codTipoOperHM());
         entity.setFlgCarac(cmd.flgCarac());
         entity.setIdUsuarioCadastro(usuCad);
   
@@ -94,7 +94,7 @@ public class ProductChannelService implements ProductChannelUseCase {
         existing.setVlFace(cmd.vlFace());
         existing.setCodStatus(cmd.codStatus());
         existing.setCodConvenio(cmd.codConvenio());
-        existing.setTipoOperHM(cmd.tipoOperHM());
+        existing.setCodTipoOperHM(cmd.codTipoOperHM());
         existing.setFlgCarac(cmd.flgCarac());
         existing.setIdUsuarioManutencao(usuMan);
 

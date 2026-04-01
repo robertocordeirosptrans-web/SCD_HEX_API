@@ -56,7 +56,7 @@ public class ProductChannelEntityJpa {
     private Integer codConvenio;
 
     @Column(name = "TIPO_OPER_HM")
-    private Integer tipoOperHM;
+    private Integer codTipoOperHM;
 
     @Column(name = "FLG_CARAC", length = 1)
     private String flgCarac;
