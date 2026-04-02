@@ -18,6 +18,8 @@ import br.sptrans.scd.auth.domain.FunctionalityKey;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.Profile;
+import br.sptrans.scd.auth.domain.ProfileFunctionality;
+import br.sptrans.scd.auth.domain.UserProfile;
 import br.sptrans.scd.shared.exception.BusinessException;
 import br.sptrans.scd.shared.exception.DuplicateResourceException;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
@@ -456,6 +458,18 @@ public class ManageGroupProfileUseCase {
     public List<Profile> listProfiles(String statusCode) {
         log.debug("Listando perfis. Status: {}", statusCode);
         return profileRepository.listProfile(statusCode);
+    }
+
+    public List<GroupUser> listGroupUsers() {
+        return groupUserRepository.listGroupUsers();
+    }
+
+    public List<UserProfile> listUserProfiles() {
+        return profileRepository.listUserProfiles();
+    }
+
+    public List<ProfileFunctionality> listProfileFunctionalities() {
+        return profileRepository.listProfileFunctionalities();
     }
 
     // ── Utilitários privados ──────────────────────────────────────────────────

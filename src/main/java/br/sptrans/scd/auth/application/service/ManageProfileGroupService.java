@@ -133,16 +133,16 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     // ══════════════════════════════════════════════════════════════════════════
     @Override
     public List<GroupUser> listGroupUsers() {
-        return null;
+        return manageGroupProfileUseCase.listGroupUsers();
     }
 
     @Override
     public List<UserProfile> listUserProfiles() {
-        return null;
+        return manageGroupProfileUseCase.listUserProfiles();
     }
 
     @Override
     public List<ProfileFunctionality> listProfileFunctionalities() {
-        return null;
+        return manageGroupProfileUseCase.listProfileFunctionalities();
     }
 }

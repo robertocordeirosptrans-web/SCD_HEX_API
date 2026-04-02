@@ -30,13 +30,16 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final CorsConfigurationSource corsConfigurationSource;
     private final List<HeaderWriter> securityHeaderWriters;
+    private final ObjectMapper objectMapper;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
             CorsConfigurationSource corsConfigurationSource,
-            List<HeaderWriter> securityHeaderWriters) {
+            List<HeaderWriter> securityHeaderWriters,
+            ObjectMapper objectMapper) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.corsConfigurationSource = corsConfigurationSource;
         this.securityHeaderWriters = securityHeaderWriters;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
@@ -79,8 +82,7 @@ public class SecurityConfig {
                     res.setContentType("application/json");
                     var error = new ErrorResponse(401, "Unauthorized", "Token inválido ou ausente",
                             "UNAUTHORIZED", req.getRequestURI());
-                    ObjectMapper mapper = new ObjectMapper();
-                    mapper.writeValue(res.getOutputStream(), error);
+                    objectMapper.writeValue(res.getOutputStream(), error);
                 })
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
