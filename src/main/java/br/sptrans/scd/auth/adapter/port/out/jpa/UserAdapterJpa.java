@@ -24,6 +24,7 @@ import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.shared.exception.InvalidUserProfileException;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -196,7 +197,9 @@ public class UserAdapterJpa implements UserRepository {
             .collect(Collectors.toSet());
 
         if (perfisValidos.isEmpty()) {
-            throw new IllegalStateException("Usuário sem associação válida com perfil (expirado, inativo ou inexistente)");
+            throw new InvalidUserProfileException(
+                "Usuário sem associação válida com perfil (expirado, inativo ou inexistente)"
+            );
         }
         return perfisValidos;
     }

@@ -362,6 +362,26 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Trata exceções de perfil de usuário inválido
+     */
+    @ExceptionHandler(InvalidUserProfileException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidUserProfile(
+            InvalidUserProfileException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.FORBIDDEN.value(),
+            "Forbidden",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.warn("Invalid user profile at URI: {} - Message: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    /**
      * Trata exceções de negócio genéricas
      */
     @ExceptionHandler(BusinessException.class)

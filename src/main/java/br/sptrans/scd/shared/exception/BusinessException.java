@@ -10,7 +10,8 @@ public sealed class BusinessException extends RuntimeException
             DuplicateResourceException,
             AuthenticationFailedException,
             AccountBlockedException,
-            InactiveUserException {
+            InactiveUserException,
+            InvalidUserProfileException {
 
     private final String errorCode;
 
