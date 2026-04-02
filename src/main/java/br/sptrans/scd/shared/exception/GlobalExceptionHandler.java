@@ -594,7 +594,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
+    /**
+     * Trata exceções de criptografia
+     */
+    @ExceptionHandler(EncryptorException.class)
+    public ResponseEntity<ErrorResponse> handleEncryptor(
+            EncryptorException ex,
+            HttpServletRequest request) {
 
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "Internal Server Error",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.error("Encryption error at URI: {} - Error Code: {}", request.getRequestURI(), ex.getErrorCode(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
 
     /**
      * Trata exceções de tipo de mídia não suportado (415 Unsupported Media Type)
