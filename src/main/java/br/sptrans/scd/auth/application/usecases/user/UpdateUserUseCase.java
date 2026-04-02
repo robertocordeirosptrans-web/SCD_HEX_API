@@ -7,9 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
+import br.sptrans.scd.auth.application.port.out.UserCommandPort;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 
-import br.sptrans.scd.auth.application.port.out.UserWriter;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.shared.cache.InvalidateUserCache;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
@@ -34,7 +35,7 @@ public class UpdateUserUseCase {
     private static final Logger log = LoggerFactory.getLogger(UpdateUserUseCase.class);
 
     private final UserQueryPort userReader;
-    private final UserWriter userWriter;
+    private final UserCommandPort userWriter;
 
     /**
      * Atualiza dados cadastrais do usuário.

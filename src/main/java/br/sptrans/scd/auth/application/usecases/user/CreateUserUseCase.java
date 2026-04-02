@@ -7,9 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
+import br.sptrans.scd.auth.application.port.out.UserCommandPort;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 
-import br.sptrans.scd.auth.application.port.out.UserWriter;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.enums.UserStatus;
 import br.sptrans.scd.shared.cache.InvalidateUserCache;
@@ -37,7 +38,7 @@ public class CreateUserUseCase {
     private static final String TEMP_PASSWORD = "SBEReset@#2026";
 
     private final UserQueryPort userReader;
-    private final UserWriter userWriter;
+    private final UserCommandPort userWriter;
 
     /**
      * Cria novo usuário com senha temporária.

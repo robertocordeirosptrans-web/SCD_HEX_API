@@ -20,6 +20,7 @@ import br.sptrans.scd.auth.application.port.out.AuthorizationPort;
 
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 
+
 import br.sptrans.scd.auth.application.port.out.UserStatusPort;
 
 import br.sptrans.scd.auth.domain.Functionality;
