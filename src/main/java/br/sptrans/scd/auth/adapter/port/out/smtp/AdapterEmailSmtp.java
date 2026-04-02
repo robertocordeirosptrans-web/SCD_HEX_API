@@ -8,6 +8,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import br.sptrans.scd.auth.application.port.out.GatewayEmail;
+import br.sptrans.scd.shared.exception.EmailGatewayException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
@@ -57,7 +58,11 @@ public class AdapterEmailSmtp implements GatewayEmail {
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            throw new RuntimeException("Failed to send password reset email", e);
+            throw new EmailGatewayException(
+                "Falha ao enviar e-mail de recuperação de senha para: " + destinatario,
+                "EMAIL_SEND_FAILED",
+                e
+            );
         }
     }
 }

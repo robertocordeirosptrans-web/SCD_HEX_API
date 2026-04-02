@@ -534,7 +534,34 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(errorResponse);
     }
 
+    /**
+     * Trata exceções de gateway (SMTP, JWT, etc.)
+     * Erros em integração com serviços externos resultam em 502 Bad Gateway ou 503 Service Unavailable
+     */
+    @ExceptionHandler(GatewayException.class)
+    public ResponseEntity<ErrorResponse> handleGatewayException(
+            GatewayException ex,
+            HttpServletRequest request) {
 
+        Map<String, Object> details = new HashMap<>();
+        details.put("gateway", ex.getGatewayName());
+
+        ErrorResponse errorResponse = ErrorResponse.withDetails(
+            HttpStatus.BAD_GATEWAY.value(),
+            "Bad Gateway",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI(),
+            details
+        );
+
+        log.warn("Gateway error at URI: {} - Gateway: {} - Code: {} - Message: {}", 
+                 request.getRequestURI(), 
+                 ex.getGatewayName(),
+                 ex.getErrorCode(),
+                 ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(errorResponse);
+    }
 
     /**
      * Trata exceções genéricas não tratadas
