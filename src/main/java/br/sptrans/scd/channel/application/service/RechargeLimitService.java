@@ -5,16 +5,14 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase;
 import br.sptrans.scd.channel.application.port.out.RechargeLimitRepository;
-
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
-
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
+import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class RechargeLimitService implements RechargeLimitUseCase {
 
     private final RechargeLimitRepository repository;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelperImpl userResolverHelper;
 
     @Override
     public RechargeLimit createRechargeLimit(CreateRechargeLimitCommand cmd) {
@@ -32,7 +30,7 @@ public class RechargeLimitService implements RechargeLimitUseCase {
             throw new ChannelException(ChannelErrorType.RECHARGE_LIMIT_ALREADY_EXISTS);
         }
 
-        User usuario = resolveUser(cmd.idUsuario());
+        User usuario = userResolverHelper.resolve(cmd.idUsuario());
 
         RechargeLimit entity = new RechargeLimit();
         entity.setId(key);
@@ -54,7 +52,7 @@ public class RechargeLimitService implements RechargeLimitUseCase {
         RechargeLimit existing = repository.findById(key)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.RECHARGE_LIMIT_NOT_FOUND));
 
-        User usuario = resolveUser(cmd.idUsuario());
+        User usuario = userResolverHelper.resolve(cmd.idUsuario());
 
         existing.setDtInicioValidade(cmd.dtInicioValidade());
         existing.setDtFimValidade(cmd.dtFimValidade());
@@ -102,10 +100,4 @@ public class RechargeLimitService implements RechargeLimitUseCase {
         repository.deleteById(key);
     }
 
-    private User resolveUser(Long idUsuario) {
-        if (idUsuario == null) {
-            return null;
-        }
-        return userRepository.findById(idUsuario).orElse(null);
-    }
 }

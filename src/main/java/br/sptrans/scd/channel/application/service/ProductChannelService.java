@@ -5,8 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase;
@@ -17,6 +15,7 @@ import br.sptrans.scd.channel.domain.ProductChannelKey;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
+import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -25,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductChannelService implements ProductChannelUseCase {
 
     private final ProductChannelRepository repository;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelperImpl userResolverHelper;
     private final SalesChannelRepository salesChannelRepository;
     private final ProductChannelRepository productChannelJpaRepository;
     // private final ProductChannelJpaRepository productChannelJpaRepository;
@@ -54,7 +53,7 @@ public class ProductChannelService implements ProductChannelUseCase {
             throw new ChannelException(ChannelErrorType.PRODUCT_CHANNEL_ALREADY_EXISTS);
         }
 
-        User usuCad = resolveUser(cmd.idUsuarioCadastro());
+        User usuCad = userResolverHelper.resolve(cmd.idUsuarioCadastro());
         SalesChannel chanCad = resolveChannel(cmd.codCanal());
 
 
@@ -84,7 +83,7 @@ public class ProductChannelService implements ProductChannelUseCase {
         ProductChannel existing = repository.findById(key)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.PRODUCT_CHANNEL_NOT_FOUND));
 
-        User usuMan = resolveUser(cmd.idUsuarioManutencao());
+        User usuMan = userResolverHelper.resolve(cmd.idUsuarioManutencao());
 
         existing.setQtdLimiteComercializacao(cmd.qtdLimiteComercializacao());
         existing.setQtdMinimaEstoque(cmd.qtdMinimaEstoque());
@@ -134,13 +133,6 @@ public class ProductChannelService implements ProductChannelUseCase {
             throw new ChannelException(ChannelErrorType.PRODUCT_CHANNEL_NOT_FOUND);
         }
         repository.deleteById(key);
-    }
-
-    private User resolveUser(Long idUsuario) {
-        if (idUsuario == null) {
-            return null;
-        }
-        return userRepository.findById(idUsuario).orElse(null);
     }
 
     private SalesChannel resolveChannel(String codCanal) {

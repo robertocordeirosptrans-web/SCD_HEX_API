@@ -41,7 +41,10 @@ public enum ChannelErrorType {
 
     // RechargeLimit
     RECHARGE_LIMIT_NOT_FOUND("Limite de recarga não encontrado."),
-    RECHARGE_LIMIT_ALREADY_EXISTS("Limite de recarga já cadastrado para este canal e produto.");
+    RECHARGE_LIMIT_ALREADY_EXISTS("Limite de recarga já cadastrado para este canal e produto."),
+
+    // User
+    USER_NOT_FOUND("Usuário não encontrado.");
 
     private final String description;
 }

@@ -1,8 +1,5 @@
 package br.sptrans.scd.creditrequest.application.port.in;
 
-import java.util.List;
-import br.sptrans.scd.creditrequest.domain.CreditRequest;
-import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 
 public interface ProcessRechargeUseCase {
 

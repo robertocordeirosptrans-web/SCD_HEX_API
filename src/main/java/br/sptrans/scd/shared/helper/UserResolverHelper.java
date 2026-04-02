@@ -1,23 +1,14 @@
 package br.sptrans.scd.shared.helper;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
-
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
-import lombok.RequiredArgsConstructor;
 
-@Component
-@RequiredArgsConstructor
-public class UserResolverHelper {
+public interface UserResolverHelper {
 
-    private final UserPersistencePort userPort;
+    User resolve(Long userId);
 
-    public Long resolveId(Authentication auth) {
-        return userPort.findByCodLogin(auth.getName())
-                .map(User::getIdUsuario)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                "Usuário autenticado não encontrado: " + auth.getName()));
-    }
+    String getCurrentLogin();
+
+    User getCurrentUser();
+
+    Long getCurrentUserId();
 }

@@ -16,6 +16,10 @@ import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ProductChannel
 
 public interface ProductChannelJpaRepository extends JpaRepository<ProductChannelEntityJpa, ProductChannelKeyEntityJpa>, JpaSpecificationExecutor<ProductChannelEntityJpa> {
 
+    List<ProductChannelEntityJpa> findByIdCodCanal(String codCanal);
+
+    List<ProductChannelEntityJpa> findByIdCodProduto(String codProduto);
+
     @Modifying
     @Transactional
     @Query("""

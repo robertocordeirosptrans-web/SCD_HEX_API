@@ -2,9 +2,6 @@ package br.sptrans.scd.auth.application.port.out;
 
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 
 /**

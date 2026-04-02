@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Functionality;
-import br.sptrans.scd.auth.domain.FunctionalityKey;
 import br.sptrans.scd.auth.domain.ProfileFunctionality;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -64,12 +63,6 @@ public class ProfileFunctionalityController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> associate(@RequestBody ProfileFunctionalityRequest request) {
-        FunctionalityKey key = new FunctionalityKey(
-                request.codSistema(),
-                request.codModulo(),
-                request.codRotina(),
-                request.codFuncionalidade()
-        );
 
         var functionality = new Functionality();
         groupProfileManagementUseCase.associateFunctionalitiesToProfile(
@@ -104,12 +97,7 @@ public class ProfileFunctionalityController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> updateStatus(@RequestBody ProfileFunctionalityStatusRequest request) {
-        var key = new FunctionalityKey(
-                request.codSistema(),
-                request.codModulo(),
-                request.codRotina(),
-                request.codFuncionalidade()
-        );
+   
         groupProfileManagementUseCase.disassociateFunctionalityFromProfile(
                 new GroupProfileManagementUseCase.DisassociateFunctionalityFromProfileCommand(
                         request.codPerfil(),

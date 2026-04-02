@@ -6,8 +6,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
 import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
@@ -16,6 +14,7 @@ import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.TypesActivity;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
+import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,7 +26,7 @@ public class SalesChannelService implements SalesChannelUseCase {
     private static final String STATUS_INACTIVE = "I";
 
     private final SalesChannelRepository salesChannelRepository;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelperImpl userResolverHelper;
 
     @Override
     public SalesChannel createSalesChannel(CreateSalesChannelCommand cmd) {
@@ -35,7 +34,7 @@ public class SalesChannelService implements SalesChannelUseCase {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_CODE_ALREADY_EXISTS);
         }
 
-        User usuario = resolveUser(cmd.idUsuario());
+        User usuario = userResolverHelper.resolve(cmd.idUsuario());
 
         SalesChannel salesChannel = new SalesChannel(
                 cmd.codCanal(),
@@ -80,7 +79,7 @@ public class SalesChannelService implements SalesChannelUseCase {
         SalesChannel existing = salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
 
-        User usuario = resolveUser(cmd.idUsuario());
+        User usuario = userResolverHelper.resolve(cmd.idUsuario());
 
         SalesChannel updated = new SalesChannel(
                 existing.getCodCanal(),
@@ -161,8 +160,4 @@ public class SalesChannelService implements SalesChannelUseCase {
         salesChannelRepository.deleteById(codCanal);
     }
 
-    private User resolveUser(Long idUsuario) {
-        if (idUsuario == null) return null;
-        return userRepository.findById(idUsuario).orElse(null);
-    }
 }

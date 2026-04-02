@@ -38,19 +38,15 @@ public class ProductChannelAdapterJpa implements ProductChannelRepository {
 
     @Override
     public List<ProductChannel> findByCodCanal(String codCanal) {
-        return productChannelJpaRepository.findAll().stream()
+        return productChannelJpaRepository.findByIdCodCanal(codCanal).stream()
                 .map(entity -> productChannelMapper.toDomain(entity, userRepository))
-                .filter(e -> e.getId().getCodCanal().equals(codCanal))
-                // .map(productChannelMapper::toDomain)
                 .toList();
     }
 
     @Override
     public List<ProductChannel> findByCodProduto(String codProduto) {
-        return productChannelJpaRepository.findAll().stream()
+        return productChannelJpaRepository.findByIdCodProduto(codProduto).stream()
                 .map(entity -> productChannelMapper.toDomain(entity, userRepository))
-                .filter(e -> e.getId().getCodCanal().equals(codProduto))
-                // .map(productChannelMapper::toDomain)
                 .toList();
     }
 
