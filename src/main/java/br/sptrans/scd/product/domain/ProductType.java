@@ -3,7 +3,7 @@ package br.sptrans.scd.product.domain;
 import java.time.LocalDateTime;
 
 import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.product.domain.enums.DomainStatus;
+import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,21 +24,21 @@ public class ProductType {
     private User idUsuarioManutencao;
 
     public boolean isActive() {
-        return DomainStatus.ACTIVE.getCode().equals(this.codStatus);
+        return ProductDomainStatus.ACTIVE.getCode().equals(this.codStatus);
     }
 
     public boolean isInactive() {
-        return DomainStatus.INACTIVE.getCode().equals(this.codStatus);
+        return ProductDomainStatus.INACTIVE.getCode().equals(this.codStatus);
     }
 
     public void activate(User idUsuario) {
-        this.codStatus = DomainStatus.ACTIVE.getCode();
+        this.codStatus = ProductDomainStatus.ACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
 
     public void deactivate(User idUsuario) {
-        this.codStatus = DomainStatus.INACTIVE.getCode();
+        this.codStatus = ProductDomainStatus.INACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }

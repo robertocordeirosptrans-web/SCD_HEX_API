@@ -7,12 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase;
 import br.sptrans.scd.product.application.port.out.repository.TechnologyRepository;
 import br.sptrans.scd.product.domain.Technology;
-import br.sptrans.scd.product.domain.enums.DomainStatus;
+import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +35,7 @@ public class TechnologyService implements TechnologyManagementUseCase {
         Technology technology = new Technology(
                 command.codTecnologia(),
                 command.desTecnologia(),
-                DomainStatus.INACTIVE.getCode(),
+                ProductDomainStatus.INACTIVE.getCode(),
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 usuario,
@@ -86,7 +85,7 @@ public class TechnologyService implements TechnologyManagementUseCase {
             throw new ProductException(ProductErrorType.TECHNOLOGY_ALREADY_ACTIVE);
         }
 
-        technologyRepository.updateStatus(codTecnologia, DomainStatus.ACTIVE.getCode(), idUsuario);
+        technologyRepository.updateStatus(codTecnologia, ProductDomainStatus.ACTIVE.getCode(), idUsuario);
     }
 
     @Override
@@ -98,7 +97,7 @@ public class TechnologyService implements TechnologyManagementUseCase {
             throw new ProductException(ProductErrorType.TECHNOLOGY_ALREADY_INACTIVE);
         }
 
-        technologyRepository.updateStatus(codTecnologia, DomainStatus.INACTIVE.getCode(), idUsuario);
+        technologyRepository.updateStatus(codTecnologia, ProductDomainStatus.INACTIVE.getCode(), idUsuario);
     }
 
     @Override

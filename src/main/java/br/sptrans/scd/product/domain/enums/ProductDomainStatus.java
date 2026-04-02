@@ -9,7 +9,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum DomainStatus {
+public enum ProductDomainStatus {
 
     ACTIVE("A", "Ativo"),
     INACTIVE("I", "Inativo");
@@ -17,8 +17,8 @@ public enum DomainStatus {
     private final String code;
     private final String description;
 
-    public static DomainStatus fromCode(String code) {
-        for (DomainStatus status : values()) {
+    public static ProductDomainStatus fromCode(String code) {
+        for (ProductDomainStatus status : values()) {
             if (status.code.equals(code)) {
                 return status;
             }

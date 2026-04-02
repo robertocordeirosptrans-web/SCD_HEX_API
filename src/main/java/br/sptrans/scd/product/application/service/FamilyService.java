@@ -11,7 +11,7 @@ import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase;
 import br.sptrans.scd.product.application.port.out.repository.FamilyRepository;
 import br.sptrans.scd.product.domain.Family;
-import br.sptrans.scd.product.domain.enums.DomainStatus;
+import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class FamilyService implements FamilyManagementUseCase {
         Family family = new Family(
                 command.codFamilia(),
                 command.desFamilia(),
-                DomainStatus.INACTIVE.getCode(),
+                ProductDomainStatus.INACTIVE.getCode(),
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 usuario,
@@ -85,7 +85,7 @@ public class FamilyService implements FamilyManagementUseCase {
             throw new ProductException(ProductErrorType.FAMILY_ALREADY_ACTIVE);
         }
 
-        familyRepository.updateStatus(codFamilia, DomainStatus.ACTIVE.getCode(), idUsuario);
+        familyRepository.updateStatus(codFamilia, ProductDomainStatus.ACTIVE.getCode(), idUsuario);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class FamilyService implements FamilyManagementUseCase {
             throw new ProductException(ProductErrorType.FAMILY_ALREADY_INACTIVE);
         }
 
-        familyRepository.updateStatus(codFamilia, DomainStatus.INACTIVE.getCode(), idUsuario);
+        familyRepository.updateStatus(codFamilia, ProductDomainStatus.INACTIVE.getCode(), idUsuario);
     }
 
     @Override

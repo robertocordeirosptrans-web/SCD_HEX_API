@@ -25,7 +25,7 @@ import br.sptrans.scd.product.domain.Fare;
 import br.sptrans.scd.product.domain.Fee;
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ServiceFee;
-import br.sptrans.scd.product.domain.enums.DomainStatus;
+import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import lombok.RequiredArgsConstructor;
@@ -143,7 +143,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 command.desTarifa(),
-                DomainStatus.ACTIVE.getCode(),
+                ProductDomainStatus.ACTIVE.getCode(),
                 command.valTarifa() != null ? command.valTarifa().intValue() : null,
                 usuario,
                 null,

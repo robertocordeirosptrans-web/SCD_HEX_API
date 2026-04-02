@@ -7,12 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase;
 import br.sptrans.scd.product.application.port.out.repository.ProductsTypeRepository;
 import br.sptrans.scd.product.domain.ProductType;
-import br.sptrans.scd.product.domain.enums.DomainStatus;
+import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +35,7 @@ public class ProductsTypeService implements ProductsTypeManagementUseCase {
         ProductType productType = new ProductType(
                 command.codTipoProduto(),
                 command.desTipoProduto(),
-                DomainStatus.INACTIVE.getCode(),
+                ProductDomainStatus.INACTIVE.getCode(),
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 usuario,
@@ -86,7 +85,7 @@ public class ProductsTypeService implements ProductsTypeManagementUseCase {
             throw new ProductException(ProductErrorType.PRODUCTS_TYPE_ALREADY_ACTIVE);
         }
 
-        productsTypeRepository.updateStatus(codTipoProduto, DomainStatus.ACTIVE.getCode(), idUsuario);
+        productsTypeRepository.updateStatus(codTipoProduto, ProductDomainStatus.ACTIVE.getCode(), idUsuario);
     }
 
     @Override
@@ -98,7 +97,7 @@ public class ProductsTypeService implements ProductsTypeManagementUseCase {
             throw new ProductException(ProductErrorType.PRODUCTS_TYPE_ALREADY_INACTIVE);
         }
 
-        productsTypeRepository.updateStatus(codTipoProduto, DomainStatus.INACTIVE.getCode(), idUsuario);
+        productsTypeRepository.updateStatus(codTipoProduto, ProductDomainStatus.INACTIVE.getCode(), idUsuario);
     }
 
     @Override
