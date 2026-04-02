@@ -383,21 +383,28 @@ public class GlobalExceptionHandler {
 
     /**
      * Trata exceções de negócio genéricas
+     * Usa o mapeamento dinâmico de HttpStatus através da interface ModuleException
      */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(
             BusinessException ex,
             HttpServletRequest request) {
 
+        HttpStatus status = ex.getHttpStatus();
         ErrorResponse errorResponse = new ErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            "Bad Request",
+            status.value(),
+            status.getReasonPhrase(),
             ex.getMessage(),
             ex.getErrorCode(),
             request.getRequestURI()
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        log.warn("Business exception at URI: {} - Type: {} - Code: {} - Status: {}", 
+                 request.getRequestURI(),
+                 ex.getClass().getSimpleName(),
+                 ex.getErrorCode(),
+                 status);
+        return ResponseEntity.status(status).body(errorResponse);
     }
 
     /**
