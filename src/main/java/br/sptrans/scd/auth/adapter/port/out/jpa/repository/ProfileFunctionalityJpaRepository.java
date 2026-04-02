@@ -16,7 +16,8 @@ import br.sptrans.scd.auth.adapter.port.out.persistence.entity.ProfileFunctional
 @Repository
 public interface ProfileFunctionalityJpaRepository extends JpaRepository<ProfileFunctionalityJpa, ProfileFunctionalityJpaId>, JpaSpecificationExecutor<ProfileFunctionalityJpa> {
 
-    List<ProfileFunctionalityJpa> findByPerfil(ProfileEntityJpa perfil);
+    @Query("SELECT pf FROM ProfileFunctionalityJpa pf JOIN FETCH pf.funcionalidade f WHERE pf.perfil = :perfil")
+    List<ProfileFunctionalityJpa> findByPerfil(@Param("perfil") ProfileEntityJpa perfil);
 
     @Query("SELECT pf FROM ProfileFunctionalityJpa pf WHERE pf.id.codPerfil = :codPerfil AND pf.id.codSistema = :codSistema AND pf.id.codModulo = :codModulo AND pf.id.codRotina = :codRotina AND pf.id.codFuncionalidade = :codFuncionalidade AND pf.idUsuarioManutencao IS NOT NULL")
     List<ProfileFunctionalityJpa> findActiveByProfileAndFunctionality(

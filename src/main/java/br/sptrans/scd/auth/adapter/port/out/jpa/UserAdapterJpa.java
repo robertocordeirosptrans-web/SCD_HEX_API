@@ -3,7 +3,6 @@ package br.sptrans.scd.auth.adapter.port.out.jpa;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -16,11 +15,8 @@ import org.springframework.stereotype.Repository;
 import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.FunctionalityMapper;
 import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.ProfileMapper;
 import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.UserMapper;
-import br.sptrans.scd.auth.adapter.port.out.jpa.repository.ProfileFunctionalityJpaRepository;
 import br.sptrans.scd.auth.adapter.port.out.jpa.repository.UserProfileJpaRepository;
 import br.sptrans.scd.auth.adapter.port.out.jpa.repository.UserRepositoryJpa;
-import br.sptrans.scd.auth.adapter.port.out.persistence.entity.ProfileEntityJpa;
-import br.sptrans.scd.auth.adapter.port.out.persistence.entity.ProfileFunctionalityJpa;
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserProfileJpa;
 import br.sptrans.scd.auth.application.port.out.UserRepository;
@@ -37,7 +33,6 @@ public class UserAdapterJpa implements UserRepository {
 
     private final UserRepositoryJpa userRepositoryJpa;
     private final UserProfileJpaRepository userProfileJpaRepository;
-    private final ProfileFunctionalityJpaRepository profileFunctionalityJpaRepository;
 
     @Override
     public Optional<User> findByCodLogin(String codLogin) {
@@ -150,23 +145,15 @@ public class UserAdapterJpa implements UserRepository {
 
     @Override
     public Set<Functionality> carregarFuncionalidadesEfetivas(Long idUsuario) {
-        // Busca todos os perfis ativos do usuário
-        List<UserProfileJpa> userProfiles = userProfileJpaRepository.findByUsuarioIdUsuarioAndCodStatus(idUsuario, "A");
-        Set<Functionality> funcionalidades = new HashSet<>();
-        for (UserProfileJpa userProfile : userProfiles) {
-            ProfileEntityJpa perfil = userProfile.getPerfil();
-            if (perfil != null && "A".equalsIgnoreCase(perfil.getCodStatus())) {
-                // Busca funcionalidades do perfil
-                List<ProfileFunctionalityJpa> perfilFuncs = profileFunctionalityJpaRepository.findByPerfil(perfil);
-                if (perfilFuncs != null && !perfilFuncs.isEmpty()) {
-                    perfilFuncs.stream()
-                        .filter(pf -> pf.getFuncionalidade() != null)
-                        .map(pf -> FunctionalityMapper.toDomain(pf.getFuncionalidade()))
-                        .forEach(funcionalidades::add);
-                }
-            }
-        }
-        return funcionalidades;
+        // Única query com JOIN FETCH evita N+1 (perfis → funcionalidades)
+        List<UserProfileJpa> userProfiles = userProfileJpaRepository.findActiveWithFunctionalities(idUsuario);
+        return userProfiles.stream()
+            .map(UserProfileJpa::getPerfil)
+            .filter(perfil -> perfil != null)
+            .flatMap(perfil -> perfil.getPerfilFuncionalidades().stream())
+            .filter(pf -> pf.getFuncionalidade() != null)
+            .map(pf -> FunctionalityMapper.toDomain(pf.getFuncionalidade()))
+            .collect(Collectors.toSet());
     }
 
     @Override

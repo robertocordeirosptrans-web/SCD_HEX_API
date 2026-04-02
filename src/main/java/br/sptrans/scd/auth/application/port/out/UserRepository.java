@@ -1,92 +1,18 @@
 package br.sptrans.scd.auth.application.port.out;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import br.sptrans.scd.auth.domain.Functionality;
-import br.sptrans.scd.auth.domain.Profile;
-import br.sptrans.scd.auth.domain.User;
-
-public interface UserRepository {
-
-   
-
-    Optional<User> findById(Long id);
-
-    Optional<User> findByCodLogin(String codLogin);
-
-    Optional<User> findByNomEmail(String nomEmail);
-
-    void atualizarTentativasEStatus(Long idUsuario, int numTentativas, String codStatus);
-
-    void atualizarUltimoAcesso(Long idUsuario);
-
-    // ── CRUD ──────────────────────────────────────────────────────────────────
-    /**
-     * Insere novo usuário na tabela USUARIOS.
-     */
-    User save(User user);
-
-    /**
-     * Atualiza campos cadastrais do usuário (exceto COD_LOGIN e COD_SENHA).
-     */
-    void update(User usuario);
-
-    /**
-     * Atualiza COD_STATUS e DT_MANUTENCAO.
-     */
-    void updateStatus(Long idUsuario, String codStatus, Long idUsuarioManutencao);
-
-    /**
-     * Atualiza COD_SENHA, OLD_SENHA e DT_EXPIRA_SENHA.
-     */
-    void updatePassword(Long idUsuario, String newPasswordHash, String oldPasswordHash, LocalDateTime expiryDate);
-
-    /**
-     * Reseta NUM_TENTATIVAS para 0 e aplica novo status.
-     */
-    void resetAttemptsAndStatus(Long idUsuario, String codStatus, Long idUsuarioManutencao);
-
-    /**
-     * Atualiza jornada de acesso (NUM_DIAS_SEMANAS_PERMITIDOS, DT_JORNADA_INI,
-     * DT_JORNADA_FIM).
-     */
-    void updateAccessSchedule(Long idUsuario, String diasPermitidos, Date jornadaIni, Date jornadaFim, Long idUsuarioManutencao);
-
-    /**
-     * Carrega as funcionalidades efetivas do usuário combinando três fontes: 1.
-     * PERFIL_FUNCIONALIDADES onde USUARIO_PERFIS.COD_STATUS = 'Ativo' 2.
-     * PERFIL_FUNCIONALIDADES via GRUPO_PERFIS onde GRUPO_USUARIOS.COD_STATUS =
-     * 'Ativo' 3. USUARIO_FUNCIONALIDADES diretas com COD_STATUS_USU_FUN =
-     * 'Ativo'
-     *
-     * Implementado no adaptador JPA com JOIN otimizado.
-     */
-    Set<Functionality> carregarFuncionalidadesEfetivas(Long idUsuario);
-
-    /** Carrega os perfis ativos vinculados ao usuário (USUARIO_PERFIS + GRUPO_PERFIS). */
-    Set<Profile> carregarPerfisEfetivos(Long idUsuario);
-
-    // ── Verificações ──────────────────────────────────────────────────────────
-    boolean existsByLogin(String codLogin);
-
-    /**
-     * Busca paginada de usuários com filtros, ordenação e contagem total.
-     */
-    List<User> findAllPaginated(String status, String nome, String email, String perfil, int offset, int limit, String sortBy, String sortDir);
-
-    /**
-     * Conta total de usuários aplicando os mesmos filtros da busca paginada.
-     */
-    long countAll(String status, String nome, String email, String perfil);
-
-    /**
-     * Verifica se o usuário possui sessão ativa (DT_ULTIMO_ACESSO > now - 30
-     * min). Usado antes de inativar para evitar interrupção abrupta de sessão.
-     */
-    boolean hasActiveSession(Long idUsuario);
-
+/**
+ * Porto de saída agregador — mantido para compatibilidade retroativa.
+ * <p>Estende as cinco interfaces segregadas por ISP, permitindo que adaptadores
+ * existentes implementem apenas esta interface e que novos serviços injetem
+ * somente a fatia de que precisam ({@link UserReader}, {@link UserWriter},
+ * {@link AuthenticationRepository}, {@link UserStatusRepository} ou
+ * {@link AuthorizationRepository}).</p>
+ */
+public interface UserRepository extends
+        UserReader,
+        UserWriter,
+        AuthenticationRepository,
+        UserStatusRepository,
+        AuthorizationRepository {
+    // Nenhum método adicional — todas as operações estão nas interfaces segregadas.
 }

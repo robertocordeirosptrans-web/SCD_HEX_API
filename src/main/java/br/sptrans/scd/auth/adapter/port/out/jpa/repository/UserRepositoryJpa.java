@@ -57,11 +57,9 @@ public interface UserRepositoryJpa extends JpaRepository<UserEntityJpa, Long>, J
     void updateAccessSchedule(@Param("idUsuario") Long idUsuario, @Param("diasPermitidos") String diasPermitidos, @Param("jornadaIni") java.util.Date jornadaIni, @Param("jornadaFim") java.util.Date jornadaFim);
 
     /**
-     * Busca usuário por login, carregando perfis e funcionalidades via JOIN
-     * FETCH.
+     * Busca usuário por login.
      */
-    @Query("SELECT u FROM UserEntityJpa u "
-            + "WHERE u.codLogin = :codLogin")
+    @Query("SELECT u FROM UserEntityJpa u WHERE u.codLogin = :codLogin")
     Optional<UserEntityJpa> findByCodLogin(@Param("codLogin") String codLogin);
 
     /**
