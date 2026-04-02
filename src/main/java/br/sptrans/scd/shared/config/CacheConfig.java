@@ -19,7 +19,8 @@ public class CacheConfig {
                 "canais",
                 "produtos",
                 "pedidos",
-                "productPeriodReport"
+                "productPeriodReport",
+                "permissoes"
         );
     }
 

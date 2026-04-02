@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.auth.application.port.in.PasswordValidator;
@@ -18,6 +19,7 @@ import br.sptrans.scd.shared.security.PasswordHashUtil;
  * comprimento mínimo, maiúscula, minúscula, número, caractere especial,
  * bloqueio de sequências óbvias e rejeição de repetição da senha atual.
  */
+@Primary
 @Component("strictPasswordValidator")
 public class StrictPasswordValidator implements PasswordValidator {
 

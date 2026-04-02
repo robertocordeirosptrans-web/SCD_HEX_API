@@ -26,10 +26,20 @@ public class FunctionalityEntityJpa {
     @Column(name = "COD_STATUS", length = 1)
     private String codStatus;
 
-    @Column(name = "DT_CADASTRO")
+    @Column(name = "DT_SINC")
     private LocalDateTime dtCadastro;
-    @Column(name = "DT_MANUTENCAO")
+
+    @Column(name = "DT_MODI")
     private LocalDateTime dtManutencao;
+
+    @Column(name = "ID_USUARIO_MANUTENCAO")
+    private Long idUsuarioManutencao;
+
+    @Column(name = "FLG_MONITORACAO", length = 1)
+    private String flgMonitoracao;
+
+    @Column(name = "FLG_EVENTO", length = 1)
+    private String flgEvento;
 
     @PrePersist
     protected void aoInserir() {

@@ -13,7 +13,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @Getter
 @Setter
 @Entity
@@ -31,6 +30,9 @@ public class UserProfileJpa {
 
     @Column(name = "ID_USUARIO_MANUTENCAO")
     private Long idUsuarioManutencao;
+
+    @Column(name = "DES_OBSERVACAO", length = 60)
+    private String desObservacao;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("idUsuario")

@@ -2,16 +2,17 @@ package br.sptrans.scd.auth.application.service;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
+import br.sptrans.scd.auth.application.port.out.GroupProfileRepository;
 import br.sptrans.scd.auth.application.port.out.GroupRepository;
 import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
 import br.sptrans.scd.auth.application.port.out.ProfileRepository;
-import br.sptrans.scd.auth.application.port.out.GroupProfileRepository;
-import br.sptrans.scd.auth.domain.GroupProfile;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
+import br.sptrans.scd.auth.domain.GroupProfile;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.ProfileFunctionality;
@@ -119,6 +120,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void associateProfilesToGroup(AssociateProfilesToGroupCommand cmd) {
         buscarGrupoOuLancar(cmd.groupCode());
 
@@ -174,6 +176,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void deactivateProfile(DeactivateCommand cmd) {
         Profile perfil = buscarPerfilOuLancar(cmd.code());
         if (!perfil.isActive()) {
@@ -189,6 +192,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void reactivateProfile(ReactivateCommand cmd) {
         Profile perfil = buscarPerfilOuLancar(cmd.code());
         if (perfil.isActive()) {
@@ -198,6 +202,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void associateFunctionalitiesToProfile(AssociateFunctionalitiesToProfileCommand cmd) {
         buscarPerfilOuLancar(cmd.codPerfil());
         for (var func : cmd.functionalities()) {
@@ -212,6 +217,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void disassociateFunctionalityFromProfile(DisassociateFunctionalityFromProfileCommand cmd) {
         // buscarPerfilOuLancar(cmd.codPerfil());
         // FunctionalityKey domainKey = toDomainKey(cmd.functionality());
@@ -237,6 +243,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     // GRUPOS (complementares)
     // ══════════════════════════════════════════════════════════════════════════
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void disassociateProfileFromGroup(DisassociateProfileFromGroupCommand cmd) {
         buscarGrupoOuLancar(cmd.groupCode());
         buscarPerfilOuLancar(cmd.profileCode());

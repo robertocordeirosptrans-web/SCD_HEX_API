@@ -77,13 +77,13 @@ public final class PasswordHashUtil {
     }
 
     /**
-     * Gera um hash BCrypt com fator de custo 12 para armazenamento seguro de nova senha.
+     * Gera um hash BCrypt com fator de custo 10 para armazenamento seguro de nova senha.
      *
      * @param senhaPlana senha em texto plano
      * @return hash BCrypt pronto para persistência
      */
     public static String hashBcrypt(String senhaPlana) {
-        return BCrypt.hashpw(senhaPlana, BCrypt.gensalt(12));
+        return BCrypt.hashpw(senhaPlana, BCrypt.gensalt(10));
     }
 
     /**

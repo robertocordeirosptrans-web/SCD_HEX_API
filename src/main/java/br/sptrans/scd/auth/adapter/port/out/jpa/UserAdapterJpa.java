@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.FunctionalityMapper;
@@ -144,6 +145,7 @@ public class UserAdapterJpa implements UserRepository {
     }
 
     @Override
+    @Cacheable(value = "permissoes", key = "'func:' + #idUsuario")
     public Set<Functionality> carregarFuncionalidadesEfetivas(Long idUsuario) {
         // Única query com JOIN FETCH evita N+1 (perfis → funcionalidades)
         List<UserProfileJpa> userProfiles = userProfileJpaRepository.findActiveWithFunctionalities(idUsuario);
@@ -157,6 +159,7 @@ public class UserAdapterJpa implements UserRepository {
     }
 
     @Override
+    @Cacheable(value = "permissoes", key = "'perfis:' + #idUsuario")
     public Set<Profile> carregarPerfisEfetivos(Long idUsuario) {
         List<UserProfileJpa> userProfiles = userProfileJpaRepository.findByUsuarioIdUsuarioAndCodStatus(idUsuario, "A");
         long nullCount = userProfiles.stream().filter(up -> up == null).count();
