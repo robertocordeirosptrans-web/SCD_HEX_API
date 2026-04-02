@@ -515,6 +515,88 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Trata exceções de token expirado
+     */
+    @ExceptionHandler(ExpiredTokenException.class)
+    public ResponseEntity<ErrorResponse> handleExpiredToken(
+            ExpiredTokenException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.UNAUTHORIZED.value(),
+            "Unauthorized",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.warn("Expired token at URI: {}", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
+     * Trata exceções de token inválido
+     */
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidToken(
+            InvalidTokenException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.UNAUTHORIZED.value(),
+            "Unauthorized",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.warn("Invalid token at URI: {}", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
+     * Trata exceções gerais de token
+     */
+    @ExceptionHandler(TokenException.class)
+    public ResponseEntity<ErrorResponse> handleTokenException(
+            TokenException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.UNAUTHORIZED.value(),
+            "Unauthorized",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.warn("Token exception at URI: {} - Error Code: {}", request.getRequestURI(), ex.getErrorCode());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
+     * Trata exceções de e-mail gateway
+     */
+    @ExceptionHandler(EmailGatewayException.class)
+    public ResponseEntity<ErrorResponse> handleEmailGateway(
+            EmailGatewayException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "Internal Server Error",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.error("Email gateway error at URI: {} - Gateway: {}", request.getRequestURI(), ex.getGatewayName(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+
+
+    /**
      * Trata exceções de tipo de mídia não suportado (415 Unsupported Media Type)
      */
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)

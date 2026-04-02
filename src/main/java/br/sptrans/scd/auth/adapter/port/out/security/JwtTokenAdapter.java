@@ -15,7 +15,9 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.port.out.TokenGeneratorPort;
 import br.sptrans.scd.auth.domain.port.out.TokenValidatorPort;
-import br.sptrans.scd.shared.exception.TokenGatewayException;
+import br.sptrans.scd.shared.exception.ExpiredTokenException;
+import br.sptrans.scd.shared.exception.InvalidTokenException;
+import br.sptrans.scd.shared.exception.TokenGenerationException;
 
 /**
  * Adapter de saída: implementa TokenGeneratorPort usando JWT (auth0).
@@ -41,9 +43,8 @@ public class JwtTokenAdapter implements TokenGeneratorPort, TokenValidatorPort {
                 .withExpiresAt(Instant.now().plus(expirationHours, ChronoUnit.HOURS))
                 .sign(algorithm);
         } catch (IllegalArgumentException e) {
-            throw new TokenGatewayException(
+            throw new TokenGenerationException(
                 "Falha ao gerar token JWT: configuração inválida do secret",
-                "TOKEN_GENERATION_FAILED",
                 e
             );
         }
@@ -60,9 +61,8 @@ public class JwtTokenAdapter implements TokenGeneratorPort, TokenValidatorPort {
                 .withExpiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
                 .sign(algorithm);
         } catch (IllegalArgumentException e) {
-            throw new TokenGatewayException(
+            throw new TokenGenerationException(
                 "Falha ao gerar refresh token JWT: configuração inválida do secret",
-                "REFRESH_TOKEN_GENERATION_FAILED",
                 e
             );
         }
@@ -76,16 +76,19 @@ public class JwtTokenAdapter implements TokenGeneratorPort, TokenValidatorPort {
                 .build()
                 .verify(token)
                 .getSubject();
+        } catch (com.auth0.jwt.exceptions.TokenExpiredException e) {
+            throw new ExpiredTokenException(
+                "Token JWT expirado",
+                e
+            );
         } catch (JWTVerificationException e) {
-            throw new TokenGatewayException(
-                "Falha ao validar token JWT: token inválido ou expirado",
-                "TOKEN_VALIDATION_FAILED",
+            throw new InvalidTokenException(
+                "Token JWT inválido: " + e.getMessage(),
                 e
             );
         } catch (IllegalArgumentException e) {
-            throw new TokenGatewayException(
+            throw new TokenGenerationException(
                 "Falha ao validar token JWT: configuração inválida do secret",
-                "TOKEN_VALIDATION_CONFIG_ERROR",
                 e
             );
         }
