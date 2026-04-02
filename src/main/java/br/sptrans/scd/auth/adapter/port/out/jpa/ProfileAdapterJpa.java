@@ -15,7 +15,8 @@ import br.sptrans.scd.auth.adapter.port.out.persistence.entity.ProfileEntityJpa;
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.ProfileFunctionalityJpa;
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.ProfileFunctionalityJpaId;
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserProfileJpa;
-import br.sptrans.scd.auth.application.port.out.ProfileRepository;
+import br.sptrans.scd.auth.application.port.out.ProfilePort;
+
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.FunctionalityKey;
 import br.sptrans.scd.auth.domain.Profile;
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class ProfileAdapterJpa implements ProfileRepository {
+public class ProfileAdapterJpa implements ProfilePort {
 
     private final ProfileJpaRepository profileJpaRepository;
     private final ProfileFunctionalityJpaRepository profileFunctionalityJpaRepository;
@@ -213,6 +214,66 @@ public class ProfileAdapterJpa implements ProfileRepository {
         // up.setUser(...); // Se necessário, mapear usuário
         // up.setPerfil(...); // Se necessário, mapear perfil
         return up;
+    }
+
+ 
+
+    @Override
+    public Optional<ProfileFunctionality> findById(ProfileFunctionalityKey id) {
+        ProfileFunctionalityJpaId jpaId = toJpaId(id);
+        return profileFunctionalityJpaRepository.findById(jpaId)
+                .map(this::toDomainProfileFunctionality);
+    }
+
+    @Override
+    public List<ProfileFunctionality> findAll() {
+        return profileFunctionalityJpaRepository.findAll().stream()
+                .map(this::toDomainProfileFunctionality)
+                .toList();
+    }
+
+    @Override
+    public ProfileFunctionality save(ProfileFunctionality entity) {
+        ProfileFunctionalityJpa jpaEntity = toEntityProfileFunctionality(entity);
+        ProfileFunctionalityJpa saved = profileFunctionalityJpaRepository.save(jpaEntity);
+        return toDomainProfileFunctionality(saved);
+    }
+
+    @Override
+    public void delete(ProfileFunctionality entity) {
+        ProfileFunctionalityJpa jpaEntity = toEntityProfileFunctionality(entity);
+        profileFunctionalityJpaRepository.delete(jpaEntity);
+    }
+
+    @Override
+    public void deleteById(ProfileFunctionalityKey id) {
+        profileFunctionalityJpaRepository.deleteById(toJpaId(id));
+    }
+
+    @Override
+    public long count() {
+        return profileFunctionalityJpaRepository.count();
+    }
+
+    private ProfileFunctionalityJpaId toJpaId(ProfileFunctionalityKey id) {
+        ProfileFunctionalityJpaId jpaId = new ProfileFunctionalityJpaId();
+        jpaId.setCodPerfil(id.getCodPerfil());
+        jpaId.setCodSistema(id.getCodSistema());
+        jpaId.setCodModulo(id.getCodModulo());
+        jpaId.setCodRotina(id.getCodRotina());
+        jpaId.setCodFuncionalidade(id.getCodFuncionalidade());
+        return jpaId;
+    }
+
+    private ProfileFunctionalityJpa toEntityProfileFunctionality(ProfileFunctionality domain) {
+        ProfileFunctionalityJpaId jpaId = toJpaId(domain.getId());
+        ProfileFunctionalityJpa entity = new ProfileFunctionalityJpa();
+        entity.setId(jpaId);
+        entity.setIdUsuarioManutencao(domain.getIdUsuarioManutencao());
+        if (domain.getDtInicioValidade() != null) {
+            entity.setDtInicioValidade(domain.getDtInicioValidade().atStartOfDay());
+        }
+        return entity;
     }
 
 }

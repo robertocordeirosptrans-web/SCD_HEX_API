@@ -6,7 +6,7 @@ import java.util.Optional;
 import br.sptrans.scd.auth.domain.GroupProfile;
 import br.sptrans.scd.auth.domain.GroupProfileKey;
 
-public interface GroupProfileRepository {
+public interface GroupProfilePort {
 
     Optional<GroupProfile> findByCodGrupoAndCodPerfil(String codGrupo, String codPerfil);
 

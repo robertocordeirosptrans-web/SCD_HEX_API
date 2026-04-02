@@ -8,9 +8,11 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
-import br.sptrans.scd.auth.application.port.out.GroupRepository;
-import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
-import br.sptrans.scd.auth.application.port.out.ProfileRepository;
+import br.sptrans.scd.auth.application.port.out.GroupPort;
+import br.sptrans.scd.auth.application.port.out.GroupUserPort;
+
+import br.sptrans.scd.auth.application.port.out.ProfilePort;
+
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.FunctionalityKey;
 import br.sptrans.scd.auth.domain.Group;
@@ -46,9 +48,9 @@ public class ManageGroupProfileUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(ManageGroupProfileUseCase.class);
 
-    private final GroupRepository groupRepository;
-    private final ProfileRepository profileRepository;
-    private final GroupUserRepository groupUserRepository;
+    private final GroupPort groupRepository;
+    private final ProfilePort profileRepository;
+    private final GroupUserPort groupUserRepository;
 
     // ══════════════════════════════════════════════════════════════════════════
     // GRUPOS

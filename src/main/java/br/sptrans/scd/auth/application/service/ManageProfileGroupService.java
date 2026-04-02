@@ -6,7 +6,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
-import br.sptrans.scd.auth.application.port.out.GroupProfileRepository;
+import br.sptrans.scd.auth.application.port.out.GroupProfilePort;
+
 import br.sptrans.scd.auth.application.usecases.grouporprofile.ManageGroupProfileUseCase;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
@@ -24,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class ManageProfileGroupService implements GroupProfileManagementUseCase {
 
     private final ManageGroupProfileUseCase manageGroupProfileUseCase;
-    private final GroupProfileRepository groupProfileRepository;
+    private final GroupProfilePort groupProfileRepository;
 
     // ══════════════════════════════════════════════════════════════════════════
     // GROUP PROFILE — CRUD direto

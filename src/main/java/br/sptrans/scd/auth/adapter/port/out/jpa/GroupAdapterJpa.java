@@ -14,9 +14,8 @@ import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupProfileEntit
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupProfileEntityJpaId;
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupUserEntityJpa;
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.GroupUserEntityJpaId;
-import br.sptrans.scd.auth.application.port.out.GroupProfileRepository;
-import br.sptrans.scd.auth.application.port.out.GroupRepository;
-import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
+import br.sptrans.scd.auth.application.port.out.GroupPort;
+
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.GroupProfile;
 import br.sptrans.scd.auth.domain.GroupProfileKey;
@@ -27,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Repository
 @SuppressWarnings("null")
-public class GroupAdapterJpa implements GroupRepository, GroupUserRepository, GroupProfileRepository {
+public class GroupAdapterJpa implements GroupPort {
 
     private final GroupJpaRepository groupJpaRepository;
     private final GroupProfileJpaRepository groupProfileJpaRepository;

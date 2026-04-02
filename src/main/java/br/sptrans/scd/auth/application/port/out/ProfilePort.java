@@ -15,7 +15,7 @@ import br.sptrans.scd.auth.domain.UserProfile;
  * Tabelas: SPTRANSDBA.PERFIS · PERFIL_FUNCIONALIDADES · FUNCIONALIDADES.
  */
 
-public interface ProfileRepository {
+public interface ProfilePort extends ProfileFunctionalityPort {
 
     Optional<Profile> findById(String codPerfil);
 

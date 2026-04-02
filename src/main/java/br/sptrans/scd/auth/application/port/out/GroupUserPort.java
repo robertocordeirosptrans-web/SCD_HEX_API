@@ -6,7 +6,7 @@ import java.util.Optional;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.GroupUserKey;
 
-public interface GroupUserRepository {
+public interface GroupUserPort {
 
     Optional<GroupUser> findById_IdUsuarioAndId_CodGrupo(Long idUsuario, String codGrupo);
 

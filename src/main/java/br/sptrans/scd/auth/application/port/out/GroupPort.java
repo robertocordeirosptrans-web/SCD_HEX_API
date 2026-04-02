@@ -10,7 +10,7 @@ import br.sptrans.scd.auth.domain.GroupUser;
  * Porta de Saída — repositório de Grupos. Tabela principal: SPTRANSDBA.GRUPOS.
  * Tabelas de associação: SPTRANSDBA.GRUPO_PERFIS, SPTRANSDBA.GRUPO_USUARIOS.
  */
-public interface GroupRepository {
+public interface GroupPort extends GroupProfilePort, GroupUserPort {
 
     Optional<Group> findById(String codGrupo);
 

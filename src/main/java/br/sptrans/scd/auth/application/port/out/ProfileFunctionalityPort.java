@@ -6,11 +6,9 @@ import java.util.Optional;
 import br.sptrans.scd.auth.domain.ProfileFunctionality;
 import br.sptrans.scd.auth.domain.ProfileFunctionalityKey;
 
-public interface ProfileFunctionalityRepository {
+public interface ProfileFunctionalityPort {
 
-    Optional<ProfileFunctionality> findById_CodPerfilAndId_CodFuncionalidadeAndId_CodSistema(String codPerfil, String codFuncionalidade, String codSistema);
-
-    List<ProfileFunctionality> findById_CodPerfil(String codPerfil);
+  
 
     Optional<ProfileFunctionality> findById(ProfileFunctionalityKey id);
 

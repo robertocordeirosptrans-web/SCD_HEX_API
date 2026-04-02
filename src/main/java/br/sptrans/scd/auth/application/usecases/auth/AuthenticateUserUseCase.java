@@ -10,8 +10,9 @@ import org.springframework.stereotype.Component;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.out.AuthenticationPort;
 import br.sptrans.scd.auth.application.port.out.AuthorizationPort;
+import br.sptrans.scd.auth.application.port.out.GroupUserPort;
 
-import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
+
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 
 import br.sptrans.scd.auth.domain.GroupUser;
@@ -45,7 +46,7 @@ public class AuthenticateUserUseCase {
     private final UserQueryPort userPort;
     private final AuthenticationPort authenticationPort;
     private final AuthorizationPort authorizationPort;
-    private final GroupUserRepository groupUserRepository;
+    private final GroupUserPort groupUserRepository;
 
     /**
      * Autentica um usuário com as credenciais fornecidas.
