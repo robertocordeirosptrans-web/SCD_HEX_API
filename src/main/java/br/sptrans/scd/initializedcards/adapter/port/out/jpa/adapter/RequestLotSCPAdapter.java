@@ -32,7 +32,7 @@ public class RequestLotSCPAdapter implements RequestLotSCPRepository {
     @Override
     public RequestLotSCP findById(RequestLotSCPKey id) {
         Optional<RequestLotSCPEntityJpa> result = repository.findById(mapper.toEntityKey(id));
-        return result.map(RequestLotMapper::toDomain).orElse(null);
+        return result.map(mapper::toDomain).orElse(null);
     }
 
 
@@ -63,7 +63,7 @@ public class RequestLotSCPAdapter implements RequestLotSCPRepository {
         Optional<RequestLotSCPEntityJpa> entityOpt = repository.findById(key);
         if (entityOpt.isPresent()) {
             repository.deleteById(key);
-            return RequestLotMapper.toDomain(entityOpt.get());
+            return mapper.toDomain(entityOpt.get());
         }
         return null;
     }

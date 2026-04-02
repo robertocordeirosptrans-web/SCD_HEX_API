@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Repository;
 
@@ -15,14 +14,9 @@ import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.UserMapper;
 import br.sptrans.scd.auth.adapter.port.out.jpa.repository.UserRepositoryJpa;
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.auth.application.port.out.AuthenticationPort;
-
 import br.sptrans.scd.auth.application.port.out.AuthorizationPort;
-
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
-
 import br.sptrans.scd.auth.application.port.out.UserStatusPort;
-
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.User;
@@ -31,8 +25,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * Adapter — Único ponto de persistência de User (hexagonal).
  *
- * Implementa {@link UserPersistencePort} (novo contrato ISP) e
- * {@link UserRepository} (contrato legado), eliminando dependências
+ * Implementa {@link UserPersistencePort} eliminando dependências
  * circulares que existiam quando este adapter delegava para sub-ports.
  *
  * Operações de autenticação, status e autorização são delegadas aos
@@ -49,6 +42,7 @@ public class UserPersistenceAdapter implements UserPersistencePort {
     private final AuthenticationPort authenticationPort;
     private final UserStatusPort userStatusPort;
     private final AuthorizationPort authorizationPort;
+    private final UserMapper userMapper;
 
     // ────────────────────────────────────────────────────────────────────────────
     // UserQueryPort — leitura (UserPersistencePort)
@@ -56,27 +50,27 @@ public class UserPersistenceAdapter implements UserPersistencePort {
 
     @Override
     public Optional<User> findById(Long userId) {
-        return userRepositoryJpa.findById(userId).map(UserMapper::toDomain);
+        return userRepositoryJpa.findById(userId).map(userMapper::toDomain);
     }
 
     @Override
     public Optional<User> findByCpf(String cpf) {
-        return userRepositoryJpa.findByCodCpf(cpf).map(UserMapper::toDomain);
+        return userRepositoryJpa.findByCodCpf(cpf).map(userMapper::toDomain);
     }
 
     @Override
     public Optional<User> findByCodLogin(String codLogin) {
-        return userRepositoryJpa.findByCodLogin(codLogin).map(UserMapper::toDomain);
+        return userRepositoryJpa.findByCodLogin(codLogin).map(userMapper::toDomain);
     }
 
     @Override
     public Optional<User> findByNomEmail(String nomEmail) {
-        return userRepositoryJpa.findByNomEmail(nomEmail).map(UserMapper::toDomain);
+        return userRepositoryJpa.findByNomEmail(nomEmail).map(userMapper::toDomain);
     }
 
     @Override
     public Object getUserProfile(Long userId) {
-        return userRepositoryJpa.findById(userId).map(UserMapper::toDomain).orElse(null);
+        return userRepositoryJpa.findById(userId).map(userMapper::toDomain).orElse(null);
     }
 
     // ────────────────────────────────────────────────────────────────────────────
@@ -95,11 +89,11 @@ public class UserPersistenceAdapter implements UserPersistencePort {
         List<User> users = new ArrayList<>();
         for (UserEntityJpa entity : entities) {
             if (nome == null || entity.getNomUsuario().toLowerCase().contains(nome.toLowerCase())) {
-                users.add(UserMapper.toDomain(entity));
+                users.add(userMapper.toDomain(entity));
             } else if (email == null || entity.getNomEmail().toLowerCase().contains(email.toLowerCase())) {
-                users.add(UserMapper.toDomain(entity));
+                users.add(userMapper.toDomain(entity));
             } else if (status == null || entity.getCodStatus().toLowerCase().contains(status.toLowerCase())) {
-                users.add(UserMapper.toDomain(entity));
+                users.add(userMapper.toDomain(entity));
             }
         }
         int toIndex = Math.min(offset + limit, users.size());
@@ -124,9 +118,9 @@ public class UserPersistenceAdapter implements UserPersistencePort {
     @Override
     @CacheEvict(value = "permissoes", allEntries = true)
     public User save(User user) {
-        UserEntityJpa entity = UserMapper.toEntity(user);
+        UserEntityJpa entity = userMapper.toEntity(user);
         UserEntityJpa saved = userRepositoryJpa.save(entity);
-        return UserMapper.toDomain(saved);
+        return userMapper.toDomain(saved);
     }
 
     @Override
@@ -137,7 +131,7 @@ public class UserPersistenceAdapter implements UserPersistencePort {
     @Override
     @CacheEvict(value = "permissoes", allEntries = true)
     public void update(User user) {
-        userRepositoryJpa.save(UserMapper.toEntity(user));
+        userRepositoryJpa.save(userMapper.toEntity(user));
     }
 
     @Override

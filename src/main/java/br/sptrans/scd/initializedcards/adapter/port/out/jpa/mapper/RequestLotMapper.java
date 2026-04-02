@@ -12,11 +12,15 @@ import br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity.Reque
 import br.sptrans.scd.initializedcards.adapter.port.out.persistence.entity.RequestLotSCPEntityJpaKey;
 import br.sptrans.scd.initializedcards.domain.RequestLotSCP;
 import br.sptrans.scd.initializedcards.domain.RequestLotSCPKey;
+import lombok.RequiredArgsConstructor;
 
 @Component
+@RequiredArgsConstructor
 public class RequestLotMapper {
 
-	public static RequestLotSCP toDomain(RequestLotSCPEntityJpa entity) {
+	private final UserMapper userMapper;
+
+	public RequestLotSCP toDomain(RequestLotSCPEntityJpa entity) {
 		if (entity == null) return null;
 		RequestLotSCP domain = new RequestLotSCP();
 		domain.setId(toDomainKey(entity.getId()));
@@ -24,12 +28,12 @@ public class RequestLotMapper {
 		domain.setStSolicitacaoLoteSCP(entity.getStSolicitacaoLoteScp());
 		domain.setDtCadastro(toLocalDateTime(entity.getDtCadastro()));
 		domain.setDtManutencao(toLocalDateTime(entity.getDtManutencao()));
-		domain.setIdUsuarioCadastro(UserMapper.toDomain(toUserEntity(entity.getIdUsuarioCadastro())));
-		domain.setIdUsuarioManutencao(UserMapper.toDomain(toUserEntity(entity.getIdUsuarioManutencao())));
+		domain.setIdUsuarioCadastro(userMapper.toDomain(toUserEntity(entity.getIdUsuarioCadastro())));
+		domain.setIdUsuarioManutencao(userMapper.toDomain(toUserEntity(entity.getIdUsuarioManutencao())));
 		return domain;
 	}
 
-	public static RequestLotSCPEntityJpa toEntity(RequestLotSCP domain) {
+	public RequestLotSCPEntityJpa toEntity(RequestLotSCP domain) {
 		if (domain == null) return null;
 		RequestLotSCPEntityJpa entity = new RequestLotSCPEntityJpa();
 		entity.setId(toEntityKey(domain.getId()));
@@ -42,7 +46,7 @@ public class RequestLotMapper {
 		return entity;
 	}
 
-	private static RequestLotSCPKey toDomainKey(RequestLotSCPEntityJpaKey entityKey) {
+	private RequestLotSCPKey toDomainKey(RequestLotSCPEntityJpaKey entityKey) {
 		if (entityKey == null) return null;
 		return new RequestLotSCPKey(
 			entityKey.getCodTipoCanal(),
@@ -53,7 +57,7 @@ public class RequestLotMapper {
 		);
 	}
 
-	public static RequestLotSCPEntityJpaKey toEntityKey(RequestLotSCPKey domainKey) {
+	public RequestLotSCPEntityJpaKey toEntityKey(RequestLotSCPKey domainKey) {
 		if (domainKey == null) return null;
 		return new RequestLotSCPEntityJpaKey(
 			domainKey.getCodTipoCanal(),
@@ -64,18 +68,18 @@ public class RequestLotMapper {
 		);
 	}
 
-	private static LocalDateTime toLocalDateTime(Date date) {
+	private LocalDateTime toLocalDateTime(Date date) {
 		if (date == null) return null;
 		return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 	}
 
-	private static Date toDate(LocalDateTime ldt) {
+	private Date toDate(LocalDateTime ldt) {
 		if (ldt == null) return null;
 		return Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
 	}
 
 	// Cria UserEntityJpa apenas com o id para o UserMapper
-	private static UserEntityJpa toUserEntity(Long idUsuario) {
+	private UserEntityJpa toUserEntity(Long idUsuario) {
 		if (idUsuario == null) return null;
 		UserEntityJpa entity = new UserEntityJpa();
 		entity.setIdUsuario(idUsuario);

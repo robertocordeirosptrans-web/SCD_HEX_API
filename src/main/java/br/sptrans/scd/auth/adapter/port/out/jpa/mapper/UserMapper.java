@@ -1,8 +1,12 @@
 package br.sptrans.scd.auth.adapter.port.out.jpa.mapper;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Objects;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.mapstruct.ReportingPolicy;
 
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.auth.domain.User;
@@ -14,20 +18,65 @@ import br.sptrans.scd.auth.domain.vo.PersonalInfo;
 import br.sptrans.scd.auth.domain.vo.TimeRange;
 import br.sptrans.scd.auth.domain.vo.UserAudit;
 
-public class UserMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface UserMapper {
 
-    public static User toDomain(UserEntityJpa entity) {
-        if (entity == null) return null;
+    @Mapping(target = "credentials", expression = "java(toCredentials(entity))")
+    @Mapping(target = "personalInfo", expression = "java(toPersonalInfo(entity))")
+    @Mapping(target = "audit", expression = "java(toAudit(entity))")
+    @Mapping(target = "accessPolicy", expression = "java(buildAccessPolicy(entity))")
+    // delegate setters handled by the expression methods above — ignore to prevent auto-mapping conflicts
+    @Mapping(target = "codLogin", ignore = true)
+    @Mapping(target = "codSenha", ignore = true)
+    @Mapping(target = "senhaAntiga", ignore = true)
+    @Mapping(target = "numTentativasFalha", ignore = true)
+    @Mapping(target = "dtExpiraSenha", ignore = true)
+    @Mapping(target = "nomUsuario", ignore = true)
+    @Mapping(target = "nomEmail", ignore = true)
+    @Mapping(target = "codCpf", ignore = true)
+    @Mapping(target = "codRg", ignore = true)
+    @Mapping(target = "numTelefone", ignore = true)
+    @Mapping(target = "desEndereco", ignore = true)
+    @Mapping(target = "nomDepartamento", ignore = true)
+    @Mapping(target = "nomCargo", ignore = true)
+    @Mapping(target = "nomFuncao", ignore = true)
+    @Mapping(target = "codEmpresa", ignore = true)
+    @Mapping(target = "codClassificacaoPessoa", ignore = true)
+    @Mapping(target = "codStatus", ignore = true)
+    @Mapping(target = "dtCriacao", ignore = true)
+    @Mapping(target = "dtModi", ignore = true)
+    @Mapping(target = "dtUltimoAcesso", ignore = true)
+    @Mapping(target = "numDiasSemanasPermitidos", ignore = true)
+    @Mapping(target = "dtJornadaIni", ignore = true)
+    @Mapping(target = "dtJornadaFim", ignore = true)
+    @Mapping(target = "perfis", ignore = true)
+    @Mapping(target = "grupos", ignore = true)
+    @Mapping(target = "funcionalidadesDiretas", ignore = true)
+    @Mapping(target = "gruposUsuario", ignore = true)
+    @Mapping(target = "perfisUsuario", ignore = true)
+    @Mapping(target = "funcionalidadesUsuario", ignore = true)
+    User toDomain(UserEntityJpa entity);
 
-        Credentials credentials = Credentials.builder()
+    @Mapping(target = "oldSenha", source = "senhaAntiga")
+    @Mapping(target = "codStatus", source = "codStatus", qualifiedByName = "statusToString")
+    @Mapping(target = "codClassificacaoPessoa", expression = "java(user.getCodClassificacaoPessoa() != null ? user.getCodClassificacaoPessoa().getCodClassificacaoPessoa() : null)")
+    @Mapping(target = "dt_jornada_ini", source = "dtJornadaIni")
+    @Mapping(target = "dt_jornada_fim", source = "dtJornadaFim")
+    @Mapping(target = "numTentativasFalha", expression = "java(java.util.Objects.requireNonNullElse(user.getNumTentativasFalha(), 0))")
+    UserEntityJpa toEntity(User user);
+
+    default Credentials toCredentials(UserEntityJpa entity) {
+        return Credentials.builder()
                 .codLogin(entity.getCodLogin())
                 .codSenha(entity.getCodSenha())
                 .senhaAntiga(entity.getOldSenha())
                 .numTentativasFalha(Objects.requireNonNullElse(entity.getNumTentativasFalha(), 0))
                 .dtExpiraSenha(entity.getDtExpiraSenha())
                 .build();
+    }
 
-        PersonalInfo personalInfo = PersonalInfo.builder()
+    default PersonalInfo toPersonalInfo(UserEntityJpa entity) {
+        return PersonalInfo.builder()
                 .nomUsuario(entity.getNomUsuario())
                 .nomEmail(entity.getNomEmail())
                 .codCpf(entity.getCodCpf())
@@ -39,65 +88,18 @@ public class UserMapper {
                 .nomFuncao(entity.getNomFuncao())
                 .codEmpresa(entity.getCodEmpresa())
                 .build();
+    }
 
-        UserAudit audit = UserAudit.builder()
+    default UserAudit toAudit(UserEntityJpa entity) {
+        return UserAudit.builder()
                 .codStatus(UserStatus.valueOfCode(entity.getCodStatus()))
                 .dtCriacao(entity.getDtCriacao())
                 .dtModi(entity.getDtModi())
                 .dtUltimoAcesso(entity.getDtUltimoAcesso())
                 .build();
-
-        AccessPolicy accessPolicy = buildAccessPolicy(entity);
-
-        User user = new User();
-        user.setIdUsuario(entity.getIdUsuario());
-        user.setCredentials(credentials);
-        user.setPersonalInfo(personalInfo);
-        user.setAudit(audit);
-        user.setAccessPolicy(accessPolicy);
-        return user;
     }
 
-    public static UserEntityJpa toEntity(User user) {
-        if (user == null) return null;
-        UserEntityJpa entity = new UserEntityJpa();
-        entity.setIdUsuario(user.getIdUsuario());
-        entity.setCodLogin(user.getCodLogin());
-        entity.setCodSenha(user.getCodSenha());
-        entity.setOldSenha(user.getSenhaAntiga());
-        entity.setNumTentativasFalha(Objects.requireNonNullElse(user.getNumTentativasFalha(), 0));
-        entity.setDtExpiraSenha(user.getDtExpiraSenha());
-        entity.setNomUsuario(user.getNomUsuario());
-        entity.setNomEmail(user.getNomEmail());
-        entity.setCodCpf(user.getCodCpf());
-        entity.setCodRg(user.getCodRg());
-        entity.setNumTelefone(user.getNumTelefone());
-        entity.setDesEndereco(user.getDesEndereco());
-        entity.setNomDepartamento(user.getNomDepartamento());
-        entity.setNomCargo(user.getNomCargo());
-        entity.setNomFuncao(user.getNomFuncao());
-        entity.setCodEmpresa(user.getCodEmpresa());
-        entity.setCodStatus(user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
-        entity.setDtCriacao(user.getDtCriacao());
-        entity.setDtModi(user.getDtModi());
-        entity.setDtUltimoAcesso(user.getDtUltimoAcesso());
-        if (user.getCodClassificacaoPessoa() != null) {
-            entity.setCodClassificacaoPessoa(user.getCodClassificacaoPessoa().getCodClassificacaoPessoa());
-        }
-        if (user.getAccessPolicy() != null) {
-            AccessPolicy ap = user.getAccessPolicy();
-            entity.setNumDiasSemanasPermitidos(ap.getDiasPermitidos() != null ? ap.getDiasPermitidos().getPadrao() : null);
-            if (ap.getJornadaHoraria() != null) {
-                LocalTime ini = ap.getJornadaHoraria().getInicio();
-                LocalTime fim = ap.getJornadaHoraria().getFim();
-                entity.setDt_jornada_ini(ini != null ? LocalDate.now().atTime(ini) : null);
-                entity.setDt_jornada_fim(fim != null ? LocalDate.now().atTime(fim) : null);
-            }
-        }
-        return entity;
-    }
-
-    private static AccessPolicy buildAccessPolicy(UserEntityJpa entity) {
+    default AccessPolicy buildAccessPolicy(UserEntityJpa entity) {
         String diasStr = entity.getNumDiasSemanasPermitidos();
         if (diasStr == null || diasStr.isBlank() || diasStr.equals("7")) {
             return AccessPolicy.semRestricao();
@@ -110,5 +112,10 @@ public class UserMapper {
         } catch (IllegalArgumentException e) {
             return AccessPolicy.semRestricao();
         }
+    }
+
+    @Named("statusToString")
+    default String statusToString(UserStatus status) {
+        return status != null ? status.getCode() : null;
     }
 }
