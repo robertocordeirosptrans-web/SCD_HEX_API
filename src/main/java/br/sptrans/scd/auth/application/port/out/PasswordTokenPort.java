@@ -22,12 +22,8 @@ public interface PasswordTokenPort {
 
     void save(PasswordResetToken token);
 
-    @Modifying
-    @Query("UPDATE PasswordTokenEntityJpa t SET t.used = true WHERE t.idUsuario = :idUsuario AND t.used = false")
     void invalidateTokensForUser(Long idUsuario);
 
-    @Modifying
-    @Query("DELETE FROM PasswordTokenEntityJpa t WHERE t.expiryDate <= CURRENT_TIMESTAMP")
     void deleteExpiredTokens();
 
 }
