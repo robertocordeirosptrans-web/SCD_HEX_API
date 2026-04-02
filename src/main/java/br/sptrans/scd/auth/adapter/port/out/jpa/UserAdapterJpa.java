@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
@@ -58,27 +59,31 @@ public class UserAdapterJpa implements UserRepository {
     }
 
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void updateStatus(Long idUsuario, String codStatus, Long idUsuarioManutencao) {
         userRepositoryJpa.updateStatus(idUsuario, codStatus);
-
     }
 
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void updatePassword(Long idUsuario, String newPasswordHash, String oldPasswordHash, LocalDateTime expiryDate) {
         userRepositoryJpa.updatePassword(idUsuario, newPasswordHash, oldPasswordHash, expiryDate);
     }
 
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void resetAttemptsAndStatus(Long idUsuario, String codStatus, Long idUsuarioManutencao) {
         userRepositoryJpa.resetAttemptsAndStatus(idUsuario, codStatus);
     }
 
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void updateAccessSchedule(Long idUsuario, String diasPermitidos, Date jornadaIni, Date jornadaFim, Long idUsuarioManutencao) {
         userRepositoryJpa.updateAccessSchedule(idUsuario, diasPermitidos, jornadaIni, jornadaFim);
     }
 
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public User save(User user) {
         UserEntityJpa entity = UserMapper.toEntity(user);
         UserEntityJpa saved = userRepositoryJpa.save(entity);
@@ -96,6 +101,7 @@ public class UserAdapterJpa implements UserRepository {
     }
 
     @Override
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void update(User usuario) {
         userRepositoryJpa.save(UserMapper.toEntity(usuario));
     }

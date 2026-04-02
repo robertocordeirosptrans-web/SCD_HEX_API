@@ -39,6 +39,7 @@ import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import br.sptrans.scd.product.application.service.FeeFareService;
 import br.sptrans.scd.product.domain.Fee;
+import br.sptrans.scd.shared.cache.InvalidateOrderCache;
 import br.sptrans.scd.shared.exception.ValidationException;
 import br.sptrans.scd.shared.idempotency.IdempotencyStore;
 import jakarta.transaction.Transactional;
@@ -70,6 +71,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     // ── Ações de mudança de status ───────────────────────────────────
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void block(BlockCommand comando) {
         log.info("Iniciando bloqueio - Entradas: {}", comando.itens().size());
         processarAlteracaoStatus(ActionStatus.BLOQUEAR, comando.itens(),
@@ -78,6 +80,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void unblock(UnblockCommand comando) {
         log.info("Iniciando desbloqueio - Entradas: {}", comando.itens().size());
         processarAlteracaoStatus(ActionStatus.DESBLOQUEAR, comando.itens(),
@@ -86,6 +89,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void cancel(CancelCommand comando) {
         log.info("Iniciando cancelamento - Entradas: {}", comando.itens().size());
         processarAlteracaoStatus(ActionStatus.CANCELAR, comando.itens(),
@@ -94,6 +98,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void pay(PayCommand comando) {
         log.info("Iniciando pagamento - Itens: {}, FormaPagto: {}",
                 comando.itens().size(), comando.codFormaPagto());
@@ -108,6 +113,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void acceptPendingSettlement(AcceptPendingCommand comando) {
         log.info("Iniciando aceite pendente liquidação - Entradas: {}", comando.itens().size());
         processarAlteracaoStatus(ActionStatus.ACEITO_PENDENTE_LIQUIDACAO, comando.itens(),
@@ -121,8 +127,9 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
      * @param request dados do pedido e itens
      * @return resposta com itens processados e rejeitados
      */
+    @Override
     @Transactional
-
+    @InvalidateOrderCache
     public CreateRequestResponse createCreditRequest(
             CreateRequestCredit request,
             String idempotencyKey,

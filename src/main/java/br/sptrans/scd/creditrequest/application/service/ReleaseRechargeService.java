@@ -17,6 +17,7 @@ import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
+import br.sptrans.scd.shared.cache.InvalidateOrderCache;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -44,6 +45,7 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void liberarRecarga(ReleaseRechargeCommand comando) {
         CreditRequest solicitacao = creditRequestRepository
                 .findByCodTipoDocumentoAndIdUsuarioCadastro(

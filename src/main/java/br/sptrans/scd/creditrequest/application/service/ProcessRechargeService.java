@@ -19,6 +19,7 @@ import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
+import br.sptrans.scd.shared.cache.InvalidateOrderCache;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -49,6 +50,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void processarRecarga(ProcessRechargeCommand comando) {
         CreditRequest solicitacao = creditRequestRepository
                 .findByCodTipoDocumentoAndIdUsuarioCadastro(
@@ -128,6 +130,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
     }
 
     @Transactional
+    @InvalidateOrderCache
     public void processarItemRecarga(ProcessItemCommand comando) {
         CreditRequest solicitacao = creditRequestRepository
                 .findByCodTipoDocumentoAndIdUsuarioCadastro(
