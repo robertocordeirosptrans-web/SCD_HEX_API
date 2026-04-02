@@ -29,19 +29,7 @@ public class ProductException extends RuntimeException implements ModuleExceptio
 
     @Override
     public HttpStatus getHttpStatus() {
-        String name = errorType.name();
-        if (name.contains("NOT_FOUND")) {
-            return HttpStatus.NOT_FOUND;
-        } else if (name.contains("ALREADY_EXISTS") || name.contains("CODE_ALREADY_EXISTS")) {
-            return HttpStatus.CONFLICT;
-        } else if (name.contains("ALREADY_ACTIVE") || name.contains("ALREADY_INACTIVE")) {
-            return HttpStatus.UNPROCESSABLE_ENTITY;
-        } else if (name.contains("CONFLICT")) {
-            return HttpStatus.CONFLICT;
-        } else if (name.contains("INVALID")) {
-            return HttpStatus.BAD_REQUEST;
-        }
-        return HttpStatus.BAD_REQUEST;
+        return errorType.getHttpStatus();
     }
 
     @Override

@@ -1,5 +1,13 @@
 # Análise Arquitetural — Módulo `channel`
 
+> **Última atualização:** 02/04/2026
+>
+> | Legenda | Significado |
+> |---|---|
+> | ⚠️ | Problema identificado — pendente |
+> | ✅ | Corrigido / implementado |
+> | 🔄 | Parcialmente corrigido — ação residual necessária |
+
 ---
 
 ## 1. QUALIDADE DO CÓDIGO
@@ -8,39 +16,21 @@
 
 ### 📍 Todos os Services (`AddressChannelService`, `ContactChannelService`, `MarketingDistribuitionChannelService`, `RechargeLimitService`, `ProductChannelService`)
 
-⚠️ **Método `resolveUser(Long idUsuario)` duplicado em 5+ classes**
+✅ **`resolveUser(Long idUsuario)` — interface `UserResolverHelper` e implementação `UserResolverHelperImpl` criadas em `shared/helper/`**
 
-Cada service possui sua própria cópia idêntica do método privado. Violação direta do princípio DRY.
+A interface foi extraída com os métodos `resolve(Long)`, `getCurrentLogin()`, `getCurrentUser()` e `getCurrentUserId()`. A implementação delega ao `UserPersistencePort` e ao `SecurityContextHolder`.
 
 ```java
-// ContactChannelService
-private User resolveUser(Long idUsuario) {
-    if (idUsuario == null) return null;
-    return userRepository.findById(idUsuario).orElse(null);
-}
-
-// RechargeLimitService — cópia idêntica
-private User resolveUser(Long idUsuario) {
-    if (idUsuario == null) return null;
-    return userRepository.findById(idUsuario).orElse(null);
+// shared/helper/UserResolverHelper.java  ← interface
+public interface UserResolverHelper {
+    User resolve(Long userId);
+    String getCurrentLogin();
+    User getCurrentUser();
+    Long getCurrentUserId();
 }
 ```
 
-💡 Centralizar em um `@Component` compartilhado:
-
-```java
-// shared/helper/UserResolverHelper.java
-@Component
-@RequiredArgsConstructor
-public class UserResolverHelper {
-    private final UserPersistencePort userPort;
-
-    public User resolve(Long userId) {
-        if (userId == null) return null;
-        return userPort.findById(userId).orElse(null);
-    }
-}
-```
+🔄 **Ação residual:** Os services ainda injetam `UserResolverHelperImpl` (classe concreta) em vez da interface `UserResolverHelper`. Ajustar todos os `@Autowired` / construtores para apontar à interface.
 
 ---
 
@@ -467,19 +457,21 @@ throw new UnsupportedOperationException("Not supported yet."); // findByIdOtimiz
 
 ## 🔥 Lista das Principais Refatorações Prioritárias
 
-| Prioridade | Refatoração | Impacto |
-|---|---|---|
-| 🔴 1 | **Corrigir bug `findByCodProduto` filtrando pelo campo errado** | Funcional |
-| 🔴 2 | **Eliminar full table scan em `ProductChannelAdapterJpa`** — usar queries JPA por canal/produto | Performance crítica |
-| 🔴 3 | **Mover `ProductChannelProjection` para fora da camada de infraestrutura** — viola a hierarquia de dependências | Arquitetural |
-| 🟠 4 | **Renomear `*Repository` → `*PersistencePort`** nos `application/port/out` | Convenção do projeto |
-| 🟠 5 | **Centralizar `resolveUser` em `UserResolverHelper`** e remover código duplicado de 5 services | DRY / manutenção |
-| 🟠 6 | **Substituir strings "A"/"I" por enum `ChannelStatus`** e adicionar status ao `ChannelErrorType` | Segurança de tipo |
-| 🟠 7 | **Implementar paginação no banco** (`Pageable`) em vez de carregar tudo e paginar na memória | Performance |
-| 🟡 8 | **Remover `@Setter` dos domínios** — expor factory method e métodos de domínio expressivos | DDD / encapsulamento |
-| 🟡 9 | **Corrigir mapeadores (`SalesChannelMapper`)** para não ignorar relacionamentos silenciosamente | Correção de dados |
-| 🟡 10 | **Mover Request DTOs para arquivos separados** e adicionar Bean Validation | Organização / segurança |
-| 🟡 11 | **Extrair `resolveUserId` para `SecurityContextHelper`** e remover `UserPersistencePort` dos controllers | SRP |
+| Status | Prioridade | Refatoração | Impacto |
+|---|---|---|---|
+| ✅ | — | **Criar `UserResolverHelper` (interface + impl) em `shared/helper/`** | DRY / manutenção |
+| 🔄 | — | **Trocar injeção de `UserResolverHelperImpl` pela interface `UserResolverHelper` nos services** | Desacoplamento |
+| ⚠️ | 🔴 1 | **Corrigir bug `findByCodProduto` filtrando pelo campo errado** | Funcional |
+| ⚠️ | 🔴 2 | **Eliminar full table scan em `ProductChannelAdapterJpa`** — usar queries JPA por canal/produto | Performance crítica |
+| ⚠️ | 🔴 3 | **Mover `ProductChannelProjection` para fora da camada de infraestrutura** — viola a hierarquia de dependências | Arquitetural |
+| ⚠️ | 🟠 4 | **Renomear `*Repository` → `*PersistencePort`** nos `application/port/out` | Convenção do projeto |
+| ⚠️ | 🟠 5 | **Substituir strings "A"/"I" por enum `ChannelStatus`** e adicionar `HttpStatus` ao `ChannelErrorType` | Segurança de tipo |
+| ⚠️ | 🟠 6 | **Implementar paginação no banco** (`Pageable`) em vez de carregar tudo e paginar na memória | Performance |
+| ⚠️ | 🟡 7 | **Extrair `resolveUserId` para `UserResolverHelper`** e remover `UserPersistencePort` dos controllers | SRP |
+| ⚠️ | 🟡 8 | **Remover `@Setter` dos domínios** — expor factory method e métodos de domínio expressivos | DDD / encapsulamento |
+| ⚠️ | 🟡 9 | **Corrigir `SalesChannelMapper`** para não ignorar relacionamentos silenciosamente | Correção de dados |
+| ⚠️ | 🟡 10 | **Mover Request DTOs para arquivos separados** e adicionar Bean Validation | Organização / segurança |
+| ⚠️ | 🟡 11 | **Corrigir `ProductChannelMapper`** — remover `UserPersistencePort` da assinatura do mapper | SRP / testabilidade |
 
 ---
 
@@ -531,4 +523,160 @@ channel/
         repository/ # *JpaRepository
         mapper/     # *Mapper
         adapter/    # *AdapterJpa (implementações dos ports)
+```
+
+---
+
+## 🗺️ Guia de Refatoração por Fases
+
+> **Princípio de execução:** cada fase deve ser concluída, compilada (`mvn compile`) e commitada antes de iniciar a próxima. Nenhuma fase cria regressões para a anterior.
+
+---
+
+### ✅ Fase 0 — Fundação Compartilhada *(concluída)*
+
+**Objetivo:** Prover os helpers centrais que serão consumidos pelas fases seguintes.
+
+| # | Tarefa | Arquivo(s) | Status |
+|---|---|---|---|
+| 0.1 | Criar interface `UserResolverHelper` com `resolve`, `getCurrentLogin`, `getCurrentUser`, `getCurrentUserId` | `shared/helper/UserResolverHelper.java` | ✅ |
+| 0.2 | Criar `UserResolverHelperImpl` implementando a interface | `shared/helper/UserResolverHelperImpl.java` | ✅ |
+
+**Ação residual obrigatória antes da Fase 1:**
+
+| # | Tarefa | Arquivo(s) |
+|---|---|---|
+| 0.3 | Trocar injeção de `UserResolverHelperImpl` pela interface `UserResolverHelper` em todos os services que a usam (`SalesChannelService`, `ProductChannelService`, etc.) | `channel/application/service/*.java` |
+
+---
+
+### 🔴 Fase 1 — Correções Críticas de Bug e Performance
+
+**Objetivo:** Eliminar bugs funcionais e problemas de performance que impactam produção.  
+**Pré-requisito:** Fase 0 completa.
+
+| # | Tarefa | Arquivo(s) | Critério de aceite |
+|---|---|---|---|
+| 1.1 | **Corrigir bug `findByCodProduto`** — trocar `getCodCanal()` por `getCodProduto()` no filtro | `ProductChannelAdapterJpa.java` | `GET /product-channels?codProduto=X` retorna apenas registros do produto X |
+| 1.2 | **Adicionar queries derivadas no `ProductChannelJpaRepository`** — `findByIdCodCanal` e `findByIdCodProduto` | `ProductChannelJpaRepository.java` | Sem `findAll()` no adapter |
+| 1.3 | **Eliminar full table scan em `findByCodCanal` e `findByCodProduto`** — usar as queries do 1.2 | `ProductChannelAdapterJpa.java` | Log SQL mostra `WHERE id_cod_canal = ?` |
+| 1.4 | **Remover `UserPersistencePort` da assinatura do `ProductChannelMapper.toDomain`** — resolver usuários no adapter antes de chamar o mapper | `ProductChannelMapper.java`, `ProductChannelAdapterJpa.java` | Mapper recebe `User userCad, User userMan` como parâmetros |
+| 1.5 | **Remover campo duplicado em `ProductChannelService`** — manter apenas `repository`, excluir `productChannelJpaRepository` e código comentado | `ProductChannelService.java` | Sem `@Autowired` duplicado |
+
+---
+
+### 🟠 Fase 2 — Integridade Arquitetural
+
+**Objetivo:** Eliminar violações de dependência entre camadas e alinhar nomenclatura à convenção do projeto.  
+**Pré-requisito:** Fase 1 completa.
+
+| # | Tarefa | Arquivo(s) | Critério de aceite |
+|---|---|---|---|
+| 2.1 | **Mover `ProductChannelProjection` para `channel/application/port/out/query/`** | `ProductChannelProjection.java` → `application/port/out/query/` | Nenhum import em `application/` aponta para `adapter/` |
+| 2.2 | **Atualizar `ProductChannelRepository` para importar de `query/` em vez de `adapter/`** | `ProductChannelRepository.java` | `mvn compile` verde |
+| 2.3 | **Renomear todas as portas de saída** de `*Repository` para `*PersistencePort` nos 8 arquivos de `application/port/out/` | `*Repository.java` → `*PersistencePort.java` | Nenhum arquivo `application/port/out/` tem sufixo `Repository` |
+| 2.4 | **Atualizar todas as referências** às interfaces renomeadas em services e adapters | `channel/application/service/*.java`, `channel/adapter/port/out/jpa/adapter/*.java` | `mvn compile` verde |
+| 2.5 | **Remover injeção de `UserPersistencePort` dos controllers** (`SalesChannelController`, `ProductChannelController`) — delegar resolução ao `UserResolverHelper` | `SalesChannelController.java`, `ProductChannelController.java` | Sem `UserPersistencePort` em nenhum controller |
+
+---
+
+### 🟠 Fase 3 — Segurança de Tipo e Domínio
+
+**Objetivo:** Eliminar magic strings de status e tornar o mapeamento de erro HTTP explícito e seguro.  
+**Pré-requisito:** Fase 2 completa.
+
+| # | Tarefa | Arquivo(s) | Critério de aceite |
+|---|---|---|---|
+| 3.1 | **Criar `ChannelStatus` enum** com valores `ACTIVE("A")` e `INACTIVE("I")` e método `fromCode(String)` | `channel/domain/enums/ChannelStatus.java` | Enum criado e compilando |
+| 3.2 | **Substituir `codStatus` (String) por `ChannelStatus`** em todos os domínios: `SalesChannel`, `ProductChannel`, `TypesActivity`, `AddressChannel`, `ContactChannel`, `RechargeLimit`, `MarketingDistribuitionChannel`, `AgreementValidity` | `channel/domain/*.java` | Sem `String codStatus` nos domínios |
+| 3.3 | **Adicionar conversor JPA** para `ChannelStatus` (implements `AttributeConverter<ChannelStatus, String>`) | `channel/adapter/port/out/jpa/converter/ChannelStatusConverter.java` | Entidades mapeiam corretamente para "A"/"I" no banco |
+| 3.4 | **Ajustar constantes de status nos services** — remover `STATUS_ACTIVE = "A"` e usar `ChannelStatus.ACTIVE` | `channel/application/service/*.java` | Sem strings literais "A" ou "I" nos services |
+| 3.5 | **Adicionar `HttpStatus` ao `ChannelErrorType`** e simplificar `ChannelException.getHttpStatus()` | `channel/domain/enums/ChannelErrorType.java`, `channel/domain/exception/ChannelException.java` | `getHttpStatus()` delega ao enum; sem lógica de parsing de nome |
+
+---
+
+### 🟠 Fase 4 — Performance de Leitura (Paginação Real)
+
+**Objetivo:** Enviar parâmetros de paginação ao banco em vez de paginar na memória.  
+**Pré-requisito:** Fase 2 completa. (Pode ser desenvolvida em paralelo com a Fase 3.)
+
+| # | Tarefa | Arquivo(s) | Critério de aceite |
+|---|---|---|---|
+| 4.1 | **Adicionar `Pageable` aos use cases de listagem** — `findAllSalesChannels`, `findAllProductChannels`, etc. | `channel/application/port/in/*UseCase.java` | Assinaturas aceitam `Pageable` |
+| 4.2 | **Propagar `Pageable` aos ports de saída** | `channel/application/port/out/*PersistencePort.java` | Ports retornam `Page<T>` |
+| 4.3 | **Implementar paginação nos adapters JPA** — usar `JpaRepository.findAll(Pageable)` ou queries derivadas com `Pageable` | `channel/adapter/port/out/jpa/adapter/*.java` | Log SQL contém `LIMIT` e `OFFSET` |
+| 4.4 | **Atualizar controllers para extrair `page` e `size` e construir `PageRequest`** — remover `PageResponse.fromList` | `channel/adapter/port/in/rest/*.java` | Resposta HTTP já vem paginada do banco |
+| 4.5 | **Adicionar `Page` ao `SalesChannelJpaRepository.findAllByStCanais`** | `SalesChannelJpaRepository.java`, `SalesChannelAdapterJpa.java` | Query usa `Pageable` |
+
+---
+
+### 🟡 Fase 5 — Organização e Contrato da API
+
+**Objetivo:** Separar Request DTOs, validar entradas e padronizar respostas.  
+**Pré-requisito:** Fase 2 completa.
+
+| # | Tarefa | Arquivo(s) | Critério de aceite |
+|---|---|---|---|
+| 5.1 | **Separar Request DTOs do `SalesChannelController`** para `adapter/port/in/rest/dto/` | `CreateSalesChannelRequest.java`, `UpdateSalesChannelRequest.java` | Controller sem inner records |
+| 5.2 | **Adicionar Bean Validation** (`@NotBlank`, `@NotNull`, `@Size`) em todos os Request DTOs | `dto/*.java` | Requests inválidos retornam `400 Bad Request` com mensagem clara |
+| 5.3 | **Criar `TypesActivityResponseDTO`** e converter `TypesActivityController` para retorná-lo | `dto/TypesActivityResponseDTO.java`, `TypesActivityController.java` | Controller não expõe objeto de domínio |
+| 5.4 | **Corrigir typo `SalesChannelReponseDTO` → `SalesChannelResponseDTO`** | `SalesChannelReponseDTO.java` → `SalesChannelResponseDTO.java` + todas as referências | Sem "Reponse" no codebase |
+| 5.5 | **Corrigir type mismatch `CanalResponseDTO.codCanal`** — de `Long` para `String` | `CanalResponseDTO.java` | Tipo coerente com `SalesChannel.codCanal` |
+
+---
+
+### 🟡 Fase 6 — Encapsulamento e Domínio Rico
+
+**Objetivo:** Remover setters livres dos domínios e introduzir factory methods expressivos.  
+**Pré-requisito:** Fases 3 e 5 completas.
+
+| # | Tarefa | Arquivo(s) | Critério de aceite |
+|---|---|---|---|
+| 6.1 | **Adicionar `SalesChannel.ofReference(String codCanal)`** factory method | `SalesChannel.java` | `AddressChannelService` e `ContactChannelService` usam `ofReference` em vez do construtor de 28 args |
+| 6.2 | **Remover `@Setter` de classe** nos domínios — manter apenas setters necessários para JPA e services | `channel/domain/*.java` | `@Setter` removido do nível de classe; campos `codCanal`, `dtCadastro` sem setter público |
+| 6.3 | **Adicionar `SalesChannel.applyUpdate(UpdateSalesChannelCommand, User)`** para centralizar a montagem do update | `SalesChannel.java`, `SalesChannelService.java` | `updateSalesChannel` sem construtor all-args de 28 parâmetros |
+| 6.4 | **Unificar modelo de usuário nos domínios** — `AgreementValidity` e `RechargeLimit` passam de `Long` para `User` | `AgreementValidity.java`, `RechargeLimit.java`, mappers correspondentes | Sem `Long idUsuario` raw nos domínios de `channel` |
+| 6.5 | **Corrigir `SalesChannelMapper`** — mapear `codAtividade`, `codClassificacaoPessoa`, `idUsuarioCadastro`, `idUsuarioManutencao` em vez de ignorar | `SalesChannelMapper.java` | Query de leitura retorna valores não-nulos para esses campos quando presentes no banco |
+
+---
+
+### 🟡 Fase 7 — Testabilidade e Padronização Final
+
+**Objetivo:** Cobrir os componentes com testes e corrigir issues de padronização remanescentes.  
+**Pré-requisito:** Todas as fases anteriores completas.
+
+| # | Tarefa | Arquivo(s) | Critério de aceite |
+|---|---|---|---|
+| 7.1 | **Corrigir typo `MarketingDistribuitionChannel` → `MarketingDistributionChannel`** em todo o módulo | Renomear classes, arquivos e pacotes | Sem "Distribuition" no codebase |
+| 7.2 | **Implementar `findByIdOtimized` ou remover o método** do port e adapter | `ProductChannelAdapterJpa.java`, `ProductChannelPersistencePort.java` | Sem `UnsupportedOperationException` em código de produção |
+| 7.3 | **Adicionar `@DataJpaTest` para os adapters JPA críticos** | `test/channel/adapter/ProductChannelAdapterJpaTest.java`, `SalesChannelAdapterJpaTest.java` | Queries derivadas testadas contra schema real |
+| 7.4 | **Adicionar `@WebMvcTest` para os controllers principais** | `test/channel/adapter/SalesChannelControllerTest.java` | Validação de request DTO coberta por testes |
+| 7.5 | **Injetar `Clock` nos services** em vez de usar `LocalDateTime.now()` diretamente | `channel/application/service/*.java` | Testes de unidade passam com `Clock.fixed(...)` |
+| 7.6 | **Padronizar nomenclatura dos métodos de busca** — `findBySalesChannel(codCanal)` → `findSalesChannel(codCanal)` | `SalesChannelUseCase.java`, `SalesChannelService.java`, `SalesChannelPersistencePort.java`, controller | Métodos `findBy*` usados apenas com semântica Spring Data |
+
+---
+
+### Visão Geral do Roadmap
+
+```
+Fase 0 ── CONCLUÍDA ──► Fase 0 (residual 0.3) ─┐
+                                                  ▼
+                          Fase 1 (Bugs críticos + performance ProductChannel)
+                                                  │
+                                                  ▼
+                          Fase 2 (Arquitetura + nomenclatura)
+                                    │                    │
+                          ┌─────────┴──────┐   ┌─────────┴─────────┐
+                          ▼                ▼   ▼                   ▼
+                        Fase 3           Fase 4                  Fase 5
+                    (ChannelStatus    (Paginação real)       (DTOs + validação)
+                     + ErrorType)
+                          │                │                       │
+                          └────────────────┴───────────────────────┘
+                                                  │
+                                                  ▼
+                                    Fase 6 (Domínio rico + encapsulamento)
+                                                  │
+                                                  ▼
+                                    Fase 7 (Testes + padronização final)
 ```
