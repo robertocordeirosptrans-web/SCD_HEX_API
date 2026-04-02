@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.AuthenticationRepository;
+import br.sptrans.scd.auth.application.port.out.UserReader;
+import br.sptrans.scd.auth.application.port.out.UserStatusRepository;
+import br.sptrans.scd.auth.application.port.out.UserWriter;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.enums.UserStatus;
 import br.sptrans.scd.shared.exception.BusinessException;
@@ -25,14 +28,17 @@ public class UserManagementService implements UserManagementUseCase {
 
     private static final String TEMP_PASSWORD = "SBEReset@#2026";
 
-    private final UserRepository userRepository;
+    private final UserReader userReader;
+    private final UserWriter userWriter;
+    private final AuthenticationRepository authenticationRepository;
+    private final UserStatusRepository userStatusRepository;
 
     // ── Criando Usuario ────────────────────────────────────────────────────────────
     @Override
     @CacheEvict(value = "usuarios", allEntries = true)
     public User createUser(CreateUserCommand cmd) {
         // COD_LOGIN único
-        if (userRepository.existsByLogin(cmd.codLogin())) {
+        if (userReader.existsByLogin(cmd.codLogin())) {
             throw new DuplicateResourceException("Login", "codLogin", cmd.codLogin());
         }
 
@@ -58,7 +64,7 @@ public class UserManagementService implements UserManagementUseCase {
         // Força troca de senha no primeiro acesso com a senha temporária
         user.setDtExpiraSenha(LocalDateTime.now());
 
-        userRepository.save(user);
+        userWriter.save(user);
         return user;
     }
 
@@ -75,7 +81,7 @@ public class UserManagementService implements UserManagementUseCase {
         user.setCodRg(cmd.codRg());
         user.setDtModi(LocalDateTime.now());
 
-        userRepository.update(user);
+        userWriter.update(user);
         return user;
     }
 
@@ -90,11 +96,11 @@ public class UserManagementService implements UserManagementUseCase {
         }
 
         // Bloqueia inativação se há sessão ativa nos últimos 30 minutos
-        if (userRepository.hasActiveSession(cmd.idUsuario())) {
+        if (authenticationRepository.hasActiveSession(cmd.idUsuario())) {
             throw new BusinessException("Não é possível inativar usuário com sessão ativa. Aguarde 30 minutos ou solicite logout.", "ACTIVE_SESSION");
         }
 
-        userRepository.updateStatus(cmd.idUsuario(), br.sptrans.scd.auth.domain.enums.UserStatus.INACTIVE.getCode(), cmd.idUsuarioLogado());
+        userStatusRepository.updateStatus(cmd.idUsuario(), br.sptrans.scd.auth.domain.enums.UserStatus.INACTIVE.getCode(), cmd.idUsuarioLogado());
     }
 
     // ── reactivateUser ────────────────────────────────────────────────────────
@@ -108,10 +114,10 @@ public class UserManagementService implements UserManagementUseCase {
         }
 
         // Reativa e zera tentativas
-        userRepository.resetAttemptsAndStatus(cmd.idUsuario(), br.sptrans.scd.auth.domain.enums.UserStatus.ACTIVE.getCode(), cmd.idUsuarioLogado());
+        authenticationRepository.resetAttemptsAndStatus(cmd.idUsuario(), br.sptrans.scd.auth.domain.enums.UserStatus.ACTIVE.getCode(), cmd.idUsuarioLogado());
     }
 
-    // ── unblockUser ───────────────────────────────────────────────────────────
+    // ── unblockUser ─────────────────────────────────────────────────────────────────────────
     @Override
     @CacheEvict(value = "usuarios", allEntries = true)
     public void unblockUser(StatusChangeCommand cmd) {
@@ -122,7 +128,7 @@ public class UserManagementService implements UserManagementUseCase {
         }
 
         // Desbloqueia e zera contador de tentativas
-        userRepository.resetAttemptsAndStatus(cmd.idUsuario(), br.sptrans.scd.auth.domain.enums.UserStatus.ACTIVE.getCode(), cmd.idUsuarioLogado());
+        authenticationRepository.resetAttemptsAndStatus(cmd.idUsuario(), br.sptrans.scd.auth.domain.enums.UserStatus.ACTIVE.getCode(), cmd.idUsuarioLogado());
     }
 
     // ── adminResetPassword ────────────────────────────────────────────────────
@@ -134,7 +140,7 @@ public class UserManagementService implements UserManagementUseCase {
         String newHash = PasswordHashUtil.hashBcrypt(TEMP_PASSWORD);
         String oldHash = user.getCodSenha(); // preserva senha atual como "anterior"
 
-        userRepository.updatePassword(cmd.idUsuario(), newHash, oldHash, LocalDateTime.now());
+        userStatusRepository.updatePassword(cmd.idUsuario(), newHash, oldHash, LocalDateTime.now());
 
         return TEMP_PASSWORD;
     }
@@ -144,7 +150,7 @@ public class UserManagementService implements UserManagementUseCase {
     public void updateAccessSchedule(UpdateScheduleCommand cmd) {
         findUserOrThrow(cmd.idUsuario()); // garante existência
 
-        userRepository.updateAccessSchedule(
+        userStatusRepository.updateAccessSchedule(
                 cmd.idUsuario(),
                 cmd.numDiasSemanasPermitidos(),
                 cmd.dtJornadaIni(),
@@ -159,7 +165,7 @@ public class UserManagementService implements UserManagementUseCase {
     public List<User> listUsersPaginated(UserManagementUseCase.UserFilterRequest filtro, int page, int size, String sortBy, String sortDir) {
         int offset = page * size;
         // Adapte o repositório para aceitar os novos filtros se necessário
-        return userRepository.findAllPaginated(
+        return userReader.findAllPaginated(
             filtro.codStatus(),
             filtro.nomUsuario(),
             filtro.nomEmail(),
@@ -177,7 +183,7 @@ public class UserManagementService implements UserManagementUseCase {
     @Cacheable(value = "usuarios", keyGenerator = "countUsersKeyGenerator")
     public long countUsers(UserManagementUseCase.UserFilterRequest filtro) {
         // Adapte o repositório para aceitar os novos filtros se necessário
-        return userRepository.countAll(
+        return userReader.countAll(
             filtro.codStatus(),
             filtro.nomUsuario(),
             filtro.nomEmail(),
@@ -193,7 +199,7 @@ public class UserManagementService implements UserManagementUseCase {
 
     // ── Utilitários privados ──────────────────────────────────────────────────
     private User findUserOrThrow(Long idUsuario) {
-        return userRepository.findById(idUsuario)
+        return userReader.findById(idUsuario)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", idUsuario));
     }
 

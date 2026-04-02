@@ -13,10 +13,13 @@ import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.PasswordValidator;
+import br.sptrans.scd.auth.application.port.out.AuthenticationRepository;
+import br.sptrans.scd.auth.application.port.out.AuthorizationRepository;
 import br.sptrans.scd.auth.application.port.out.GatewayEmail;
 import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenRepository;
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserReader;
+import br.sptrans.scd.auth.application.port.out.UserStatusRepository;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 import br.sptrans.scd.auth.domain.User;
@@ -39,7 +42,13 @@ public class AuthService implements AuthUseCase {
     @Value("${scd.auth.token-ttl-minutos:15}")
     private long tokenTtlMinutos;
 
-    private final UserRepository userRepository;
+    @Value("${scd.auth.senha-expira-dias:90}")
+    private long senhaExpiraDias;
+
+    private final UserReader userReader;
+    private final UserStatusRepository userStatusRepository;
+    private final AuthenticationRepository authenticationRepository;
+    private final AuthorizationRepository authorizationRepository;
     private final GroupUserRepository groupUserRepository;
     private final PasswordTokenRepository tokenRepository;
     private final GatewayEmail gatewayEmail;
@@ -50,7 +59,7 @@ public class AuthService implements AuthUseCase {
     @Override
     public User autenticar(AuthComand comando) {
         log.info("Iniciando autenticação para login: {}", comando.codLogin());
-        User user = userRepository.findByCodLogin(comando.codLogin())
+        User user = userReader.findByCodLogin(comando.codLogin())
             .orElseThrow(() -> {
                 log.warn("Usuário não encontrado: {}", comando.codLogin());
                 return new AuthenticationFailedException("Usuário ou senha inválidos.");
@@ -71,7 +80,7 @@ public class AuthService implements AuthUseCase {
         if (!PasswordHashUtil.verificar(comando.senha(), hashArmazenado)) {
             log.warn("Credenciais inválidas para o login: {}", user.getCodLogin());
             user.registrarTentativaFalha();
-            userRepository.atualizarTentativasEStatus(
+            authenticationRepository.atualizarTentativasEStatus(
                     user.getIdUsuario(),
                     user.getNumTentativasFalha(),
                     user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
@@ -89,16 +98,16 @@ public class AuthService implements AuthUseCase {
         }
         log.info("Login bem-sucedido para usuário: {}", user.getCodLogin());
         user.resetarTentativas();
-        userRepository.atualizarTentativasEStatus(
+        authenticationRepository.atualizarTentativasEStatus(
             user.getIdUsuario(), 0, user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
-        userRepository.atualizarUltimoAcesso(user.getIdUsuario());
+        authenticationRepository.atualizarUltimoAcesso(user.getIdUsuario());
         return user;
     }
 
     // ── Recuperação de Senha ───────────────────────────────────────────────────────────
     @Override
     public void recoveryResetPassword(ResetRequestComand comando) {
-        User user = userRepository.findByNomEmail(comando.email())
+        User user = userReader.findByNomEmail(comando.email())
             .orElseThrow(() -> new ResourceNotFoundException("E-mail não cadastrado."));
 
         // Invalida token anterior, se existir
@@ -122,16 +131,16 @@ public class AuthService implements AuthUseCase {
 
     @Override
     public AuthUseCase.UserContext loadUserContext(String codLogin) {
-        User user = userRepository.findByCodLogin(codLogin)
+        User user = userReader.findByCodLogin(codLogin)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "login", codLogin));
 
         // Carrega perfis e funcionalidades para o contexto do usuário
-        Set<String> roles = userRepository.carregarPerfisEfetivos(user.getIdUsuario())
+        Set<String> roles = authorizationRepository.carregarPerfisEfetivos(user.getIdUsuario())
                 .stream()
                 .map(profile -> profile.getCodPerfil())
                 .collect(Collectors.toSet());
 
-        Set<String> permissions = userRepository.carregarFuncionalidadesEfetivas(user.getIdUsuario())
+        Set<String> permissions = authorizationRepository.carregarFuncionalidadesEfetivas(user.getIdUsuario())
                 .stream()
                 .map(func -> func.canonicalKey())
                 .collect(Collectors.toSet());
@@ -161,7 +170,7 @@ public class AuthService implements AuthUseCase {
             throw new AuthenticationFailedException("Token já utilizado. Solicite um novo e-mail de recuperação.");
         }
 
-        User user = userRepository.findById(tokenObj.getIdUsuario())
+        User user = userReader.findById(tokenObj.getIdUsuario())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", tokenObj.getIdUsuario()));
 
         // Valida complexidade
@@ -170,10 +179,12 @@ public class AuthService implements AuthUseCase {
             throw new ValidationException(validacao.getErrorsAsString());
         }
 
-        // Persiste nova senha com BCrypt
-        user.setSenhaAntiga(user.getCodSenha());
-        user.setCodSenha(PasswordHashUtil.hashBcrypt(comando.novaSenha()));
-        userRepository.save(user);
+        // Persiste nova senha via port dedicado (evita carregar/salvar entidade completa)
+        String newHash = PasswordHashUtil.hashBcrypt(comando.novaSenha());
+        String oldHash = user.getCodSenha();
+        userStatusRepository.updatePassword(
+                user.getIdUsuario(), newHash, oldHash,
+                LocalDateTime.now().plusDays(senhaExpiraDias));
 
         // Marca token como utilizado e invalida todos os demais
         tokenObj.markAsUsed();
