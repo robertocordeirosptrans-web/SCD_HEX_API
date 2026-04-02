@@ -6,7 +6,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
@@ -26,7 +27,7 @@ public class SalesChannelService implements SalesChannelUseCase {
     private static final String STATUS_INACTIVE = "I";
 
     private final SalesChannelRepository salesChannelRepository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @Override
     public SalesChannel createSalesChannel(CreateSalesChannelCommand cmd) {

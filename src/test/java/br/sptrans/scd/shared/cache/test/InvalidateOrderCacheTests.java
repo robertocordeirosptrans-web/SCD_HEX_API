@@ -23,7 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
  * 4. Verificar que listas paginadas são recarregadas após invalidação
  */
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles("local")
 @DisplayName("Cache Consistency Tests - @InvalidateOrderCache")
 public class InvalidateOrderCacheTests {
 

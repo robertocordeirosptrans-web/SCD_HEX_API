@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase.CreateFamilyCommand;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase.UpdateFamilyCommand;
@@ -31,7 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.product.adapter.port.in.rest.dto.FamilyResponseDTO;
 import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 
@@ -44,7 +44,7 @@ import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 public class FamilyController {
 
     private final FamilyManagementUseCase familyManagementUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova família")

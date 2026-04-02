@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.product.adapter.port.in.rest.dto.TechnologyResponseDTO;
 import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase;
@@ -43,7 +43,7 @@ import lombok.RequiredArgsConstructor;
 public class TechnologyController {
 
     private final TechnologyManagementUseCase technologyManagementUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova tecnologia")

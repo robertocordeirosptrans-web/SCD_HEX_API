@@ -1,13 +1,14 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.adapter.port.out.persistence.entity.FamilyEntityJpa;
 import br.sptrans.scd.product.domain.Family;
 
 public interface FamilyMapper {
 
-    static Family toDomain(FamilyEntityJpa entity, UserRepository userRepository) {
+    static Family toDomain(FamilyEntityJpa entity, UserPersistencePort userRepository) {
         if (entity == null) {
             return null;
         }

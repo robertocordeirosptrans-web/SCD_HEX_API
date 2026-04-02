@@ -2,14 +2,15 @@ package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
 import java.time.LocalDateTime;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.adapter.port.out.persistence.entity.SpeciesEntityJpa;
 import br.sptrans.scd.product.domain.Species;
 
 public interface SpeciesMapper {
 
-	static Species toDomain(SpeciesEntityJpa entity, UserRepository userRepository) {
+	static Species toDomain(SpeciesEntityJpa entity, UserPersistencePort userRepository) {
 		if (entity == null) return null;
 		
 		User usuarioCadastro = null;

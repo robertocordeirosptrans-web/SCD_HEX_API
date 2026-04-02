@@ -5,7 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.TechnologyMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.TechnologyJpaRepository;
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class TechnologyAdapterJpa implements TechnologyRepository {
 
     private final TechnologyJpaRepository repository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @Override
     public Optional<Technology> findById(String codTecnologia) {

@@ -5,7 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ModalityMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ModalityJpaRepository;
@@ -18,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class ModalityAdapterJpa implements ModalityRepository {
 
     private final ModalityJpaRepository repository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @Override
     public Optional<Modality> findById(String codModalidade) {

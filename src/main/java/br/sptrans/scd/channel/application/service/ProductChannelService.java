@@ -5,7 +5,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase;
@@ -24,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductChannelService implements ProductChannelUseCase {
 
     private final ProductChannelRepository repository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
     private final SalesChannelRepository salesChannelRepository;
     private final ProductChannelRepository productChannelJpaRepository;
     // private final ProductChannelJpaRepository productChannelJpaRepository;

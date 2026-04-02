@@ -6,22 +6,27 @@ import java.util.Optional;
 import br.sptrans.scd.auth.domain.User;
 
 /**
- * Porto de saída — leitura de usuários.
- * <p>Segregado conforme ISP: clientes que só consultam não precisam conhecer
- * operações de escrita ou autenticação.</p>
+ * Porta de Saída — Queries de User (responsabilidade: LEITURA). Contém todas as
+ * operações de consulta sem efeitos colaterais.
  */
-public interface UserReader {
+public interface UserQueryPort {
 
-    Optional<User> findById(Long id);
+    Optional<User> findById(Long userId);
 
+    Optional<User> findByCpf(String cpf);
+
+    Object getUserProfile(Long userId);
+
+    // Aliases com nomenclatura do domínio (COD_LOGIN, NOM_EMAIL)
     Optional<User> findByCodLogin(String codLogin);
 
     Optional<User> findByNomEmail(String nomEmail);
 
+
     boolean existsByLogin(String codLogin);
 
     List<User> findAllPaginated(String status, String nome, String email, String perfil,
-                                int offset, int limit, String sortBy, String sortDir);
+            int offset, int limit, String sortBy, String sortDir);
 
     long countAll(String status, String nome, String email, String perfil);
 }

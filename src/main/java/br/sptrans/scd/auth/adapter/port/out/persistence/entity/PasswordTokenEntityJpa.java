@@ -30,7 +30,7 @@ public class PasswordTokenEntityJpa {
     private String token;
 
     @Column(name = "expiry_date", nullable = false)
-    private LocalDateTime expiryDate;
+    private LocalDateTime dtExpiracao;
 
     @Column(name = "used", nullable = false)
     private boolean used;

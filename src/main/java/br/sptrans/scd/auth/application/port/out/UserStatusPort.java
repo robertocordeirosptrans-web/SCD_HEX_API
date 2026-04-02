@@ -4,11 +4,11 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
- * Porto de saída — atualizações de status, senha e jornada de acesso.
+ * Porta de Saída — atualizações de status, senha e jornada de acesso.
  * <p>Segregado conforme ISP: agrupa mutações de estado administrativo do
  * usuário, separadas de leitura e de rastreamento de autenticação.</p>
  */
-public interface UserStatusRepository {
+public interface UserStatusPort {
 
     /**
      * Atualiza {@code COD_STATUS} e {@code DT_MANUTENCAO}.

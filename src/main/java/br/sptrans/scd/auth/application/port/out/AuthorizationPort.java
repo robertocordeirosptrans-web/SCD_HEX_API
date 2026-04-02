@@ -6,12 +6,12 @@ import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Profile;
 
 /**
- * Porto de saída — carregamento de perfis e funcionalidades (autorização).
+ * Porta de Saída — carregamento de perfis e funcionalidades (autorização).
  * <p>Segregado conforme ISP: isola as consultas de autorização — usadas
  * apenas no momento de construção do contexto de segurança — das demais
  * operações de leitura e escrita do usuário.</p>
  */
-public interface AuthorizationRepository {
+public interface AuthorizationPort {
 
     /**
      * Carrega as funcionalidades efetivas do usuário combinando:

@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChResponseDTO;
 import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
@@ -34,7 +35,7 @@ public class ProductChannelMapper {
         return entity;
     }
 
-    public ProductChannel toDomain(ProductChannelEntityJpa entity, UserRepository userR) {
+    public ProductChannel toDomain(ProductChannelEntityJpa entity, UserPersistencePort userR) {
         if (entity == null) {
             return null;
         }

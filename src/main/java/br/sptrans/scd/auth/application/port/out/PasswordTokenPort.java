@@ -2,18 +2,16 @@ package br.sptrans.scd.auth.application.port.out;
 
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import br.sptrans.scd.auth.adapter.port.out.persistence.entity.PasswordTokenEntityJpa;
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 
 /**
  * Porta de Saída — repositório de tokens de redefinição de senha. Tabela:
  * password_reset_tokens.
  */
-public interface PasswordTokenRepository extends JpaRepository<PasswordTokenEntityJpa, Long> {
+public interface PasswordTokenPort {
 
     Optional<PasswordResetToken> findByToken(String token);
 

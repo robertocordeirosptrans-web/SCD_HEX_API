@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase.CreateAgreementValidityCommand;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase.UpdateAgreementValidityCommand;
@@ -40,7 +40,7 @@ import lombok.RequiredArgsConstructor;
 public class AgreementValidityController {
 
     private final AgreementValidityUseCase agreementValidityUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova vigência de convênio")

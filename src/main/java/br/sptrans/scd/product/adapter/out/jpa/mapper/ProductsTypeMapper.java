@@ -4,11 +4,11 @@ import br.sptrans.scd.product.adapter.port.out.persistence.entity.ModalityEntity
 import br.sptrans.scd.product.adapter.port.out.persistence.entity.ProductTypesEntityJpa;
 import br.sptrans.scd.product.domain.Modality;
 import br.sptrans.scd.product.domain.ProductType;
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 
 public interface ProductsTypeMapper {
-      static ProductType toDomain(ProductTypesEntityJpa entity, UserRepository userRepository) {
+      static ProductType toDomain(ProductTypesEntityJpa entity, UserPersistencePort userRepository) {
         if (entity == null) {
             return null;
         }

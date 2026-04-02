@@ -1,12 +1,7 @@
 package br.sptrans.scd.auth.application.service;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,124 +11,88 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthComand;
-import br.sptrans.scd.auth.application.port.in.PasswordValidator;
-import br.sptrans.scd.auth.application.port.out.AuthenticationRepository;
-import br.sptrans.scd.auth.application.port.out.AuthorizationRepository;
-import br.sptrans.scd.auth.application.port.out.GatewayEmail;
-import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
-import br.sptrans.scd.auth.application.port.out.PasswordTokenRepository;
-import br.sptrans.scd.auth.application.port.out.UserReader;
-import br.sptrans.scd.auth.application.port.out.UserStatusRepository;
+import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetPasswordComand;
+import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetRequestComand;
+import br.sptrans.scd.auth.application.usecases.auth.AuthenticateUserUseCase;
+import br.sptrans.scd.auth.application.usecases.auth.RequestPasswordResetUseCase;
+import br.sptrans.scd.auth.application.usecases.auth.ResetPasswordUseCase;
 import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.auth.domain.enums.UserStatus;
-import br.sptrans.scd.auth.domain.vo.AccessPolicy;
-import br.sptrans.scd.auth.domain.vo.Credentials;
-import br.sptrans.scd.auth.domain.vo.PersonalInfo;
-import br.sptrans.scd.auth.domain.vo.UserAudit;
-import br.sptrans.scd.shared.exception.AccountBlockedException;
-import br.sptrans.scd.shared.exception.AuthenticationFailedException;
-import br.sptrans.scd.shared.security.PasswordHashUtil;
 
+
+/**
+ * Testes unitários do AuthService.
+ *
+ * AuthService é um orquestrador — seus testes verificam apenas que a delegação
+ * para os Use Cases ocorre corretamente. Os testes de regras de negócio
+ * ficam em AuthenticateUserUseCaseTest, RequestPasswordResetUseCaseTest
+ * e ResetPasswordUseCaseTest.
+ */
 @ExtendWith(MockitoExtension.class)
-public class AuthServiceTest {
+class AuthServiceTest {
 
-    @Mock private UserReader userReader;
-    @Mock private UserStatusRepository userStatusRepository;
-    @Mock private AuthenticationRepository authenticationRepository;
-    @Mock private AuthorizationRepository authorizationRepository;
-    @Mock private GroupUserRepository groupUserRepository;
-    @Mock private PasswordTokenRepository tokenRepository;
-    @Mock private GatewayEmail gatewayEmail;
-    @Mock private PasswordValidator passwordValidator;
+    @Mock private AuthenticateUserUseCase authenticateUserUseCase;
+    @Mock private RequestPasswordResetUseCase requestPasswordResetUseCase;
+    @Mock private ResetPasswordUseCase resetPasswordUseCase;
 
     @InjectMocks
     private AuthService authService;
 
-    private static final String LOGIN = "admin";
-    private static final String PASSWORD = "password123";
-
-    private String hashedPassword;
-
-    @BeforeEach
-    void setUp() {
-        hashedPassword = PasswordHashUtil.hashBcrypt(PASSWORD);
-    }
-
-    private User buildActiveUser() {
-        User user = new User();
-        user.setIdUsuario(1L);
-        user.setCredentials(Credentials.builder()
-                .codLogin(LOGIN)
-                .codSenha(hashedPassword)
-                .numTentativasFalha(0)
-                .build());
-        user.setPersonalInfo(PersonalInfo.builder()
-                .nomUsuario("Admin User")
-                .nomEmail("admin@example.com")
-                .build());
-        user.setAudit(UserAudit.builder()
-                .codStatus(UserStatus.ACTIVE)
-                .dtCriacao(LocalDateTime.now())
-                .idUsuarioManutencao(1L)
-                .build());
-        user.setAccessPolicy(AccessPolicy.semRestricao());
-        return user;
-    }
+    // ── autenticar ────────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("✓ Deve autenticar usuário com credenciais válidas")
-    void shouldAuthenticateWithValidCredentials() {
-        User user = buildActiveUser();
+    @DisplayName("✓ autenticar() deve delegar para AuthenticateUserUseCase")
+    void autenticar_shouldDelegateToUseCase() {
+        AuthComand cmd = new AuthComand("admin", "senha123");
+        User expectedUser = new User();
+        when(authenticateUserUseCase.authenticate(cmd)).thenReturn(expectedUser);
 
-        when(userReader.findByCodLogin(LOGIN))
-                .thenReturn(Optional.of(user));
-
-        User result = authService.autenticar(new AuthComand(LOGIN, PASSWORD));
+        User result = authService.autenticar(cmd);
 
         assertNotNull(result);
-        assertEquals(LOGIN, result.getCodLogin());
-        verify(authenticationRepository).atualizarUltimoAcesso(user.getIdUsuario());
+        assertEquals(expectedUser, result);
+        verify(authenticateUserUseCase).authenticate(cmd);
     }
 
-    @Test
-    @DisplayName("✗ Deve lançar exceção para usuário não encontrado")
-    void shouldThrowExceptionForUnknownUser() {
-        when(userReader.findByCodLogin("unknown"))
-                .thenReturn(Optional.empty());
+    // ── loadUserContext ───────────────────────────────────────────────────────
 
-        assertThrows(AuthenticationFailedException.class,
-                () -> authService.autenticar(new AuthComand("unknown", PASSWORD)));
+    @Test
+    @DisplayName("✓ loadUserContext() deve delegar para AuthenticateUserUseCase")
+    void loadUserContext_shouldDelegateToUseCase() {
+        String codLogin = "admin";
+        AuthUseCase.UserContext expectedContext = new AuthUseCase.UserContext(
+                1L, "Admin", java.util.Set.of(), java.util.Set.of(), java.util.Set.of());
+        when(authenticateUserUseCase.loadUserContext(codLogin)).thenReturn(expectedContext);
+
+        AuthUseCase.UserContext result = authService.loadUserContext(codLogin);
+
+        assertNotNull(result);
+        assertEquals(expectedContext, result);
+        verify(authenticateUserUseCase).loadUserContext(codLogin);
     }
 
+    // ── recoveryResetPassword ─────────────────────────────────────────────────
+
     @Test
-    @DisplayName("✗ Deve bloquear conta após 3 tentativas falhas")
-    void shouldBlockAccountAfterThreeFailedAttempts() {
-        User user = new User();
-        user.setIdUsuario(1L);
-        user.setCredentials(Credentials.builder()
-                .codLogin(LOGIN)
-                .codSenha(PasswordHashUtil.hashBcrypt("correctPassword"))
-                .numTentativasFalha(0)
-                .build());
-        user.setAudit(UserAudit.builder()
-                .codStatus(UserStatus.ACTIVE)
-                .dtCriacao(LocalDateTime.now())
-                .idUsuarioManutencao(1L)
-                .build());
-        user.setAccessPolicy(AccessPolicy.semRestricao());
+    @DisplayName("✓ recoveryResetPassword() deve delegar para RequestPasswordResetUseCase")
+    void recoveryResetPassword_shouldDelegateToUseCase() {
+        ResetRequestComand cmd = new ResetRequestComand("user@example.com");
 
-        when(userReader.findByCodLogin(LOGIN))
-                .thenReturn(Optional.of(user));
+        authService.recoveryResetPassword(cmd);
 
-        // Primeiras duas tentativas lançam AuthenticationFailedException
-        assertThrows(AuthenticationFailedException.class,
-                () -> authService.autenticar(new AuthComand(LOGIN, PASSWORD)));
-        assertThrows(AuthenticationFailedException.class,
-                () -> authService.autenticar(new AuthComand(LOGIN, PASSWORD)));
+        verify(requestPasswordResetUseCase).requestPasswordReset(cmd);
+    }
 
-        // Terceira tentativa deve bloquear a conta
-        assertThrows(AccountBlockedException.class,
-                () -> authService.autenticar(new AuthComand(LOGIN, PASSWORD)));
+    // ── resetPassword ─────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("✓ resetPassword() deve delegar para ResetPasswordUseCase")
+    void resetPassword_shouldDelegateToUseCase() {
+        ResetPasswordComand cmd = new ResetPasswordComand("token-uuid", "NovaSenha@123");
+
+        authService.resetPassword(cmd);
+
+        verify(resetPasswordUseCase).resetPassword(cmd);
     }
 }

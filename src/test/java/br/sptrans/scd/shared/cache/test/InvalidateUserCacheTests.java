@@ -13,7 +13,8 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ActiveProfiles;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.Functionality;
 
 /**
@@ -27,7 +28,7 @@ import br.sptrans.scd.auth.domain.Functionality;
  * 4. Testovação de permissões após atualização de usuário
  */
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles("local")
 @DisplayName("Cache Consistency Tests - @InvalidateUserCache")
 public class InvalidateUserCacheTests {
 
@@ -35,7 +36,7 @@ public class InvalidateUserCacheTests {
     private CacheManager cacheManager;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserPersistencePort userRepository;
 
     private Cache userCache;
     private Cache permissionCache;

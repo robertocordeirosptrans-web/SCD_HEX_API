@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.CreateAddressChannelCommand;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.UpdateAddressChannelCommand;
@@ -37,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class AddressChannelController {
 
     private final AddressChannelUseCase addressChannelUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo endereço do canal")

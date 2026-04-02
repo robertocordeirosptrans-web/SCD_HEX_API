@@ -14,7 +14,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.port.out.TokenValidatorPort;
 import br.sptrans.scd.shared.exception.dto.ErrorResponse;
@@ -30,7 +31,7 @@ import lombok.RequiredArgsConstructor;
  * Responsabilidades:
  *  1. Extrair o token do header Authorization
  *  2. Validar o token via port (TokenValidatorPort)
- *  3. Carregar o usuário via port (UserRepositoryPort)
+ *  3. Carregar o usuário via port (UserPersistencePort)
  *  4. Verificar status do usuário (ativo/bloqueado)
  *  5. Popular o SecurityContextHolder
  *
@@ -43,7 +44,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final TokenValidatorPort tokenValidator;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
     private final AuthorityBuilderAdapter authorityBuilder;
     private final ObjectMapper objectMapper;
 

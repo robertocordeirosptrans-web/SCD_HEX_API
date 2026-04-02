@@ -5,7 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductsTypeMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductsTypeJpaRepository;
 import br.sptrans.scd.product.adapter.port.out.persistence.entity.ProductTypesEntityJpa;
@@ -18,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductsTypeAdapterJpa implements ProductsTypeRepository {
 
     private final ProductsTypeJpaRepository repository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @Override
     public Optional<ProductType> findById(String codTipoProduto) {

@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.FeeFareManagementUseCase;
 import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
@@ -41,7 +41,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
     private final ServiceFeeRepository serviceFeeRepository;
     private final DestinyFeeRepository destinyFeeRepository;
     private final ProductRepository productRepository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
     private final LiminarGateway liminarGateway;
     /**
      * Calcula as taxas administrativas e de serviço para um pedido, aplicando isenção por liminar judicial quando aplicável.

@@ -6,7 +6,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase;
 import br.sptrans.scd.product.application.port.out.repository.ProductsTypeRepository;
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductsTypeService implements ProductsTypeManagementUseCase {
 
     private final ProductsTypeRepository productsTypeRepository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @Override
     public ProductType createProductsType(CreateProductsTypeCommand command) {

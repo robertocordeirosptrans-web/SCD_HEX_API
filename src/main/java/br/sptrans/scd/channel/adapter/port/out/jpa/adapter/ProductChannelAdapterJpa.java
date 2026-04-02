@@ -5,7 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ProductChannelMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.ProductChannelJpaRepository;
@@ -20,7 +21,7 @@ public class ProductChannelAdapterJpa implements ProductChannelRepository {
 
     private final ProductChannelMapper productChannelMapper;
     private final ProductChannelJpaRepository productChannelJpaRepository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @Override
     public Optional<ProductChannel> findById(ProductChannelKey id) {

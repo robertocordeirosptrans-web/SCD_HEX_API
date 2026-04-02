@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.product.application.port.in.ProductUseCase;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateProductCommand;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateVersionCommand;
@@ -42,7 +42,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductController {
 
     private final ProductUseCase productUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo produto")

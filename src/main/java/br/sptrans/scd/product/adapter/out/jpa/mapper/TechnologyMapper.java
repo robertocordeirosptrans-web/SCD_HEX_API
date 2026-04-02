@@ -1,12 +1,13 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
 import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.product.adapter.port.out.persistence.entity.TechnologyEntityJpa;
 import br.sptrans.scd.product.domain.Technology;
 
 public interface TechnologyMapper {
-    static Technology toDomain(TechnologyEntityJpa entity, UserRepository userRepository) {
+    static Technology toDomain(TechnologyEntityJpa entity, UserPersistencePort userRepository) {
         if (entity == null) {
             return null;
         }

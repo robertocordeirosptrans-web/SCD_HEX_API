@@ -5,7 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.product.adapter.out.jpa.mapper.FamilyMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.FamilyJpaRepository;
 import br.sptrans.scd.product.adapter.port.out.persistence.entity.FamilyEntityJpa;
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class FamilyAdapterJpa implements FamilyRepository {
 
     private final FamilyJpaRepository repository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @Override
 

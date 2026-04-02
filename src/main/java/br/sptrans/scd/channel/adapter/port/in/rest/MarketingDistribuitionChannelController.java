@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.CreateMarketingDistribuitionChannelCommand;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.UpdateMarketingDistribuitionChannelCommand;
@@ -39,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 public class MarketingDistribuitionChannelController {
 
     private final MarketingDistribuitionChannelUseCase marketingUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo canal de comercialização/distribuição")

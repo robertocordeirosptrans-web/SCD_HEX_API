@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.BlockCommand;
@@ -50,7 +51,7 @@ public class CreditRequestController {
 
         private final CreditRequestManagementUseCase creditRequestManagementUseCase;
         private final CreditRequestMapper creditRequestMapper;
-        private final UserRepository userRepository;
+        private final UserPersistencePort userRepository;
         private static final Logger log = LoggerFactory.getLogger(CreditRequestController.class);
 
         // Idempotency store (in-memory, para produção use uma implementação persistente)

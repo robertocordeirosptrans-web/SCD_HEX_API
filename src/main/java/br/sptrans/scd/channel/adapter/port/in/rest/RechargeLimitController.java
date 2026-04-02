@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.CreateRechargeLimitCommand;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.UpdateRechargeLimitCommand;
@@ -41,7 +41,7 @@ import lombok.RequiredArgsConstructor;
 public class RechargeLimitController {
 
     private final RechargeLimitUseCase rechargeLimitUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo limite de recarga")

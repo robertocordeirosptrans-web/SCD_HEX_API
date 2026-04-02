@@ -1,11 +1,11 @@
 package br.sptrans.scd.auth.application.port.out;
 
 /**
- * Porto de saída — rastreamento de tentativas e sessão (autenticação).
+ * Porta de Saída — rastreamento de tentativas e sessão (autenticação).
  * <p>Segregado conforme ISP: agrupa apenas operações relacionadas ao ciclo
  * de login/falha/bloqueio, separadas de leitura e escrita de dados cadastrais.</p>
  */
-public interface AuthenticationRepository {
+public interface AuthenticationPort {
 
     /**
      * Atualiza o contador de tentativas falhas e o status da conta

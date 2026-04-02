@@ -7,18 +7,18 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import br.sptrans.scd.auth.application.port.out.GatewayEmail;
+import br.sptrans.scd.auth.application.port.out.EmailSendingPort;
 import br.sptrans.scd.shared.exception.EmailGatewayException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 /**
- * Adaptador de Saída SMTP — implementa GatewayEmail.
+ * Adaptador de Saída SMTP — implementa EmailSendingPort.
  * Usa JavaMailSender do Spring para envio via SMTP.
  * Conforme US001: envia e-mail somente para endereços cadastrados na base.
  */
 @Component
-public class AdapterEmailSmtp implements GatewayEmail {
+public class AdapterEmailSmtp implements EmailSendingPort {
 
 
 

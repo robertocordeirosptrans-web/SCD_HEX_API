@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.SalesChannelMapper;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.CreateSalesChannelCommand;
@@ -44,7 +44,7 @@ import lombok.RequiredArgsConstructor;
 public class SalesChannelController {
 
     private final SalesChannelUseCase salesChannelUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
     private final SalesChannelMapper salesChannelMapper;
 
     @PostMapping

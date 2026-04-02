@@ -67,6 +67,6 @@ public interface UserRepositoryJpa extends JpaRepository<UserEntityJpa, Long>, J
      */
     Optional<UserEntityJpa> findByNomEmail(String nomEmail);
 
-
+    Optional<UserEntityJpa> findByCodCpf(String codCpf);
 
 }

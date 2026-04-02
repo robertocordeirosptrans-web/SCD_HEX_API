@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChDTO;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChResponseDTO;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ProductChannelMapper;
@@ -46,7 +46,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductChannelController {
 
     private final ProductChannelUseCase productChannelUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
     private final ProductChannelMapper productChannelMapper;
 
 

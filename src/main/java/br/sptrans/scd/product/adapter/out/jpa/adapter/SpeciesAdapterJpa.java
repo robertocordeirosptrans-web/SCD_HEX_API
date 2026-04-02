@@ -5,7 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.product.adapter.out.jpa.mapper.SpeciesMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.SpeciesJpaRepository;
 import br.sptrans.scd.product.application.port.out.repository.SpeciesRepository;
@@ -17,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class SpeciesAdapterJpa implements SpeciesRepository {
 
     private final SpeciesJpaRepository repository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @Override
     public Optional<Species> findById(String codEspecie) {
