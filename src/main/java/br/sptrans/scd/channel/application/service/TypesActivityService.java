@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase;
-import br.sptrans.scd.channel.application.port.out.TypesActivityRepository;
+import br.sptrans.scd.channel.application.port.out.TypesActivityPersistencePort;
+
 import br.sptrans.scd.channel.domain.TypesActivity;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
@@ -18,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TypesActivityService implements TypesActivityUseCase {
 
-    private final TypesActivityRepository typesActivityRepository;
+    private final TypesActivityPersistencePort typesActivityRepository;
 
     @Override
     public TypesActivity createTypesActivity(CreateTypesActivityCommand command) {

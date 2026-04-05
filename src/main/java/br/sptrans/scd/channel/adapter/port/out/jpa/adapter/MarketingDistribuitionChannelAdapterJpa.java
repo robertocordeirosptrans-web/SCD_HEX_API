@@ -9,14 +9,14 @@ import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.MarketingDistribuition
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.MarketingDistribuitionChannelJpaRepository;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.MarketingDistribuitionChannelEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.MarketingDistribuitionChannelKeyEntityJpa;
-import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelRepository;
+import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelPersistencePort;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannelKey;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class MarketingDistribuitionChannelAdapterJpa implements MarketingDistribuitionChannelRepository {
+public class MarketingDistribuitionChannelAdapterJpa implements MarketingDistribuitionChannelPersistencePort {
 
     private final MarketingDistribuitionChannelJpaRepository jpaRepository;
     private final MarketingDistribuitionChannelMapper mapper;

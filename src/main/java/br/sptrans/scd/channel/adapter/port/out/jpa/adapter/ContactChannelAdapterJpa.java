@@ -5,8 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 import lombok.RequiredArgsConstructor;
-
-import br.sptrans.scd.channel.application.port.out.ContactChannelRepository;
+import br.sptrans.scd.channel.application.port.out.ContactChannelPersistencePort;
 import br.sptrans.scd.channel.domain.ContactChannel;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.ContactChannelJpaRepository;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ContactChannelEntityJpa;
@@ -14,7 +13,7 @@ import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ContactChannelMapper;
 
 @Repository
 @RequiredArgsConstructor
-public class ContactChannelAdapterJpa implements ContactChannelRepository {
+public class ContactChannelAdapterJpa implements ContactChannelPersistencePort {
 
     private final ContactChannelJpaRepository contactChannelJpaRepository;
     private final ContactChannelMapper contactChannelMapper;

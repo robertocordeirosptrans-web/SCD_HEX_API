@@ -12,7 +12,8 @@ import br.sptrans.scd.channel.adapter.port.out.jpa.repository.AddressChannelJpaR
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.SalesChannelJpaRepository;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AddressChannelEntityJpa;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
-import br.sptrans.scd.channel.application.port.out.AddressChannelRepository;
+import br.sptrans.scd.channel.application.port.out.AddressChannelPersistencePort;
+
 import br.sptrans.scd.channel.domain.AddressChannel;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class AddressChannelAdapterJpa implements AddressChannelRepository {
+public class AddressChannelAdapterJpa implements AddressChannelPersistencePort {
     private final AddressChannelJpaRepository repository;
     private final AddressChannelMapper addressChannelMapper;
     private final SalesChannelJpaRepository salesChannelJpaRepository;

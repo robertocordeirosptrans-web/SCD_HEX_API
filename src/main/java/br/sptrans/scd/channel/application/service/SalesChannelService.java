@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
+import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.application.port.out.SalesChannelRepository;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.TypesActivity;
@@ -23,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SalesChannelService implements SalesChannelUseCase {
 
-    private final SalesChannelRepository salesChannelRepository;
+    private final SalesChannelPersistencePort salesChannelRepository;
     private final UserResolverHelperImpl userResolverHelper;
 
     @Override

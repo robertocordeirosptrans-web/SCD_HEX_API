@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase;
-import br.sptrans.scd.channel.application.port.out.AddressChannelRepository;
+import br.sptrans.scd.channel.application.port.out.AddressChannelPersistencePort;
 import br.sptrans.scd.channel.domain.AddressChannel;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AddressChannelService implements AddressChannelUseCase {
 
-    private final AddressChannelRepository addressChannelRepository;
+    private final AddressChannelPersistencePort addressChannelRepository;
     private final UserResolverHelperImpl userResolverHelper;
 
     @Override

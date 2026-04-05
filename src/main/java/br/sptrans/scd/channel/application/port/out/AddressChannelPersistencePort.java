@@ -5,8 +5,7 @@ import java.util.Optional;
 
 import br.sptrans.scd.channel.domain.AddressChannel;
 
-public interface AddressChannelRepository {
-
+public interface AddressChannelPersistencePort {
     Optional<AddressChannel> findById(String codEndereco);
 
     boolean existsById(String codEndereco);
@@ -16,4 +15,5 @@ public interface AddressChannelRepository {
     AddressChannel save(AddressChannel addressChannel);
 
     void deleteById(String codEndereco);
+
 }

@@ -7,7 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase;
-import br.sptrans.scd.channel.application.port.out.AgreementValidityRepository;
+import br.sptrans.scd.channel.application.port.out.AgreementValidityPersistencePort;
+
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.channel.domain.AgreementValidityKey;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
@@ -19,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AgreementValidityService implements AgreementValidityUseCase {
 
-    private final AgreementValidityRepository repository;
+    private final AgreementValidityPersistencePort repository;
 
     @Override
     public AgreementValidity createAgreementValidity(CreateAgreementValidityCommand cmd) {

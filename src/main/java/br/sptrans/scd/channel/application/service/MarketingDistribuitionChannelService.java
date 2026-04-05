@@ -7,7 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase;
-import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelRepository;
+import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelPersistencePort;
+
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannelKey;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
@@ -19,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MarketingDistribuitionChannelService implements MarketingDistribuitionChannelUseCase {
 
-    private final MarketingDistribuitionChannelRepository repository;
+    private final MarketingDistribuitionChannelPersistencePort repository;
 
     @Override
     public MarketingDistribuitionChannel createMarketingDistribuitionChannel(

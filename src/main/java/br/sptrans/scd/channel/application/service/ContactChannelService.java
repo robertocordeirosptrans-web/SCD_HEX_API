@@ -8,7 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase;
-import br.sptrans.scd.channel.application.port.out.ContactChannelRepository;
+import br.sptrans.scd.channel.application.port.out.ContactChannelPersistencePort;
+
 import br.sptrans.scd.channel.domain.ContactChannel;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ContactChannelService implements ContactChannelUseCase {
 
-    private final ContactChannelRepository contactChannelRepository;
+    private final ContactChannelPersistencePort contactChannelRepository;
     private final UserResolverHelperImpl userResolverHelper;
 
     @Override

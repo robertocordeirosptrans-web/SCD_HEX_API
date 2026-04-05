@@ -9,6 +9,7 @@ import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ProductChannelMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.ProductChannelJpaRepository;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
+import br.sptrans.scd.channel.application.port.out.ProductChannelPersistencePort;
 import br.sptrans.scd.channel.application.port.out.ProductChannelRepository;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
@@ -19,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class ProductChannelAdapterJpa implements ProductChannelRepository {
+public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
 
     private final ProductChannelMapper productChannelMapper;
     private final ProductChannelJpaRepository productChannelJpaRepository;
@@ -91,10 +92,6 @@ public class ProductChannelAdapterJpa implements ProductChannelRepository {
         return productChannelJpaRepository.existsById(productChannelMapper.toEntityKey(id));
     }
 
-    @Override
-    public Optional<ProductChannel> findByIdOtimized(String codCanal, String codProduto) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 
     @Override
     public List<ProductChannelProjection> findCompletoByCanal(String codCanal) {
