@@ -3,30 +3,76 @@ package br.sptrans.scd.channel.domain;
 import java.time.LocalDateTime;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 public class MarketingDistribuitionChannel {
 
-    private MarketingDistribuitionChannelKey id;
-    
-    private String codStatus;
+    private final MarketingDistribuitionChannelKey id;
 
-    private LocalDateTime dtCadastro;
+    @Setter private String codStatus;
 
-    private LocalDateTime dtManutencao;
+    private final LocalDateTime dtCadastro;
 
-    private User idUsuarioCadastro;
+    @Setter private LocalDateTime dtManutencao;
 
-    private User idUsuarioManutencao;
+    private final User idUsuarioCadastro;
 
-    private String codCanalComercializacao;
+    @Setter private User idUsuarioManutencao;
 
-    private String codCanalDistribuicao;
+    @Setter private String codCanalComercializacao;
+
+    @Setter private String codCanalDistribuicao;
+
+    // -------------------------------------------------------------------------
+    // Consultas de status
+    // -------------------------------------------------------------------------
+
+    public boolean isAtivo() {
+        try {
+            return ChannelDomainStatus.ACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isInativo() {
+        try {
+            return ChannelDomainStatus.INACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Transições de status
+    // -------------------------------------------------------------------------
+
+    /**
+     * Ativa a distribuição de marketing entre canais.
+     *
+     * @param operador usuário responsável pela operação
+     */
+    public void activate(User operador) {
+        this.codStatus = ChannelDomainStatus.ACTIVE.getCode();
+        this.idUsuarioManutencao = operador;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    /**
+     * Inativa a distribuição de marketing entre canais.
+     *
+     * @param operador usuário responsável pela operação
+     */
+    public void inactivate(User operador) {
+        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.idUsuarioManutencao = operador;
+        this.dtManutencao = LocalDateTime.now();
+    }
 }

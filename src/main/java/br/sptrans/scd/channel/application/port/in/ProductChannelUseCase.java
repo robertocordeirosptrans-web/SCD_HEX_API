@@ -2,8 +2,9 @@ package br.sptrans.scd.channel.application.port.in;
 
 import java.util.List;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
+import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
+import br.sptrans.scd.auth.domain.User;
 
 public interface ProductChannelUseCase {
 
@@ -39,7 +40,7 @@ public interface ProductChannelUseCase {
             Integer codConvenio,
             Integer codTipoOperHM,
             String flgCarac,
-            Long idUsuarioCadastro) {}
+            User usuarioCadastro) {}
 
     record UpdateProductChannelCommand(
             Integer qtdLimiteComercializacao,
@@ -53,5 +54,5 @@ public interface ProductChannelUseCase {
             Integer codConvenio,
             Integer codTipoOperHM,
             String flgCarac,
-            Long idUsuarioManutencao) {}
+            User usuarioManutencao) {}
 }

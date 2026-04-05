@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.CreateMarketingDistribuitionChannelCommand;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.UpdateMarketingDistribuitionChannelCommand;
@@ -48,13 +49,13 @@ public class MarketingDistribuitionChannelController {
     })
     public ResponseEntity<MarketingDistribuitionChannel> createMarketingDistribuitionChannel(
             @RequestBody CreateMarketingDistribuitionChannelRequest request) {
-        Long idUsuario = userResolverHelper.getCurrentUserId();
+        User usuario = userResolverHelper.getCurrentUser();
         MarketingDistribuitionChannel result = marketingUseCase.createMarketingDistribuitionChannel(
                 new CreateMarketingDistribuitionChannelCommand(
                         request.codCanalComercializacao(),
                         request.codCanalDistribuicao(),
                         request.codStatus(),
-                        idUsuario));
+                        usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
@@ -68,12 +69,12 @@ public class MarketingDistribuitionChannelController {
             @PathVariable String codCanalComercializacao,
             @PathVariable String codCanalDistribuicao,
             @RequestBody UpdateMarketingDistribuitionChannelRequest request) {
-        Long idUsuario = userResolverHelper.getCurrentUserId();
+        User usuario = userResolverHelper.getCurrentUser();
         MarketingDistribuitionChannel result = marketingUseCase.updateMarketingDistribuitionChannel(
                 codCanalComercializacao, codCanalDistribuicao,
                 new UpdateMarketingDistribuitionChannelCommand(
                         request.codStatus(),
-                        idUsuario));
+                        usuario));
         return ResponseEntity.ok(result);
     }
 

@@ -30,7 +30,7 @@ public class ContactChannelService implements ContactChannelUseCase {
             throw new ChannelException(ChannelErrorType.CONTACT_CHANNEL_CODE_ALREADY_EXISTS);
         }
 
-        User usuario = userResolverHelper.resolve(cmd.idUsuario());
+        User usuario = cmd.usuario();
         SalesChannel canal = cmd.codCanal() != null
             ? new SalesChannel(cmd.codCanal(), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
             : null;

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import br.sptrans.scd.channel.domain.RechargeLimit;
+import br.sptrans.scd.auth.domain.User;
 
 public interface RechargeLimitUseCase {
 
@@ -33,7 +34,7 @@ public interface RechargeLimitUseCase {
             BigDecimal vlMaximoRecarga,
             BigDecimal vlMaximoSaldo,
             String codStatus,
-            Long idUsuario) {}
+            User usuario) {}
 
     record UpdateRechargeLimitCommand(
             LocalDateTime dtInicioValidade,

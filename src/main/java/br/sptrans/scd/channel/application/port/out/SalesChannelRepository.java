@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import br.sptrans.scd.channel.domain.SalesChannel;
+import br.sptrans.scd.auth.domain.User;
 
 public interface SalesChannelRepository {
 
@@ -15,7 +16,7 @@ public interface SalesChannelRepository {
 
     SalesChannel save(SalesChannel salesChannel);
 
-    void updateStatus(String codCanal, String stCanais, Long idUsuario);
+    void updateStatus(String codCanal, String stCanais, User usuario);
 
     void deleteById(String codCanal);
 

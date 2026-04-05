@@ -9,14 +9,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 @EqualsAndHashCode
 public class AgreementValidityKey implements Serializable{
 
-    private String codCanal;
+    private final String codCanal;
 
-    private String codProduto;
+    private final String codProduto;
 
 }

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.CreateAddressChannelCommand;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.UpdateAddressChannelCommand;
@@ -42,7 +43,7 @@ public class AddressChannelController {
     @Operation(summary = "Cadastra um novo endereço do canal")
     public ResponseEntity<AddressChannel> createAddressChannel(
             @RequestBody CreateAddressChannelRequest request) {
-        Long idUsuario = userResolverHelper.getCurrentUserId();
+        User usuario = userResolverHelper.getCurrentUser();
         AddressChannel result = addressChannelUseCase.createAddressChannel(new CreateAddressChannelCommand(
                 request.codEndereco(),
                 request.codEmpregador(),
@@ -60,7 +61,7 @@ public class AddressChannelController {
                 request.stEnderecos(),
                 request.desNumero(),
                 request.codCanal(),
-                idUsuario));
+                usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 

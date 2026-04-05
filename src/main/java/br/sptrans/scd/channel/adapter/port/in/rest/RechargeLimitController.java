@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.CreateRechargeLimitCommand;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.UpdateRechargeLimitCommand;
@@ -50,7 +51,7 @@ public class RechargeLimitController {
         })
     public ResponseEntity<RechargeLimit> createRechargeLimit(
             @RequestBody CreateRechargeLimitRequest request) {
-        Long idUsuario = userResolverHelper.getCurrentUserId();
+        User usuario = userResolverHelper.getCurrentUser();
         RechargeLimit result = rechargeLimitUseCase.createRechargeLimit(
                 new CreateRechargeLimitCommand(
                         request.codCanal(),
@@ -61,7 +62,7 @@ public class RechargeLimitController {
                         request.vlMaximoRecarga(),
                         request.vlMaximoSaldo(),
                         request.codStatus(),
-                        idUsuario));
+                        usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 

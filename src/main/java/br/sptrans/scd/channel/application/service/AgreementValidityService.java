@@ -34,7 +34,7 @@ public class AgreementValidityService implements AgreementValidityUseCase {
                 cmd.dtInicioValidade(),
                 cmd.codStatus(),
                 LocalDateTime.now(),
-                cmd.idUsuario());
+                cmd.usuario());
 
         return repository.save(entity);
     }
@@ -49,7 +49,7 @@ public class AgreementValidityService implements AgreementValidityUseCase {
         existing.setDtFimValidade(cmd.dtFimValidade());
         existing.setDtInicioValidade(cmd.dtInicioValidade());
         existing.setCodStatus(cmd.codStatus());
-        existing.setIdUsuario(cmd.idUsuario());
+        existing.setUsuario(cmd.usuario());
 
         return repository.save(existing);
     }

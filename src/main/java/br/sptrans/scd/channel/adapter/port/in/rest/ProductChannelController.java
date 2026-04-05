@@ -19,10 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChDTO;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChResponseDTO;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ProductChannelMapper;
-import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.CreateProductChannelCommand;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.UpdateProductChannelCommand;
+import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.shared.dto.PageResponse;
@@ -57,7 +58,7 @@ public class ProductChannelController {
     })
     public ResponseEntity<ProductChannel> createProductChannel(
             @RequestBody CreateProductChannelRequest request) {
-        Long idUsuario = userResolverHelper.getCurrentUserId();
+        User usuario = userResolverHelper.getCurrentUser();
         ProductChannel result = productChannelUseCase.createProductChannel(
                 new CreateProductChannelCommand(
                         request.codCanal(),
@@ -73,7 +74,7 @@ public class ProductChannelController {
                         request.codConvenio(),
                         request.codTipoOperHM(),
                         request.flgCarac(),
-                        idUsuario));
+                        usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
@@ -87,7 +88,7 @@ public class ProductChannelController {
             @PathVariable String codCanal,
             @PathVariable String codProduto,
             @RequestBody UpdateProductChannelRequest request) {
-        Long idUsuario = userResolverHelper.getCurrentUserId();
+        User usuario = userResolverHelper.getCurrentUser();
         ProductChannel result = productChannelUseCase.updateProductChannel(codCanal, codProduto,
                 new UpdateProductChannelCommand(
                         request.qtdLimiteComercializacao(),
@@ -101,7 +102,7 @@ public class ProductChannelController {
                         request.codConvenio(),
                         request.codTipoOperHM(),
                         request.flgCarac(),
-                        idUsuario));
+                        usuario));
         return ResponseEntity.ok(result);
     }
 

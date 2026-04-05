@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase.CreateContactChannelCommand;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase.UpdateContactChannelCommand;
@@ -48,7 +49,7 @@ public class ContactChannelController {
         })
     public ResponseEntity<ContactChannel> createContactChannel(
             @RequestBody CreateContactChannelRequest request) {
-        Long idUsuario = userResolverHelper.getCurrentUserId();
+        User usuario = userResolverHelper.getCurrentUser();
         ContactChannel result = contactChannelUseCase.createContactChannel(new CreateContactChannelCommand(
                 request.codContato(),
                 request.codFornecedor(),
@@ -65,7 +66,7 @@ public class ContactChannelController {
                 request.codTipoDocumento(),
                 request.codDocumento(),
                 request.codCanal(),
-                idUsuario));
+                usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 

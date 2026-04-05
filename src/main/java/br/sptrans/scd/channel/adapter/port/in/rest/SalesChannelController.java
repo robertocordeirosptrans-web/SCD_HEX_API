@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.CanalResponseDTO;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.CreateSalesChannelRequest;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.UpdateSalesChannelRequest;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.SalesChannelMapper;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.CreateSalesChannelCommand;
@@ -54,7 +57,7 @@ public class SalesChannelController {
         })
     public ResponseEntity<CanalResponseDTO> createSalesChannel(
             @RequestBody CreateSalesChannelRequest request) {
-        Long idUsuario = userResolverHelper.getCurrentUserId();
+        var usuario = userResolverHelper.getCurrentUser();
         SalesChannel result = salesChannelUseCase.createSalesChannel(new CreateSalesChannelCommand(
                 request.codCanal(),
                 request.codDocumento(),
@@ -79,7 +82,7 @@ public class SalesChannelController {
                 request.flgPagtoFuturo(),
                 request.codClassificacaoPessoa(),
                 request.codAtividade(),
-                idUsuario));
+                usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(salesChannelMapper.toResponseDTO(result));
     }
 
@@ -88,7 +91,7 @@ public class SalesChannelController {
     public ResponseEntity<CanalResponseDTO> updateSalesChannel(
             @PathVariable String codCanal,
             @RequestBody UpdateSalesChannelRequest request) {
-        Long idUsuario = userResolverHelper.getCurrentUserId();
+        var usuario = userResolverHelper.getCurrentUser();
         SalesChannel result = salesChannelUseCase.updateSalesChannel(codCanal, new UpdateSalesChannelCommand(
                 request.codCanalSuperior(),
                 request.desCanal(),
@@ -110,7 +113,7 @@ public class SalesChannelController {
                 request.flgPagtoFuturo(),
                 request.codClassificacaoPessoa(),
                 request.codAtividade(),
-                idUsuario));
+                usuario));
         return ResponseEntity.ok(salesChannelMapper.toResponseDTO(result));
     }
 
@@ -137,7 +140,7 @@ public class SalesChannelController {
     @Operation(summary = "Ativa um canal de venda")
     public ResponseEntity<Void> activateSalesChannel(
             @PathVariable String codCanal) {
-        salesChannelUseCase.activateSalesChannel(codCanal, userResolverHelper.getCurrentUserId());
+        salesChannelUseCase.activateSalesChannel(codCanal, userResolverHelper.getCurrentUser());
         return ResponseEntity.noContent().build();
     }
 
@@ -145,7 +148,7 @@ public class SalesChannelController {
     @Operation(summary = "Inativa um canal de venda")
     public ResponseEntity<Void> inactivateSalesChannel(
             @PathVariable String codCanal) {
-        salesChannelUseCase.inactivateSalesChannel(codCanal, userResolverHelper.getCurrentUserId());
+        salesChannelUseCase.inactivateSalesChannel(codCanal, userResolverHelper.getCurrentUser());
         return ResponseEntity.noContent().build();
     }
 
@@ -156,51 +159,6 @@ public class SalesChannelController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Request DTOs ──────────────────────────────────────────────────────────
-    public record CreateSalesChannelRequest(
-            String codCanal,
-            String codDocumento,
-            String codCanalSuperior,
-            String desCanal,
-            String codTipoDocumento,
-            String desRazaoSocial,
-            String desNomeFantasia,
-            BigDecimal vlCaucao,
-            LocalDate dtInicioCaucao,
-            LocalDate dtFimCaucao,
-            Integer seqNivel,
-            String flgCriticaNumlote,
-            Integer flgLimiteDias,
-            String flgProcessamentoAutomatico,
-            String flgProcessamentoParcial,
-            String flgSaldoDevedor,
-            Integer numMinutoIniLibRecarga,
-            Integer numMinutoFimLibRecarga,
-            String flgEmiteReciboPedido,
-            String flgSupercanal,
-            String flgPagtoFuturo,
-            String codClassificacaoPessoa,
-            String codAtividade) {}
 
-    public record UpdateSalesChannelRequest(
-            String codCanalSuperior,
-            String desCanal,
-            String desRazaoSocial,
-            String desNomeFantasia,
-            BigDecimal vlCaucao,
-            LocalDate dtInicioCaucao,
-            LocalDate dtFimCaucao,
-            Integer seqNivel,
-            String flgCriticaNumlote,
-            Integer flgLimiteDias,
-            String flgProcessamentoAutomatico,
-            String flgProcessamentoParcial,
-            String flgSaldoDevedor,
-            Integer numMinutoIniLibRecarga,
-            Integer numMinutoFimLibRecarga,
-            String flgEmiteReciboPedido,
-            String flgSupercanal,
-            String flgPagtoFuturo,
-            String codClassificacaoPessoa,
-            String codAtividade) {}
+ 
 }

@@ -3,48 +3,48 @@ package br.sptrans.scd.channel.domain;
 import java.time.LocalDateTime;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 public class ProductChannel {
 
-    private ProductChannelKey id;
+    private final ProductChannelKey id;
 
-    private Integer qtdLimiteComercializacao;
+    @Setter private Integer qtdLimiteComercializacao;
 
-    private Integer qtdMinimaEstoque;
+    @Setter private Integer qtdMinimaEstoque;
 
-    private Integer qtdMaximaEstoque;
+    @Setter private Integer qtdMaximaEstoque;
 
-    private Integer qtdMinimaRessuprimento;
+    @Setter private Integer qtdMinimaRessuprimento;
 
-    private Integer qtdMaximaRessuprimento;
+    @Setter private Integer qtdMaximaRessuprimento;
 
-    private Integer codOrgaoEmissor;
+    @Setter private Integer codOrgaoEmissor;
 
-    private Integer vlFace;
+    @Setter private Integer vlFace;
 
-    private String codStatus;
+    @Setter private String codStatus;
 
-    private LocalDateTime dtCadastro;
+    private final LocalDateTime dtCadastro;
 
-    private LocalDateTime dtManutencao;
+    @Setter private LocalDateTime dtManutencao;
 
-    private Integer codConvenio;
+    @Setter private Integer codConvenio;
 
-    private Integer codTipoOperHM;
+    @Setter private Integer codTipoOperHM;
 
-    private String flgCarac;
+    @Setter private String flgCarac;
 
-    private User idUsuarioCadastro;
+    @Setter private  User idUsuarioCadastro;
 
-    private User idUsuarioManutencao;
+    @Setter private User idUsuarioManutencao;
 
     // --- Métodos de Fábrica e Atualização (DDD) ---
 
@@ -115,5 +115,51 @@ public class ProductChannel {
         this.codTipoOperHM = codTipoOperHM;
         this.flgCarac = flgCarac;
         this.idUsuarioManutencao = idUsuarioManutencao;
+    }
+
+    // -------------------------------------------------------------------------
+    // Consultas de status
+    // -------------------------------------------------------------------------
+
+    public boolean isAtivo() {
+        try {
+            return ChannelDomainStatus.ACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isInativo() {
+        try {
+            return ChannelDomainStatus.INACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Transições de status
+    // -------------------------------------------------------------------------
+
+    /**
+     * Ativa o produto no canal.
+     *
+     * @param operador usuário responsável pela operação
+     */
+    public void activate(User operador) {
+        this.codStatus = ChannelDomainStatus.ACTIVE.getCode();
+        this.idUsuarioManutencao = operador;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    /**
+     * Inativa o produto no canal.
+     *
+     * @param operador usuário responsável pela operação
+     */
+    public void inactivate(User operador) {
+        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.idUsuarioManutencao = operador;
+        this.dtManutencao = LocalDateTime.now();
     }
 }

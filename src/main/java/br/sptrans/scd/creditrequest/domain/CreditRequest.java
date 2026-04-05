@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -74,4 +75,106 @@ public class CreditRequest {
     private BigDecimal vlEvento;
 
     private List<CreditRequestItems> itens = new ArrayList<>();
+
+    // -------------------------------------------------------------------------
+    // Consultas de estado
+    // -------------------------------------------------------------------------
+
+    public boolean isCancelado() {
+        return "S".equalsIgnoreCase(flgCanc)
+            || SituationCreditRequest.CANCELADO.getCode().equals(codSituacao);
+    }
+
+    public boolean isBloqueado() {
+        return "S".equalsIgnoreCase(flgBloq)
+            || SituationCreditRequest.BLOQUEADO.getCode().equals(codSituacao);
+    }
+
+    public boolean isAtendido() {
+        return SituationCreditRequest.ATENDIDO_TOTALMENTE.getCode().equals(codSituacao)
+            || SituationCreditRequest.ATENDIDO_PARCIALMENTE.getCode().equals(codSituacao);
+    }
+
+    public boolean isPendenteLiquidacao() {
+        return SituationCreditRequest.ACEITO_PENDENTE_LIQUIDACAO.getCode().equals(codSituacao);
+    }
+
+    public boolean isLiberadoParaRecarga() {
+        return SituationCreditRequest.LIBERADO_PARA_RECARGA.getCode().equals(codSituacao);
+    }
+
+    // -------------------------------------------------------------------------
+    // Transições de estado
+    // -------------------------------------------------------------------------
+
+    /**
+     * Solicita o cancelamento da solicitação de crédito.
+     *
+     * <p>Regra de negócio: não é permitido cancelar uma solicitação já atendida.</p>
+     *
+     * @param idUsuario identificador do usuário que solicitou o cancelamento
+     */
+    public void cancelar(Long idUsuario) {
+        if (isAtendido()) {
+            throw new IllegalStateException(
+                "Não é possível cancelar uma solicitação já atendida");
+        }
+        this.flgCanc = "S";
+        this.codSituacao = SituationCreditRequest.CANCELAMENTO_SOLICITADO.getCode();
+        this.idUsuarioManutencao = idUsuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    /**
+     * Solicita o bloqueio da solicitação de crédito.
+     *
+     * <p>Regra de negócio: não é permitido bloquear uma solicitação cancelada.</p>
+     *
+     * @param idUsuario identificador do usuário que solicitou o bloqueio
+     */
+    public void bloquear(Long idUsuario) {
+        if (isCancelado()) {
+            throw new IllegalStateException(
+                "Não é possível bloquear uma solicitação cancelada");
+        }
+        this.flgBloq = "S";
+        this.codSituacao = SituationCreditRequest.BLOQUEIO_SOLICITADO.getCode();
+        this.idUsuarioManutencao = idUsuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    /**
+     * Solicita o desbloqueio da solicitação de crédito.
+     *
+     * @param idUsuario identificador do usuário que solicitou o desbloqueio
+     */
+    public void desbloquear(Long idUsuario) {
+        this.flgBloq = "N";
+        this.codSituacao = SituationCreditRequest.DESBLOQUEIO_SOLICITADO.getCode();
+        this.idUsuarioManutencao = idUsuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    // -------------------------------------------------------------------------
+    // Gerenciamento de itens
+    // -------------------------------------------------------------------------
+
+    /**
+     * Adiciona um item à solicitação de crédito.
+     *
+     * <p>Regra de negócio: não é permitido adicionar itens a uma solicitação cancelada ou bloqueada.</p>
+     *
+     * @param item item a ser adicionado
+     */
+    public void addItem(CreditRequestItems item) {
+        if (isCancelado()) {
+            throw new IllegalStateException(
+                "Não é possível adicionar itens a uma solicitação cancelada");
+        }
+        if (isBloqueado()) {
+            throw new IllegalStateException(
+                "Não é possível adicionar itens a uma solicitação bloqueada");
+        }
+        this.itens.add(item);
+    }
 }

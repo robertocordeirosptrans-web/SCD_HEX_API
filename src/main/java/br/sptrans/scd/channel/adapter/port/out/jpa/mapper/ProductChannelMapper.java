@@ -2,155 +2,35 @@ package br.sptrans.scd.channel.adapter.port.out.jpa.mapper;
 
 import java.util.List;
 
-import org.springframework.stereotype.Component;
-
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChResponseDTO;
-import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ProductChannelEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ProductChannelKeyEntityJpa;
+import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
 
-@Component
-public class ProductChannelMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface ProductChannelMapper {
 
-    public ProductChannelEntityJpa toEntity(ProductChannel domain) {
-        if (domain == null) {
-            return null;
-        }
-        ProductChannelEntityJpa entity = new ProductChannelEntityJpa();
-        entity.setId(toEntityKey(domain.getId()));
-        entity.setQtdLimiteComercializacao(domain.getQtdLimiteComercializacao());
-        entity.setQtdMinimaEstoque(domain.getQtdMinimaEstoque());
-        entity.setQtdMaximaEstoque(domain.getQtdMaximaEstoque());
-        entity.setQtdMinimaRessuprimento(domain.getQtdMinimaRessuprimento());
-        entity.setQtdMaximaRessuprimento(domain.getQtdMaximaRessuprimento());
-        entity.setCodOrgaoEmissor(domain.getCodOrgaoEmissor());
-        entity.setVlFace(domain.getVlFace());
-        entity.setCodStatus(domain.getCodStatus());
-        // Adicione outros campos conforme necessário
-        return entity;
-    }
+    @Mapping(source = "idUsuarioCadastro.idUsuario", target = "idUsuarioCadastro")
+    @Mapping(source = "idUsuarioManutencao.idUsuario", target = "idUsuarioManutencao")
+    ProductChannelEntityJpa toEntity(ProductChannel domain);
 
-    public ProductChannel toDomain(ProductChannelEntityJpa entity, UserPersistencePort userR) {
-        if (entity == null) {
-            return null;
-        }
-        ProductChannel domain = new ProductChannel();
-        domain.setId(toDomainKey(entity.getId()));
-        domain.setQtdLimiteComercializacao(entity.getQtdLimiteComercializacao());
-        domain.setQtdMinimaEstoque(entity.getQtdMinimaEstoque());
-        domain.setQtdMaximaEstoque(entity.getQtdMaximaEstoque());
-        domain.setQtdMinimaRessuprimento(entity.getQtdMinimaRessuprimento());
-        domain.setQtdMaximaRessuprimento(entity.getQtdMaximaRessuprimento());
-        domain.setCodOrgaoEmissor(entity.getCodOrgaoEmissor());
-        domain.setVlFace(entity.getVlFace());
-        domain.setCodStatus(entity.getCodStatus());
-        domain.setCodTipoOperHM(entity.getCodTipoOperHM());
-        domain.setDtCadastro(entity.getDtCadastro());
-        domain.setDtManutencao(entity.getDtManutencao());
-        domain.setFlgCarac(entity.getFlgCarac());
-        domain.setCodConvenio(entity.getCodConvenio());
-        if (entity.getIdUsuarioCadastro() != null) {
-            User user = userR.findById(entity.getIdUsuarioCadastro()).orElse(null);
-            domain.setIdUsuarioCadastro(user);
-        }
+    @Mapping(source = "entity.codStatus", target = "codStatus")
+    @Mapping(source = "userCad", target = "idUsuarioCadastro")
+    @Mapping(source = "userMan", target = "idUsuarioManutencao")
+    ProductChannel toDomain(ProductChannelEntityJpa entity, User userCad, User userMan);
 
-        if (entity.getIdUsuarioManutencao()!= null) {
-            User user = userR.findById(entity.getIdUsuarioManutencao()).orElse(null);
-            domain.setIdUsuarioManutencao(user);
-        }
-        // Adicione outros campos conforme necessário
-        return domain;
-    }
+    ProductChannelKeyEntityJpa toEntityKey(ProductChannelKey key);
 
-    public ProductChannelKeyEntityJpa toEntityKey(ProductChannelKey key) {
-        if (key == null) {
-            return null;
-        }
-        return new ProductChannelKeyEntityJpa(key.getCodCanal(), key.getCodProduto());
-    }
+    ProductChannelKey toDomainKey(ProductChannelKeyEntityJpa entityKey);
 
-    public ProductChannelKey toDomainKey(ProductChannelKeyEntityJpa entityKey) {
-        if (entityKey == null) {
-            return null;
-        }
-        return new ProductChannelKey(entityKey.getCodCanal(), entityKey.getCodProduto());
-    }
+    ProductChResponseDTO toResponseDTO(ProductChannelProjection projection);
 
-    public ProductChResponseDTO toResponseDTO(ProductChannelProjection projection) {
-        if (projection == null) {
-            return null;
-        }
-
-        // IMPORTANTE: A ordem dos parâmetros deve ser EXATAMENTE a mesma do Record
-        return new ProductChResponseDTO(
-                // 1-3: Informações básicas do Produto
-                projection.getCodProduto(),
-                projection.getDesProduto(),
-                projection.getStatusProduto(),
-                // 4-5: Informações do Canal
-                projection.getCodCanal(),
-                projection.getStatusCanalProduto(),
-                // 6-15: Informações do Canal-Produto
-                projection.getCodConvenio(),
-                projection.getCodOrgaoEmissor(),
-                projection.getQtdLimiteComercializacao(),
-                projection.getQtdMinimaEstoque(),
-                projection.getQtdMaximaEstoque(),
-                projection.getQtdMinimaRessuprimento(),
-                projection.getQtdMaximaRessuprimento(),
-                projection.getVlFace(),
-                projection.getTipoOperHM(),
-                projection.getFlgCarac(),
-                projection.getCanaisDestino(),
-                // 16-18: Informações da Vigência
-                projection.getInicioValidade(),
-                projection.getFimValidade(),
-                projection.getStatusVigencia(),
-                // 19-24: Limites de Recarga
-                projection.getDtInicioValidadeLimite(),
-                projection.getDtFimValidadeLimite(),
-                projection.getVlMinimoRecarga(),
-                projection.getVlMaximoRecarga(),
-                projection.getVlMaximoSaldo(),
-                projection.getStatusLimite(),
-                // 25-28: Informações de Taxas
-                projection.getIdTaxa(),
-                projection.getTaxaInicio(),
-                projection.getTaxaFim(),
-                projection.getDscTaxa(),
-                // 29-32: Taxa Administrativa
-                projection.getTaxaAdmRecInicial(),
-                projection.getTaxaAdmRecFinal(),
-                projection.getTaxaAdmValFixo(),
-                projection.getTaxaAdmPercentual(),
-                // 33-37: Taxa de Serviço
-                projection.getTaxaServRecInicial(),
-                projection.getTaxaServRecFinal(),
-                projection.getTaxaServValFixo(),
-                projection.getTaxaServPercentual(),
-                projection.getTaxaServValMinimo(),
-                // 38-42: Taxa por Canal
-                projection.getTaxaCanalInicio(),
-                projection.getTaxaCanalFim(),
-                projection.getTaxaCanalVlInicio(),
-                projection.getTaxaCanalVlFinal(),
-                projection.getTaxaCanalPercentual()
-        );
-    }
-
-    public List<ProductChResponseDTO> toResponseDTOList(List<ProductChannelProjection> projections) {
-        if (projections == null || projections.isEmpty()) {
-            return List.of();
-        }
-
-        return projections.stream()
-                .map(this::toResponseDTO)
-                .filter(dto -> dto != null)
-                .toList();
-    }
+    List<ProductChResponseDTO> toResponseDTOList(List<ProductChannelProjection> projections);
 }

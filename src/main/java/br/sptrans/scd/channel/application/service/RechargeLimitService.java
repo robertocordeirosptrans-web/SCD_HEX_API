@@ -11,7 +11,7 @@ import br.sptrans.scd.channel.application.port.out.RechargeLimitRepository;
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
-import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
+
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class RechargeLimitService implements RechargeLimitUseCase {
             throw new ChannelException(ChannelErrorType.RECHARGE_LIMIT_ALREADY_EXISTS);
         }
 
-        User usuario = userResolverHelper.resolve(cmd.idUsuario());
+        User usuario = cmd.usuario();
 
         RechargeLimit entity = new RechargeLimit();
         entity.setId(key);
@@ -41,7 +41,7 @@ public class RechargeLimitService implements RechargeLimitUseCase {
         entity.setVlMaximoRecarga(cmd.vlMaximoRecarga());
         entity.setVlMaximoSaldo(cmd.vlMaximoSaldo());
         entity.setCodStatus(cmd.codStatus()); // Espera-se que cmd.codStatus() já use ChannelDomainStatus.getCode()
-        entity.setIdUsuarioCadastro(usuario.getIdUsuario());
+        entity.setIdUsuarioCadastro(usuario);
 
         return repository.save(entity);
     }
@@ -61,7 +61,7 @@ public class RechargeLimitService implements RechargeLimitUseCase {
         existing.setVlMaximoRecarga(cmd.vlMaximoRecarga());
         existing.setVlMaximoSaldo(cmd.vlMaximoSaldo());
         existing.setCodStatus(cmd.codStatus()); // Espera-se que cmd.codStatus() já use ChannelDomainStatus.getCode()
-        existing.setIdUsuarioCadastro(usuario.getIdUsuario());
+        existing.setIdUsuarioCadastro(usuario);
 
         return repository.save(existing);
     }

@@ -12,7 +12,6 @@ import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannelKey;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
-import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -21,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 public class MarketingDistribuitionChannelService implements MarketingDistribuitionChannelUseCase {
 
     private final MarketingDistribuitionChannelRepository repository;
-    private final UserResolverHelperImpl userResolverHelper;
 
     @Override
     public MarketingDistribuitionChannel createMarketingDistribuitionChannel(
@@ -32,7 +30,7 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
             throw new ChannelException(ChannelErrorType.MARKETING_CHANNEL_ALREADY_EXISTS);
         }
 
-        User usuCad = userResolverHelper.resolve(cmd.idUsuarioCadastro());
+        User usuCad = cmd.usuarioCadastro();
 
         MarketingDistribuitionChannel entity = new MarketingDistribuitionChannel(
                 key,
@@ -56,7 +54,7 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
         MarketingDistribuitionChannel existing = repository.findById(key)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.MARKETING_CHANNEL_NOT_FOUND));
 
-        User usuMan = userResolverHelper.resolve(cmd.idUsuarioManutencao());
+        User usuMan = cmd.usuarioManutencao();
 
         MarketingDistribuitionChannel updated = new MarketingDistribuitionChannel(
                 existing.getId(),

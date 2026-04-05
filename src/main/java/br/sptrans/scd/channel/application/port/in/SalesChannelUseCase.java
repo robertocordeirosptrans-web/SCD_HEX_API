@@ -2,9 +2,11 @@ package br.sptrans.scd.channel.application.port.in;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import br.sptrans.scd.channel.domain.SalesChannel;
+import br.sptrans.scd.auth.domain.User;
 
 public interface SalesChannelUseCase {
 
@@ -16,9 +18,9 @@ public interface SalesChannelUseCase {
 
     List<SalesChannel> findAllSalesChannels(String stCanais);
 
-    void activateSalesChannel(String codCanal, Long idUsuario);
+    void activateSalesChannel(String codCanal, User usuario);
 
-    void inactivateSalesChannel(String codCanal, Long idUsuario);
+    void inactivateSalesChannel(String codCanal, User usuario);
 
     void deleteSalesChannel(String codCanal);
 
@@ -48,7 +50,10 @@ public interface SalesChannelUseCase {
             String flgPagtoFuturo,
             String codClassificacaoPessoa,
             String codAtividade,
-            Long idUsuario) {}
+            User usuario) {
+
+  
+    }
 
     record UpdateSalesChannelCommand(
             String codCanalSuperior,
@@ -71,5 +76,6 @@ public interface SalesChannelUseCase {
             String flgPagtoFuturo,
             String codClassificacaoPessoa,
             String codAtividade,
-            Long idUsuario) {}
+            User usuario) {
+    }
 }

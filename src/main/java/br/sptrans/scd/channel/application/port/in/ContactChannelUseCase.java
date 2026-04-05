@@ -3,6 +3,7 @@ package br.sptrans.scd.channel.application.port.in;
 import java.util.List;
 
 import br.sptrans.scd.channel.domain.ContactChannel;
+import br.sptrans.scd.auth.domain.User;
 
 public interface ContactChannelUseCase {
 
@@ -34,7 +35,7 @@ public interface ContactChannelUseCase {
             String codTipoDocumento,
             String codDocumento,
             String codCanal,
-            Long idUsuario) {}
+            User usuario) {}
 
     record UpdateContactChannelCommand(
             String codFornecedor,

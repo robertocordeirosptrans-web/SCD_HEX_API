@@ -1,10 +1,8 @@
-package br.sptrans.scd.channel.adapter.port.in.rest;
+package br.sptrans.scd.channel.adapter.port.in.rest.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-import br.sptrans.scd.channel.adapter.port.in.rest.dto.UserSimpleDTO;
 
 public record CanalResponseDTO(
         Long codCanal,

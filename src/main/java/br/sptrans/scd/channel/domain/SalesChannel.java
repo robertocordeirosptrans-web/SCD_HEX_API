@@ -13,66 +13,65 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 public class SalesChannel {
 
-    private String codCanal;
+    private final String codCanal;
 
-    private String codDocumento;
+    @Setter private String codDocumento;
 
-    private String codCanalSuperior;
+    @Setter private String codCanalSuperior;
 
-    private String desCanal;
+    @Setter private String desCanal;
 
-    private String codTipoDocumento;
+    @Setter private String codTipoDocumento;
 
-    private LocalDateTime dtManutencao;
+    @Setter private LocalDateTime dtManutencao;
 
-    private String desRazaoSocial;
+    @Setter private String desRazaoSocial;
 
-    private String stCanais;
+    @Setter private String stCanais;
 
-    private String desNomeFantasia;
+    @Setter private String desNomeFantasia;
 
-    private LocalDateTime dtCadastro;
+    private final LocalDateTime dtCadastro;
 
-    private BigDecimal vlCaucao;
+    @Setter private BigDecimal vlCaucao;
 
-    private LocalDate dtInicioCaucao;
+    @Setter private LocalDate dtInicioCaucao;
 
-    private LocalDate dtFimCaucao;
+    @Setter private LocalDate dtFimCaucao;
 
-    private Integer seqNivel;
+    @Setter private Integer seqNivel;
 
-    private String flgCriticaNumlote;
+    @Setter private String flgCriticaNumlote;
 
-    private Integer flgLimiteDias;
+    @Setter private Integer flgLimiteDias;
 
-    private String flgProcessamentoAutomatico;
+    @Setter private String flgProcessamentoAutomatico;
 
-    private String flgProcessamentoParcial;
+    @Setter private String flgProcessamentoParcial;
 
-    private String flgSaldoDevedor;
+    @Setter private String flgSaldoDevedor;
 
-    private Integer numMinutoIniLibRecarga;
+    @Setter private Integer numMinutoIniLibRecarga;
 
-    private Integer numMinutoFimLibRecarga;
+    @Setter private Integer numMinutoFimLibRecarga;
 
-    private String flgEmiteReciboPedido;
+    @Setter private String flgEmiteReciboPedido;
 
-    private String flgSupercanal;
+    @Setter private String flgSupercanal;
 
-    private String flgPagtoFuturo;
+    @Setter private String flgPagtoFuturo;
 
-    private ClassificationPerson codClassificacaoPessoa;
+    @Setter private ClassificationPerson codClassificacaoPessoa;
 
-    private TypesActivity codAtividade;
+    @Setter private TypesActivity codAtividade;
 
-    private User idUsuarioCadastro;
+    private final User idUsuarioCadastro;
 
-    private User idUsuarioManutencao;
+    @Setter private User idUsuarioManutencao;
     // --- Métodos de negócio (DDD) ---
 
     /**
@@ -142,5 +141,70 @@ public class SalesChannel {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // Transições de status
+    // -------------------------------------------------------------------------
+
+    /**
+     * Ativa o canal de vendas.
+     *
+     * @param operador usuário responsável pela operação
+     */
+    public void activate(User operador) {
+        this.stCanais = ChannelDomainStatus.ACTIVE.getCode();
+        this.idUsuarioManutencao = operador;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    /**
+     * Inativa o canal de vendas.
+     *
+     * @param operador usuário responsável pela operação
+     */
+    public void inactivate(User operador) {
+        this.stCanais = ChannelDomainStatus.INACTIVE.getCode();
+        this.idUsuarioManutencao = operador;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    // -------------------------------------------------------------------------
+    // Atualização de dados
+    // -------------------------------------------------------------------------
+
+    /**
+     * Atualiza os dados descritivos e operacionais do canal.
+     *
+     * @param desCanal                    nova descrição do canal
+     * @param desRazaoSocial              nova razão social
+     * @param desNomeFantasia             novo nome fantasia
+     * @param codDocumento                novo código de documento
+     * @param codTipoDocumento            novo tipo de documento
+     * @param codCanalSuperior            novo canal superior
+     * @param flgProcessamentoAutomatico  flag de processamento automático
+     * @param flgProcessamentoParcial     flag de processamento parcial
+     * @param operador                    usuário responsável pela operação
+     */
+    public void updateInfo(
+            String desCanal,
+            String desRazaoSocial,
+            String desNomeFantasia,
+            String codDocumento,
+            String codTipoDocumento,
+            String codCanalSuperior,
+            String flgProcessamentoAutomatico,
+            String flgProcessamentoParcial,
+            User operador) {
+        this.desCanal = desCanal;
+        this.desRazaoSocial = desRazaoSocial;
+        this.desNomeFantasia = desNomeFantasia;
+        this.codDocumento = codDocumento;
+        this.codTipoDocumento = codTipoDocumento;
+        this.codCanalSuperior = codCanalSuperior;
+        this.flgProcessamentoAutomatico = flgProcessamentoAutomatico;
+        this.flgProcessamentoParcial = flgProcessamentoParcial;
+        this.idUsuarioManutencao = operador;
+        this.dtManutencao = LocalDateTime.now();
     }
 }

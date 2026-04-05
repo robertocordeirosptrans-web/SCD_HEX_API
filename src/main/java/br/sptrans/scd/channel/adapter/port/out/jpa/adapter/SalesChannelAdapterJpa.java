@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import br.sptrans.scd.channel.application.port.out.SalesChannelRepository;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import lombok.RequiredArgsConstructor;
+import br.sptrans.scd.auth.domain.User;
 
 
 
@@ -48,7 +49,8 @@ public class SalesChannelAdapterJpa implements SalesChannelRepository {
     }
 
     @Override
-    public void updateStatus(String codCanal, String stCanais, Long idUsuario) {
+    public void updateStatus(String codCanal, String stCanais, User usuario) {
+        Long idUsuario = usuario != null ? usuario.getIdUsuario() : null;
         repository.updateStatus(stCanais, idUsuario, codCanal);
     }
 

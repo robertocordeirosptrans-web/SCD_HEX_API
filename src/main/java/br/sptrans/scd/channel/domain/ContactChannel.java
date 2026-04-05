@@ -9,46 +9,45 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 public class ContactChannel {
-    private String codContato;
+    private final String codContato;
 
-    private String codFornecedor;
+    @Setter private String codFornecedor;
 
-    private String codEmpregador;
+    @Setter private String codEmpregador;
 
-    private String desContato;
+    @Setter private String desContato;
 
-    private String desEmailContato;
+    @Setter private String desEmailContato;
 
-    private Integer numDDD;
+    @Setter private Integer numDDD;
 
-    private Integer numFone;
+    @Setter private Integer numFone;
 
-    private Integer numFoneRamal;
+    @Setter private Integer numFoneRamal;
 
-    private Integer numFax;
+    @Setter private Integer numFax;
 
-    private Integer numFaxRamal;
+    @Setter private Integer numFaxRamal;
 
-    private String stEntidadeContato;
+    @Setter private String stEntidadeContato;
 
-    private String desComentarios;
+    @Setter private String desComentarios;
 
-    private String codTipoDocumento;
+    @Setter private String codTipoDocumento;
 
-    private String codDocumento;
+    @Setter private String codDocumento;
 
-    private LocalDateTime dtCadastro;
-    private LocalDateTime dtManutencao;
+    private final LocalDateTime dtCadastro;
+    @Setter private LocalDateTime dtManutencao;
 
-    private User idUsuarioManutencao;
+    @Setter private User idUsuarioManutencao;
 
-    private User idUsuarioCadastro;
+    private final User idUsuarioCadastro;
 
-    private SalesChannel codCanal;
+    @Setter private SalesChannel codCanal;
 
     // --- Métodos de Fábrica e Atualização (DDD) ---
 

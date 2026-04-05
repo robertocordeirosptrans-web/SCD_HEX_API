@@ -9,13 +9,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
 @EqualsAndHashCode
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 public class ProductChannelKey implements Serializable {
 
-    private String codCanal;
+    private final String codCanal;
 
-    private String codProduto;
+    private final String codProduto;
 }

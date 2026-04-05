@@ -3,6 +3,7 @@ package br.sptrans.scd.channel.application.port.in;
 import java.util.List;
 
 import br.sptrans.scd.channel.domain.AddressChannel;
+import br.sptrans.scd.auth.domain.User;
 
 public interface AddressChannelUseCase {
 
@@ -35,7 +36,7 @@ public interface AddressChannelUseCase {
             String stEnderecos,
             String desNumero,
             String codCanal,
-            Long idUsuario) {}
+            User usuario) {}
 
     record UpdateAddressChannelCommand(
             String codEmpregador,

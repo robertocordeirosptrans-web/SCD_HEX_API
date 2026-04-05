@@ -93,19 +93,6 @@ A interface de porta da aplicação importa um tipo da camada `adapter`. Isso in
 💡 Mover `ProductChannelProjection` para `channel/application/port/out/query/` ou criar um DTO de domínio equivalente em `channel/domain/`.
 
 
----
-
-### 📍 `application/service/ProductChannelService.java`
-
-⚠️ **Dois campos do mesmo tipo injetados — código morto visível**
-
-```java
-private final ProductChannelRepository repository;
-private final ProductChannelRepository productChannelJpaRepository; // campo duplicado!
-// private final ProductChannelJpaRepository productChannelJpaRepository; // código comentado
-```
-
-Existe uma injeção duplicada e código comentado que indica uma refatoração incompleta.
 
 ---
 

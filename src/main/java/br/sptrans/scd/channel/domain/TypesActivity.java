@@ -2,24 +2,64 @@ package br.sptrans.scd.channel.domain;
 
 import java.time.LocalDateTime;
 
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 public class TypesActivity {
 
-    private String codAtividade;
+    private final String codAtividade;
 
-    private String desAtividade;
+    @Setter private String desAtividade;
 
-    private String codStatus;
+    @Setter private String codStatus;
 
-    private LocalDateTime dtCadastro;
+    private final LocalDateTime dtCadastro;
 
-    private LocalDateTime dtManutencao;
+    @Setter private LocalDateTime dtManutencao;
+
+    // -------------------------------------------------------------------------
+    // Consultas de status
+    // -------------------------------------------------------------------------
+
+    public boolean isAtivo() {
+        try {
+            return ChannelDomainStatus.ACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isInativo() {
+        try {
+            return ChannelDomainStatus.INACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Transições de status
+    // -------------------------------------------------------------------------
+
+    /**
+     * Ativa o tipo de atividade.
+     */
+    public void activate() {
+        this.codStatus = ChannelDomainStatus.ACTIVE.getCode();
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    /**
+     * Inativa o tipo de atividade.
+     */
+    public void inactivate() {
+        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.dtManutencao = LocalDateTime.now();
+    }
 }

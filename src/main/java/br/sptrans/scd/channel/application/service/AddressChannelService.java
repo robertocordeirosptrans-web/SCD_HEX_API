@@ -30,7 +30,7 @@ public class AddressChannelService implements AddressChannelUseCase {
             throw new ChannelException(ChannelErrorType.ADDRESS_CHANNEL_CODE_ALREADY_EXISTS);
         }
 
-        User usuario = userResolverHelper.resolve(cmd.idUsuario());
+        User usuario = cmd.usuario();
 
         AddressChannel addressChannel = new AddressChannel(
                 cmd.codEndereco(),

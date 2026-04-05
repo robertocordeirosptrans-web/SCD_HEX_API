@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class AgreementValidityAdapterJpa implements AgreementValidityRepository {
 
     private final AgreementValidityJpaRepository jpaRepository;
+    private final AgreementValidityMapper agreementValidityMapper;
 
     @Override
     public Optional<AgreementValidity> findById(AgreementValidityKey id) {
@@ -26,19 +27,19 @@ public class AgreementValidityAdapterJpa implements AgreementValidityRepository 
         }
         AgreementValidityKeyEntityJpa entityKey = new AgreementValidityKeyEntityJpa(id.getCodCanal(), id.getCodProduto());
         return jpaRepository.findById(entityKey)
-                .map(AgreementValidityMapper::toDomain);
+                .map(agreementValidityMapper::toDomain);
     }
 
     @Override
     public Optional<AgreementValidity> findByIdOtimized(String codCanal, String codProduto) {
         return jpaRepository.findByCodCanalAndCodProduto(codCanal, codProduto)
-                .map(AgreementValidityMapper::toDomain);
+                .map(agreementValidityMapper::toDomain);
     }
 
     @Override
     public List<AgreementValidity> findAll() {
         return jpaRepository.findAllAgreementValidity().stream()
-                .map(AgreementValidityMapper::toDomain)
+                .map(agreementValidityMapper::toDomain)
                 .toList();
     }
 
@@ -46,7 +47,7 @@ public class AgreementValidityAdapterJpa implements AgreementValidityRepository 
     public List<AgreementValidity> findByCodCanal(String codCanal) {
         return jpaRepository.findAllAgreementValidity().stream()
                 .filter(e -> e.getId().getCodCanal().equals(codCanal))
-                .map(AgreementValidityMapper::toDomain)
+                .map(agreementValidityMapper::toDomain)
                 .toList();
     }
 
@@ -54,15 +55,15 @@ public class AgreementValidityAdapterJpa implements AgreementValidityRepository 
     public List<AgreementValidity> findByCodProduto(String codProduto) {
         return jpaRepository.findAllAgreementValidity().stream()
                 .filter(e -> e.getId().getCodProduto().equals(codProduto))
-                .map(AgreementValidityMapper::toDomain)
+                .map(agreementValidityMapper::toDomain)
                 .toList();
     }
 
     @Override
     public AgreementValidity save(AgreementValidity entity) {
-        var entityJpa = AgreementValidityMapper.toEntity(entity);
+        var entityJpa = agreementValidityMapper.toEntity(entity);
         var saved = jpaRepository.save(entityJpa);
-        return AgreementValidityMapper.toDomain(saved);
+        return agreementValidityMapper.toDomain(saved);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package br.sptrans.scd.channel.adapter.port.out.jpa.projection;
+package br.sptrans.scd.channel.application.port.out.query;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

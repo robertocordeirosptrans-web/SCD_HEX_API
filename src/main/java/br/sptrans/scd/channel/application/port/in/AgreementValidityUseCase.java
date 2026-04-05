@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import br.sptrans.scd.channel.domain.AgreementValidity;
+import br.sptrans.scd.auth.domain.User;
 
 public interface AgreementValidityUseCase {
 
@@ -29,11 +30,11 @@ public interface AgreementValidityUseCase {
             LocalDateTime dtFimValidade,
             LocalDateTime dtInicioValidade,
             String codStatus,
-            Long idUsuario) {}
+            User usuario) {}
 
     record UpdateAgreementValidityCommand(
             LocalDateTime dtFimValidade,
             LocalDateTime dtInicioValidade,
             String codStatus,
-            Long idUsuario) {}
+            User usuario) {}
 }

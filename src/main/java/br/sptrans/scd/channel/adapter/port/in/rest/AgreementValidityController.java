@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase.CreateAgreementValidityCommand;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase.UpdateAgreementValidityCommand;
@@ -49,7 +50,7 @@ public class AgreementValidityController {
         })
     public ResponseEntity<AgreementValidity> createAgreementValidity(
             @RequestBody CreateAgreementValidityRequest request) {
-        Long idUsuario = userResolverHelper.getCurrentUserId();
+        User usuario = userResolverHelper.getCurrentUser();
         AgreementValidity result = agreementValidityUseCase.createAgreementValidity(
                 new CreateAgreementValidityCommand(
                         request.codCanal(),
@@ -57,7 +58,7 @@ public class AgreementValidityController {
                         request.dtFimValidade(),
                         request.dtInicioValidade(),
                         request.codStatus(),
-                        idUsuario));
+                        usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
@@ -71,13 +72,13 @@ public class AgreementValidityController {
             @PathVariable String codCanal,
             @PathVariable String codProduto,
             @RequestBody UpdateAgreementValidityRequest request) {
-        Long idUsuario = userResolverHelper.getCurrentUserId();
+        User usuario = userResolverHelper.getCurrentUser();
         AgreementValidity result = agreementValidityUseCase.updateAgreementValidity(codCanal, codProduto,
                 new UpdateAgreementValidityCommand(
                         request.dtFimValidade(),
                         request.dtInicioValidade(),
                         request.codStatus(),
-                        idUsuario));
+                        usuario));
         return ResponseEntity.ok(result);
     }
 
