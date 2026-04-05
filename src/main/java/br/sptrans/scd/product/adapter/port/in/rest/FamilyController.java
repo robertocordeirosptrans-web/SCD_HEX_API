@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -24,6 +23,7 @@ import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase.Create
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase.UpdateFamilyCommand;
 import br.sptrans.scd.product.domain.Family;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,7 +31,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.product.adapter.port.in.rest.dto.FamilyResponseDTO;
 import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 
@@ -44,7 +43,7 @@ import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 public class FamilyController {
 
     private final FamilyManagementUseCase familyManagementUseCase;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova família")
@@ -53,9 +52,8 @@ public class FamilyController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
     public ResponseEntity<Family> createFamily(
-            @RequestBody CreateFamilyRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody CreateFamilyRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         Family family = familyManagementUseCase.createFamily(
                 new CreateFamilyCommand(request.codFamilia(), request.desFamilia(), idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(family);
@@ -69,9 +67,8 @@ public class FamilyController {
         })
     public ResponseEntity<Family> updateFamily(
             @PathVariable String codFamilia,
-            @RequestBody UpdateFamilyRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody UpdateFamilyRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         Family family = familyManagementUseCase.updateFamily(codFamilia,
                 new UpdateFamilyCommand(request.desFamilia(), idUsuario));
         return ResponseEntity.ok(family);
@@ -117,18 +114,16 @@ public class FamilyController {
     @PatchMapping("/{codFamilia}/activate")
     @Operation(summary = "Ativa uma família")
     public ResponseEntity<Void> activateFamily(
-            @PathVariable String codFamilia,
-            Authentication authentication) {
-        familyManagementUseCase.activateFamily(codFamilia, resolveUserId(authentication));
+            @PathVariable String codFamilia) {
+        familyManagementUseCase.activateFamily(codFamilia, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{codFamilia}/inactivate")
     @Operation(summary = "Inativa uma família")
     public ResponseEntity<Void> inactivateFamily(
-            @PathVariable String codFamilia,
-            Authentication authentication) {
-        familyManagementUseCase.inactivateFamily(codFamilia, resolveUserId(authentication));
+            @PathVariable String codFamilia) {
+        familyManagementUseCase.inactivateFamily(codFamilia, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -137,12 +132,6 @@ public class FamilyController {
     public ResponseEntity<Void> deleteFamily(@PathVariable String codFamilia) {
         familyManagementUseCase.deleteFamily(codFamilia);
         return ResponseEntity.noContent().build();
-    }
-
-    private Long resolveUserId(Authentication authentication) {
-        return userRepository.findByCodLogin(authentication.getName())
-                .map(u -> u.getIdUsuario())
-                .orElse(null);
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────

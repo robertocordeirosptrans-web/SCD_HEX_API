@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,13 +18,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.SalesChannelMapper;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.CreateSalesChannelCommand;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.UpdateSalesChannelCommand;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -44,7 +43,7 @@ import lombok.RequiredArgsConstructor;
 public class SalesChannelController {
 
     private final SalesChannelUseCase salesChannelUseCase;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
     private final SalesChannelMapper salesChannelMapper;
 
     @PostMapping
@@ -54,9 +53,8 @@ public class SalesChannelController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
     public ResponseEntity<CanalResponseDTO> createSalesChannel(
-            @RequestBody CreateSalesChannelRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody CreateSalesChannelRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         SalesChannel result = salesChannelUseCase.createSalesChannel(new CreateSalesChannelCommand(
                 request.codCanal(),
                 request.codDocumento(),
@@ -89,9 +87,8 @@ public class SalesChannelController {
     @Operation(summary = "Atualiza dados de um canal de venda")
     public ResponseEntity<CanalResponseDTO> updateSalesChannel(
             @PathVariable String codCanal,
-            @RequestBody UpdateSalesChannelRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody UpdateSalesChannelRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         SalesChannel result = salesChannelUseCase.updateSalesChannel(codCanal, new UpdateSalesChannelCommand(
                 request.codCanalSuperior(),
                 request.desCanal(),
@@ -139,18 +136,16 @@ public class SalesChannelController {
     @PatchMapping("/{codCanal}/activate")
     @Operation(summary = "Ativa um canal de venda")
     public ResponseEntity<Void> activateSalesChannel(
-            @PathVariable String codCanal,
-            Authentication authentication) {
-        salesChannelUseCase.activateSalesChannel(codCanal, resolveUserId(authentication));
+            @PathVariable String codCanal) {
+        salesChannelUseCase.activateSalesChannel(codCanal, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{codCanal}/inactivate")
     @Operation(summary = "Inativa um canal de venda")
     public ResponseEntity<Void> inactivateSalesChannel(
-            @PathVariable String codCanal,
-            Authentication authentication) {
-        salesChannelUseCase.inactivateSalesChannel(codCanal, resolveUserId(authentication));
+            @PathVariable String codCanal) {
+        salesChannelUseCase.inactivateSalesChannel(codCanal, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -159,12 +154,6 @@ public class SalesChannelController {
     public ResponseEntity<Void> deleteSalesChannel(@PathVariable String codCanal) {
         salesChannelUseCase.deleteSalesChannel(codCanal);
         return ResponseEntity.noContent().build();
-    }
-
-    private Long resolveUserId(Authentication authentication) {
-        return userRepository.findByCodLogin(authentication.getName())
-                .map(u -> u.getIdUsuario())
-                .orElse(null);
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────

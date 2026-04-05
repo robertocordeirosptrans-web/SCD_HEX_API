@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,12 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.CreateMarketingDistribuitionChannelCommand;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.UpdateMarketingDistribuitionChannelCommand;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class MarketingDistribuitionChannelController {
 
     private final MarketingDistribuitionChannelUseCase marketingUseCase;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo canal de comercialização/distribuição")
@@ -48,9 +47,8 @@ public class MarketingDistribuitionChannelController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<MarketingDistribuitionChannel> createMarketingDistribuitionChannel(
-            @RequestBody CreateMarketingDistribuitionChannelRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody CreateMarketingDistribuitionChannelRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         MarketingDistribuitionChannel result = marketingUseCase.createMarketingDistribuitionChannel(
                 new CreateMarketingDistribuitionChannelCommand(
                         request.codCanalComercializacao(),
@@ -69,9 +67,8 @@ public class MarketingDistribuitionChannelController {
     public ResponseEntity<MarketingDistribuitionChannel> updateMarketingDistribuitionChannel(
             @PathVariable String codCanalComercializacao,
             @PathVariable String codCanalDistribuicao,
-            @RequestBody UpdateMarketingDistribuitionChannelRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody UpdateMarketingDistribuitionChannelRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         MarketingDistribuitionChannel result = marketingUseCase.updateMarketingDistribuitionChannel(
                 codCanalComercializacao, codCanalDistribuicao,
                 new UpdateMarketingDistribuitionChannelCommand(
@@ -108,12 +105,6 @@ public class MarketingDistribuitionChannelController {
             @PathVariable String codCanalDistribuicao) {
         marketingUseCase.deleteMarketingDistribuitionChannel(codCanalComercializacao, codCanalDistribuicao);
         return ResponseEntity.noContent().build();
-    }
-
-    private Long resolveUserId(Authentication authentication) {
-        return userRepository.findByCodLogin(authentication.getName())
-                .map(u -> u.getIdUsuario())
-                .orElse(null);
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────

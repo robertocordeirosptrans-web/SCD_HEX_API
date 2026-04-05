@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.product.application.port.in.ProductUseCase;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateProductCommand;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateVersionCommand;
@@ -25,6 +23,7 @@ import br.sptrans.scd.product.application.port.in.ProductUseCase.UpdateProductCo
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -42,7 +41,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductController {
 
     private final ProductUseCase productUseCase;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo produto")
@@ -52,9 +51,8 @@ public class ProductController {
         })
         @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> createProduct(
-            @RequestBody CreateProductRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody CreateProductRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         productUseCase.createProduct(new CreateProductCommand(
                 request.codProduto(),
                 request.desProduto(),
@@ -107,9 +105,8 @@ public class ProductController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> updateProduct(
             @PathVariable String codProduto,
-            @RequestBody UpdateProductRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody UpdateProductRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         productUseCase.updateProduct(codProduto, new UpdateProductCommand(
                 request.desProduto(),
                 request.desEmissorResponsavel(),
@@ -141,9 +138,8 @@ public class ProductController {
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Ativa um produto")
     public ResponseEntity<Void> activateProduct(
-            @PathVariable String codProduto,
-            Authentication authentication) {
-        productUseCase.activateProduct(codProduto, resolveUserId(authentication));
+            @PathVariable String codProduto) {
+        productUseCase.activateProduct(codProduto, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -151,9 +147,8 @@ public class ProductController {
     @Operation(summary = "Inativa um produto")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> inactivateProduct(
-            @PathVariable String codProduto,
-            Authentication authentication) {
-        productUseCase.inactivateProduct(codProduto, resolveUserId(authentication));
+            @PathVariable String codProduto) {
+        productUseCase.inactivateProduct(codProduto, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -163,9 +158,8 @@ public class ProductController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ProductVersion> createNewVersion(
             @PathVariable String codProduto,
-            @RequestBody CreateVersionRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody CreateVersionRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         ProductVersion version = productUseCase.createNewVersion(codProduto, new CreateVersionCommand(
                 request.dtValidade(),
                 request.dtVidaInicio(),
@@ -196,13 +190,6 @@ public class ProductController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ProductVersion> findByVersion(@PathVariable String codVersao) {
         return ResponseEntity.ok(productUseCase.findByVersion(codVersao));
-    }
-
-    // ── Helper ────────────────────────────────────────────────────────────────
-    private Long resolveUserId(Authentication authentication) {
-        return userRepository.findByCodLogin(authentication.getName())
-                .map(u -> u.getIdUsuario())
-                .orElse(null);
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────

@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,12 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.CreateRechargeLimitCommand;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.UpdateRechargeLimitCommand;
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -41,7 +40,7 @@ import lombok.RequiredArgsConstructor;
 public class RechargeLimitController {
 
     private final RechargeLimitUseCase rechargeLimitUseCase;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo limite de recarga")
@@ -50,9 +49,8 @@ public class RechargeLimitController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
     public ResponseEntity<RechargeLimit> createRechargeLimit(
-            @RequestBody CreateRechargeLimitRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody CreateRechargeLimitRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         RechargeLimit result = rechargeLimitUseCase.createRechargeLimit(
                 new CreateRechargeLimitCommand(
                         request.codCanal(),
@@ -76,9 +74,8 @@ public class RechargeLimitController {
     public ResponseEntity<RechargeLimit> updateRechargeLimit(
             @PathVariable String codCanal,
             @PathVariable String codProduto,
-            @RequestBody UpdateRechargeLimitRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody UpdateRechargeLimitRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         RechargeLimit result = rechargeLimitUseCase.updateRechargeLimit(codCanal, codProduto,
                 new UpdateRechargeLimitCommand(
                         request.dtInicioValidade(),
@@ -124,12 +121,6 @@ public class RechargeLimitController {
             @PathVariable String codProduto) {
         rechargeLimitUseCase.deleteRechargeLimit(codCanal, codProduto);
         return ResponseEntity.noContent().build();
-    }
-
-    private Long resolveUserId(Authentication authentication) {
-        return userRepository.findByCodLogin(authentication.getName())
-                .map(u -> u.getIdUsuario())
-                .orElse(null);
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────

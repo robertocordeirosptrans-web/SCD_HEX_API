@@ -6,8 +6,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ProductUseCase;
 import br.sptrans.scd.product.application.port.out.repository.ProductRepository;
@@ -18,6 +16,7 @@ import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.enums.ProductStatus;
 import br.sptrans.scd.product.domain.enums.ProductVersionStatus;
 import br.sptrans.scd.product.domain.exception.ProductException;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -27,7 +26,7 @@ public class ProductService implements ProductUseCase {
 
     private final ProductRepository productRepository;
     private final ProductVersionRepository productVersionRepository;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
 
     // =========================================================================
     // Gestão de Produto
@@ -39,7 +38,7 @@ public class ProductService implements ProductUseCase {
             throw new ProductException(ProductErrorType.CODE_ALREADY_EXISTS);
         }
 
-        User usuarioCadastro = resolveUser(cmd.idUsuario());
+        User usuarioCadastro = userResolverHelper.resolve(cmd.idUsuario());
 
         Product product = new Product(
             cmd.codProduto(),
@@ -124,7 +123,7 @@ public class ProductService implements ProductUseCase {
         Product existing = productRepository.findById(productCode)
                 .orElseThrow(() -> new ProductException(ProductErrorType.PRODUCT_NOT_FOUND));
 
-        User usuarioManutencao = resolveUser(cmd.idUsuario());
+        User usuarioManutencao = userResolverHelper.resolve(cmd.idUsuario());
 
         Product updated = new Product(
                 existing.getCodProduto(),
@@ -181,7 +180,7 @@ public class ProductService implements ProductUseCase {
         }
 
         String newVersionCode = generateNextVersionCode(codProduto);
-        User usuarioCadastro = resolveUser(cmd.idUsuario());
+        User usuarioCadastro = userResolverHelper.resolve(cmd.idUsuario());
 
         ProductVersion version = new ProductVersion(
                 newVersionCode,
@@ -224,11 +223,6 @@ public class ProductService implements ProductUseCase {
     // =========================================================================
     // Helpers
     // =========================================================================
-
-    private User resolveUser(Long idUsuario) {
-        if (idUsuario == null) return null;
-        return userRepository.findById(idUsuario).orElse(null);
-    }
 
     private String generateNextVersionCode(String codProduto) {
         return productVersionRepository.findLastVersion(codProduto)

@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,12 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase.CreateAgreementValidityCommand;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase.UpdateAgreementValidityCommand;
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 public class AgreementValidityController {
 
     private final AgreementValidityUseCase agreementValidityUseCase;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova vigência de convênio")
@@ -49,9 +48,8 @@ public class AgreementValidityController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
     public ResponseEntity<AgreementValidity> createAgreementValidity(
-            @RequestBody CreateAgreementValidityRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody CreateAgreementValidityRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         AgreementValidity result = agreementValidityUseCase.createAgreementValidity(
                 new CreateAgreementValidityCommand(
                         request.codCanal(),
@@ -72,9 +70,8 @@ public class AgreementValidityController {
     public ResponseEntity<AgreementValidity> updateAgreementValidity(
             @PathVariable String codCanal,
             @PathVariable String codProduto,
-            @RequestBody UpdateAgreementValidityRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody UpdateAgreementValidityRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         AgreementValidity result = agreementValidityUseCase.updateAgreementValidity(codCanal, codProduto,
                 new UpdateAgreementValidityCommand(
                         request.dtFimValidade(),
@@ -117,12 +114,6 @@ public class AgreementValidityController {
             @PathVariable String codProduto) {
         agreementValidityUseCase.deleteAgreementValidity(codCanal, codProduto);
         return ResponseEntity.noContent().build();
-    }
-
-    private Long resolveUserId(Authentication authentication) {
-        return userRepository.findByCodLogin(authentication.getName())
-                .map(u -> u.getIdUsuario())
-                .orElse(null);
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────

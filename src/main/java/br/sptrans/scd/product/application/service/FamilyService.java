@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase;
 import br.sptrans.scd.product.application.port.out.repository.FamilyRepository;
@@ -14,6 +13,7 @@ import br.sptrans.scd.product.domain.Family;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class FamilyService implements FamilyManagementUseCase {
 
     private final FamilyRepository familyRepository;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @Override
     public Family createFamily(CreateFamilyCommand command) {
@@ -30,7 +30,7 @@ public class FamilyService implements FamilyManagementUseCase {
             throw new ProductException(ProductErrorType.FAMILY_CODE_ALREADY_EXISTS);
         }
 
-        User usuario = resolveUser(command.idUsuario());
+        User usuario = userResolverHelper.resolve(command.idUsuario());
 
         Family family = new Family(
                 command.codFamilia(),
@@ -50,7 +50,7 @@ public class FamilyService implements FamilyManagementUseCase {
         Family existing = familyRepository.findById(codFamilia)
                 .orElseThrow(() -> new ProductException(ProductErrorType.FAMILY_NOT_FOUND));
 
-        User usuario = resolveUser(command.idUsuario());
+        User usuario = userResolverHelper.resolve(command.idUsuario());
 
         Family updated = new Family(
                 existing.getCodFamilia(),
@@ -106,10 +106,5 @@ public class FamilyService implements FamilyManagementUseCase {
             throw new ProductException(ProductErrorType.FAMILY_NOT_FOUND);
         }
         familyRepository.deleteById(codFamilia);
-    }
-
-    private User resolveUser(Long idUsuario) {
-        if (idUsuario == null) return null;
-        return userRepository.findById(idUsuario).orElse(null);
     }
 }

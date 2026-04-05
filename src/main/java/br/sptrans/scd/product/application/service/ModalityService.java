@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase;
 import br.sptrans.scd.product.application.port.out.repository.ModalityRepository;
@@ -14,6 +13,7 @@ import br.sptrans.scd.product.domain.Modality;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class ModalityService implements ModalityManagementUseCase {
 
     private final ModalityRepository modalityRepository;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @Override
     public Modality createModality(CreateModalityCommand command) {
@@ -30,7 +30,7 @@ public class ModalityService implements ModalityManagementUseCase {
             throw new ProductException(ProductErrorType.MODALITY_CODE_ALREADY_EXISTS);
         }
 
-        User usuario = resolveUser(command.idUsuario());
+        User usuario = userResolverHelper.resolve(command.idUsuario());
 
         Modality modality = new Modality(
                 command.codModalidade(),
@@ -50,7 +50,7 @@ public class ModalityService implements ModalityManagementUseCase {
         Modality existing = modalityRepository.findById(codModalidade)
                 .orElseThrow(() -> new ProductException(ProductErrorType.MODALITY_NOT_FOUND));
 
-        User usuario = resolveUser(command.idUsuario());
+        User usuario = userResolverHelper.resolve(command.idUsuario());
 
         Modality updated = new Modality(
                 existing.getCodModalidade(),
@@ -106,10 +106,5 @@ public class ModalityService implements ModalityManagementUseCase {
             throw new ProductException(ProductErrorType.MODALITY_NOT_FOUND);
         }
         modalityRepository.deleteById(codModalidade);
-    }
-
-    private User resolveUser(Long idUsuario) {
-        if (idUsuario == null) return null;
-        return userRepository.findById(idUsuario).orElse(null);
     }
 }

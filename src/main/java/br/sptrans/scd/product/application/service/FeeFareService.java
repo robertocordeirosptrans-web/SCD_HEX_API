@@ -9,7 +9,6 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.FeeFareManagementUseCase;
 import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
@@ -28,6 +27,7 @@ import br.sptrans.scd.product.domain.ServiceFee;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -41,7 +41,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
     private final ServiceFeeRepository serviceFeeRepository;
     private final DestinyFeeRepository destinyFeeRepository;
     private final ProductRepository productRepository;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
     private final LiminarGateway liminarGateway;
     /**
      * Calcula as taxas administrativas e de serviço para um pedido, aplicando isenção por liminar judicial quando aplicável.
@@ -131,7 +131,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
             throw new ProductException(ProductErrorType.FARE_VALIDITY_CONFLICT);
         }
 
-        User usuario = resolveUser(command.idUsuario());
+        User usuario = userResolverHelper.resolve(command.idUsuario());
         Product produto = productRepository.findById(command.codProduto())
                 .orElseThrow(() -> new ProductException(ProductErrorType.PRODUCT_NOT_FOUND));
 
@@ -280,14 +280,5 @@ public class FeeFareService implements FeeFareManagementUseCase {
     @Override
     public List<Fee> listFees(String codProduto, String codCanal) {
         return feeRepository.findByCanalProduto(codCanal, codProduto);
-    }
-
-    // =========================================================================
-    // Helpers
-    // =========================================================================
-
-    private User resolveUser(Long idUsuario) {
-        if (idUsuario == null) return null;
-        return userRepository.findById(idUsuario).orElse(null);
     }
 }

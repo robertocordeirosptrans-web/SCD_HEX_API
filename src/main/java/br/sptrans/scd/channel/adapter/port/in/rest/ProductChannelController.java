@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChDTO;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChResponseDTO;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ProductChannelMapper;
@@ -28,6 +26,7 @@ import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.UpdatePr
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -46,7 +45,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductChannelController {
 
     private final ProductChannelUseCase productChannelUseCase;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
     private final ProductChannelMapper productChannelMapper;
 
 
@@ -57,9 +56,8 @@ public class ProductChannelController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<ProductChannel> createProductChannel(
-            @RequestBody CreateProductChannelRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody CreateProductChannelRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         ProductChannel result = productChannelUseCase.createProductChannel(
                 new CreateProductChannelCommand(
                         request.codCanal(),
@@ -88,9 +86,8 @@ public class ProductChannelController {
     public ResponseEntity<ProductChannel> updateProductChannel(
             @PathVariable String codCanal,
             @PathVariable String codProduto,
-            @RequestBody UpdateProductChannelRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody UpdateProductChannelRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         ProductChannel result = productChannelUseCase.updateProductChannel(codCanal, codProduto,
                 new UpdateProductChannelCommand(
                         request.qtdLimiteComercializacao(),
@@ -168,12 +165,6 @@ public class ProductChannelController {
             @PathVariable String codProduto) {
         productChannelUseCase.deleteProductChannel(codCanal, codProduto);
         return ResponseEntity.noContent().build();
-    }
-
-    private Long resolveUserId(Authentication authentication) {
-        return userRepository.findByCodLogin(authentication.getName())
-                .map(u -> u.getIdUsuario())
-                .orElse(null);
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────

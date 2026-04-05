@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,12 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase.CreateContactChannelCommand;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase.UpdateContactChannelCommand;
 import br.sptrans.scd.channel.domain.ContactChannel;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class ContactChannelController {
 
     private final ContactChannelUseCase contactChannelUseCase;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @PostMapping
         @Operation(summary = "Cadastra um novo contato do canal")
@@ -48,9 +47,8 @@ public class ContactChannelController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
     public ResponseEntity<ContactChannel> createContactChannel(
-            @RequestBody CreateContactChannelRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody CreateContactChannelRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         ContactChannel result = contactChannelUseCase.createContactChannel(new CreateContactChannelCommand(
                 request.codContato(),
                 request.codFornecedor(),
@@ -79,9 +77,8 @@ public class ContactChannelController {
         })
     public ResponseEntity<ContactChannel> updateContactChannel(
             @PathVariable String codContato,
-            @RequestBody UpdateContactChannelRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody UpdateContactChannelRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         ContactChannel result = contactChannelUseCase.updateContactChannel(codContato, new UpdateContactChannelCommand(
                 request.codFornecedor(),
                 request.codEmpregador(),
@@ -122,12 +119,6 @@ public class ContactChannelController {
     public ResponseEntity<Void> deleteContactChannel(@PathVariable String codContato) {
         contactChannelUseCase.deleteContactChannel(codContato);
         return ResponseEntity.noContent().build();
-    }
-
-    private Long resolveUserId(Authentication authentication) {
-        return userRepository.findByCodLogin(authentication.getName())
-                .map(u -> u.getIdUsuario())
-                .orElse(null);
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────

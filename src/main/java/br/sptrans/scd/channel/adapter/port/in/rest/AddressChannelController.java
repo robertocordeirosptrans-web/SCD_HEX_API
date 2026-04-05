@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,12 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.CreateAddressChannelCommand;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.UpdateAddressChannelCommand;
 import br.sptrans.scd.channel.domain.AddressChannel;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -37,14 +36,13 @@ import lombok.RequiredArgsConstructor;
 public class AddressChannelController {
 
     private final AddressChannelUseCase addressChannelUseCase;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo endereço do canal")
     public ResponseEntity<AddressChannel> createAddressChannel(
-            @RequestBody CreateAddressChannelRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody CreateAddressChannelRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         AddressChannel result = addressChannelUseCase.createAddressChannel(new CreateAddressChannelCommand(
                 request.codEndereco(),
                 request.codEmpregador(),
@@ -70,9 +68,8 @@ public class AddressChannelController {
     @Operation(summary = "Atualiza dados de um endereço do canal")
     public ResponseEntity<AddressChannel> updateAddressChannel(
             @PathVariable String codEndereco,
-            @RequestBody UpdateAddressChannelRequest request,
-            Authentication authentication) {
-        Long idUsuario = resolveUserId(authentication);
+            @RequestBody UpdateAddressChannelRequest request) {
+        Long idUsuario = userResolverHelper.getCurrentUserId();
         AddressChannel result = addressChannelUseCase.updateAddressChannel(codEndereco, new UpdateAddressChannelCommand(
                 request.codEmpregador(),
                 request.desLogradouro(),
@@ -114,12 +111,6 @@ public class AddressChannelController {
     public ResponseEntity<Void> deleteAddressChannel(@PathVariable String codEndereco) {
         addressChannelUseCase.deleteAddressChannel(codEndereco);
         return ResponseEntity.noContent().build();
-    }
-
-    private Long resolveUserId(Authentication authentication) {
-        return userRepository.findByCodLogin(authentication.getName())
-                .map(u -> u.getIdUsuario())
-                .orElse(null);
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
