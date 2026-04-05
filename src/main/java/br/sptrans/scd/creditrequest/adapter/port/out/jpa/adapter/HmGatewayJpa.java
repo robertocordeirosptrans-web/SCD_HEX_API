@@ -1,17 +1,16 @@
 package br.sptrans.scd.creditrequest.adapter.port.out.jpa.adapter;
 
-import br.sptrans.scd.creditrequest.application.port.out.HmGateway;
-
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import br.sptrans.scd.creditrequest.application.port.out.HmGateway;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * Implementação do {@link HmGateway} que acessa as tabelas

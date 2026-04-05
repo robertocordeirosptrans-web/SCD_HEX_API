@@ -8,14 +8,29 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.UserProfileJpa;
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.UserProfileJpaId;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserProfileJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserProfileJpaId;
 
 @Repository
 public interface UserProfileJpaRepository extends JpaRepository<UserProfileJpa, UserProfileJpaId>, JpaSpecificationExecutor<UserProfileJpa> {
 
         @Query("SELECT up FROM UserProfileJpa up INNER JOIN FETCH up.perfil p WHERE up.usuario.idUsuario = :idUsuario AND up.codStatus = :codStatus")
         List<UserProfileJpa> findByUsuarioIdUsuarioAndCodStatus(@Param("idUsuario") Long idUsuario, @Param("codStatus") String codStatus);
+
+        /**
+         * Carrega numa única query: perfis ativos do usuário + suas funcionalidades.
+         * Evita N+1: substitui o loop perfil-por-perfil em carregarFuncionalidadesEfetivas.
+         */
+        @Query("""
+                SELECT DISTINCT up FROM UserProfileJpa up
+                JOIN FETCH up.perfil p
+                JOIN FETCH p.perfilFuncionalidades pf
+                JOIN FETCH pf.funcionalidade f
+                WHERE up.usuario.idUsuario = :idUsuario
+                AND up.codStatus = 'A'
+                AND p.codStatus = 'A'
+                """)
+        List<UserProfileJpa> findActiveWithFunctionalities(@Param("idUsuario") Long idUsuario);
 
         @Query("SELECT COUNT(up) FROM UserProfileJpa up WHERE up.id.codPerfil = :codPerfil AND up.codStatus = 'A'")
         long countActiveUsersByProfile(@Param("codPerfil") String codPerfil);

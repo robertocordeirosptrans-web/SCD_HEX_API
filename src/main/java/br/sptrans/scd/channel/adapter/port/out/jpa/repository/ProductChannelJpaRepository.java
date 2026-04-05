@@ -10,11 +10,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelEntityJpa;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.ProductChannelKeyEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ProductChannelEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ProductChannelKeyEntityJpa;
 
 public interface ProductChannelJpaRepository extends JpaRepository<ProductChannelEntityJpa, ProductChannelKeyEntityJpa>, JpaSpecificationExecutor<ProductChannelEntityJpa> {
+
+    List<ProductChannelEntityJpa> findByIdCodCanal(String codCanal);
+
+    List<ProductChannelEntityJpa> findByIdCodProduto(String codProduto);
 
     @Modifying
     @Transactional
@@ -27,10 +31,10 @@ public interface ProductChannelJpaRepository extends JpaRepository<ProductChanne
             p.qtdMaximaRessuprimento = :qtdMaximaRessuprimento,
             p.codOrgaoEmissor = :codOrgaoEmissor,
             p.vlFace = :vlFace,
-            p.stCanaisProdutos = :stCanaisProdutos,
+            p.codStatus = :stCanaisProdutos,
             p.dtManutencao = CURRENT_TIMESTAMP,
             p.codConvenio = :codConvenio,
-            p.tipoOperHm = :tipoOperHm,
+            p.codTipoOperHM = :tipoOperHm,
             p.flgCarac = :flgCarac,
             p.idUsuarioManutencao = :idUsuarioManutencao
         WHERE p.id.codCanal = :codCanal AND p.id.codProduto = :codProduto
@@ -52,7 +56,7 @@ public interface ProductChannelJpaRepository extends JpaRepository<ProductChanne
         @Param("codProduto") String codProduto
     );
 
-    @Query("SELECT DISTINCT cp FROM CanaisProdutosJpa cp WHERE cp.id.codCanal = :codCanal AND cp.id.codProduto = :codProduto")
+    @Query("SELECT DISTINCT cp FROM ProductChannelEntityJpa cp WHERE cp.id.codCanal = :codCanal AND cp.id.codProduto = :codProduto")
     Optional<ProductChannelEntityJpa> findByIdOptimized(@Param("codCanal") String codCanal, @Param("codProduto") String codProduto);
 
     @Query(value = """
@@ -150,7 +154,7 @@ public interface ProductChannelJpaRepository extends JpaRepository<ProductChanne
         t.ID_TAXA,
         td.COD_CANALDESTINO
         """, nativeQuery = true)
-    List<ProductChannelProjection> findCompletoByCanal(@Param("codCanal") Integer codCanal);
+    List<ProductChannelProjection> findCompletoByCanal(@Param("codCanal") String codCanal);
 
     @Query(value = """
        SELECT DISTINCT 

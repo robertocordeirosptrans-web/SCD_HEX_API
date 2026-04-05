@@ -10,10 +10,14 @@ import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.port.out.TokenGeneratorPort;
 import br.sptrans.scd.auth.domain.port.out.TokenValidatorPort;
+import br.sptrans.scd.shared.exception.ExpiredTokenException;
+import br.sptrans.scd.shared.exception.InvalidTokenException;
+import br.sptrans.scd.shared.exception.TokenGenerationException;
 
 /**
  * Adapter de saída: implementa TokenGeneratorPort usando JWT (auth0).
@@ -30,24 +34,38 @@ public class JwtTokenAdapter implements TokenGeneratorPort, TokenValidatorPort {
 
     @Override
     public String generate(User user) {
-        Algorithm algorithm = Algorithm.HMAC256(secret);
-        return JWT.create()
-            .withIssuer("app-api")
-            .withSubject(user.getCodLogin())
-            .withClaim("userId", user.getIdUsuario())
-            .withExpiresAt(Instant.now().plus(expirationHours, ChronoUnit.HOURS))
-            .sign(algorithm);
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            return JWT.create()
+                .withIssuer("app-api")
+                .withSubject(user.getCodLogin())
+                .withClaim("userId", user.getIdUsuario())
+                .withExpiresAt(Instant.now().plus(expirationHours, ChronoUnit.HOURS))
+                .sign(algorithm);
+        } catch (IllegalArgumentException e) {
+            throw new TokenGenerationException(
+                "Falha ao gerar token JWT: configuração inválida do secret",
+                e
+            );
+        }
     }
 
     @Override
     public String generateRefresh(User user) {
-        Algorithm algorithm = Algorithm.HMAC256(secret);
-        return JWT.create()
-            .withIssuer("app-api")
-            .withSubject(user.getCodLogin())
-            .withClaim("type", "refresh")
-            .withExpiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
-            .sign(algorithm);
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            return JWT.create()
+                .withIssuer("app-api")
+                .withSubject(user.getCodLogin())
+                .withClaim("type", "refresh")
+                .withExpiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
+                .sign(algorithm);
+        } catch (IllegalArgumentException e) {
+            throw new TokenGenerationException(
+                "Falha ao gerar refresh token JWT: configuração inválida do secret",
+                e
+            );
+        }
     }
 
     @Override
@@ -58,8 +76,21 @@ public class JwtTokenAdapter implements TokenGeneratorPort, TokenValidatorPort {
                 .build()
                 .verify(token)
                 .getSubject();
-        } catch (com.auth0.jwt.exceptions.JWTVerificationException | IllegalArgumentException e) {
-            return null;
+        } catch (com.auth0.jwt.exceptions.TokenExpiredException e) {
+            throw new ExpiredTokenException(
+                "Token JWT expirado",
+                e
+            );
+        } catch (JWTVerificationException e) {
+            throw new InvalidTokenException(
+                "Token JWT inválido: " + e.getMessage(),
+                e
+            );
+        } catch (IllegalArgumentException e) {
+            throw new TokenGenerationException(
+                "Falha ao validar token JWT: configuração inválida do secret",
+                e
+            );
         }
     }
 }

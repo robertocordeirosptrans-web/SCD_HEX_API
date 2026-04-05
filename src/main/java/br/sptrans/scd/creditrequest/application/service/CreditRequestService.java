@@ -17,9 +17,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpaKey;
+import br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit.ItemRequest;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemProcessado;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemRejeitado;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
@@ -31,39 +37,41 @@ import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
-
+import br.sptrans.scd.product.application.service.FeeFareService;
+import br.sptrans.scd.product.domain.Fee;
+import br.sptrans.scd.shared.cache.InvalidateOrderCache;
+import br.sptrans.scd.shared.exception.ValidationException;
+import br.sptrans.scd.shared.idempotency.IdempotencyStore;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class CreditRequestService implements CreditRequestManagementUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(CreditRequestService.class);
 
-    /** Identificador de origem usado em {@code ID_ORIGEM_TRANSICAO} de todos os registros
-     *  de histórico gerados por esta API. */
+    /**
+     * Identificador de origem usado em {@code ID_ORIGEM_TRANSICAO} de todos os
+     * registros de histórico gerados por esta API.
+     */
     static final String ORIGEM_TRANSICAO = "pedido_credito_scd";
 
+    private final CreditRequestValidationService validationService;
+    private final RechargeLogService rechargeLogService;
     private final CreditRequestRepository creditRequestRepository;
     private final CreditRequestItemsRepository itemRepository;
+    private final CreditRequestMapper creditRequestMapper;
     private final HistCreditRequestService historyService;
     private final TransitionSituationValidator transitionValidator;
     private final SituationAscertainedService situationAscertainedService;
-
-    public CreditRequestService(
-            CreditRequestRepository creditRequestRepository,
-            CreditRequestItemsRepository itemRepository,
-            HistCreditRequestService historyService) {
-        this.creditRequestRepository = creditRequestRepository;
-        this.itemRepository = itemRepository;
-        this.historyService = historyService;
-        this.transitionValidator = new TransitionSituationValidator();
-        this.situationAscertainedService = new SituationAscertainedService();
-    }
+    private final IdempotencyStore idempotencyStore;
+    private final FeeFareService feeFareService;
 
     // ── Ações de mudança de status ───────────────────────────────────
-
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void block(BlockCommand comando) {
         log.info("Iniciando bloqueio - Entradas: {}", comando.itens().size());
         processarAlteracaoStatus(ActionStatus.BLOQUEAR, comando.itens(),
@@ -72,6 +80,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void unblock(UnblockCommand comando) {
         log.info("Iniciando desbloqueio - Entradas: {}", comando.itens().size());
         processarAlteracaoStatus(ActionStatus.DESBLOQUEAR, comando.itens(),
@@ -80,6 +89,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void cancel(CancelCommand comando) {
         log.info("Iniciando cancelamento - Entradas: {}", comando.itens().size());
         processarAlteracaoStatus(ActionStatus.CANCELAR, comando.itens(),
@@ -88,6 +98,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void pay(PayCommand comando) {
         log.info("Iniciando pagamento - Itens: {}, FormaPagto: {}",
                 comando.itens().size(), comando.codFormaPagto());
@@ -102,14 +113,284 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void acceptPendingSettlement(AcceptPendingCommand comando) {
         log.info("Iniciando aceite pendente liquidação - Entradas: {}", comando.itens().size());
         processarAlteracaoStatus(ActionStatus.ACEITO_PENDENTE_LIQUIDACAO, comando.itens(),
                 null, null, null, comando.dtAceite());
     }
 
-    // ── Consultas ────────────────────────────────────────────────────
+    /**
+     * Cria um novo pedido de crédito em lote, processando cada item e
+     * retornando o resultado detalhado.
+     *
+     * @param request dados do pedido e itens
+     * @return resposta com itens processados e rejeitados
+     */
+    @Override
+    @Transactional
+    @InvalidateOrderCache
+    public CreateRequestResponse createCreditRequest(
+            CreateRequestCredit request,
+            String idempotencyKey,
+            Long userId) {
 
+        log.info("[createCreditRequest] INICIADO - idempotencyKey={}, request={}", idempotencyKey, request);
+
+        // 1. Idempotência
+        Optional<CreateRequestResponse> cached = idempotencyStore.get(idempotencyKey);
+        if (cached.isPresent()) {
+            log.info("[createCreditRequest] Idempotência: retornando resultado em cache para chave '{}'", idempotencyKey);
+            return cached.get();
+        }
+
+        // 2. Validações prévias (do segundo método)
+        log.info("[createCreditRequest] Validando canal, lote e data de liberação...");
+        SalesChannel canal = validationService.validarCanal(request.codCanal());
+        validationService.validarDataLiberacao(request.dataLiberacaoCredito());
+
+        if ("S".equalsIgnoreCase(canal.getFlgSupercanal())) {
+            log.info("[createCreditRequest] Canal é supercanal, validando subordinados...");
+            validationService.validarSubordinadosSupercanal(request.codCanal());
+        }
+
+        // 3. Configurações de processamento
+        boolean processamentoParcialPermitido = "S".equalsIgnoreCase(canal.getFlgProcessamentoParcial());
+        log.info("[createCreditRequest] Processamento parcial permitido? {}", processamentoParcialPermitido);
+
+        List<CreateRequestResponse.ItemProcessado> processados = new ArrayList<>();
+        List<CreateRequestResponse.ItemRejeitado> rejeitados = new ArrayList<>();
+
+        int totalItens = request.pedidos().stream().mapToInt(p -> p.itens().size()).sum();
+        log.info("[createCreditRequest] Total de itens a processar: {}", totalItens);
+
+        for (CreateRequestCredit.CreditRequest pedido : request.pedidos()) {
+            //Validar o numero de lote para cada pedido
+            validationService.validarNumLote(pedido.numLote(), request.codCanal(), creditRequestRepository);
+
+            // Verificar se já existe a solicitação na base (SOL_DISTRIBUICOES)
+            boolean solicitacaoExiste = creditRequestRepository.findByNumSolicitacaoAndCodCanal(pedido.numSolicitacao(), request.codCanal()).isPresent();
+            if (solicitacaoExiste) {
+                log.warn("[createCreditRequest] Solicitação {} já existe para o canal {}. Não será criado novo pedido.", pedido.numSolicitacao(), request.codCanal());
+                throw new IllegalStateException("Já existe solicitação para este canal: " + pedido.numSolicitacao());
+            }
+
+            long numSolicitacaoItemSeq = 1L;
+            for (ItemRequest item : pedido.itens()) {
+                log.info("[createCreditRequest] Processando pedido={}, item={}, numSolicitacaoItem={}", pedido, item, numSolicitacaoItemSeq);
+                processarItemComTryCatchSequencial(canal, pedido, item, request,
+                        processados, rejeitados, 0, userId, numSolicitacaoItemSeq);
+                numSolicitacaoItemSeq++;
+                log.info("[createCreditRequest] Parcial: processados={}, rejeitados={}", processados.size(), rejeitados.size());
+            }
+        }
+
+        // 5. Validação pós-processamento (do segundo método)
+        if (processados.isEmpty() && !rejeitados.isEmpty() && !processamentoParcialPermitido) {
+            String motivos = rejeitados.stream()
+                    .map(r -> r.numSolicitacao() + ": " + r.motivoRejeicao())
+                    .reduce((a, b) -> a + "; " + b)
+                    .orElse("Motivo desconhecido");
+            log.warn("[createCreditRequest] Todos os pedidos rejeitados: {}", motivos);
+            throw new IllegalStateException("Todos os pedidos foram rejeitados: " + motivos);
+        }
+
+        // 6. Cache e resposta
+        CreateRequestResponse response = new CreateRequestResponse(
+                totalItens,
+                processados.size(),
+                rejeitados.size(),
+                processados,
+                rejeitados
+        );
+
+        log.info("[createCreditRequest] FINALIZADO - processados={}, rejeitados={}, response={}", processados.size(), rejeitados.size(), response);
+        return response;
+    }
+
+    // Novo método para processar item com numSolicitacaoItem sequencial
+    private void processarItemComTryCatchSequencial(
+            SalesChannel canal,
+            CreateRequestCredit.CreditRequest pedido,
+            ItemRequest item,
+            CreateRequestCredit request,
+            List<ItemProcessado> processados,
+            List<ItemRejeitado> rejeitados,
+            int index,
+            Long userId,
+            long numSolicitacaoItemSeq) {
+
+        Long numSolicitacao = pedido != null ? pedido.numSolicitacao() : null;
+        String numLogicoCartao = item != null ? item.numLogicoCartao() : null;
+        String codProduto = item != null ? item.codProduto() : null;
+
+        try {
+            // Validações por item (melhor que apenas null check)
+            if (pedido == null) {
+                rejeitados.add(new ItemRejeitado(
+                        null, numLogicoCartao, codProduto,
+                        "Pedido não encontrado para o índice " + index));
+                return;
+            }
+
+            if (item == null) {
+                rejeitados.add(new ItemRejeitado(
+                        numSolicitacao, null, null,
+                        "Item não encontrado para o pedido " + numSolicitacao));
+                return;
+            }
+
+            // Nova validação de item
+            validarItem(canal, pedido, item, request);
+
+            // Persistência dentro da transação (atomicidade por item)
+            // 1. Salvar pedido principal se ainda não existir
+            Optional<CreditRequest> existingRequest = creditRequestRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, request.codCanal());
+            CreditRequest creditRequest;
+
+            if (existingRequest.isEmpty()) {
+                creditRequest = mapToCreditRequest(pedido, item, request, userId);
+                creditRequestRepository.save(creditRequest);
+                historyService.saveRequestStatusHistory(creditRequest, pedido.numSolicitacao(), request.codCanal(), ORIGEM_TRANSICAO);
+            } else {
+                creditRequest = existingRequest.get();
+            }
+
+            // 2. Salvar item com numSolicitacaoItem sequencial
+            CreditRequestItems creditRequestItem = mapToCreditRequestItemSequencial(pedido, item, request, creditRequest, userId, numSolicitacaoItemSeq);
+            log.info("[DEBUG] Antes de salvar item: numSolicitacao={}, idUsuarioCartao={}, numLogicoCartao={}, codProduto={}, creditRequestItem.numLogicoCartao={}, numSolicitacaoItem={}",
+                    numSolicitacao,
+                    item.idUsuarioCartao(),
+                    item.numLogicoCartao(),
+                    item.codProduto(),
+                    creditRequestItem.getNumLogicoCartao(),
+                    numSolicitacaoItemSeq
+            );
+
+             log.info("[DEBUG] Antes de salvar item:  idUsuarioCartao={}, numLogicoCartao={}",
+        
+                    item.idUsuarioCartao(),
+                    item.numLogicoCartao());
+            int seqRecarga = rechargeLogService.upsertLogRecarga(
+                    item.numLogicoCartao(),
+                    userId,
+                    LocalDateTime.now(),
+                    LocalDateTime.now(),
+                    LocalDateTime.now(),
+                    userId);
+            creditRequestItem.setSeqRecarga(seqRecarga);
+            itemRepository.save(creditRequestItem);
+            historyService.saveItemStatusHistory(creditRequestItem, ORIGEM_TRANSICAO);
+
+            processados.add(new ItemProcessado(
+                    numSolicitacao,
+                    numLogicoCartao,
+                    codProduto,
+                    "03"));
+
+        } catch (ValidationException e) {
+            // Erros de validação específicos
+            rejeitados.add(new ItemRejeitado(
+                    numSolicitacao, numLogicoCartao, codProduto,
+                    "Validação: " + e.getMessage()));
+
+        } catch (Exception e) {
+            // Erros inesperados
+            log.error("Erro ao processar pedido {}: {}", numSolicitacao, e.getMessage(), e);
+            rejeitados.add(new ItemRejeitado(
+                    numSolicitacao, numLogicoCartao, codProduto,
+                    "Erro interno: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Valida um item de pedido de crédito usando o validationService. Lança
+     * ValidationException em caso de erro de validação.
+     */
+    private void validarItem(
+            SalesChannel canal,
+            CreateRequestCredit.CreditRequest pedido,
+            ItemRequest item,
+            CreateRequestCredit request) {
+        // Validar Comercialização de Produto com o Canal
+        List<CreateRequestResponse.ItemRejeitado> rejeitados = new ArrayList<>();
+        var produtoCanal = validationService.validarProdutoNoCanal(
+            pedido.numSolicitacao(),
+            item.numLogicoCartao(),
+            item.codProduto(),
+            request.codCanal(),
+            item.codProduto(),
+            rejeitados);
+        if (produtoCanal == null) {
+            throw new ValidationException("Produto não comercializado ou inativo no canal");
+        }
+
+        // Validar vigência da versão do produto
+        // validationService.validarVigenciaVersaoProduto(
+        //     pedido.numSolicitacao(),
+        //     item.numLogicoCartao(),
+        //     item.codProduto(),
+        //     request.codCanal(),
+        //     item.codVersao(),
+        //     request.dataLiberacaoCredito(),
+        //     rejeitados);
+
+        // Validar limites de recarga
+        String erroLimite = validationService.validarLimites(
+            request.codCanal(),
+            item.codProduto(),
+            item.valorTotal());
+        if (erroLimite != null) {
+            throw new ValidationException(erroLimite);
+        }
+
+        // Validar vigência do convênio do canal
+        validationService.validarVigenciadoCanal(
+                pedido.numSolicitacao(),
+                item.numLogicoCartao(),
+                item.codProduto(),
+                request.codCanal(),
+                pedido.canaisDistribuicao(),
+                item.codProduto(),
+                rejeitados);
+        if (!rejeitados.isEmpty()) {
+            // Lança a primeira mensagem de rejeição encontrada
+            throw new ValidationException(rejeitados.get(0).motivoRejeicao());
+        }
+
+        // ===== Validação de Taxas conforme plano =====
+        // Buscar taxa vigente para canal/produto e data atual
+        Optional<Fee> taxaOpt = feeFareService.findByCanalProduto(request.codCanal(), item.codProduto())
+            .stream()
+            .filter(f -> f.getDtFinal() == null || f.getDtFinal().isAfter(LocalDateTime.now()))
+            .findFirst();
+        if (taxaOpt.isEmpty()) {
+            throw new ValidationException("Taxa não encontrada para canal/produto vigente");
+        }
+        Fee taxa = taxaOpt.get();
+        // Calcular taxas
+        FeeFareService.TaxaCalculada taxas = feeFareService.calcularTaxas(
+            item.valorTotal(),
+            request.codCanal(),
+            pedido.numSolicitacao() != null ? pedido.numSolicitacao().toString() : null,
+            taxa.getCodTaxa()
+        );
+        // Log dos valores calculados
+        log.info("[TAXAS] Pedido: {}, Cartao: {}, Produto: {}, TaxaAdm Calculada: {}, TaxaServ Calculada: {}", 
+            pedido.numSolicitacao(), item.numLogicoCartao(), item.codProduto(), taxas.getValorTaxaAdm(), taxas.getValorTaxaServ());
+        // Comparar com valores informados
+        BigDecimal vlTxadmInformado = item.vlTxadm() != null ? item.vlTxadm() : BigDecimal.ZERO;
+        BigDecimal vlTxservInformado = item.vlTxserv() != null ? item.vlTxserv() : BigDecimal.ZERO;
+        if (taxas.getValorTaxaAdm().compareTo(vlTxadmInformado) != 0) {
+            throw new ValidationException("303 - Taxa administrativa incorreta");
+        }
+        if (taxas.getValorTaxaServ().compareTo(vlTxservInformado) != 0) {
+            throw new ValidationException("304 - Taxa de serviço incorreta");
+        }
+    }
+    
+
+    // ── Consultas ────────────────────────────────────────────────────
     @Override
     public CreditRequest findById(String codTipoDocumento, Long idUsuarioCadastro) {
         return creditRequestRepository
@@ -121,6 +402,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     public CursorPage<CreditRequest> findAll(SearchCommand comando) {
         SearchMode mode = comando.searchMode() != null
                 ? comando.searchMode() : SearchMode.OPERATIONAL;
+
         int limit = mode.getMaxPageSize() + 1;
 
         List<CreditRequest> results = creditRequestRepository.findWithCursor(
@@ -162,7 +444,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     // ── Core batch processing ────────────────────────────────────────
-
     private void processarAlteracaoStatus(
             ActionStatus acao,
             List<OrderItemEntry> entries,
@@ -187,34 +468,38 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
             for (Long numSolicitacaoItem : entry.numSolicitacaoItems()) {
                 try {
-                    CreditRequestItemsEJpaKey itemId = new CreditRequestItemsEJpaKey(
-                            numSolicitacao, numSolicitacaoItem, codCanal);
+                    CreditRequestItemsKey itemId = new CreditRequestItemsKey();
+                    itemId.setNumSolicitacao(numSolicitacao);
+                    itemId.setNumSolicitacaoItem(numSolicitacaoItem);
+                    itemId.setCodCanal(codCanal);
 
-                    Optional<CreditRequestItemsEJpa> itemOpt = itemRepository.findById(itemId);
+                    Optional<CreditRequestItems> itemOpt = itemRepository.findById(itemId);
                     if (itemOpt.isEmpty()) {
                         log.warn("Item não encontrado: Solicitação={}, Item={}, CodCanal={}",
                                 numSolicitacao, numSolicitacaoItem, codCanal);
                         continue;
                     }
 
-                    CreditRequestItemsEJpa item = itemOpt.get();
+                    CreditRequestItems item = itemOpt.get();
                     String statusAnterior = item.getCodSituacao();
 
                     if (acao == ActionStatus.DESBLOQUEAR) {
                         item.setCodSituacao(SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode());
                         itemRepository.save(item);
-                        historyService.saveItemStatusHistory(toDomain(item), ORIGEM_TRANSICAO);
-                        itensParaRestaurar.add(item);
+                        historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
+                        itensParaRestaurar.add(creditRequestMapper.toEntityItem(item));
                     } else {
                         String novoStatus = determinarNovoStatus(acao);
                         item.setCodSituacao(novoStatus);
 
                         if (acao == ActionStatus.PAGO) {
-                            item.setDtPagtoEconomica(LocalDateTime.now());
+                            log.warn("Item encontrado: NumLogicoCartao={}, CodCanal={}",
+                                    item.getNumLogicoCartao(), codCanal);
+                            item.setDtPagtoEconomica(dtConfirmaPagto != null ? dtConfirmaPagto : LocalDateTime.now());
                         }
 
                         itemRepository.save(item);
-                        historyService.saveItemStatusHistory(toDomain(item), ORIGEM_TRANSICAO);
+                        historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
 
                         log.info("Item atualizado - Solicitação={}, Item={}, StatusAnterior={}, NovoStatus={}",
                                 numSolicitacao, numSolicitacaoItem, statusAnterior, novoStatus);
@@ -236,6 +521,20 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             Long numSolicitacao = Long.parseLong(parts[0]);
             String codCanal = parts[1];
             try {
+                // Atualizar campos do pedido durante o pagamento
+                if (acao == ActionStatus.PAGO) {
+                    Optional<CreditRequest> pedidoOpt = creditRequestRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
+                    if (pedidoOpt.isPresent()) {
+                        CreditRequest pedido = pedidoOpt.get();
+                        // Atualiza os campos
+                        pedido.setDtPagtoEconomica(dtConfirmaPagto != null ? dtConfirmaPagto : LocalDateTime.now());
+                        pedido.setDtConfirmaPagto(dtConfirmaPagto);
+                        pedido.setCodFormaPagto(codFormaPagto);
+                        creditRequestRepository.save(pedido);
+                        // Registra no histórico da solicitação
+                        historyService.saveRequestStatusHistory(pedido, numSolicitacao, codCanal, ORIGEM_TRANSICAO);
+                    }
+                }
                 consolidarStatusSolicitacao(numSolicitacao, codCanal, acao,
                         codFormaPagto, vlPago, dtConfirmaPagto, dtAceite);
                 solicitacoesAtualizadas++;
@@ -255,7 +554,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
                     if (statusAntesBloqueio != null) {
                         item.setCodSituacao(statusAntesBloqueio);
-                        itemRepository.save(item);
+                        // Converter para domínio antes de salvar
+                        itemRepository.save(creditRequestMapper.toDomainItem(item));
                         log.info("Item desbloqueado e restaurado - Solicitação={}, Item={}, Status={}",
                                 item.getId().getNumSolicitacao(),
                                 item.getId().getNumSolicitacaoItem(),
@@ -278,14 +578,28 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     // ── Consolidação de status da solicitação ────────────────────────
-
     private void consolidarStatusSolicitacao(
             Long numSolicitacao, String codCanal, ActionStatus acao,
             String codFormaPagto, BigDecimal vlPago,
             LocalDateTime dtConfirmaPagto, LocalDateTime dtAceite) {
 
-        List<CreditRequestItemsEJpa> itens = itemRepository.findById_NumSolicitacaoAndCodCanal(
-                numSolicitacao, codCanal);
+        // Buscar itens individualmente usando findById
+        List<CreditRequestItemsEJpa> itens = new ArrayList<>();
+
+        for (long numSolicitacaoItem = 1;; numSolicitacaoItem++) {
+            CreditRequestItemsKey key = new CreditRequestItemsKey();
+            key.setNumSolicitacao(numSolicitacao);
+            key.setNumSolicitacaoItem(numSolicitacaoItem);
+            key.setCodCanal(codCanal);
+            Optional<CreditRequestItems> opt = itemRepository.findById(key);
+            if (opt.isPresent()) {
+                // Se necessário converter para EJpa:
+                itens.add(creditRequestMapper.toEntityItem(opt.get()));
+                // Ou se quiser trabalhar só com domínio, adapte o restante do método
+            } else {
+                break; // Sai do loop quando não encontrar mais itens
+            }
+        }
         if (itens.isEmpty()) {
             log.warn("Nenhum item encontrado para a solicitação {} e canal {}", numSolicitacao, codCanal);
             return;
@@ -320,13 +634,17 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             } else if (acao == ActionStatus.CANCELAR) {
                 solicitacao.setFlgCanc("S");
                 log.info("Setting FLG_CANC='S' para solicitação {} por ação CANCELAR", numSolicitacao);
+                creditRequestRepository.update(numSolicitacao, codCanal, solicitacao);
+                historyService.saveRequestStatusHistory(solicitacao, numSolicitacao, codCanal, ORIGEM_TRANSICAO);
+                log.info("Histórico de cancelamento registrado para solicitação {}", numSolicitacao);
+                return;
             } else if (acao == ActionStatus.PAGO || acao == ActionStatus.ACEITO_PENDENTE_LIQUIDACAO) {
                 // Apply transition-specific fields
                 solicitacao.setCodSituacao(novoStatusSolicitacao);
                 if (acao == ActionStatus.PAGO) {
                     solicitacao.setCodFormaPagto(codFormaPagto);
-                    solicitacao.setDtConfirmaPagto(
-                            dtConfirmaPagto != null ? dtConfirmaPagto : LocalDateTime.now());
+                    solicitacao.setDtConfirmaPagto(LocalDateTime.now());
+                    solicitacao.setDtPagtoEconomica(LocalDateTime.now());
                     solicitacao.setVlPago(vlPago != null ? vlPago : solicitacao.getVlTotal());
                 } else {
                     solicitacao.setDtAceite(dtAceite != null ? dtAceite : LocalDateTime.now());
@@ -392,8 +710,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             }
 
             // Legacy: mistura com sucesso → ATENDIDO_PARCIALMENTE
-            boolean temSucesso = statusItens.stream().anyMatch(s ->
-                    SituationCreditRequestItems.RECARREGADO.getCode().equals(s)
+            boolean temSucesso = statusItens.stream().anyMatch(s
+                    -> SituationCreditRequestItems.RECARREGADO.getCode().equals(s)
                     || SituationCreditRequestItems.PAGO.getCode().equals(s)
                     || SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode().equals(s));
             long statusUnicos = statusItens.stream().distinct().count();
@@ -408,13 +726,16 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         return resultado;
     }
 
-    // ── Validações ───────────────────────────────────────────────────
-
+    // ── Validações de Transações ───────────────────────────────────────────────────
     private void validarTransicoes(ActionStatus acao, OrderItemEntry entry) {
         for (Long numSolicitacaoItem : entry.numSolicitacaoItems()) {
-            CreditRequestItemsEJpaKey itemId = new CreditRequestItemsEJpaKey(
-                    entry.numSolicitacao(), numSolicitacaoItem, entry.codCanal());
-            Optional<CreditRequestItemsEJpa> itemOpt = itemRepository.findById(itemId);
+
+            CreditRequestItemsKey itemId = new CreditRequestItemsKey();
+            itemId.setNumSolicitacao(entry.numSolicitacao());
+            itemId.setNumSolicitacaoItem(numSolicitacaoItem);
+            itemId.setCodCanal(entry.codCanal());
+
+            Optional<CreditRequestItems> itemOpt = itemRepository.findById(itemId);
             if (itemOpt.isEmpty()) {
                 continue;
             }
@@ -447,8 +768,15 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 Long numSolicitacao = Long.parseLong(parts[0]);
                 String codCanal = parts[1];
 
-                List<CreditRequestItemsEJpa> itens = itemRepository
-                        .findById_NumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
+                List<CreditRequestItemsEJpa> itens = new ArrayList<>();
+                for (PayItemEntry payItem : entry.getValue()) {
+                    CreditRequestItemsKey key = new CreditRequestItemsKey();
+                    key.setNumSolicitacao(numSolicitacao);
+                    key.setNumSolicitacaoItem(payItem.numSolicitacaoItem());
+                    key.setCodCanal(codCanal);
+                    Optional<CreditRequestItems> opt = itemRepository.findById(key);
+                    opt.ifPresent(domainItem -> itens.add(creditRequestMapper.toEntityItem(domainItem)));
+                }
 
                 if (!itens.isEmpty()) {
                     BigDecimal totalCalculado = itens.stream()
@@ -474,22 +802,27 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     // ── Helpers de status ────────────────────────────────────────────
-
     private String determinarNovoStatus(ActionStatus acao) {
         return switch (acao) {
-            case BLOQUEAR -> SituationCreditRequestItems.BLOQUEADO.getCode();
-            case DESBLOQUEAR -> SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode();
-            case CANCELAR -> SituationCreditRequestItems.CANCELADO.getCode();
-            case PAGO -> SituationCreditRequestItems.PAGO.getCode();
-            case ACEITO_PENDENTE_LIQUIDACAO -> SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO.getCode();
-            case LIBERAR_RECARGA -> SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode();
+            case BLOQUEAR ->
+                SituationCreditRequestItems.BLOQUEADO.getCode();
+            case DESBLOQUEAR ->
+                SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode();
+            case CANCELAR ->
+                SituationCreditRequestItems.CANCELADO.getCode();
+            case PAGO ->
+                SituationCreditRequestItems.PAGO.getCode();
+            case ACEITO_PENDENTE_LIQUIDACAO ->
+                SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO.getCode();
+            case LIBERAR_RECARGA ->
+                SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode();
         };
     }
 
     private String findStatusBeforeBloqueio(Long numSolicitacao, Long numSolicitacaoItem, String codCanal) {
         try {
-            List<HistCreditRequestItems> history =
-                    historyService.findItemStatusHistory(numSolicitacao, numSolicitacaoItem, codCanal);
+            List<HistCreditRequestItems> history
+                    = historyService.findItemStatusHistory(numSolicitacao, numSolicitacaoItem, codCanal);
 
             for (HistCreditRequestItems record : history) {
                 String status = record.getCodSituacao();
@@ -508,8 +841,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     private String findSolicitacaoStatusBeforeBloqueio(Long numSolicitacao, String codCanal) {
         try {
-            List<HistCreditRequest> history =
-                    historyService.findRequestStatusHistory(numSolicitacao, codCanal);
+            List<HistCreditRequest> history
+                    = historyService.findRequestStatusHistory(numSolicitacao, codCanal);
 
             for (HistCreditRequest record : history) {
                 String status = record.getCodSituacao();
@@ -527,7 +860,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     // ── Conversão PayItemEntry → OrderItemEntry ──────────────────────
-
     private List<OrderItemEntry> convertPayItemEntries(List<PayItemEntry> payItems) {
         Map<String, List<Long>> grouped = new LinkedHashMap<>();
         for (PayItemEntry item : payItems) {
@@ -542,54 +874,59 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 .toList();
     }
 
-    // ── Mapeamento EJpa → Domain ─────────────────────────────────────
-
-    private CreditRequestItems toDomain(CreditRequestItemsEJpa e) {
-        CreditRequestItems item = new CreditRequestItems();
-        CreditRequestItemsKey key = new CreditRequestItemsKey();
-        key.setNumSolicitacao(e.getId().getNumSolicitacao());
-        key.setNumSolicitacaoItem(e.getId().getNumSolicitacaoItem());
-        key.setCodCanal(e.getId().getCodCanal());
-        item.setId(key);
-        item.setCodCanal(e.getCodCanal());
-        item.setIdUsuarioCadastro(e.getIdUsuarioCadastro());
-        item.setCodVersao(e.getCodVersao());
-        item.setNumLogicoCartao(e.getNumLogicoCartao());
-        item.setCodProduto(e.getCodProduto());
-        item.setCodTipoDocumento(e.getCodTipoDocumento());
-        item.setCodSituacao(e.getCodSituacao());
-        item.setQtdItem(e.getQtdItem());
-        item.setVlUnitario(e.getVlUnitario());
-        item.setVlItem(e.getVlItem());
-        item.setDtRecarga(e.getDtRecarga());
-        item.setVlCarregado(e.getVlCarregado());
-        item.setVlAjuste(e.getVlAjuste());
-        item.setFlgAjuste(e.getFlgAjuste());
-        item.setIdFuncionario(e.getIdFuncionario());
-        item.setCodAssinaturaHsm(e.getCodAssinaturaHsm());
-        item.setDtCadastro(e.getDtCadastro());
-        item.setDtManutencao(e.getDtManutencao());
-        item.setSeqRecarga(e.getSeqRecarga());
-        item.setDtEnvioHm(e.getDtEnvioHm());
-        item.setDtRetornoHm(e.getDtRetornoHm());
-        item.setIdUsuarioManutencao(e.getIdUsuarioManutencao());
-        item.setDtAssinatura(e.getDtAssinatura());
-        item.setDtPagtoEconomica(e.getDtPagtoEconomica());
-        item.setSqPid(e.getSqPid());
-        item.setDtInicProcesso(e.getDtInicProcesso());
-        item.setIdUsuarioCartao(e.getIdUsuarioCartao());
-        item.setSqRecarga(e.getSqRecarga());
-        item.setVlTxadm(e.getVlTxadm());
-        item.setVlTxserv(e.getVlTxserv());
-        item.setVlTxtotal(e.getVlTxtotal());
-        item.setFlgEvento(e.getFlgEvento());
-        item.setVlEvento(e.getVlEvento());
-        item.setFlgOutrasVias(e.getFlgOutrasVias());
-        item.setCodAssdigRecarga(e.getCodAssdigRecarga());
-        item.setVlAutorizacaoHm(e.getVlAutorizacaoHm());
-        item.setFlgLiminarLoja(e.getFlgLiminarLoja());
-        item.setCodProdutoHm(e.getCodProdutoHm());
-        item.setQtdDiasUtilizados(e.getQtdDiasUtilizados());
-        return item;
+    /**
+     * Mapeia os dados do pedido e item do request para a entidade de domínio
+     * CreditRequest.
+     */
+    private CreditRequest mapToCreditRequest(CreateRequestCredit.CreditRequest pedido, ItemRequest item, CreateRequestCredit request, Long userId) {
+        CreditRequest cr = new CreditRequest();
+        cr.setNumSolicitacao(pedido.numSolicitacao());
+        cr.setCodCanal(request.codCanal());
+        cr.setNumLote(pedido.numLote());
+        cr.setDtCadastro(LocalDateTime.now());
+        cr.setDtManutencao(LocalDateTime.now());
+        cr.setDtSolicitacao(request.dataGeracao());
+        cr.setDtPrevLiberacao(request.dataLiberacaoCredito());
+        cr.setCodSituacao("03");
+        cr.setVlTotal(item.valorTotal());
+        cr.setCodTipoDocumento("1");
+        cr.setIdUsuarioCadastro(userId);
+        cr.setIdUsuarioManutencao(userId);
+        return cr;
     }
+
+    /**
+     * Mapeia os dados do pedido e item do request para a entidade de domínio
+     * CreditRequestItems.
+     */
+    // Novo método para mapear item com numSolicitacaoItem sequencial
+    private CreditRequestItems mapToCreditRequestItemSequencial(CreateRequestCredit.CreditRequest pedido, ItemRequest item, CreateRequestCredit request, CreditRequest creditRequest, Long userId, long numSolicitacaoItemSeq) {
+        CreditRequestItems cri = new CreditRequestItems();
+        CreditRequestItemsKey key = new CreditRequestItemsKey();
+        key.setNumSolicitacao(pedido.numSolicitacao());
+        key.setNumSolicitacaoItem(numSolicitacaoItemSeq);
+        key.setCodCanal(request.codCanal());
+        cri.setId(key);
+        cri.setSolicitacao(creditRequest);
+        cri.setCodCanal(request.codCanal());
+        cri.setIdUsuarioCadastro(userId);
+        cri.setIdUsuarioManutencao(userId);
+        cri.setIdUsuarioCartao(item.idUsuarioCartao());
+        cri.setNumLogicoCartao(item.numLogicoCartao());
+        cri.setCodProduto(item.codProduto());
+        cri.setCodVersao(item.codVersao());
+        cri.setCodSituacao("03"); // Situação inicial, ajustar conforme regra
+        cri.setQtdItem(0); // Ajuste se necessário
+        cri.setVlUnitario(item.vlUnitario());
+        cri.setVlItem(item.valorTotal());
+        cri.setDtCadastro(LocalDateTime.now());
+        cri.setDtManutencao(LocalDateTime.now());
+        cri.setVlTxadm(item.vlTxadm());
+        cri.setVlTxserv(item.vlTxserv());
+        cri.setVlTxtotal(item.vlTxadm().add(item.vlTxserv()));
+        cri.setSeqRecarga(1);
+        cri.setCodTipoDocumento("2");
+        return cri;
+    }
+
 }

@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.ContactChannelRepository;
@@ -14,6 +13,7 @@ import br.sptrans.scd.channel.domain.ContactChannel;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
+import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class ContactChannelService implements ContactChannelUseCase {
 
     private final ContactChannelRepository contactChannelRepository;
-    private final UserRepository userRepository;
+    private final UserResolverHelperImpl userResolverHelper;
 
     @Override
     public ContactChannel createContactChannel(CreateContactChannelCommand cmd) {
@@ -30,7 +30,7 @@ public class ContactChannelService implements ContactChannelUseCase {
             throw new ChannelException(ChannelErrorType.CONTACT_CHANNEL_CODE_ALREADY_EXISTS);
         }
 
-        User usuario = resolveUser(cmd.idUsuario());
+        User usuario = userResolverHelper.resolve(cmd.idUsuario());
 
         ContactChannel contactChannel = new ContactChannel(
                 cmd.codContato(),
@@ -64,7 +64,7 @@ public class ContactChannelService implements ContactChannelUseCase {
         ContactChannel existing = contactChannelRepository.findById(codContato)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.CONTACT_CHANNEL_NOT_FOUND));
 
-        User usuario = resolveUser(cmd.idUsuario());
+        User usuario = userResolverHelper.resolve(cmd.idUsuario());
 
         ContactChannel updated = new ContactChannel(
                 existing.getCodContato(),
@@ -114,8 +114,4 @@ public class ContactChannelService implements ContactChannelUseCase {
         contactChannelRepository.deleteById(codContato);
     }
 
-    private User resolveUser(Long idUsuario) {
-        if (idUsuario == null) return null;
-        return userRepository.findById(idUsuario).orElse(null);
-    }
 }

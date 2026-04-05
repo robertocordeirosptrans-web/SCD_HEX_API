@@ -1,10 +1,10 @@
 package br.sptrans.scd.auth.application.port.in;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO;
 import br.sptrans.scd.auth.domain.User;
 
 /**
@@ -92,12 +92,12 @@ public interface UserManagementUseCase {
     /**
      * Lista usuários com paginação, filtros e ordenação.
      */
-    List<User> listUsersPaginated(UserFilterRequestDTO filtro, int page, int size, String sortBy, String sortDir);
+    List<User> listUsersPaginated(UserFilterRequest filtro, int page, int size, String sortBy, String sortDir);
 
     /**
      * Conta total de usuários com os filtros aplicados.
      */
-    long countUsers(UserFilterRequestDTO filtro);
+    long countUsers(UserFilterRequest filtro);
 
     /**
      * Busca usuário por ID com perfis, grupos e funcionalidades efetivas
@@ -115,8 +115,8 @@ public interface UserManagementUseCase {
             String codCpf,
             String codRg,
             String numDiasSemanasPermitidos, // ex: "2,3,4,5,6"
-            Date dtJornadaIni,
-            Date dtJornadaFim,
+            LocalDateTime dtJornadaIni,
+            LocalDateTime dtJornadaFim,
             Long idUsuarioLogado) {
 
     }
@@ -177,6 +177,14 @@ public interface UserManagementUseCase {
             Long idUsuario,
             String codGrupo,
             Long idUsuarioLogado) {
+
+    }
+
+    record UserFilterRequest(
+            String nomUsuario,
+            String nomEmail,
+            String codPerfil,
+            String codStatus) {
 
     }
 

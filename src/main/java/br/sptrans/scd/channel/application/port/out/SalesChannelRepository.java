@@ -18,4 +18,6 @@ public interface SalesChannelRepository {
     void updateStatus(String codCanal, String stCanais, Long idUsuario);
 
     void deleteById(String codCanal);
+
+    List<SalesChannel> findByCodCanalSuperior(String codCanalSuperior);
 }

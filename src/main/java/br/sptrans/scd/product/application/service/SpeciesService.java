@@ -6,12 +6,13 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase;
-import br.sptrans.scd.product.application.port.out.SpeciesRepository;
+import br.sptrans.scd.product.application.port.out.repository.SpeciesRepository;
 import br.sptrans.scd.product.domain.Species;
-import br.sptrans.scd.product.domain.enums.DomainStatus;
+import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class SpeciesService implements SpeciesManagementUseCase {
 
     private final SpeciesRepository speciesRepository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @Override
     public Species createSpecies(CreateSpeciesCommand command) {
@@ -35,7 +36,7 @@ public class SpeciesService implements SpeciesManagementUseCase {
         Species species = new Species(
                 command.codEspecie(),
                 command.desEspecie(),
-                DomainStatus.INACTIVE.getCode(),
+                ProductDomainStatus.INACTIVE.getCode(),
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 usuario,
@@ -85,7 +86,7 @@ public class SpeciesService implements SpeciesManagementUseCase {
             throw new ProductException(ProductErrorType.SPECIES_ALREADY_ACTIVE);
         }
 
-        speciesRepository.updateStatus(codEspecie, DomainStatus.ACTIVE.getCode(), idUsuario);
+        speciesRepository.updateStatus(codEspecie, ProductDomainStatus.ACTIVE.getCode(), idUsuario);
     }
 
     @Override
@@ -97,7 +98,7 @@ public class SpeciesService implements SpeciesManagementUseCase {
             throw new ProductException(ProductErrorType.SPECIES_ALREADY_INACTIVE);
         }
 
-        speciesRepository.updateStatus(codEspecie, DomainStatus.INACTIVE.getCode(), idUsuario);
+        speciesRepository.updateStatus(codEspecie, ProductDomainStatus.INACTIVE.getCode(), idUsuario);
     }
 
     @Override

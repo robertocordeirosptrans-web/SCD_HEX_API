@@ -1,10 +1,14 @@
 package br.sptrans.scd.channel.domain;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class TypesActivity {
@@ -15,7 +19,7 @@ public class TypesActivity {
 
     private String codStatus;
 
-    private String dtCadastro;
+    private LocalDateTime dtCadastro;
 
-    private String dtManutencao;
+    private LocalDateTime dtManutencao;
 }

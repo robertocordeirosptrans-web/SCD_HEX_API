@@ -1,6 +1,7 @@
 package br.sptrans.scd.channel.adapter.port.in.rest;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,11 +17,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChDTO;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChResponseDTO;
+import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ProductChannelMapper;
+import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.CreateProductChannelCommand;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.UpdateProductChannelCommand;
 import br.sptrans.scd.channel.domain.ProductChannel;
+import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,17 +42,20 @@ import lombok.RequiredArgsConstructor;
 @PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Canais de Produto v1", description = "Endpoints para gerenciamento de canais de produto")
+
 public class ProductChannelController {
 
     private final ProductChannelUseCase productChannelUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
+    private final ProductChannelMapper productChannelMapper;
+
 
     @PostMapping
     @Operation(summary = "Cadastra um novo canal de produto")
-        @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Canal de produto cadastrado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Canal de produto cadastrado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
     public ResponseEntity<ProductChannel> createProductChannel(
             @RequestBody CreateProductChannelRequest request,
             Authentication authentication) {
@@ -64,7 +73,7 @@ public class ProductChannelController {
                         request.vlFace(),
                         request.codStatus(),
                         request.codConvenio(),
-                        request.tipoOperHM(),
+                        request.codTipoOperHM(),
                         request.flgCarac(),
                         idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -72,10 +81,10 @@ public class ProductChannelController {
 
     @PutMapping("/{codCanal}/{codProduto}")
     @Operation(summary = "Atualiza um canal de produto")
-        @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Canal de produto atualizado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Canal de produto atualizado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
     public ResponseEntity<ProductChannel> updateProductChannel(
             @PathVariable String codCanal,
             @PathVariable String codProduto,
@@ -93,7 +102,7 @@ public class ProductChannelController {
                         request.vlFace(),
                         request.codStatus(),
                         request.codConvenio(),
-                        request.tipoOperHM(),
+                        request.codTipoOperHM(),
                         request.flgCarac(),
                         idUsuario));
         return ResponseEntity.ok(result);
@@ -101,17 +110,9 @@ public class ProductChannelController {
 
     @GetMapping("/{codCanal}/{codProduto}")
     @Operation(summary = "Busca canal de produto por canal e produto")
-    public ResponseEntity<ProductChannel> findProductChannel(
+    public ResponseEntity<PageResponse<ProductChDTO>> findProductChannel(
             @PathVariable String codCanal,
-            @PathVariable String codProduto) {
-        return ResponseEntity.ok(productChannelUseCase.findProductChannel(codCanal, codProduto));
-    }
-
-    @GetMapping
-    @Operation(summary = "Lista canais de produto com filtro opcional por canal ou produto")
-    public ResponseEntity<PageResponse<ProductChannel>> findProductChannels(
-            @RequestParam(required = false) String codCanal,
-            @RequestParam(required = false) String codProduto,
+            @PathVariable String codProduto,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<ProductChannel> all;
@@ -122,7 +123,42 @@ public class ProductChannelController {
         } else {
             all = productChannelUseCase.findAllProductChannels();
         }
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+
+        List<ProductChDTO> dtos = all.stream()
+                .map(channel -> new ProductChDTO(
+                channel.getQtdLimiteComercializacao(),
+                channel.getQtdMinimaEstoque(),
+                channel.getQtdMaximaEstoque(),
+                channel.getQtdMinimaRessuprimento(),
+                channel.getQtdMaximaRessuprimento(),
+                channel.getCodOrgaoEmissor(),
+                channel.getVlFace(),
+                channel.getCodStatus(),
+                channel.getDtCadastro() != null ? channel.getDtCadastro().toString() : null,
+                channel.getDtManutencao() != null ? channel.getDtManutencao().toString() : null,
+                channel.getCodConvenio(),
+                channel.getCodTipoOperHM(),
+                channel.getFlgCarac(),
+                channel.getId() != null ? channel.getId().getCodProduto() : null,
+                channel.getId() != null ? channel.getId().getCodCanal() : null,
+                UserSimpleMapper.toDto(channel.getIdUsuarioCadastro()),
+                UserSimpleMapper.toDto(channel.getIdUsuarioManutencao())
+        ))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
+    }
+
+    @GetMapping
+    @Operation(summary = "Lista canais de produto com filtro opcional por canal ou produto")
+    public ResponseEntity<PageResponse<ProductChResponseDTO>> findProductChannels(
+            @RequestParam(required = false) String codCanal,
+            @RequestParam(required = false) String codProduto,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<ProductChannelProjection> projections = productChannelUseCase.findProjections(codCanal, codProduto);
+        List<ProductChResponseDTO> dtos = productChannelMapper.toResponseDTOList(projections);
+        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
     }
 
     @DeleteMapping("/{codCanal}/{codProduto}")
@@ -141,7 +177,6 @@ public class ProductChannelController {
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
-
     public record CreateProductChannelRequest(
             String codCanal,
             String codProduto,
@@ -154,8 +189,10 @@ public class ProductChannelController {
             Integer vlFace,
             String codStatus,
             Integer codConvenio,
-            Integer tipoOperHM,
-            String flgCarac) {}
+            Integer codTipoOperHM,
+            String flgCarac) {
+
+    }
 
     public record UpdateProductChannelRequest(
             Integer qtdLimiteComercializacao,
@@ -167,6 +204,8 @@ public class ProductChannelController {
             Integer vlFace,
             String codStatus,
             Integer codConvenio,
-            Integer tipoOperHM,
-            String flgCarac) {}
+            Integer codTipoOperHM,
+            String flgCarac) {
+
+    }
 }

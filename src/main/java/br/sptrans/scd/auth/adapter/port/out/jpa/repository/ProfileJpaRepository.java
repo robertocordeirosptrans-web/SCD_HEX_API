@@ -1,6 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.out.jpa.repository;
 
-import br.sptrans.scd.auth.domain.Profile;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.ProfileEntityJpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -10,8 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.ProfileEntityJpa;
 
 @Repository
 public interface ProfileJpaRepository extends JpaRepository<ProfileEntityJpa, String>, JpaSpecificationExecutor<ProfileEntityJpa> {

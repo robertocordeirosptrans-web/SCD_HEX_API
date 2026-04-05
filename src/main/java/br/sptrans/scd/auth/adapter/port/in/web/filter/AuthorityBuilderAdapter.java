@@ -6,7 +6,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.User;
@@ -15,9 +16,9 @@ import br.sptrans.scd.auth.domain.User;
 @Component
 public class AuthorityBuilderAdapter {
 
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
-    public AuthorityBuilderAdapter(UserRepository userRepository) {
+    public AuthorityBuilderAdapter(UserPersistencePort userRepository) {
         this.userRepository = userRepository;
     }
 

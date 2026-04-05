@@ -14,9 +14,7 @@ public interface MarketingDistribuitionChannelUseCase {
 
     List<MarketingDistribuitionChannel> findAllMarketingDistribuitionChannels();
 
-    List<MarketingDistribuitionChannel> findByCodCanalComercializacao(String codCanalComercializacao);
 
-    List<MarketingDistribuitionChannel> findByCodCanalDistribuicao(String codCanalDistribuicao);
 
     void deleteMarketingDistribuitionChannel(String codCanalComercializacao, String codCanalDistribuicao);
 

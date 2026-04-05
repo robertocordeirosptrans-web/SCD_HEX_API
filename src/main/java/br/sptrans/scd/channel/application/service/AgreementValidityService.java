@@ -1,5 +1,6 @@
 package br.sptrans.scd.channel.application.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -9,9 +10,6 @@ import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase;
 import br.sptrans.scd.channel.application.port.out.AgreementValidityRepository;
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.channel.domain.AgreementValidityKey;
-import br.sptrans.scd.channel.domain.ProductChannel;
-import br.sptrans.scd.channel.domain.ProductChannelKey;
-import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import lombok.RequiredArgsConstructor;
@@ -30,23 +28,12 @@ public class AgreementValidityService implements AgreementValidityUseCase {
             throw new ChannelException(ChannelErrorType.AGREEMENT_VALIDITY_ALREADY_EXISTS);
         }
 
-        SalesChannel canal = new SalesChannel(
-                cmd.codCanal(), null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null, null);
-
-        ProductChannel canalProduto = new ProductChannel();
-        canalProduto.setId(new ProductChannelKey(cmd.codCanal(), cmd.codProduto()));
-
         AgreementValidity entity = new AgreementValidity(
                 key,
-                canal,
-                null,
-                canalProduto,
-                cmd.dataFimValidade(),
-                cmd.dataInicioValidade(),
-                cmd.status(),
-                null,
+                cmd.dtFimValidade(),
+                cmd.dtInicioValidade(),
+                cmd.codStatus(),
+                LocalDateTime.now(),
                 cmd.idUsuario());
 
         return repository.save(entity);
@@ -59,9 +46,9 @@ public class AgreementValidityService implements AgreementValidityUseCase {
         AgreementValidity existing = repository.findById(key)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.AGREEMENT_VALIDITY_NOT_FOUND));
 
-        existing.setDataFimValidade(cmd.dataFimValidade());
-        existing.setDataInicioValidade(cmd.dataInicioValidade());
-        existing.setStatus(cmd.status());
+        existing.setDtFimValidade(cmd.dtFimValidade());
+        existing.setDtInicioValidade(cmd.dtInicioValidade());
+        existing.setCodStatus(cmd.codStatus());
         existing.setIdUsuario(cmd.idUsuario());
 
         return repository.save(existing);

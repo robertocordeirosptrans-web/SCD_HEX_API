@@ -24,35 +24,35 @@ import lombok.Setter;
 @Setter
 public class UserSession {
 
-    private String sessionId;       // UUID — mesmo que vai no JWT claim
-    private Long   userId;          // FK para o usuário dono da sessão
-    private String ipAddress;       // IP de origem do login
-    private String userAgent;       // Navegador/dispositivo
-    private LocalDateTime createdAt;
-    private LocalDateTime expiresAt;
-    private LocalDateTime revokedAt; // null = sessão ainda válida
-    private String revokedReason;    // "LOGOUT", "ADMIN_REVOKE", "PASSWORD_CHANGED"
+    private String idSessao;         // UUID — mesmo que vai no JWT claim
+    private Long   idUsuario;        // FK para o usuário dono da sessão
+    private String enderecoIp;       // IP de origem do login
+    private String agenteUsuario;    // Navegador/dispositivo
+    private LocalDateTime dtCriacao;
+    private LocalDateTime dtExpiracao;
+    private LocalDateTime dtRevogacao; // null = sessão ainda válida
+    private String motivoRevogacao;    // "LOGOUT", "ADMIN_REVOKE", "PASSWORD_CHANGED"
 
     // Construtor chamado no momento do login
-    public UserSession(Long userId, String ipAddress, String userAgent, int ttlHours) {
-        this.sessionId  = UUID.randomUUID().toString();
-        this.userId     = userId;
-        this.ipAddress  = ipAddress;
-        this.userAgent  = userAgent;
-        this.createdAt  = LocalDateTime.now();
-        this.expiresAt  = LocalDateTime.now().plusHours(ttlHours);
-        this.revokedAt  = null;
+    public UserSession(Long idUsuario, String enderecoIp, String agenteUsuario, int ttlHoras) {
+        this.idSessao      = UUID.randomUUID().toString();
+        this.idUsuario     = idUsuario;
+        this.enderecoIp    = enderecoIp;
+        this.agenteUsuario = agenteUsuario;
+        this.dtCriacao     = LocalDateTime.now();
+        this.dtExpiracao   = LocalDateTime.now().plusHours(ttlHoras);
+        this.dtRevogacao   = null;
     }
 
     /** Sessão válida = não expirada E não revogada */
-    public boolean isActive() {
-        return revokedAt == null && LocalDateTime.now().isBefore(expiresAt);
+    public boolean isAtiva() {
+        return dtRevogacao == null && LocalDateTime.now().isBefore(dtExpiracao);
     }
 
     /** Logout do usuário — revoga a sessão */
-    public void revoke(String reason) {
-        this.revokedAt     = LocalDateTime.now();
-        this.revokedReason = reason;
+    public void revogar(String motivo) {
+        this.dtRevogacao    = LocalDateTime.now();
+        this.motivoRevogacao = motivo;
     }
 
    

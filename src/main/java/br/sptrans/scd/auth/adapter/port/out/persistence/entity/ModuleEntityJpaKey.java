@@ -1,0 +1,22 @@
+package br.sptrans.scd.auth.adapter.port.out.persistence.entity;
+
+import java.io.Serializable;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Embeddable
+@EqualsAndHashCode
+@RequiredArgsConstructor
+@Getter
+public class ModuleEntityJpaKey implements Serializable {
+
+    @Column(name = "COD_SISTEMA", length = 10)
+    private String codSistema;
+    @Column(name = "COD_MODULO", length = 10)
+    private String codModulo;
+
+}

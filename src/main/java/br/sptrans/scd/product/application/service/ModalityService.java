@@ -6,12 +6,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase;
-import br.sptrans.scd.product.application.port.out.ModalityRepository;
+import br.sptrans.scd.product.application.port.out.repository.ModalityRepository;
 import br.sptrans.scd.product.domain.Modality;
-import br.sptrans.scd.product.domain.enums.DomainStatus;
+import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class ModalityService implements ModalityManagementUseCase {
 
     private final ModalityRepository modalityRepository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @Override
     public Modality createModality(CreateModalityCommand command) {
@@ -35,7 +35,7 @@ public class ModalityService implements ModalityManagementUseCase {
         Modality modality = new Modality(
                 command.codModalidade(),
                 command.desModalidade(),
-                DomainStatus.INACTIVE.getCode(),
+                ProductDomainStatus.INACTIVE.getCode(),
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 usuario,
@@ -85,7 +85,7 @@ public class ModalityService implements ModalityManagementUseCase {
             throw new ProductException(ProductErrorType.MODALITY_ALREADY_ACTIVE);
         }
 
-        modalityRepository.updateStatus(codModalidade, DomainStatus.ACTIVE.getCode(), idUsuario);
+        modalityRepository.updateStatus(codModalidade, ProductDomainStatus.ACTIVE.getCode(), idUsuario);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class ModalityService implements ModalityManagementUseCase {
             throw new ProductException(ProductErrorType.MODALITY_ALREADY_INACTIVE);
         }
 
-        modalityRepository.updateStatus(codModalidade, DomainStatus.INACTIVE.getCode(), idUsuario);
+        modalityRepository.updateStatus(codModalidade, ProductDomainStatus.INACTIVE.getCode(), idUsuario);
     }
 
     @Override

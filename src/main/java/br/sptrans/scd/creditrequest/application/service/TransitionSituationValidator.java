@@ -2,6 +2,8 @@ package br.sptrans.scd.creditrequest.application.service;
 
 import java.util.Set;
 
+import org.springframework.stereotype.Component;
+
 import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
@@ -15,6 +17,7 @@ import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
  * {@code PCK_MVE_SITUACAOPEDIDO}, equivalente à verificação da tabela
  * {@code TRANS_SITUACOES} e às validações inline nas rotinas de alteração.</p>
  */
+@Component
 public class TransitionSituationValidator {
 
     private static final Set<String> ALLOWED_BLOQUEAR = Set.of(

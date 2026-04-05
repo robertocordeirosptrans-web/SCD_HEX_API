@@ -3,14 +3,12 @@ package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 import java.util.List;
 import java.util.Optional;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.MarketingDistribuitionChannelEntityJpa;
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.MarketingDistribuitionChannelKeyEntityJpa;
-import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.MarketingDistribuitionChannelMapper;
-import br.sptrans.scd.channel.adapter.port.out.jpa.repository.MarketingDistribuitionChannelJpaRepository;
-
 import org.springframework.stereotype.Repository;
 
-
+import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.MarketingDistribuitionChannelMapper;
+import br.sptrans.scd.channel.adapter.port.out.jpa.repository.MarketingDistribuitionChannelJpaRepository;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.MarketingDistribuitionChannelEntityJpa;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.MarketingDistribuitionChannelKeyEntityJpa;
 import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelRepository;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannelKey;
@@ -37,17 +35,9 @@ public class MarketingDistribuitionChannelAdapterJpa implements MarketingDistrib
         return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
     }
 
-    @Override
-    public List<MarketingDistribuitionChannel> findByCodCanalComercializacao(String codCanalComercializacao) {
-        return jpaRepository.findByCodCanalComercializacao(codCanalComercializacao)
-                .stream().map(mapper::toDomain).toList();
-    }
 
-    @Override
-    public List<MarketingDistribuitionChannel> findByCodCanalDistribuicao(String codCanalDistribuicao) {
-        return jpaRepository.findByCodCanalDistribuicao(codCanalDistribuicao)
-                .stream().map(mapper::toDomain).toList();
-    }
+
+
 
     @Override
     public MarketingDistribuitionChannel save(MarketingDistribuitionChannel entity) {
@@ -67,6 +57,16 @@ public class MarketingDistribuitionChannelAdapterJpa implements MarketingDistrib
         MarketingDistribuitionChannelKeyEntityJpa entityKey = mapper.toEntityKey(id);
         return jpaRepository.existsById(entityKey);
     }
+
+    @Override
+    public Optional<MarketingDistribuitionChannel> findActiveByCanalDistrib(String codCanal, String codCanalDistrib) {
+        return jpaRepository.findActiveByCanalDistribuicao(codCanal, codCanalDistrib)
+                .stream()
+                .findFirst()
+                .map(mapper::toDomain);
+    }
+
+
 
  
 }

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.CreateMarketingDistribuitionChannelCommand;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.UpdateMarketingDistribuitionChannelCommand;
@@ -39,14 +39,14 @@ import lombok.RequiredArgsConstructor;
 public class MarketingDistribuitionChannelController {
 
     private final MarketingDistribuitionChannelUseCase marketingUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo canal de comercialização/distribuição")
-        @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Canal de comercialização/distribuição cadastrado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Canal de comercialização/distribuição cadastrado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
     public ResponseEntity<MarketingDistribuitionChannel> createMarketingDistribuitionChannel(
             @RequestBody CreateMarketingDistribuitionChannelRequest request,
             Authentication authentication) {
@@ -62,10 +62,10 @@ public class MarketingDistribuitionChannelController {
 
     @PutMapping("/{codCanalComercializacao}/{codCanalDistribuicao}")
     @Operation(summary = "Atualiza um canal de comercialização/distribuição")
-        @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Canal de comercialização/distribuição atualizado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Canal de comercialização/distribuição atualizado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
     public ResponseEntity<MarketingDistribuitionChannel> updateMarketingDistribuitionChannel(
             @PathVariable String codCanalComercializacao,
             @PathVariable String codCanalDistribuicao,
@@ -96,15 +96,9 @@ public class MarketingDistribuitionChannelController {
             @RequestParam(required = false) String codCanalDistribuicao,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        List<MarketingDistribuitionChannel> all;
-        if (codCanalComercializacao != null) {
-            all = marketingUseCase.findByCodCanalComercializacao(codCanalComercializacao);
-        } else if (codCanalDistribuicao != null) {
-            all = marketingUseCase.findByCodCanalDistribuicao(codCanalDistribuicao);
-        } else {
-            all = marketingUseCase.findAllMarketingDistribuitionChannels();
-        }
+        List<MarketingDistribuitionChannel> all = marketingUseCase.findAllMarketingDistribuitionChannels();
         return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+
     }
 
     @DeleteMapping("/{codCanalComercializacao}/{codCanalDistribuicao}")
@@ -123,12 +117,15 @@ public class MarketingDistribuitionChannelController {
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
-
     public record CreateMarketingDistribuitionChannelRequest(
             String codCanalComercializacao,
             String codCanalDistribuicao,
-            String codStatus) {}
+            String codStatus) {
+
+    }
 
     public record UpdateMarketingDistribuitionChannelRequest(
-            String codStatus) {}
+            String codStatus) {
+
+    }
 }

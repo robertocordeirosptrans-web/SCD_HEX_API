@@ -19,7 +19,7 @@ public class UserProfile {
     private Long idUsuarioManutencao;
     private String codStatus;
     private LocalDateTime dtModi;
-    private User user;
+    private User usuario;
     private Profile perfil;
 
   

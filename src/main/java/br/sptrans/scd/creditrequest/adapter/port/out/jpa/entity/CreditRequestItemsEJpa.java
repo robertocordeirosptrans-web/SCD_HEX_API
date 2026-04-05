@@ -6,12 +6,15 @@ import java.time.LocalDateTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 
 /**
  * JPA Entity para SolDistribItens (Itens do Pedido).
@@ -72,8 +75,8 @@ public class CreditRequestItemsEJpa {
     @Column(name = "ID_FUNCIONARIO", length = 50)
     private String idFuncionario;
 
-    @Column(name = "COD_ASSINATURA_HSM", length = 500)
-    private String codAssinaturaHsm;
+    // @Column(name = "COD_ASSINATURA_HSM", length = 500)
+    // private String codAssinaturaHsm;
 
     @Column(name = "DT_CADASTRO")
     private LocalDateTime dtCadastro;
@@ -129,8 +132,6 @@ public class CreditRequestItemsEJpa {
     @Column(name = "FLG_OUTRAS_VIAS", length = 1)
     private String flgOutrasVias;
 
-    @Column(name = "COD_ASSDIG_RECARGA", length = 500)
-    private String codAssdigRecarga;
 
     @Column(name = "VL_AUTORIZACAO_HM", precision = 15, scale = 2)
     private BigDecimal vlAutorizacaoHm;
@@ -143,4 +144,11 @@ public class CreditRequestItemsEJpa {
 
     @Column(name = "QTD_DIAS_UTILIZADOS")
     private Integer qtdDiasUtilizados;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+        @JoinColumn(name = "NUM_SOLICITACAO", referencedColumnName = "NUM_SOLICITACAO", insertable = false, updatable = false),
+        @JoinColumn(name = "COD_CANAL", referencedColumnName = "COD_CANAL", insertable = false, updatable = false)
+    })
+    private CreditRequestEJpa solicitacao;
 }

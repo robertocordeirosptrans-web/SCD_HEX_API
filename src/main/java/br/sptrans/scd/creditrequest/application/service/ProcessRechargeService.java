@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpaKey;
+import br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.ProcessRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
@@ -19,19 +19,24 @@ import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
-
+import br.sptrans.scd.shared.cache.InvalidateOrderCache;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Implementação do use case de processamento de recarga.
  *
- * <p>Transição do pedido: LIBERADO_PARA_RECARGA(05) → EM_PROCESSO_DE_RECARGA(06).
- * Transição dos itens: LIBERADO_PARA_RECARGA(05) → EM_PROCESSO_DE_RECARGA(06).</p>
+ * <p>
+ * Transição do pedido: LIBERADO_PARA_RECARGA(05) → EM_PROCESSO_DE_RECARGA(06).
+ * Transição dos itens: LIBERADO_PARA_RECARGA(05) →
+ * EM_PROCESSO_DE_RECARGA(06).</p>
  *
- * <p>Itens cujo valor efetivo (vlItem + vlEvento) é ≤ 0 são marcados
- * diretamente como RECARREGADO(07) com valor zero.</p>
+ * <p>
+ * Itens cujo valor efetivo (vlItem + vlEvento) é ≤ 0 são marcados diretamente
+ * como RECARREGADO(07) com valor zero.</p>
  */
 @Service
+@RequiredArgsConstructor
 public class ProcessRechargeService implements ProcessRechargeUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(ProcessRechargeService.class);
@@ -41,19 +46,11 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
     private final CreditRequestItemsRepository itemRepository;
     private final HistCreditRequestService historyService;
     private final SituationAscertainedService situationAscertainedService;
-
-    public ProcessRechargeService(
-            CreditRequestRepository creditRequestRepository,
-            CreditRequestItemsRepository itemRepository,
-            HistCreditRequestService historyService) {
-        this.creditRequestRepository = creditRequestRepository;
-        this.itemRepository = itemRepository;
-        this.historyService = historyService;
-        this.situationAscertainedService = new SituationAscertainedService();
-    }
+    private final CreditRequestMapper creditRequestMapper;
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void processarRecarga(ProcessRechargeCommand comando) {
         CreditRequest solicitacao = creditRequestRepository
                 .findByCodTipoDocumentoAndIdUsuarioCadastro(
@@ -68,22 +65,29 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
         Long numSolicitacao = solicitacao.getNumSolicitacao();
         String codCanal = solicitacao.getCodCanal();
+        String numLote = solicitacao.getNumLote();
 
-        log.debug("Processando recarga para solicitação {}/{}", numSolicitacao, codCanal);
+        log.debug("Processando recarga para solicitação {}/{} e lote {}", numSolicitacao, codCanal, numLote);
 
-        List<CreditRequestItemsEJpa> itens = itemRepository
-                .findById_NumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
-
-        if (itens.isEmpty()) {
-            log.warn("Nenhum item encontrado para solicitação {}/{}", numSolicitacao, codCanal);
+        List<Long> numSolicitacaoItens = itemRepository.findNumSolicitacaoItemsBySolicitacaoCanalLote(numSolicitacao, codCanal, numLote);
+        if (numSolicitacaoItens == null || numSolicitacaoItens.isEmpty()) {
+            log.warn("Nenhum item encontrado para solicitação {}/{} e lote {}", numSolicitacao, codCanal, numLote);
             return;
         }
 
         int processados = 0;
-
-        for (CreditRequestItemsEJpa item : itens) {
-            if (!SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode()
-                    .equals(item.getCodSituacao())) {
+        List<CreditRequestItemsEJpa> itensProcessados = new java.util.ArrayList<>();
+        for (Long numSolicitacaoItem : numSolicitacaoItens) {
+            CreditRequestItemsKey key = new CreditRequestItemsKey();
+            key.setNumSolicitacao(numSolicitacao);
+            key.setNumSolicitacaoItem(numSolicitacaoItem);
+            key.setCodCanal(codCanal);
+            var optItem = itemRepository.findById(key);
+            if (optItem.isEmpty()) {
+                continue;
+            }
+            CreditRequestItems item = optItem.get();
+            if (!SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode().equals(item.getCodSituacao())) {
                 continue;
             }
 
@@ -108,23 +112,25 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
             item.setDtManutencao(LocalDateTime.now());
             itemRepository.save(item);
-            historyService.saveItemStatusHistory(toDomain(item), ORIGEM_TRANSICAO);
+            historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
             processados++;
-
+            // Adiciona para consolidação
+            itensProcessados.add(creditRequestMapper.toEntityItem(item));
             log.info("Item processado - Solicitação={}, Item={}, NovoStatus={}",
                     numSolicitacao, item.getId().getNumSolicitacaoItem(), item.getCodSituacao());
         }
 
         if (processados > 0) {
-            consolidarStatusSolicitacao(numSolicitacao, codCanal, itens);
+            consolidarStatusSolicitacao(numSolicitacao, codCanal, itensProcessados);
         }
 
         log.debug("Processamento de recarga concluído para solicitação {}/{} - {} itens processados",
                 numSolicitacao, codCanal, processados);
+
     }
 
-    @Override
     @Transactional
+    @InvalidateOrderCache
     public void processarItemRecarga(ProcessItemCommand comando) {
         CreditRequest solicitacao = creditRequestRepository
                 .findByCodTipoDocumentoAndIdUsuarioCadastro(
@@ -146,17 +152,19 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
             return;
         }
 
-        CreditRequestItemsEJpaKey itemId = new CreditRequestItemsEJpaKey(
-                numSolicitacao, numSolicitacaoItem, codCanal);
+        CreditRequestItemsKey key = new CreditRequestItemsKey();
+        key.setNumSolicitacao(numSolicitacao);
+        key.setNumSolicitacaoItem(numSolicitacaoItem);
+        key.setCodCanal(codCanal);
 
-        Optional<CreditRequestItemsEJpa> itemOpt = itemRepository.findById(itemId);
+        Optional<CreditRequestItems> itemOpt = itemRepository.findById(key);
         if (itemOpt.isEmpty()) {
             log.warn("Item não encontrado: Solicitação={}, Item={}, CodCanal={}",
                     numSolicitacao, numSolicitacaoItem, codCanal);
             return;
         }
 
-        CreditRequestItemsEJpa item = itemOpt.get();
+        CreditRequestItems item = itemOpt.get();
 
         if (!SituationCreditRequestItems.EM_PROCESSO_DE_RECARGA.getCode()
                 .equals(item.getCodSituacao())) {
@@ -176,14 +184,26 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
         item.setDtManutencao(LocalDateTime.now());
 
         itemRepository.save(item);
-        historyService.saveItemStatusHistory(toDomain(item), ORIGEM_TRANSICAO);
+        historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
 
         log.info("Item recarga processado - Solicitação={}, Item={}, NovoStatus=RECARREGADO",
                 numSolicitacao, numSolicitacaoItem);
 
-        List<CreditRequestItemsEJpa> todosItens = itemRepository
-                .findById_NumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
-        consolidarStatusSolicitacao(numSolicitacao, codCanal, todosItens);
+        // Buscar todos os itens da solicitação/canal/lote para consolidação
+        String numLote = solicitacao.getNumLote();
+        List<Long> allNumSolicitacaoItens = itemRepository.findNumSolicitacaoItemsBySolicitacaoCanalLote(numSolicitacao, codCanal, numLote);
+        List<CreditRequestItemsEJpa> itensProcessados = new java.util.ArrayList<>();
+        for (Long itemIdForConsolidation : allNumSolicitacaoItens) {
+            CreditRequestItemsKey keyForConsolidation = new CreditRequestItemsKey();
+            keyForConsolidation.setNumSolicitacao(numSolicitacao);
+            keyForConsolidation.setNumSolicitacaoItem(itemIdForConsolidation);
+            keyForConsolidation.setCodCanal(codCanal);
+            var optItem = itemRepository.findById(keyForConsolidation);
+            if (optItem.isPresent()) {
+                itensProcessados.add(creditRequestMapper.toEntityItem(optItem.get()));
+            }
+        }
+        consolidarStatusSolicitacao(numSolicitacao, codCanal, itensProcessados);
     }
 
     private void consolidarStatusSolicitacao(Long numSolicitacao, String codCanal,
@@ -216,52 +236,4 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
         }
     }
 
-    private CreditRequestItems toDomain(CreditRequestItemsEJpa e) {
-        CreditRequestItems item = new CreditRequestItems();
-        CreditRequestItemsKey key = new CreditRequestItemsKey();
-        key.setNumSolicitacao(e.getId().getNumSolicitacao());
-        key.setNumSolicitacaoItem(e.getId().getNumSolicitacaoItem());
-        key.setCodCanal(e.getId().getCodCanal());
-        item.setId(key);
-        item.setCodCanal(e.getCodCanal());
-        item.setIdUsuarioCadastro(e.getIdUsuarioCadastro());
-        item.setCodVersao(e.getCodVersao());
-        item.setNumLogicoCartao(e.getNumLogicoCartao());
-        item.setCodProduto(e.getCodProduto());
-        item.setCodTipoDocumento(e.getCodTipoDocumento());
-        item.setCodSituacao(e.getCodSituacao());
-        item.setQtdItem(e.getQtdItem());
-        item.setVlUnitario(e.getVlUnitario());
-        item.setVlItem(e.getVlItem());
-        item.setDtRecarga(e.getDtRecarga());
-        item.setVlCarregado(e.getVlCarregado());
-        item.setVlAjuste(e.getVlAjuste());
-        item.setFlgAjuste(e.getFlgAjuste());
-        item.setIdFuncionario(e.getIdFuncionario());
-        item.setCodAssinaturaHsm(e.getCodAssinaturaHsm());
-        item.setDtCadastro(e.getDtCadastro());
-        item.setDtManutencao(e.getDtManutencao());
-        item.setSeqRecarga(e.getSeqRecarga());
-        item.setDtEnvioHm(e.getDtEnvioHm());
-        item.setDtRetornoHm(e.getDtRetornoHm());
-        item.setIdUsuarioManutencao(e.getIdUsuarioManutencao());
-        item.setDtAssinatura(e.getDtAssinatura());
-        item.setDtPagtoEconomica(e.getDtPagtoEconomica());
-        item.setSqPid(e.getSqPid());
-        item.setDtInicProcesso(e.getDtInicProcesso());
-        item.setIdUsuarioCartao(e.getIdUsuarioCartao());
-        item.setSqRecarga(e.getSqRecarga());
-        item.setVlTxadm(e.getVlTxadm());
-        item.setVlTxserv(e.getVlTxserv());
-        item.setVlTxtotal(e.getVlTxtotal());
-        item.setFlgEvento(e.getFlgEvento());
-        item.setVlEvento(e.getVlEvento());
-        item.setFlgOutrasVias(e.getFlgOutrasVias());
-        item.setCodAssdigRecarga(e.getCodAssdigRecarga());
-        item.setVlAutorizacaoHm(e.getVlAutorizacaoHm());
-        item.setFlgLiminarLoja(e.getFlgLiminarLoja());
-        item.setCodProdutoHm(e.getCodProdutoHm());
-        item.setQtdDiasUtilizados(e.getQtdDiasUtilizados());
-        return item;
-    }
 }

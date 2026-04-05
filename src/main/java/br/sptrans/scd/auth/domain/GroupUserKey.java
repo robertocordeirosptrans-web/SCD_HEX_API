@@ -2,8 +2,16 @@ package br.sptrans.scd.auth.domain;
 
 import java.io.Serializable;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode
 public class GroupUserKey implements Serializable {
 
@@ -11,27 +19,5 @@ public class GroupUserKey implements Serializable {
 
     private String codGrupo;
 
-    public GroupUserKey() {
-    }
 
-    public GroupUserKey(Long idUsuario, String codGrupo) {
-        this.idUsuario = idUsuario;
-        this.codGrupo = codGrupo;
-    }
-
-    public Long getIdUsuario() {
-        return idUsuario;
-    }
-
-    public void setIdUsuario(Long idUsuario) {
-        this.idUsuario = idUsuario;
-    }
-
-    public String getCodGrupo() {
-        return codGrupo;
-    }
-
-    public void setCodGrupo(String codGrupo) {
-        this.codGrupo = codGrupo;
-    }
 }

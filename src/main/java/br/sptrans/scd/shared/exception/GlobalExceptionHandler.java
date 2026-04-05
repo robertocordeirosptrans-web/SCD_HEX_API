@@ -24,10 +24,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthenticationException;
-import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
-import br.sptrans.scd.channel.domain.exception.ChannelException;
-import br.sptrans.scd.product.domain.enums.ProductErrorType;
-import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.exception.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -366,22 +362,49 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Trata exceções de perfil de usuário inválido
+     */
+    @ExceptionHandler(InvalidUserProfileException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidUserProfile(
+            InvalidUserProfileException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.FORBIDDEN.value(),
+            "Forbidden",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.warn("Invalid user profile at URI: {} - Message: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    /**
      * Trata exceções de negócio genéricas
+     * Usa o mapeamento dinâmico de HttpStatus através da interface ModuleException
      */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(
             BusinessException ex,
             HttpServletRequest request) {
 
+        HttpStatus status = ex.getHttpStatus();
         ErrorResponse errorResponse = new ErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            "Bad Request",
+            status.value(),
+            status.getReasonPhrase(),
             ex.getMessage(),
             ex.getErrorCode(),
             request.getRequestURI()
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        log.warn("Business exception at URI: {} - Type: {} - Code: {} - Status: {}", 
+                 request.getRequestURI(),
+                 ex.getClass().getSimpleName(),
+                 ex.getErrorCode(),
+                 status);
+        return ResponseEntity.status(status).body(errorResponse);
     }
 
     /**
@@ -519,6 +542,106 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Trata exceções de token expirado
+     */
+    @ExceptionHandler(ExpiredTokenException.class)
+    public ResponseEntity<ErrorResponse> handleExpiredToken(
+            ExpiredTokenException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.UNAUTHORIZED.value(),
+            "Unauthorized",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.warn("Expired token at URI: {}", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
+     * Trata exceções de token inválido
+     */
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidToken(
+            InvalidTokenException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.UNAUTHORIZED.value(),
+            "Unauthorized",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.warn("Invalid token at URI: {}", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
+     * Trata exceções gerais de token
+     */
+    @ExceptionHandler(TokenException.class)
+    public ResponseEntity<ErrorResponse> handleTokenException(
+            TokenException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.UNAUTHORIZED.value(),
+            "Unauthorized",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.warn("Token exception at URI: {} - Error Code: {}", request.getRequestURI(), ex.getErrorCode());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
+     * Trata exceções de e-mail gateway
+     */
+    @ExceptionHandler(EmailGatewayException.class)
+    public ResponseEntity<ErrorResponse> handleEmailGateway(
+            EmailGatewayException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "Internal Server Error",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.error("Email gateway error at URI: {} - Gateway: {}", request.getRequestURI(), ex.getGatewayName(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    /**
+     * Trata exceções de criptografia
+     */
+    @ExceptionHandler(EncryptorException.class)
+    public ResponseEntity<ErrorResponse> handleEncryptor(
+            EncryptorException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "Internal Server Error",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.error("Encryption error at URI: {} - Error Code: {}", request.getRequestURI(), ex.getErrorCode(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    /**
      * Trata exceções de tipo de mídia não suportado (415 Unsupported Media Type)
      */
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
@@ -539,91 +662,32 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Trata exceções do módulo Channel
+     * Trata exceções de gateway (SMTP, JWT, etc.)
+     * Erros em integração com serviços externos resultam em 502 Bad Gateway ou 503 Service Unavailable
      */
-    @ExceptionHandler(ChannelException.class)
-    public ResponseEntity<ErrorResponse> handleChannelException(
-            ChannelException ex,
+    @ExceptionHandler(GatewayException.class)
+    public ResponseEntity<ErrorResponse> handleGatewayException(
+            GatewayException ex,
             HttpServletRequest request) {
 
-        ChannelErrorType errorType = ex.getErrorType();
-        String errorName = errorType.name();
+        Map<String, Object> details = new HashMap<>();
+        details.put("gateway", ex.getGatewayName());
 
-        HttpStatus status;
-        String errorCode;
-
-        if (errorName.contains("NOT_FOUND")) {
-            status = HttpStatus.NOT_FOUND;
-            errorCode = "CHANNEL_NOT_FOUND";
-        } else if (errorName.contains("ALREADY_EXISTS") || errorName.contains("CODE_ALREADY_EXISTS")) {
-            status = HttpStatus.CONFLICT;
-            errorCode = "CHANNEL_DUPLICATE";
-        } else if (errorName.contains("ALREADY_ACTIVE") || errorName.contains("ALREADY_INACTIVE")) {
-            status = HttpStatus.UNPROCESSABLE_ENTITY;
-            errorCode = "CHANNEL_INVALID_STATE";
-        } else {
-            status = HttpStatus.BAD_REQUEST;
-            errorCode = "CHANNEL_ERROR";
-        }
-
-        ErrorResponse errorResponse = new ErrorResponse(
-            status.value(),
-            status.getReasonPhrase(),
+        ErrorResponse errorResponse = ErrorResponse.withDetails(
+            HttpStatus.BAD_GATEWAY.value(),
+            "Bad Gateway",
             ex.getMessage(),
-            errorCode,
-            request.getRequestURI()
+            ex.getErrorCode(),
+            request.getRequestURI(),
+            details
         );
 
-        log.warn("Channel error at URI: {} - Type: {} - Message: {}",
-                 request.getRequestURI(), errorName, ex.getMessage());
-        return ResponseEntity.status(status).body(errorResponse);
-    }
-
-    /**
-     * Trata exceções do módulo Product
-     */
-    @ExceptionHandler(ProductException.class)
-    public ResponseEntity<ErrorResponse> handleProductException(
-            ProductException ex,
-            HttpServletRequest request) {
-
-        ProductErrorType errorType = ex.getErrorType();
-        String errorName = errorType.name();
-
-        HttpStatus status;
-        String errorCode;
-
-        if (errorName.contains("NOT_FOUND")) {
-            status = HttpStatus.NOT_FOUND;
-            errorCode = "PRODUCT_NOT_FOUND";
-        } else if (errorName.contains("ALREADY_EXISTS") || errorName.contains("CODE_ALREADY_EXISTS")) {
-            status = HttpStatus.CONFLICT;
-            errorCode = "PRODUCT_DUPLICATE";
-        } else if (errorName.contains("ALREADY_ACTIVE") || errorName.contains("ALREADY_INACTIVE")) {
-            status = HttpStatus.UNPROCESSABLE_ENTITY;
-            errorCode = "PRODUCT_INVALID_STATE";
-        } else if (errorName.contains("CONFLICT")) {
-            status = HttpStatus.CONFLICT;
-            errorCode = "PRODUCT_CONFLICT";
-        } else if (errorName.contains("INVALID")) {
-            status = HttpStatus.BAD_REQUEST;
-            errorCode = "PRODUCT_VALIDATION_ERROR";
-        } else {
-            status = HttpStatus.BAD_REQUEST;
-            errorCode = "PRODUCT_ERROR";
-        }
-
-        ErrorResponse errorResponse = new ErrorResponse(
-            status.value(),
-            status.getReasonPhrase(),
-            ex.getMessage(),
-            errorCode,
-            request.getRequestURI()
-        );
-
-        log.warn("Product error at URI: {} - Type: {} - Message: {}",
-                 request.getRequestURI(), errorName, ex.getMessage());
-        return ResponseEntity.status(status).body(errorResponse);
+        log.warn("Gateway error at URI: {} - Gateway: {} - Code: {} - Message: {}", 
+                 request.getRequestURI(), 
+                 ex.getGatewayName(),
+                 ex.getErrorCode(),
+                 ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(errorResponse);
     }
 
     /**
@@ -633,10 +697,23 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex,
             HttpServletRequest request) {
-
+        // Se for uma exceção de módulo, tratar de forma diferenciada
+        if (ex instanceof ModuleException moduleEx) {
+            HttpStatus status = moduleEx.getHttpStatus();
+            String errorCode = moduleEx.getErrorCode();
+            ErrorResponse errorResponse = new ErrorResponse(
+                status.value(),
+                status.getReasonPhrase(),
+                moduleEx.getMessage(),
+                errorCode,
+                request.getRequestURI()
+            );
+            log.warn("Module error at URI: {} - Code: {} - Message: {}", request.getRequestURI(), errorCode, moduleEx.getMessage());
+            return ResponseEntity.status(status).body(errorResponse);
+        }
         // Log seguro da exceção sem expor detalhes sensíveis
         log.error("Internal server error at URI: {} - Exception type: {}", 
-                  request.getRequestURI(), 
+                  request.getRequestURI(),
                   ex.getClass().getSimpleName(), 
                   ex);
 

@@ -26,14 +26,14 @@ public interface AgreementValidityUseCase {
     record CreateAgreementValidityCommand(
             String codCanal,
             String codProduto,
-            LocalDateTime dataFimValidade,
-            LocalDateTime dataInicioValidade,
-            String status,
+            LocalDateTime dtFimValidade,
+            LocalDateTime dtInicioValidade,
+            String codStatus,
             Long idUsuario) {}
 
     record UpdateAgreementValidityCommand(
-            LocalDateTime dataFimValidade,
-            LocalDateTime dataInicioValidade,
-            String status,
+            LocalDateTime dtFimValidade,
+            LocalDateTime dtInicioValidade,
+            String codStatus,
             Long idUsuario) {}
 }

@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelRepository;
@@ -13,6 +12,7 @@ import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannelKey;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
+import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class MarketingDistribuitionChannelService implements MarketingDistribuitionChannelUseCase {
 
     private final MarketingDistribuitionChannelRepository repository;
-    private final UserRepository userRepository;
+    private final UserResolverHelperImpl userResolverHelper;
 
     @Override
     public MarketingDistribuitionChannel createMarketingDistribuitionChannel(
@@ -32,7 +32,7 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
             throw new ChannelException(ChannelErrorType.MARKETING_CHANNEL_ALREADY_EXISTS);
         }
 
-        User usuCad = resolveUser(cmd.idUsuarioCadastro());
+        User usuCad = userResolverHelper.resolve(cmd.idUsuarioCadastro());
 
         MarketingDistribuitionChannel entity = new MarketingDistribuitionChannel(
                 key,
@@ -56,7 +56,7 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
         MarketingDistribuitionChannel existing = repository.findById(key)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.MARKETING_CHANNEL_NOT_FOUND));
 
-        User usuMan = resolveUser(cmd.idUsuarioManutencao());
+        User usuMan = userResolverHelper.resolve(cmd.idUsuarioManutencao());
 
         MarketingDistribuitionChannel updated = new MarketingDistribuitionChannel(
                 existing.getId(),
@@ -85,17 +85,8 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
         return repository.findAll();
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<MarketingDistribuitionChannel> findByCodCanalComercializacao(String codCanalComercializacao) {
-        return repository.findByCodCanalComercializacao(codCanalComercializacao);
-    }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<MarketingDistribuitionChannel> findByCodCanalDistribuicao(String codCanalDistribuicao) {
-        return repository.findByCodCanalDistribuicao(codCanalDistribuicao);
-    }
+
 
     @Override
     public void deleteMarketingDistribuitionChannel(String codCanalComercializacao, String codCanalDistribuicao) {
@@ -107,8 +98,4 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
         repository.deleteById(key);
     }
 
-    private User resolveUser(Long idUsuario) {
-        if (idUsuario == null) return null;
-        return userRepository.findById(idUsuario).orElse(null);
-    }
 }

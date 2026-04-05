@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.SalesChannelMapper;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.CreateSalesChannelCommand;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.UpdateSalesChannelCommand;
@@ -39,10 +40,12 @@ import lombok.RequiredArgsConstructor;
 @PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Canais de Venda v1", description = "Endpoints para gerenciamento de canais de venda")
+
 public class SalesChannelController {
 
     private final SalesChannelUseCase salesChannelUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
+    private final SalesChannelMapper salesChannelMapper;
 
     @PostMapping
         @Operation(summary = "Cadastra um novo canal de venda")
@@ -50,7 +53,7 @@ public class SalesChannelController {
             @ApiResponse(responseCode = "200", description = "Canal de venda cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<SalesChannel> createSalesChannel(
+    public ResponseEntity<CanalResponseDTO> createSalesChannel(
             @RequestBody CreateSalesChannelRequest request,
             Authentication authentication) {
         Long idUsuario = resolveUserId(authentication);
@@ -79,12 +82,12 @@ public class SalesChannelController {
                 request.codClassificacaoPessoa(),
                 request.codAtividade(),
                 idUsuario));
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(salesChannelMapper.toResponseDTO(result));
     }
 
     @PutMapping("/{codCanal}")
     @Operation(summary = "Atualiza dados de um canal de venda")
-    public ResponseEntity<SalesChannel> updateSalesChannel(
+    public ResponseEntity<CanalResponseDTO> updateSalesChannel(
             @PathVariable String codCanal,
             @RequestBody UpdateSalesChannelRequest request,
             Authentication authentication) {
@@ -111,24 +114,27 @@ public class SalesChannelController {
                 request.codClassificacaoPessoa(),
                 request.codAtividade(),
                 idUsuario));
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(salesChannelMapper.toResponseDTO(result));
     }
 
     @GetMapping("/{codCanal}")
     @Operation(summary = "Busca canal de venda por código")
-    public ResponseEntity<SalesChannel> findBySalesChannel(@PathVariable String codCanal) {
-        return ResponseEntity.ok(salesChannelUseCase.findBySalesChannel(codCanal));
+    public ResponseEntity<CanalResponseDTO> findBySalesChannel(@PathVariable String codCanal) {
+        SalesChannel channel = salesChannelUseCase.findBySalesChannel(codCanal);
+        return ResponseEntity.ok(salesChannelMapper.toResponseDTO(channel));
     }
 
     @GetMapping
     @Operation(summary = "Lista todos os canais de venda, com filtro opcional de status")
-    public ResponseEntity<PageResponse<SalesChannel>> findAllSalesChannels(
+    public ResponseEntity<PageResponse<CanalResponseDTO>> findAllSalesChannels(
             @RequestParam(required = false) String stCanais,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<SalesChannel> all = salesChannelUseCase.findAllSalesChannels(stCanais);
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+        List<CanalResponseDTO> dtos = all.stream().map(salesChannelMapper::toResponseDTO).toList();
+        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
     }
+
 
     @PatchMapping("/{codCanal}/activate")
     @Operation(summary = "Ativa um canal de venda")

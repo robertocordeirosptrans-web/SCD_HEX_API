@@ -17,16 +17,20 @@ import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
-
+import br.sptrans.scd.shared.cache.InvalidateOrderCache;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Implementação do use case de liberação de recarga.
  *
- * <p>Transição dos itens: PAGO(04) → LIBERADO_PARA_RECARGA(05).</p>
- * <p>Recalcula a situação consolidada do pedido após a liberação.</p>
+ * <p>
+ * Transição dos itens: PAGO(04) → LIBERADO_PARA_RECARGA(05).</p>
+ * <p>
+ * Recalcula a situação consolidada do pedido após a liberação.</p>
  */
 @Service
+@RequiredArgsConstructor
 public class ReleaseRechargeService implements ReleaseRechargeUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(ReleaseRechargeService.class);
@@ -37,18 +41,11 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
     private final HistCreditRequestService historyService;
     private final SituationAscertainedService situationAscertainedService;
 
-    public ReleaseRechargeService(
-            CreditRequestRepository creditRequestRepository,
-            CreditRequestItemsRepository itemRepository,
-            HistCreditRequestService historyService) {
-        this.creditRequestRepository = creditRequestRepository;
-        this.itemRepository = itemRepository;
-        this.historyService = historyService;
-        this.situationAscertainedService = new SituationAscertainedService();
-    }
+
 
     @Override
     @Transactional
+    @InvalidateOrderCache
     public void liberarRecarga(ReleaseRechargeCommand comando) {
         CreditRequest solicitacao = creditRequestRepository
                 .findByCodTipoDocumentoAndIdUsuarioCadastro(
@@ -76,7 +73,7 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
         int liberadas = 0;
         for (CreditRequest solicitacao : solicitacoes) {
             try {
-                liberarRecargaPorSolicitacao(solicitacao.getNumSolicitacao(), solicitacao.getCodCanal());
+                liberarRecargaPorSolicitacao(solicitacao.getNumSolicitacao(), solicitacao.getNumLote(), solicitacao.getCodCanal());
                 liberadas++;
             } catch (Exception e) {
                 log.error("Erro ao liberar recarga para solicitação {}/{}: {}",
@@ -90,37 +87,51 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
 
     @Override
     @Transactional
-    public void liberarRecargaPorSolicitacao(Long numSolicitacao, String codCanal) {
-        liberarRecargaPorSolicitacao(numSolicitacao, codCanal, ORIGEM_TRANSICAO);
+    public void liberarRecargaPorSolicitacao(Long numSolicitacao,String numLote, String codCanal) {
+        liberarRecargaPorSolicitacao(numSolicitacao, codCanal, numLote, ORIGEM_TRANSICAO);
     }
 
-    @Override
     @Transactional
-    public void liberarRecargaPorSolicitacao(Long numSolicitacao, String codCanal, String origemTransicao) {
-        log.debug("Liberando recarga para solicitação {}/{}", numSolicitacao, codCanal);
+    public void liberarRecargaPorSolicitacao(Long numSolicitacao, String codCanal, String numLote, String origemTransicao) {
+        log.debug("Liberando recarga para solicitação {}/{} (novo método SQL)", numSolicitacao, codCanal);
 
-        List<CreditRequestItemsEJpa> itens = itemRepository
-                .findById_NumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
-
-        if (itens.isEmpty()) {
-            log.warn("Nenhum item encontrado para solicitação {}/{}", numSolicitacao, codCanal);
+        // Busca o primeiro item elegível conforme a nova query SQL
+        String codSituacao = "04";
+        // Para obter a data de pagamento econômica, normalmente seria necessário buscar na solicitação ou item
+        // Aqui, vamos assumir que o campo dtPagtoEconomica está disponível na solicitação (ajuste se necessário)
+        CreditRequest solicitacao = creditRequestRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal).orElse(null);
+        if (solicitacao == null || solicitacao.getDtPagtoEconomica() == null) {
+            log.warn("Solicitação ou data de pagamento econômica não encontrada para {}/{}", numSolicitacao, codCanal);
+            return;
+        }
+        java.sql.Timestamp dtInicio = java.sql.Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
+        java.sql.Timestamp dtFim = java.sql.Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
+        List<CreditRequestItemsEJpa> itens = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim,100);
+        if (itens == null || itens.isEmpty()) {
+            log.warn("Nenhum item elegível encontrado para solicitação {}/{} na data {}", numSolicitacao, codCanal, solicitacao.getDtPagtoEconomica());
             return;
         }
 
         int liberados = 0;
+        for (CreditRequestItemsEJpa itemEJpa : itens) {
+            CreditRequestItemsKey key = new CreditRequestItemsKey();
+            key.setNumSolicitacao(itemEJpa.getId().getNumSolicitacao());
+            key.setNumSolicitacaoItem(itemEJpa.getId().getNumSolicitacaoItem());
+            key.setCodCanal(itemEJpa.getId().getCodCanal());
 
-        for (CreditRequestItemsEJpa item : itens) {
+            var optItem = itemRepository.findById(key);
+            if (optItem.isEmpty()) {
+                continue;
+            }
+            CreditRequestItems item = optItem.get();
             if (!SituationCreditRequestItems.PAGO.getCode().equals(item.getCodSituacao())) {
                 continue;
             }
-
             item.setCodSituacao(SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode());
             item.setDtManutencao(LocalDateTime.now());
             itemRepository.save(item);
-
-            historyService.saveItemStatusHistory(toDomain(item), origemTransicao);
+            historyService.saveItemStatusHistory(item, origemTransicao);
             liberados++;
-
             log.info("Item liberado - Solicitação={}, Item={}, NovoStatus={}",
                     numSolicitacao,
                     item.getId().getNumSolicitacaoItem(),
@@ -165,52 +176,5 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
         }
     }
 
-    private CreditRequestItems toDomain(CreditRequestItemsEJpa e) {
-        CreditRequestItems item = new CreditRequestItems();
-        CreditRequestItemsKey key = new CreditRequestItemsKey();
-        key.setNumSolicitacao(e.getId().getNumSolicitacao());
-        key.setNumSolicitacaoItem(e.getId().getNumSolicitacaoItem());
-        key.setCodCanal(e.getId().getCodCanal());
-        item.setId(key);
-        item.setCodCanal(e.getCodCanal());
-        item.setIdUsuarioCadastro(e.getIdUsuarioCadastro());
-        item.setCodVersao(e.getCodVersao());
-        item.setNumLogicoCartao(e.getNumLogicoCartao());
-        item.setCodProduto(e.getCodProduto());
-        item.setCodTipoDocumento(e.getCodTipoDocumento());
-        item.setCodSituacao(e.getCodSituacao());
-        item.setQtdItem(e.getQtdItem());
-        item.setVlUnitario(e.getVlUnitario());
-        item.setVlItem(e.getVlItem());
-        item.setDtRecarga(e.getDtRecarga());
-        item.setVlCarregado(e.getVlCarregado());
-        item.setVlAjuste(e.getVlAjuste());
-        item.setFlgAjuste(e.getFlgAjuste());
-        item.setIdFuncionario(e.getIdFuncionario());
-        item.setCodAssinaturaHsm(e.getCodAssinaturaHsm());
-        item.setDtCadastro(e.getDtCadastro());
-        item.setDtManutencao(e.getDtManutencao());
-        item.setSeqRecarga(e.getSeqRecarga());
-        item.setDtEnvioHm(e.getDtEnvioHm());
-        item.setDtRetornoHm(e.getDtRetornoHm());
-        item.setIdUsuarioManutencao(e.getIdUsuarioManutencao());
-        item.setDtAssinatura(e.getDtAssinatura());
-        item.setDtPagtoEconomica(e.getDtPagtoEconomica());
-        item.setSqPid(e.getSqPid());
-        item.setDtInicProcesso(e.getDtInicProcesso());
-        item.setIdUsuarioCartao(e.getIdUsuarioCartao());
-        item.setSqRecarga(e.getSqRecarga());
-        item.setVlTxadm(e.getVlTxadm());
-        item.setVlTxserv(e.getVlTxserv());
-        item.setVlTxtotal(e.getVlTxtotal());
-        item.setFlgEvento(e.getFlgEvento());
-        item.setVlEvento(e.getVlEvento());
-        item.setFlgOutrasVias(e.getFlgOutrasVias());
-        item.setCodAssdigRecarga(e.getCodAssdigRecarga());
-        item.setVlAutorizacaoHm(e.getVlAutorizacaoHm());
-        item.setFlgLiminarLoja(e.getFlgLiminarLoja());
-        item.setCodProdutoHm(e.getCodProdutoHm());
-        item.setQtdDiasUtilizados(e.getQtdDiasUtilizados());
-        return item;
-    }
+
 }

@@ -6,11 +6,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ProductUseCase;
-import br.sptrans.scd.product.application.port.out.ProductRepository;
-import br.sptrans.scd.product.application.port.out.ProductVersionRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductVersionRepository;
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -26,7 +27,7 @@ public class ProductService implements ProductUseCase {
 
     private final ProductRepository productRepository;
     private final ProductVersionRepository productVersionRepository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     // =========================================================================
     // Gestão de Produto

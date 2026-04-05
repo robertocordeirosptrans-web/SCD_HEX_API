@@ -10,6 +10,8 @@ public interface RechargeLimitRepository {
 
     Optional<RechargeLimit> findById(RechargeLimitKey id);
 
+    Optional<RechargeLimit> findByIdOtimized(String codCanal, String codProduto);
+
     List<RechargeLimit> findAll();
 
     List<RechargeLimit> findByCodCanal(String codCanal);

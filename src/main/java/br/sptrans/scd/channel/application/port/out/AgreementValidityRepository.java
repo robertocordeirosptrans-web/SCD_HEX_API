@@ -10,6 +10,8 @@ public interface AgreementValidityRepository {
 
     Optional<AgreementValidity> findById(AgreementValidityKey id);
 
+    Optional<AgreementValidity> findByIdOtimized(String codCanal, String codProduto);
+
     List<AgreementValidity> findAll();
 
     List<AgreementValidity> findByCodCanal(String codCanal);

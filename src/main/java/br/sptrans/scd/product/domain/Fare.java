@@ -3,12 +3,14 @@ package br.sptrans.scd.product.domain;
 import java.time.LocalDateTime;
 
 import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.product.domain.enums.DomainStatus;
+import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Fare {
@@ -17,7 +19,7 @@ public class Fare {
 
     private String codVersao;
 
-    private LocalDateTime dtVigenciaIni;
+    private LocalDateTime dtVigenciaInicio;
 
     private LocalDateTime dtVigenciaFim;
 
@@ -27,9 +29,9 @@ public class Fare {
 
     private String desTarifa;
 
-    private String stTarifas;
+    private String codStatus;
 
-    private Integer vlTarifa;
+    private Integer valTarifa;
 
     private User idUsuarioCadastro;
 
@@ -38,21 +40,21 @@ public class Fare {
     private Product codProduto;
 
     public boolean isActive() {
-        return DomainStatus.ACTIVE.getCode().equals(this.stTarifas);
+        return ProductDomainStatus.ACTIVE.getCode().equals(this.codStatus);
     }
 
     public boolean isInactive() {
-        return DomainStatus.INACTIVE.getCode().equals(this.stTarifas);
+        return ProductDomainStatus.INACTIVE.getCode().equals(this.codStatus);
     }
 
     public void activate(User idUsuario) {
-        this.stTarifas = DomainStatus.ACTIVE.getCode();
+        this.codStatus = ProductDomainStatus.ACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
 
     public void deactivate(User idUsuario) {
-        this.stTarifas = DomainStatus.INACTIVE.getCode();
+        this.codStatus = ProductDomainStatus.INACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }

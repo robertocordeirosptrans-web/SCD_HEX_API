@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase.CreateContactChannelCommand;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase.UpdateContactChannelCommand;
@@ -39,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 public class ContactChannelController {
 
     private final ContactChannelUseCase contactChannelUseCase;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
 
     @PostMapping
         @Operation(summary = "Cadastra um novo contato do canal")

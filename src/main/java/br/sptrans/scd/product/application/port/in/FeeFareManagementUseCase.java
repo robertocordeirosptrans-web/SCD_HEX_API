@@ -56,16 +56,16 @@ public interface FeeFareManagementUseCase {
             String codProduto,
             String codVersao,
             String codCanal,
-            String dscTarifa,
-            BigDecimal vlTarifa,
-            LocalDateTime dtInicial,
-            LocalDateTime dtFinal,
+            String desTarifa,
+            BigDecimal valTarifa,
+            LocalDateTime dtInicio,
+            LocalDateTime dtFim,
             Long idUsuario) {
     }
 
     record UpdateFareCommand(
-            String dscTarifa,
-            LocalDateTime dtFinal, // apenas a data final pode ser alterada em tarifas vigentes
+            String desTarifa,
+            LocalDateTime dtFim, // apenas a data final pode ser alterada em tarifas vigentes
             Long idUsuario) {
     }
 
@@ -76,17 +76,17 @@ public interface FeeFareManagementUseCase {
     record RegisterFeeCommand(
             String codProduto,
             String codCanal,
-            String dscTaxa,
-            LocalDateTime dtInicial,
-            LocalDateTime dtFinal,
+            String desTaxa,
+            LocalDateTime dtInicio,
+            LocalDateTime dtFim,
             RegisterAdministrativeFeeCommand taxaAdministrativa,
             RegisterServiceFeeCommand taxaServico,
             RegisterDestinyFeeCommand taxaDestino) { // nullable — opcional
     }
 
     record UpdateFeeCommand(
-            String dscTaxa,
-            LocalDateTime dtFinal, // apenas a data final pode ser alterada em taxas vigentes
+            String desTaxa,
+            LocalDateTime dtFim, // apenas a data final pode ser alterada em taxas vigentes
             RegisterAdministrativeFeeCommand taxaAdministrativa,
             RegisterServiceFeeCommand taxaServico) {
     }
@@ -113,4 +113,6 @@ public interface FeeFareManagementUseCase {
     record RegisterDestinyFeeCommand(
             String codCanalDestino) {
     }
+
+    List<Fee> findByCanalProduto(String codCanal, String codProduto);
 }

@@ -5,10 +5,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AddressChannelEntityJpa;
+
 import java.util.List;
 import java.util.Optional;
-
-import br.sptrans.scd.channel.adapter.port.out.jpa.entity.AddressChannelEntityJpa;
 
 public interface AddressChannelJpaRepository extends JpaRepository<AddressChannelEntityJpa, String>, JpaSpecificationExecutor<AddressChannelEntityJpa> {
 
@@ -24,5 +25,5 @@ public interface AddressChannelJpaRepository extends JpaRepository<AddressChanne
 	@Query("SELECT a FROM AddressChannelEntityJpa a ORDER BY a.codEndereco")
 	List<AddressChannelEntityJpa> findAllOrderByCodEndereco();
 
-	// O save e deleteById já são providos pelo JpaRepository
+
 }

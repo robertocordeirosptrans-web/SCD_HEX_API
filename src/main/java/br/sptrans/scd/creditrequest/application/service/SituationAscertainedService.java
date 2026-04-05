@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
+
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 
@@ -16,6 +18,7 @@ import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
  * {@code PCK_MVE_SITUACAOPEDIDO}, implementando todas as regras de negócio de
  * consolidação de status definidas no legado.</p>
  */
+@Component
 public class SituationAscertainedService {
 
     /**
@@ -27,7 +30,6 @@ public class SituationAscertainedService {
      * @return código da situação apurada do pedido, ou {@code null} se nenhuma
      * regra se aplicar
      */
-
     public String apurarSituacaoPedido(List<String> codigosSituacaoItens) {
         if (codigosSituacaoItens == null || codigosSituacaoItens.isEmpty()) {
             return null;
@@ -91,7 +93,8 @@ public class SituationAscertainedService {
             return SituationCreditRequest.CONSISTIDO_OK.getCode();
         }
 
-        if (aceitosPendLiq > 0 && (aceitosPendLiq + cancelados + bloqueados) == total) {
+        if (aceitosPendLiq > 0 && (aceitosPendLiq + pagos + cancelados + bloqueados) == total) {
+            // Regra nova: mistura de ACEITO_PENDENTE_LIQUIDACAO e PAGO (e cancelado/bloqueado) retorna ACEITO_PENDENTE_LIQUIDACAO
             return SituationCreditRequest.ACEITO_PENDENTE_LIQUIDACAO.getCode();
         }
 

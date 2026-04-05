@@ -1,15 +1,14 @@
 package br.sptrans.scd.creditrequest.adapter.port.out.jpa.adapter;
 
-import br.sptrans.scd.creditrequest.application.port.out.LiminarGateway;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.StoredProcedureQuery;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Repository;
 
 /**
  * Implementação do {@link LiminarGateway} que consulta o sistema SCA via DBLink.
@@ -37,7 +36,7 @@ public class LiminarGatewayJpa implements LiminarGateway {
         try {
             StoredProcedureQuery query = em
                     .createStoredProcedureQuery(
-                            "PKG_EMPRESA_LIMINAR.FIND_TAXA_ISENTA_BY_PEDIDO@dblink_sca")
+                            "PKG_EMPRESA_LIMINAR.FIND_TAXA_ISENTA_BY_PEDIDO@DBLINK_SCA")
                     .registerStoredProcedureParameter(1, String.class, ParameterMode.IN)
                     .registerStoredProcedureParameter(2, Integer.class, ParameterMode.OUT)
                     .setParameter(1, numeroPedido);
@@ -58,7 +57,7 @@ public class LiminarGatewayJpa implements LiminarGateway {
         try {
             StoredProcedureQuery query = em
                     .createStoredProcedureQuery(
-                            "PKG_EMPRESA_LIMINAR.FIND_BY_PEDIDO@dblink_sca")
+                            "PKG_EMPRESA_LIMINAR.FIND_BY_PEDIDO@DBLINK_SCA")
                     .registerStoredProcedureParameter(1, String.class, ParameterMode.IN)
                     .registerStoredProcedureParameter(2, Integer.class, ParameterMode.OUT)
                     .setParameter(1, numeroPedido);
@@ -82,7 +81,7 @@ public class LiminarGatewayJpa implements LiminarGateway {
         try {
             StoredProcedureQuery query = em
                     .createStoredProcedureQuery(
-                            "PKG_CARTAO_LIMINAR.FIND_BY_CARTAO@dblink_sca")
+                            "PKG_CARTAO_LIMINAR.FIND_BY_CARTAO@DBLINK_SCA")
                     .registerStoredProcedureParameter(1, String.class, ParameterMode.IN)
                     .registerStoredProcedureParameter(2, Integer.class, ParameterMode.OUT)
                     .setParameter(1, numeroCartao);

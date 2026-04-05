@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.AddressChannelRepository;
@@ -14,6 +13,7 @@ import br.sptrans.scd.channel.domain.AddressChannel;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
+import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class AddressChannelService implements AddressChannelUseCase {
 
     private final AddressChannelRepository addressChannelRepository;
-    private final UserRepository userRepository;
+    private final UserResolverHelperImpl userResolverHelper;
 
     @Override
     public AddressChannel createAddressChannel(CreateAddressChannelCommand cmd) {
@@ -30,7 +30,7 @@ public class AddressChannelService implements AddressChannelUseCase {
             throw new ChannelException(ChannelErrorType.ADDRESS_CHANNEL_CODE_ALREADY_EXISTS);
         }
 
-        User usuario = resolveUser(cmd.idUsuario());
+        User usuario = userResolverHelper.resolve(cmd.idUsuario());
 
         AddressChannel addressChannel = new AddressChannel(
                 cmd.codEndereco(),
@@ -67,7 +67,7 @@ public class AddressChannelService implements AddressChannelUseCase {
         AddressChannel existing = addressChannelRepository.findById(codEndereco)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.ADDRESS_CHANNEL_NOT_FOUND));
 
-        User usuario = resolveUser(cmd.idUsuario());
+        User usuario = userResolverHelper.resolve(cmd.idUsuario());
 
         AddressChannel updated = new AddressChannel(
                 existing.getCodEndereco(),
@@ -120,8 +120,4 @@ public class AddressChannelService implements AddressChannelUseCase {
         addressChannelRepository.deleteById(codEndereco);
     }
 
-    private User resolveUser(Long idUsuario) {
-        if (idUsuario == null) return null;
-        return userRepository.findById(idUsuario).orElse(null);
-    }
 }

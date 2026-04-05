@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.creditrequest.application.port.in.HistCreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.HistCreditRequestItemsRepository;
@@ -30,7 +30,7 @@ public class HistCreditRequestService implements HistCreditRequestManagementUseC
 
     private final HistCreditRequestItemsRepository itemHistoryRepository;
     private final HistCreditRequestRepository requestHistoryRepository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
     private static final Logger log = LoggerFactory.getLogger(HistCreditRequestService.class);
 
     @Override
@@ -81,7 +81,7 @@ public class HistCreditRequestService implements HistCreditRequestManagementUseC
             history.setDtTransicao(LocalDateTime.now());
             history.setIdOrigemTransicao(origemTransicao);
             history.setDtCadastro(item.getDtCadastro());
-            history.setDtManutencao(item.getDtManutencao());
+            history.setDtManutencao(LocalDateTime.now());
             history.setDtPgtoEconomica(item.getDtPagtoEconomica());
             history.setSqPID(item.getSqPid());
             history.setDtInicProcesso(item.getDtInicProcesso());
@@ -138,7 +138,8 @@ public class HistCreditRequestService implements HistCreditRequestManagementUseC
             history.setDtTransicao(LocalDateTime.now());
             history.setIdOrigemTransicao(origemTransicao);
             history.setDtCadastro(request.getDtCadastro());
-            history.setDtManutencao(request.getDtManutencao());
+            history.setDtManutencao(LocalDateTime.now());
+            log.info("[HISTORICO] Gravando dtPagtoEconomica no histórico: {} para solicitação {}", request.getDtPagtoEconomica(), numSolicitacao);
             history.setDtPgtoEconomica(request.getDtPagtoEconomica());
             history.setSqPID(request.getSqPid());
             history.setDtInicProcesso(request.getDtInicProcesso());

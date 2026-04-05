@@ -21,7 +21,7 @@ import lombok.Setter;
  * livre de dependências JPA (arquitetura hexagonal).</p>
  */
 @Entity
-@Table(name = "HIS_SOL_SITUACOES", schema = "SPTRANSDBA")
+@Table(name = "HIST_SOL_SITUACOES", schema = "SPTRANSDBA")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -49,7 +49,7 @@ public class HistCreditRequestEJpa {
     @Column(name = "DT_MANUTENCAO")
     private LocalDateTime dtManutencao;
 
-    @Column(name = "DT_PGTO_ECONOMICA")
+    @Column(name = "DT_PAGTO_ECONOMICA")
     private LocalDateTime dtPgtoEconomica;
 
     @Column(name = "DT_LIBERACAO_EFETIVA")

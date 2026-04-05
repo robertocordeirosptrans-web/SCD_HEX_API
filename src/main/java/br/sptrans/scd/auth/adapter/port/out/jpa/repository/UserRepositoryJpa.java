@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.adapter.port.out.jpa.entity.UserEntityJpa;
+import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserEntityJpa;
 
 public interface UserRepositoryJpa extends JpaRepository<UserEntityJpa, Long>, JpaSpecificationExecutor<UserEntityJpa>  {
     // Verifica existência por login
@@ -57,11 +57,9 @@ public interface UserRepositoryJpa extends JpaRepository<UserEntityJpa, Long>, J
     void updateAccessSchedule(@Param("idUsuario") Long idUsuario, @Param("diasPermitidos") String diasPermitidos, @Param("jornadaIni") java.util.Date jornadaIni, @Param("jornadaFim") java.util.Date jornadaFim);
 
     /**
-     * Busca usuário por login, carregando perfis e funcionalidades via JOIN
-     * FETCH.
+     * Busca usuário por login.
      */
-    @Query("SELECT u FROM UserEntityJpa u "
-            + "WHERE u.codLogin = :codLogin")
+    @Query("SELECT u FROM UserEntityJpa u WHERE u.codLogin = :codLogin")
     Optional<UserEntityJpa> findByCodLogin(@Param("codLogin") String codLogin);
 
     /**
@@ -69,6 +67,6 @@ public interface UserRepositoryJpa extends JpaRepository<UserEntityJpa, Long>, J
      */
     Optional<UserEntityJpa> findByNomEmail(String nomEmail);
 
-
+    Optional<UserEntityJpa> findByCodCpf(String codCpf);
 
 }

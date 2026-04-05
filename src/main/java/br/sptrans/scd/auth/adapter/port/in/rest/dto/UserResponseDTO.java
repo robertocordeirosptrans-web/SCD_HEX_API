@@ -1,7 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.in.rest.dto;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,8 +44,8 @@ public record UserResponseDTO(
                 user.getDtCriacao(),
                 user.getDtExpiraSenha(),
                 user.getDtUltimoAcesso(),
-                user.getDt_jornada_ini() != null ? user.getDt_jornada_ini().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime() : null,
-                user.getDt_jornada_fim() != null ? user.getDt_jornada_fim().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime() : null,
+                user.getDtJornadaIni(),
+                user.getDtJornadaFim(),
                 user.getCodCpf(),
                 user.getCodRg(),
                 user.getNomEmail(),

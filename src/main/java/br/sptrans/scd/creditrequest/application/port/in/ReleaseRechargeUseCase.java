@@ -27,7 +27,7 @@ public interface ReleaseRechargeUseCase {
      * @param numSolicitacao número da solicitação
      * @param codCanal       código do canal
      */
-    void liberarRecargaPorSolicitacao(Long numSolicitacao, String codCanal);
+    void liberarRecargaPorSolicitacao(Long numSolicitacao, String numLote, String codCanal);
 
     /**
      * Libera uma solicitação específica para recarga com origem definida.
@@ -36,7 +36,8 @@ public interface ReleaseRechargeUseCase {
      * @param codCanal        código do canal
      * @param origemTransicao identificação de quem disparou a transição
      */
-    void liberarRecargaPorSolicitacao(Long numSolicitacao, String codCanal, String origemTransicao);
+  
+    void liberarRecargaPorSolicitacao(Long numSolicitacao, String numLote, String codCanal, String origemTransicao);
 
     record ReleaseRechargeCommand(
         String codTipoDocumento,

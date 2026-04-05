@@ -1,5 +1,7 @@
 package br.sptrans.scd.product.application.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -7,22 +9,23 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserRepository;
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.FeeFareManagementUseCase;
-import br.sptrans.scd.product.application.port.out.AdministrativeFeeRepository;
-import br.sptrans.scd.product.application.port.out.DestinyFeeRepository;
-import br.sptrans.scd.product.application.port.out.FareRepository;
-import br.sptrans.scd.product.application.port.out.FeeRepository;
-import br.sptrans.scd.product.application.port.out.ProductRepository;
-import br.sptrans.scd.product.application.port.out.ServiceFeeRepository;
+import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
+import br.sptrans.scd.product.application.port.out.repository.AdministrativeFeeRepository;
+import br.sptrans.scd.product.application.port.out.repository.DestinyFeeRepository;
+import br.sptrans.scd.product.application.port.out.repository.FareRepository;
+import br.sptrans.scd.product.application.port.out.repository.FeeRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductRepository;
+import br.sptrans.scd.product.application.port.out.repository.ServiceFeeRepository;
 import br.sptrans.scd.product.domain.AdministrativeFee;
 import br.sptrans.scd.product.domain.DestinyFee;
 import br.sptrans.scd.product.domain.Fare;
 import br.sptrans.scd.product.domain.Fee;
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ServiceFee;
-import br.sptrans.scd.product.domain.enums.DomainStatus;
+import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +41,82 @@ public class FeeFareService implements FeeFareManagementUseCase {
     private final ServiceFeeRepository serviceFeeRepository;
     private final DestinyFeeRepository destinyFeeRepository;
     private final ProductRepository productRepository;
-    private final UserRepository userRepository;
+    private final UserPersistencePort userRepository;
+    private final LiminarGateway liminarGateway;
+    /**
+     * Calcula as taxas administrativas e de serviço para um pedido, aplicando isenção por liminar judicial quando aplicável.
+     *
+     * @param valorTotal valor base para cálculo das taxas
+     * @param codigoCanal código do canal
+     * @param numeroPedido número do pedido (para verificação de liminar)
+     * @param idTaxa identificador da taxa vigente para canal/produto
+     * @return objeto com valores calculados das taxas
+     */
+    @Transactional(readOnly = true)
+    public TaxaCalculada calcularTaxas(BigDecimal valorTotal, String codigoCanal, String numeroPedido, Long idTaxa) {
+        // Canal 152: verifica liminar antes de buscar as taxas
+        final int CANAL_LOJA_VIRTUAL = 152;
+        try {
+            if (Integer.parseInt(codigoCanal) == CANAL_LOJA_VIRTUAL
+                && liminarGateway.empresaPossuiIsencaoTaxa(numeroPedido)) {
+            // Tem liminar → zera tudo
+            return TaxaCalculada.isenta();
+            }
+        } catch (NumberFormatException e) {
+            // Canal não numérico → não aplica regra de liminar
+        }
+
+        // Sem liminar → busca taxas normais no banco
+        AdministrativeFee taxaAdm = administrativeFeeRepository.findAdmById(idTaxa)
+            .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
+        ServiceFee taxaServ = serviceFeeRepository.findSrvById(idTaxa)
+            .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
+
+        BigDecimal base = valorTotal != null ? valorTotal : BigDecimal.ZERO;
+
+        BigDecimal valorTaxaAdm = (taxaAdm.getValFixo() != null ? taxaAdm.getValFixo() : BigDecimal.ZERO)
+            .add((taxaAdm.getValPercentual() != null ? taxaAdm.getValPercentual() : BigDecimal.ZERO)
+                .multiply(base)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+
+        BigDecimal valorTaxaServ = (taxaServ.getValFixo() != null ? taxaServ.getValFixo() : BigDecimal.ZERO)
+            .add((taxaServ.getValPercentual() != null ? taxaServ.getValPercentual() : BigDecimal.ZERO)
+                .multiply(base)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+
+        // Aplica mínimo de taxa de serviço
+        if (taxaServ.getValMinimo() != null
+            && taxaServ.getValMinimo().compareTo(valorTaxaServ) > 0) {
+            valorTaxaServ = taxaServ.getValMinimo();
+        }
+
+        return new TaxaCalculada(valorTaxaAdm, valorTaxaServ);
+    }
+
+    /**
+     * DTO para retorno do cálculo de taxas.
+     */
+    public static class TaxaCalculada {
+        private final BigDecimal valorTaxaAdm;
+        private final BigDecimal valorTaxaServ;
+
+        public TaxaCalculada(BigDecimal valorTaxaAdm, BigDecimal valorTaxaServ) {
+            this.valorTaxaAdm = valorTaxaAdm;
+            this.valorTaxaServ = valorTaxaServ;
+        }
+
+        public static TaxaCalculada isenta() {
+            return new TaxaCalculada(BigDecimal.ZERO, BigDecimal.ZERO);
+        }
+
+        public BigDecimal getValorTaxaAdm() {
+            return valorTaxaAdm;
+        }
+
+        public BigDecimal getValorTaxaServ() {
+            return valorTaxaServ;
+        }
+    }
 
     // =========================================================================
     // Gestão de Tarifas (Fare)
@@ -48,7 +126,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
     public Fare createFare(RegisterFareCommand command) {
         boolean conflict = fareRepository.isConflictValidity(
                 command.codProduto(), command.codCanal(),
-                command.dtInicial(), command.dtFinal(), null);
+                command.dtInicio(), command.dtFim(), null);
         if (conflict) {
             throw new ProductException(ProductErrorType.FARE_VALIDITY_CONFLICT);
         }
@@ -60,13 +138,13 @@ public class FeeFareService implements FeeFareManagementUseCase {
         Fare fare = new Fare(
                 UUID.randomUUID().toString(),
                 command.codVersao(),
-                command.dtInicial(),
-                command.dtFinal(),
+                command.dtInicio(),
+                command.dtFim(),
                 LocalDateTime.now(),
                 LocalDateTime.now(),
-                command.dscTarifa(),
-                DomainStatus.ACTIVE.getCode(),
-                command.vlTarifa() != null ? command.vlTarifa().intValue() : null,
+                command.desTarifa(),
+                ProductDomainStatus.ACTIVE.getCode(),
+                command.valTarifa() != null ? command.valTarifa().intValue() : null,
                 usuario,
                 null,
                 produto
@@ -80,7 +158,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
         fareRepository.findById(codTarifa)
                 .orElseThrow(() -> new ProductException(ProductErrorType.FARE_NOT_FOUND));
 
-        fareRepository.extendsValidity(codTarifa, command.dtFinal(), command.idUsuario());
+        fareRepository.extendsValidity(codTarifa, command.dtFim(), command.idUsuario());
 
         return fareRepository.findById(codTarifa)
                 .orElseThrow(() -> new ProductException(ProductErrorType.FARE_NOT_FOUND));
@@ -90,18 +168,24 @@ public class FeeFareService implements FeeFareManagementUseCase {
     public List<Fare> listFares(String codProduto, String codCanal) {
         return fareRepository.listByProductChannel(codProduto, codCanal);
     }
+    
 
     // =========================================================================
     // Gestão de Taxas (Fee)
     // =========================================================================
 
     @Override
+    public List<Fee> findByCanalProduto(String codCanal, String codProduto) {
+        return feeRepository.findByCanalProduto(codCanal, codProduto);
+    }
+
+    @Override
     public Fee createFee(RegisterFeeCommand command) {
         Fee fee = new Fee(
                 null,
-                command.dtInicial(),
-                command.dscTaxa(),
-                command.dtFinal(),
+                command.dtInicio(),
+                command.desTaxa(),
+                command.dtFim(),
                 command.codCanal(),
                 command.codProduto(),
                 null,
@@ -142,6 +226,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
         return feeRepository.findByIdFee(savedFee.getCodTaxa()).orElse(savedFee);
     }
 
+
+
     @Override
     public Fee updateFee(Long codTaxa, UpdateFeeCommand command) {
         Fee existing = feeRepository.findByIdFee(codTaxa)
@@ -149,9 +235,9 @@ public class FeeFareService implements FeeFareManagementUseCase {
 
         Fee updated = new Fee(
                 existing.getCodTaxa(),
-                existing.getDtInicial(),
-                command.dscTaxa(),
-                command.dtFinal(),
+                existing.getDtInicio(),
+                command.desTaxa(),
+                command.dtFim(),
                 existing.getCodCanal(),
                 existing.getCodProduto(),
                 existing.getCanal(),

@@ -1,13 +1,19 @@
 package br.sptrans.scd.auth.domain;
 
+import java.io.Serializable;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class RoutineId {
+public class RoutineId implements Serializable{
 
     private String codSistema;
 
@@ -15,28 +21,5 @@ public class RoutineId {
 
     private String codRotina;
 
-    // Getters and setters
-    public String getCodSistema() {
-        return codSistema;
-    }
-
-    public void setCodSistema(String codSistema) {
-        this.codSistema = codSistema;
-    }
-
-    public String getCodModulo() {
-        return codModulo;
-    }
-
-    public void setCodModulo(String codModulo) {
-        this.codModulo = codModulo;
-    }
-
-    public String getCodRotina() {
-        return codRotina;
-    }
-
-    public void setCodRotina(String codRotina) {
-        this.codRotina = codRotina;
-    }
+   
 }

@@ -1,8 +1,6 @@
 package br.sptrans.scd.auth.adapter.port.in.rest;
 
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,11 +15,6 @@ import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetPasswordComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetRequestComand;
-import br.sptrans.scd.auth.application.port.out.GroupUserRepository;
-import br.sptrans.scd.auth.application.port.out.UserRepository;
-import br.sptrans.scd.auth.domain.Functionality;
-import br.sptrans.scd.auth.domain.GroupUser;
-import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.port.out.TokenGeneratorPort;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -32,23 +25,17 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/auth")
 @Tag(name = "Autenticação v1", description = "Endpoints para autenticação e gerenciamento de usuários - Versão 1")
 public class AuthController {
 
     private final AuthUseCase casoUso;
     private final TokenGeneratorPort tokenGenerator;
-    private final UserRepository userRepository;
-    private final GroupUserRepository groupUserRepository;
 
-    public AuthController(AuthUseCase casoUso, TokenGeneratorPort tokenGenerator, UserRepository userRepository, GroupUserRepository groupUserRepository) {
-        this.casoUso = casoUso;
-        this.tokenGenerator = tokenGenerator;
-        this.userRepository = userRepository;
-        this.groupUserRepository = groupUserRepository;
-    }
 
     @PostMapping("/login")
     @Operation(summary = "Login do usuário", description = "Autentica o usuário e retorna um token JWT com payload mínimo")
@@ -73,28 +60,8 @@ public class AuthController {
     })
     public ResponseEntity<MeResponse> me(Authentication authentication) {
         String codLogin = authentication.getName();
-        User user = userRepository.findByCodLogin(codLogin)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        // Buscar perfis ativos do usuário
-        Set<String> roles = userRepository.carregarPerfisEfetivos(user.getIdUsuario())
-                .stream()
-                .map(Profile::getCodPerfil)
-                .collect(Collectors.toSet());
-
-        // Buscar permissões ativos do usuário
-        Set<String> permissions = userRepository.carregarFuncionalidadesEfetivas(user.getIdUsuario())
-                .stream()
-                .map(Functionality::canonicalKey)
-                .collect(Collectors.toSet());
-
-        // Buscar grupos ativos do usuário
-        List<GroupUser> gruposUsuario = groupUserRepository.findById_IdUsuarioAndCodStatus(user.getIdUsuario(), "A");
-        Set<String> grupos = gruposUsuario.stream()
-                .map(gu -> gu.getId().getCodGrupo())
-                .collect(Collectors.toSet());
-
-        return ResponseEntity.ok(new MeResponse(user.getIdUsuario(), user.getNomUsuario(), roles, permissions, grupos));
+        AuthUseCase.UserContext ctx = casoUso.loadUserContext(codLogin);
+        return ResponseEntity.ok(new MeResponse(ctx.id(), ctx.name(), ctx.roles(), ctx.permissions(), ctx.groups()));
     }
 
     @PostMapping("/change-password")

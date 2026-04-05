@@ -13,6 +13,8 @@ import br.sptrans.scd.creditrequest.domain.CreditRequest;
  */
 public interface CreditRequestRepository {
 
+    CreditRequest save(CreditRequest cdr);
+
     Optional<CreditRequest> findByNumSolicitacaoAndCodCanal(Long numSolicitacao, String codCanal);
 
     List<CreditRequest> findByCanalAndSituacao(String codCanal, String codSituacao);

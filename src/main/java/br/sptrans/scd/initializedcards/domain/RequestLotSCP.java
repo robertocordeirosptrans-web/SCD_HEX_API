@@ -6,17 +6,15 @@ import br.sptrans.scd.auth.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequestLotSCP {
 
-    private String codTipoCanal;
-    private String codCanal;
-    private Long nrSolicitacao;
-    private Long idLote;
-    private String flgFaseSolicitacao;
+    private RequestLotSCPKey id;
     private Long qtdProduto;
     private String stSolicitacaoLoteSCP;
     private LocalDateTime dtCadastro;
