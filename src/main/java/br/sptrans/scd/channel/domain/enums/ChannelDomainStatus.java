@@ -1,5 +1,6 @@
 package br.sptrans.scd.channel.domain.enums;
 
+import br.sptrans.scd.initializedcards.domain.enums.DomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,7 +10,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum DomainStatus {
+public enum ChannelDomainStatus {
 
     ACTIVE("A", "Ativo"),
     INACTIVE("I", "Inativo");
@@ -17,8 +18,8 @@ public enum DomainStatus {
     private final String code;
     private final String description;
 
-    public static DomainStatus fromCode(String code) {
-        for (DomainStatus status : values()) {
+    public static ChannelDomainStatus fromCode(String code) {
+        for (ChannelDomainStatus status : values()) {
             if (status.code.equals(code)) {
                 return status;
             }

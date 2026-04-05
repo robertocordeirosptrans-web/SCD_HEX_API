@@ -14,6 +14,7 @@ import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
 import lombok.RequiredArgsConstructor;
@@ -66,7 +67,7 @@ public class ProductChannelService implements ProductChannelUseCase {
         entity.setQtdMaximaRessuprimento(cmd.qtdMaximaRessuprimento());
         entity.setCodOrgaoEmissor(cmd.codOrgaoEmissor());
         entity.setVlFace(cmd.vlFace());
-        entity.setCodStatus(cmd.codStatus());
+        entity.setCodStatus(cmd.codStatus()); // Espera-se que cmd.codStatus() já use ChannelDomainStatus.getCode()
         entity.setCodConvenio(cmd.codConvenio());
         entity.setCodTipoOperHM(cmd.codTipoOperHM());
         entity.setFlgCarac(cmd.flgCarac());
@@ -92,7 +93,7 @@ public class ProductChannelService implements ProductChannelUseCase {
         existing.setQtdMaximaRessuprimento(cmd.qtdMaximaRessuprimento());
         existing.setCodOrgaoEmissor(cmd.codOrgaoEmissor());
         existing.setVlFace(cmd.vlFace());
-        existing.setCodStatus(cmd.codStatus());
+        existing.setCodStatus(cmd.codStatus()); // Espera-se que cmd.codStatus() já use ChannelDomainStatus.getCode()
         existing.setCodConvenio(cmd.codConvenio());
         existing.setCodTipoOperHM(cmd.codTipoOperHM());
         existing.setFlgCarac(cmd.flgCarac());

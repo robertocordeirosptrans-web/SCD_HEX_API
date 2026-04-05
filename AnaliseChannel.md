@@ -1,25 +1,6 @@
 
 ## 1. QUALIDADE DO CÓDIGO
 
----
-
-### 📍 Todos os Services (`AddressChannelService`, `ContactChannelService`, `MarketingDistribuitionChannelService`, `RechargeLimitService`, `ProductChannelService`)
-
-✅ **`resolveUser(Long idUsuario)` — interface `UserResolverHelper` e implementação `UserResolverHelperImpl` criadas em `shared/helper/`**
-
-A interface foi extraída com os métodos `resolve(Long)`, `getCurrentLogin()`, `getCurrentUser()` e `getCurrentUserId()`. A implementação delega ao `UserPersistencePort` e ao `SecurityContextHolder`.
-
-```java
-// shared/helper/UserResolverHelper.java  ← interface
-public interface UserResolverHelper {
-    User resolve(Long userId);
-    String getCurrentLogin();
-    User getCurrentUser();
-    Long getCurrentUserId();
-}
-```
-
-🔄 **Ação residual:** Os services ainda injetam `UserResolverHelperImpl` (classe concreta) em vez da interface `UserResolverHelper`. Ajustar todos os `@Autowired` / construtores para apontar à interface.
 
 ---
 
@@ -70,36 +51,7 @@ Os objetos de domínio expõem setters livres, permitindo que qualquer camada al
 
 💡 Remover `@Setter` do nível de classe. Expor apenas o necessário via métodos de domínio com intenção negocial. Campos imutáveis no registro histórico (`dtCadastro`, `codCanal`) devem ser `final` ou sem setter.
 
----
 
-### 📍 `codStatus` em todos os domínios
-
-⚠️ **Status representado como `String` ("A"/"I") — magic strings espalhadas**
-
-```java
-private static final String STATUS_ACTIVE   = "A";
-private static final String STATUS_INACTIVE = "I";
-```
-
-As constantes ficam em cada service individualmente (duplicadas), e o domínio não tem esse conceito.
-
-💡 Criar enum de domínio compartilhado:
-
-```java
-// channel/domain/enums/ChannelStatus.java
-public enum ChannelStatus {
-    ACTIVE("A"), INACTIVE("I");
-
-    private final String code;
-
-    public static ChannelStatus fromCode(String code) {
-        return Arrays.stream(values())
-            .filter(s -> s.code.equals(code))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Status inválido: " + code));
-    }
-}
-```
 
 ---
 
@@ -140,25 +92,6 @@ A interface de porta da aplicação importa um tipo da camada `adapter`. Isso in
 
 💡 Mover `ProductChannelProjection` para `channel/application/port/out/query/` ou criar um DTO de domínio equivalente em `channel/domain/`.
 
----
-
-### 📍 `adapter/port/in/rest/SalesChannelController.java`
-
-⚠️ **Controller injeta `UserPersistencePort` diretamente — lógica de aplicação no adapter**
-
-```java
-private final UserPersistencePort userRepository; // infraestrutura no controller
-
-private Long resolveUserId(Authentication authentication) {
-    return userRepository.findByCodLogin(authentication.getName())
-            .map(u -> u.getIdUsuario())
-            .orElse(null);
-}
-```
-
-O `resolveUserId` é repetido em `SalesChannelController` e `ProductChannelController`. A responsabilidade de resolver usuário a partir do token pertence à camada de aplicação. Além disso, retornar `null` silenciosamente quando o usuário não é encontrado pode causar `NullPointerException` downstream.
-
-💡 O `idUsuario` deve ser extraído no controller via `SecurityContextHelper` e passado apenas quando necessário, ou o use case deve aceitar `String codLogin` e resolver internamente.
 
 ---
 
@@ -258,27 +191,6 @@ List<ProductChannelEntityJpa> findByIdCodProduto(String codProduto);
 
 ---
 
-### 📍 `SalesChannelController`, `ProductChannelController`
-
-⚠️ **`resolveUserId(Authentication)` duplicado nos controllers**
-
-💡 Extrair para um `SecurityContextHelper`:
-
-```java
-// shared/security/SecurityContextHelper.java
-@Component
-@RequiredArgsConstructor
-public class SecurityContextHelper {
-    private final UserPersistencePort userPort;
-
-    public Long resolveUserId(Authentication authentication) {
-        if (authentication == null) return null;
-        return userPort.findByCodLogin(authentication.getName())
-            .map(User::getIdUsuario)
-            .orElse(null);
-    }
-}
-```
 
 ---
 
@@ -334,43 +246,7 @@ public ResponseEntity<TypesActivity> createTypesActivity(...) {
 
 O domínio de negócio é exposto diretamente para o cliente HTTP. Isso acopla a API ao modelo interno.
 
----
 
-### 📍 `domain/exception/ChannelException.java`
-
-⚠️ **Mapeamento de HTTP status via parsing de nome do enum — frágil e não-expressivo**
-
-```java
-@Override
-public HttpStatus getHttpStatus() {
-    String name = errorType.name();
-    if (name.contains("NOT_FOUND")) {
-        return HttpStatus.NOT_FOUND;
-    } else if (name.contains("ALREADY_EXISTS") || name.contains("CODE_ALREADY_EXISTS")) {
-        return HttpStatus.CONFLICT;
-    }
-    ...
-}
-```
-
-O comportamento HTTP está acoplado à convenção de nomeação do enum. Se alguém renomear um valor, o status HTTP muda silenciosamente.
-
-💡 Adicionar o `HttpStatus` diretamente no `ChannelErrorType`:
-
-```java
-@Getter
-@AllArgsConstructor
-public enum ChannelErrorType {
-    TYPES_ACTIVITY_NOT_FOUND("Tipo de atividade não encontrado.", HttpStatus.NOT_FOUND),
-    TYPES_ACTIVITY_CODE_ALREADY_EXISTS("Código já cadastrado.", HttpStatus.CONFLICT),
-    TYPES_ACTIVITY_ALREADY_ACTIVE("Já está ativo.", HttpStatus.UNPROCESSABLE_ENTITY),
-    // ...
-    ;
-
-    private final String description;
-    private final HttpStatus httpStatus;
-}
-```
 
 ---
 
@@ -520,25 +396,7 @@ channel/
 
 > **Princípio de execução:** cada fase deve ser concluída, compilada (`mvn compile`) e commitada antes de iniciar a próxima. Nenhuma fase cria regressões para a anterior.
 
----
 
-### ✅ Fase 0 — Fundação Compartilhada *(concluída)*
-
-**Objetivo:** Prover os helpers centrais que serão consumidos pelas fases seguintes.
-
-| # | Tarefa | Arquivo(s) | Status |
-|---|---|---|---|
-| 0.1 | Criar interface `UserResolverHelper` com `resolve`, `getCurrentLogin`, `getCurrentUser`, `getCurrentUserId` | `shared/helper/UserResolverHelper.java` | ✅ |
-| 0.2 | Criar `UserResolverHelperImpl` implementando a interface | `shared/helper/UserResolverHelperImpl.java` | ✅ |
-
-**Ação residual obrigatória antes da Fase 1:**
-
-| # | Tarefa | Arquivo(s) |
-|---|---|---|
-| 0.3 | Trocar injeção de `UserResolverHelperImpl` pela interface `UserResolverHelper` em todos os services que a usam (`SalesChannelService`, `ProductChannelService`, etc.) | `channel/application/service/*.java` |
-
-c
----
 
 ### 🟠 Fase 2 — Integridade Arquitetural
 

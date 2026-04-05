@@ -13,6 +13,7 @@ import br.sptrans.scd.channel.application.port.out.SalesChannelRepository;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.TypesActivity;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,6 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 @RequiredArgsConstructor
 public class SalesChannelService implements SalesChannelUseCase {
-
-    private static final String STATUS_ACTIVE   = "A";
-    private static final String STATUS_INACTIVE = "I";
 
     private final SalesChannelRepository salesChannelRepository;
     private final UserResolverHelperImpl userResolverHelper;
@@ -37,38 +35,38 @@ public class SalesChannelService implements SalesChannelUseCase {
         User usuario = userResolverHelper.resolve(cmd.idUsuario());
 
         SalesChannel salesChannel = new SalesChannel(
-                cmd.codCanal(),
-                cmd.codDocumento(),
-                cmd.codCanalSuperior(),
-                cmd.desCanal(),
-                cmd.codTipoDocumento(),
-                LocalDateTime.now(),
-                cmd.desRazaoSocial(),
-                STATUS_INACTIVE,
-                cmd.desNomeFantasia(),
-                LocalDateTime.now(),
-                cmd.vlCaucao(),
-                cmd.dtInicioCaucao(),
-                cmd.dtFimCaucao(),
-                cmd.seqNivel(),
-                cmd.flgCriticaNumlote(),
-                cmd.flgLimiteDias(),
-                cmd.flgProcessamentoAutomatico(),
-                cmd.flgProcessamentoParcial(),
-                cmd.flgSaldoDevedor(),
-                cmd.numMinutoIniLibRecarga(),
-                cmd.numMinutoFimLibRecarga(),
-                cmd.flgEmiteReciboPedido(),
-                cmd.flgSupercanal(),
-                cmd.flgPagtoFuturo(),
-                cmd.codClassificacaoPessoa() != null
-                        ? new ClassificationPerson(cmd.codClassificacaoPessoa(), null, null, null, null, null, null, null)
-                        : null,
-                cmd.codAtividade() != null
-                        ? new TypesActivity(cmd.codAtividade(), null, null, null, null)
-                        : null,
-                usuario,
-                null
+            cmd.codCanal(),
+            cmd.codDocumento(),
+            cmd.codCanalSuperior(),
+            cmd.desCanal(),
+            cmd.codTipoDocumento(),
+            LocalDateTime.now(),
+            cmd.desRazaoSocial(),
+            ChannelDomainStatus.INACTIVE.getCode(),
+            cmd.desNomeFantasia(),
+            LocalDateTime.now(),
+            cmd.vlCaucao(),
+            cmd.dtInicioCaucao(),
+            cmd.dtFimCaucao(),
+            cmd.seqNivel(),
+            cmd.flgCriticaNumlote(),
+            cmd.flgLimiteDias(),
+            cmd.flgProcessamentoAutomatico(),
+            cmd.flgProcessamentoParcial(),
+            cmd.flgSaldoDevedor(),
+            cmd.numMinutoIniLibRecarga(),
+            cmd.numMinutoFimLibRecarga(),
+            cmd.flgEmiteReciboPedido(),
+            cmd.flgSupercanal(),
+            cmd.flgPagtoFuturo(),
+            cmd.codClassificacaoPessoa() != null
+                ? new ClassificationPerson(cmd.codClassificacaoPessoa(), null, null, null, null, null, null, null)
+                : null,
+            cmd.codAtividade() != null
+                ? new TypesActivity(cmd.codAtividade(), null, null, null, null)
+                : null,
+            usuario,
+            null
         );
 
         return salesChannelRepository.save(salesChannel);
@@ -136,20 +134,20 @@ public class SalesChannelService implements SalesChannelUseCase {
     public void activateSalesChannel(String codCanal, Long idUsuario) {
         SalesChannel existing = salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
-        if (STATUS_ACTIVE.equals(existing.getStCanais())) {
+        if (ChannelDomainStatus.ACTIVE.getCode().equals(existing.getStCanais())) {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_ALREADY_ACTIVE);
         }
-        salesChannelRepository.updateStatus(codCanal, STATUS_ACTIVE, idUsuario);
+        salesChannelRepository.updateStatus(codCanal, ChannelDomainStatus.ACTIVE.getCode(), idUsuario);
     }
 
     @Override
     public void inactivateSalesChannel(String codCanal, Long idUsuario) {
         SalesChannel existing = salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
-        if (STATUS_INACTIVE.equals(existing.getStCanais())) {
+        if (ChannelDomainStatus.INACTIVE.getCode().equals(existing.getStCanais())) {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_ALREADY_INACTIVE);
         }
-        salesChannelRepository.updateStatus(codCanal, STATUS_INACTIVE, idUsuario);
+        salesChannelRepository.updateStatus(codCanal, ChannelDomainStatus.INACTIVE.getCode(), idUsuario);
     }
 
     @Override
