@@ -31,66 +31,63 @@ public class ContactChannelService implements ContactChannelUseCase {
         }
 
         User usuario = userResolverHelper.resolve(cmd.idUsuario());
+        SalesChannel canal = cmd.codCanal() != null
+            ? new SalesChannel(cmd.codCanal(), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
+            : null;
 
-        ContactChannel contactChannel = new ContactChannel(
-                cmd.codContato(),
-                cmd.codFornecedor(),
-                cmd.codEmpregador(),
-                cmd.desContato(),
-                cmd.desEmailContato(),
-                cmd.numDDD(),
-                cmd.numFone(),
-                cmd.numFoneRamal(),
-                cmd.numFax(),
-                cmd.numFaxRamal(),
-                cmd.stEntidadeContato(),
-                cmd.desComentarios(),
-                cmd.codTipoDocumento(),
-                cmd.codDocumento(),
-                LocalDateTime.now(),
-                LocalDateTime.now(),
-                null,
-                usuario,
-                cmd.codCanal() != null
-                        ? new SalesChannel(cmd.codCanal(), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
-                        : null
+        ContactChannel contactChannel = ContactChannel.criar(
+            cmd.codContato(),
+            cmd.codFornecedor(),
+            cmd.codEmpregador(),
+            cmd.desContato(),
+            cmd.desEmailContato(),
+            cmd.numDDD(),
+            cmd.numFone(),
+            cmd.numFoneRamal(),
+            cmd.numFax(),
+            cmd.numFaxRamal(),
+            cmd.stEntidadeContato(),
+            cmd.desComentarios(),
+            cmd.codTipoDocumento(),
+            cmd.codDocumento(),
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            null,
+            usuario,
+            canal
         );
-
         return contactChannelRepository.save(contactChannel);
     }
 
     @Override
     public ContactChannel updateContactChannel(String codContato, UpdateContactChannelCommand cmd) {
         ContactChannel existing = contactChannelRepository.findById(codContato)
-                .orElseThrow(() -> new ChannelException(ChannelErrorType.CONTACT_CHANNEL_NOT_FOUND));
+            .orElseThrow(() -> new ChannelException(ChannelErrorType.CONTACT_CHANNEL_NOT_FOUND));
 
         User usuario = userResolverHelper.resolve(cmd.idUsuario());
+        SalesChannel canal = cmd.codCanal() != null
+            ? new SalesChannel(cmd.codCanal(), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
+            : null;
 
-        ContactChannel updated = new ContactChannel(
-                existing.getCodContato(),
-                cmd.codFornecedor(),
-                cmd.codEmpregador(),
-                cmd.desContato(),
-                cmd.desEmailContato(),
-                cmd.numDDD(),
-                cmd.numFone(),
-                cmd.numFoneRamal(),
-                cmd.numFax(),
-                cmd.numFaxRamal(),
-                cmd.stEntidadeContato(),
-                cmd.desComentarios(),
-                cmd.codTipoDocumento(),
-                cmd.codDocumento(),
-                existing.getDtCadastro(),
-                LocalDateTime.now(),
-                usuario,
-                existing.getIdUsuarioCadastro(),
-                cmd.codCanal() != null
-                        ? new SalesChannel(cmd.codCanal(), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
-                        : null
+        existing.atualizar(
+            cmd.codFornecedor(),
+            cmd.codEmpregador(),
+            cmd.desContato(),
+            cmd.desEmailContato(),
+            cmd.numDDD(),
+            cmd.numFone(),
+            cmd.numFoneRamal(),
+            cmd.numFax(),
+            cmd.numFaxRamal(),
+            cmd.stEntidadeContato(),
+            cmd.desComentarios(),
+            cmd.codTipoDocumento(),
+            cmd.codDocumento(),
+            LocalDateTime.now(),
+            usuario,
+            canal
         );
-
-        return contactChannelRepository.save(updated);
+        return contactChannelRepository.save(existing);
     }
 
     @Override

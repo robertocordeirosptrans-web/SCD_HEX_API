@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -72,4 +73,74 @@ public class SalesChannel {
     private User idUsuarioCadastro;
 
     private User idUsuarioManutencao;
+    // --- Métodos de negócio (DDD) ---
+
+    /**
+     * Verifica se o canal está habilitado para processamento automático.
+     */
+    public boolean isProcessamentoAutomaticoHabilitado() {
+        return "S".equalsIgnoreCase(flgProcessamentoAutomatico);
+    }
+
+    /**
+     * Verifica se o canal está habilitado para processamento parcial.
+     */
+    public boolean isProcessamentoParcialHabilitado() {
+        return "S".equalsIgnoreCase(flgProcessamentoParcial);
+    }
+
+    /**
+     * Verifica se o canal possui saldo devedor.
+     */
+    public boolean isSaldoDevedorHabilitado() {
+        return "S".equalsIgnoreCase(flgSaldoDevedor);
+    }
+
+    /**
+     * Verifica se o canal faz crítica de número de lote.
+     */
+    public boolean isCriticaNumloteHabilitada() {
+        return "S".equalsIgnoreCase(flgCriticaNumlote);
+    }
+
+    /**
+     * Verifica se o canal possui limite de dias.
+     */
+    public boolean isLimiteDiasHabilitado() {
+        return flgLimiteDias != null && flgLimiteDias > 0;
+    }
+
+    /**
+     * Verifica se o canal emite recibo de pedido.
+     */
+    public boolean isEmiteReciboPedido() {
+        return "S".equalsIgnoreCase(flgEmiteReciboPedido);
+    }
+
+    /**
+     * Verifica se o canal é supercanal.
+     */
+    public boolean isSupercanal() {
+        return "S".equalsIgnoreCase(flgSupercanal);
+    }
+
+    /**
+     * Verifica se o canal permite pagamento futuro.
+     */
+    public boolean isPagamentoFuturoHabilitado() {
+        return "S".equalsIgnoreCase(flgPagtoFuturo);
+    }
+
+    /**
+     * Verifica se o canal está ativo usando o enum ChannelDomainStatus.
+     */
+    public boolean isAtivo() {
+        try {
+            return ChannelDomainStatus.ACTIVE.equals(
+                ChannelDomainStatus.fromCode(stCanais)
+            );
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

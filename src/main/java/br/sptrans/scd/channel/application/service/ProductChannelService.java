@@ -55,25 +55,24 @@ public class ProductChannelService implements ProductChannelUseCase {
         }
 
         User usuCad = userResolverHelper.resolve(cmd.idUsuarioCadastro());
-        SalesChannel chanCad = resolveChannel(cmd.codCanal());
-
-
-        ProductChannel entity = new ProductChannel();
-        entity.setId(key);
-        entity.setQtdLimiteComercializacao(cmd.qtdLimiteComercializacao());
-        entity.setQtdMinimaEstoque(cmd.qtdMinimaEstoque());
-        entity.setQtdMaximaEstoque(cmd.qtdMaximaEstoque());
-        entity.setQtdMinimaRessuprimento(cmd.qtdMinimaRessuprimento());
-        entity.setQtdMaximaRessuprimento(cmd.qtdMaximaRessuprimento());
-        entity.setCodOrgaoEmissor(cmd.codOrgaoEmissor());
-        entity.setVlFace(cmd.vlFace());
-        entity.setCodStatus(cmd.codStatus()); // Espera-se que cmd.codStatus() já use ChannelDomainStatus.getCode()
-        entity.setCodConvenio(cmd.codConvenio());
-        entity.setCodTipoOperHM(cmd.codTipoOperHM());
-        entity.setFlgCarac(cmd.flgCarac());
-        entity.setIdUsuarioCadastro(usuCad);
-  
-
+        ProductChannel entity = ProductChannel.criar(
+                key,
+                cmd.qtdLimiteComercializacao(),
+                cmd.qtdMinimaEstoque(),
+                cmd.qtdMaximaEstoque(),
+                cmd.qtdMinimaRessuprimento(),
+                cmd.qtdMaximaRessuprimento(),
+                cmd.codOrgaoEmissor(),
+                cmd.vlFace(),
+                cmd.codStatus(),
+                java.time.LocalDateTime.now(),
+                java.time.LocalDateTime.now(),
+                cmd.codConvenio(),
+                cmd.codTipoOperHM(),
+                cmd.flgCarac(),
+                usuCad,
+                null
+        );
         return repository.save(entity);
     }
 
@@ -82,23 +81,24 @@ public class ProductChannelService implements ProductChannelUseCase {
             UpdateProductChannelCommand cmd) {
         ProductChannelKey key = new ProductChannelKey(codCanal, codProduto);
         ProductChannel existing = repository.findById(key)
-                .orElseThrow(() -> new ChannelException(ChannelErrorType.PRODUCT_CHANNEL_NOT_FOUND));
+            .orElseThrow(() -> new ChannelException(ChannelErrorType.PRODUCT_CHANNEL_NOT_FOUND));
 
         User usuMan = userResolverHelper.resolve(cmd.idUsuarioManutencao());
-
-        existing.setQtdLimiteComercializacao(cmd.qtdLimiteComercializacao());
-        existing.setQtdMinimaEstoque(cmd.qtdMinimaEstoque());
-        existing.setQtdMaximaEstoque(cmd.qtdMaximaEstoque());
-        existing.setQtdMinimaRessuprimento(cmd.qtdMinimaRessuprimento());
-        existing.setQtdMaximaRessuprimento(cmd.qtdMaximaRessuprimento());
-        existing.setCodOrgaoEmissor(cmd.codOrgaoEmissor());
-        existing.setVlFace(cmd.vlFace());
-        existing.setCodStatus(cmd.codStatus()); // Espera-se que cmd.codStatus() já use ChannelDomainStatus.getCode()
-        existing.setCodConvenio(cmd.codConvenio());
-        existing.setCodTipoOperHM(cmd.codTipoOperHM());
-        existing.setFlgCarac(cmd.flgCarac());
-        existing.setIdUsuarioManutencao(usuMan);
-
+        existing.atualizar(
+            cmd.qtdLimiteComercializacao(),
+            cmd.qtdMinimaEstoque(),
+            cmd.qtdMaximaEstoque(),
+            cmd.qtdMinimaRessuprimento(),
+            cmd.qtdMaximaRessuprimento(),
+            cmd.codOrgaoEmissor(),
+            cmd.vlFace(),
+            cmd.codStatus(),
+            java.time.LocalDateTime.now(),
+            cmd.codConvenio(),
+            cmd.codTipoOperHM(),
+            cmd.flgCarac(),
+            usuMan
+        );
         return repository.save(existing);
     }
 
