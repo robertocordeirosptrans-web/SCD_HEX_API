@@ -1,14 +1,3 @@
-# Análise Arquitetural — Módulo `channel`
-
-> **Última atualização:** 02/04/2026
->
-> | Legenda | Significado |
-> |---|---|
-> | ⚠️ | Problema identificado — pendente |
-> | ✅ | Corrigido / implementado |
-> | 🔄 | Parcialmente corrigido — ação residual necessária |
-
----
 
 ## 1. QUALIDADE DO CÓDIGO
 
@@ -548,21 +537,7 @@ channel/
 |---|---|---|
 | 0.3 | Trocar injeção de `UserResolverHelperImpl` pela interface `UserResolverHelper` em todos os services que a usam (`SalesChannelService`, `ProductChannelService`, etc.) | `channel/application/service/*.java` |
 
----
-
-### 🔴 Fase 1 — Correções Críticas de Bug e Performance
-
-**Objetivo:** Eliminar bugs funcionais e problemas de performance que impactam produção.  
-**Pré-requisito:** Fase 0 completa.
-
-| # | Tarefa | Arquivo(s) | Critério de aceite |
-|---|---|---|---|
-| 1.1 | **Corrigir bug `findByCodProduto`** — trocar `getCodCanal()` por `getCodProduto()` no filtro | `ProductChannelAdapterJpa.java` | `GET /product-channels?codProduto=X` retorna apenas registros do produto X |
-| 1.2 | **Adicionar queries derivadas no `ProductChannelJpaRepository`** — `findByIdCodCanal` e `findByIdCodProduto` | `ProductChannelJpaRepository.java` | Sem `findAll()` no adapter |
-| 1.3 | **Eliminar full table scan em `findByCodCanal` e `findByCodProduto`** — usar as queries do 1.2 | `ProductChannelAdapterJpa.java` | Log SQL mostra `WHERE id_cod_canal = ?` |
-| 1.4 | **Remover `UserPersistencePort` da assinatura do `ProductChannelMapper.toDomain`** — resolver usuários no adapter antes de chamar o mapper | `ProductChannelMapper.java`, `ProductChannelAdapterJpa.java` | Mapper recebe `User userCad, User userMan` como parâmetros |
-| 1.5 | **Remover campo duplicado em `ProductChannelService`** — manter apenas `repository`, excluir `productChannelJpaRepository` e código comentado | `ProductChannelService.java` | Sem `@Autowired` duplicado |
-
+c
 ---
 
 ### 🟠 Fase 2 — Integridade Arquitetural

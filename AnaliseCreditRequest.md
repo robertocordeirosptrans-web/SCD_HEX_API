@@ -61,22 +61,7 @@ cr.setSituacao(SituationCreditRequest.fromCode(entity.getCodSituacao()));
 
 ---
 
-### 📍 CreditRequest.java
-**⚠️ Flags representadas como `String` em vez de `Boolean`**
 
-`flgCanc` e `flgBloq` são `String` com valores `"S"/"N"`, sem semântica clara.
-
-```java
-// ❌ Atual
-private String flgCanc;
-private String flgBloq;
-
-// ✅ Refatorado
-private boolean cancelado;
-private boolean bloqueado;
-```
-
----
 
 ### 📍 CreditRequestService.java (método `processarItemComTryCatchSequencial`)
 **⚠️ Logs de DEBUG em produção e comentários debug esquecidos**

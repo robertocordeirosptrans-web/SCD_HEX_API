@@ -5,21 +5,14 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-<<<<<<< HEAD
-import br.sptrans.scd.channel.application.port.out.ProductChannelRepository;
-import br.sptrans.scd.channel.domain.ProductChannel;
-import br.sptrans.scd.channel.domain.ProductChannelKey;
-
-=======
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ProductChannelMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.projection.ProductChannelProjection;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.ProductChannelJpaRepository;
 import br.sptrans.scd.channel.application.port.out.ProductChannelRepository;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
->>>>>>> 46368b76967eb4ccf485dc787a2cfe1535317aa2
+
 import lombok.RequiredArgsConstructor;
 
 @Repository
