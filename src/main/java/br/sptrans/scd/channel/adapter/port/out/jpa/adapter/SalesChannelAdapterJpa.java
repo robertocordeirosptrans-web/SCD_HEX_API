@@ -10,7 +10,8 @@ import br.sptrans.scd.channel.adapter.port.out.persistence.entity.SalesChannelEn
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.channel.application.port.out.SalesChannelRepository;
+import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
+
 import br.sptrans.scd.channel.domain.SalesChannel;
 import lombok.RequiredArgsConstructor;
 import br.sptrans.scd.auth.domain.User;
@@ -19,7 +20,7 @@ import br.sptrans.scd.auth.domain.User;
 
 @Repository
 @RequiredArgsConstructor
-public class SalesChannelAdapterJpa implements SalesChannelRepository {
+public class SalesChannelAdapterJpa implements SalesChannelPersistencePort {
 
     private final SalesChannelJpaRepository repository;
     private final SalesChannelMapper mapper;

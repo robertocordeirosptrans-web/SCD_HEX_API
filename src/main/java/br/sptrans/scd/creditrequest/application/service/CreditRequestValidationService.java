@@ -8,11 +8,11 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import br.sptrans.scd.channel.application.port.out.AgreementValidityRepository;
-import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelRepository;
-import br.sptrans.scd.channel.application.port.out.ProductChannelRepository;
-import br.sptrans.scd.channel.application.port.out.RechargeLimitRepository;
-import br.sptrans.scd.channel.application.port.out.SalesChannelRepository;
+import br.sptrans.scd.channel.application.port.out.AgreementValidityPersistencePort;
+import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelPersistencePort;
+import br.sptrans.scd.channel.application.port.out.ProductChannelPersistencePort;
+import br.sptrans.scd.channel.application.port.out.RechargeLimitPersistencePort;
+import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.channel.domain.AgreementValidityKey;
 import br.sptrans.scd.channel.domain.ProductChannel;
@@ -31,11 +31,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CreditRequestValidationService {
 
-    private final MarketingDistribuitionChannelRepository mdChannelRepository;
-    private final AgreementValidityRepository agreeValidRepository;
-    private final ProductChannelRepository productChannelRepository;
-    private final RechargeLimitRepository rechargeLimitRepository;
-    private final SalesChannelRepository salesChannelRepository;
+    private final MarketingDistribuitionChannelPersistencePort mdChannelRepository;
+    private final AgreementValidityPersistencePort agreeValidRepository;
+    private final ProductChannelPersistencePort productChannelRepository;
+    private final RechargeLimitPersistencePort rechargeLimitRepository;
+    private final SalesChannelPersistencePort salesChannelRepository;
     private final ProductVersionRepository productVersionRepository;
 
     public SalesChannel validarCanal(String codCanal) {

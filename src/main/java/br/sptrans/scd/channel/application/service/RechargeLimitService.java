@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase;
 import br.sptrans.scd.channel.application.port.out.RechargeLimitPersistencePort;
-import br.sptrans.scd.channel.application.port.out.RechargeLimitRepository;
+
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
