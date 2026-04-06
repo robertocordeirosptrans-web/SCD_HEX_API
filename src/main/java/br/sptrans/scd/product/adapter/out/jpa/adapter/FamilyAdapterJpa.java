@@ -11,7 +11,7 @@ import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 
 import br.sptrans.scd.product.adapter.out.jpa.mapper.FamilyMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.FamilyJpaRepository;
-import br.sptrans.scd.product.adapter.port.out.persistence.entity.FamilyEntityJpa;
+import br.sptrans.scd.product.adapter.out.persistence.entity.FamilyEntityJpa;
 import br.sptrans.scd.product.application.port.out.repository.FamilyRepository;
 import br.sptrans.scd.product.domain.Family;
 import jakarta.transaction.Transactional;

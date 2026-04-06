@@ -1,6 +1,6 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
-import br.sptrans.scd.product.adapter.port.out.persistence.entity.FareEntityJpa;
+import br.sptrans.scd.product.adapter.out.persistence.entity.FareEntityJpa;
 import br.sptrans.scd.product.domain.Fare;
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.auth.domain.User;

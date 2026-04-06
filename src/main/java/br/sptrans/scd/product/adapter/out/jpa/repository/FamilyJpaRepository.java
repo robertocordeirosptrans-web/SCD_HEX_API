@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.product.adapter.port.out.persistence.entity.FamilyEntityJpa;
+import br.sptrans.scd.product.adapter.out.persistence.entity.FamilyEntityJpa;
 
 public interface FamilyJpaRepository extends JpaRepository<FamilyEntityJpa, String>, JpaSpecificationExecutor<FamilyEntityJpa> {
 

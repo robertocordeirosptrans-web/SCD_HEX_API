@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import br.sptrans.scd.product.adapter.port.out.persistence.entity.SpeciesEntityJpa;
+import br.sptrans.scd.product.adapter.out.persistence.entity.SpeciesEntityJpa;
 
 public interface SpeciesJpaRepository extends JpaRepository<SpeciesEntityJpa, String> , JpaSpecificationExecutor<SpeciesEntityJpa>{
 

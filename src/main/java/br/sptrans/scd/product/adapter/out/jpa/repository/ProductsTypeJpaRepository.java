@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import br.sptrans.scd.product.adapter.port.out.persistence.entity.ProductTypesEntityJpa;
+import br.sptrans.scd.product.adapter.out.persistence.entity.ProductTypesEntityJpa;
 
 public interface ProductsTypeJpaRepository extends JpaRepository<ProductTypesEntityJpa, String> , JpaSpecificationExecutor<ProductTypesEntityJpa>{
 

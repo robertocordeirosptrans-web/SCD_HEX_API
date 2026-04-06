@@ -27,7 +27,7 @@ import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.CreateProductChannelCommand;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.UpdateProductChannelCommand;
 import br.sptrans.scd.channel.domain.ProductChannel;
-import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
+import br.sptrans.scd.product.adapter.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
