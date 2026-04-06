@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.AddressChannelResponseDTO;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.CreateAddressChannelRequest;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.UpdateAddressChannelRequest;
+import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.AddressChannelMapper;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.CreateAddressChannelCommand;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.UpdateAddressChannelCommand;
@@ -42,10 +44,11 @@ public class AddressChannelController {
 
     private final AddressChannelUseCase addressChannelUseCase;
     private final UserResolverHelper userResolverHelper;
+    private final AddressChannelMapper addressChannelMapper;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo endereço do canal")
-    public ResponseEntity<AddressChannel> createAddressChannel(
+    public ResponseEntity<AddressChannelResponseDTO> createAddressChannel(
             @RequestBody CreateAddressChannelRequest request) {
         User usuario = userResolverHelper.getCurrentUser();
         AddressChannel result = addressChannelUseCase.createAddressChannel(new CreateAddressChannelCommand(
@@ -66,12 +69,12 @@ public class AddressChannelController {
                 request.desNumero(),
                 request.codCanal(),
                 usuario));
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(addressChannelMapper.toResponseDTO(result));
     }
 
     @PutMapping("/{codEndereco}")
     @Operation(summary = "Atualiza dados de um endereço do canal")
-    public ResponseEntity<AddressChannel> updateAddressChannel(
+    public ResponseEntity<AddressChannelResponseDTO> updateAddressChannel(
             @PathVariable String codEndereco,
             @RequestBody UpdateAddressChannelRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
@@ -92,22 +95,22 @@ public class AddressChannelController {
                 request.desNumero(),
                 request.codCanal(),
                 idUsuario));
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(addressChannelMapper.toResponseDTO(result));
     }
 
     @GetMapping("/{codEndereco}")
     @Operation(summary = "Busca endereço do canal por código")
-    public ResponseEntity<AddressChannel> findByAddressChannel(@PathVariable String codEndereco) {
-        return ResponseEntity.ok(addressChannelUseCase.findByAddressChannel(codEndereco));
+    public ResponseEntity<AddressChannelResponseDTO> findByAddressChannel(@PathVariable String codEndereco) {
+        return ResponseEntity.ok(addressChannelMapper.toResponseDTO(addressChannelUseCase.findByAddressChannel(codEndereco)));
     }
 
     @GetMapping
     @Operation(summary = "Lista endereços do canal, com filtro opcional por canal")
-    public ResponseEntity<PageResponse<AddressChannel>> findAllAddressChannels(
+    public ResponseEntity<PageResponse<AddressChannelResponseDTO>> findAllAddressChannels(
             @RequestParam(required = false) String codCanal,
             Pageable pageable) {
         Page<AddressChannel> page = addressChannelUseCase.findAllAddressChannels(codCanal, pageable);
-        return ResponseEntity.ok(PageResponse.fromPage(page));
+        return ResponseEntity.ok(PageResponse.fromPage(page.map(addressChannelMapper::toResponseDTO)));
     }
 
     @DeleteMapping("/{codEndereco}")

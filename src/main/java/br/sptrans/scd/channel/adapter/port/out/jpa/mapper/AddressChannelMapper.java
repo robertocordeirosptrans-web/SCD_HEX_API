@@ -5,6 +5,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.AddressChannelResponseDTO;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.UserSimpleDTO;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AddressChannelEntityJpa;
 import br.sptrans.scd.channel.domain.AddressChannel;
 import br.sptrans.scd.channel.domain.SalesChannel;
@@ -24,4 +26,23 @@ public interface AddressChannelMapper {
     @Mapping(source = "userCad", target = "idUsuarioCadastro")
     @Mapping(source = "userMan", target = "idUsuarioManutencao")
     AddressChannel toDomain(AddressChannelEntityJpa entity, SalesChannel salesChannel, User userCad, User userMan);
+
+    @Mapping(source = "codCanal.codCanal", target = "codCanal")
+    @Mapping(source = "codCanal.desCanal", target = "desCanal")
+    @Mapping(source = "idUsuarioCadastro.codLogin", target = "usuarioCadastro")
+    @Mapping(source = "idUsuarioManutencao.codLogin", target = "usuarioManutencao")
+    @Mapping(source = "idUsuarioCadastro", target = "usuarioCadastroInfo")
+    @Mapping(source = "idUsuarioManutencao", target = "usuarioManutencaoInfo")
+    AddressChannelResponseDTO toResponseDTO(AddressChannel addressChannel);
+
+    default UserSimpleDTO mapUserToUserSimpleDTO(User user) {
+        if (user == null) {
+            return null;
+        }
+        return new UserSimpleDTO(
+            user.getIdUsuario(),
+            user.getCodLogin(),
+            user.getNomUsuario()
+        );
+    }
 }
