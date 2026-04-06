@@ -4,13 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import br.sptrans.scd.channel.adapter.port.out.jpa.repository.TypesActivityJpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.TypesActivityMapper;
+import br.sptrans.scd.channel.adapter.port.out.jpa.repository.TypesActivityJpaRepository;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.TypesActivityEntityJpa;
 import br.sptrans.scd.channel.application.port.out.TypesActivityPersistencePort;
-
 import br.sptrans.scd.channel.domain.TypesActivity;
 import lombok.RequiredArgsConstructor;
 
@@ -23,10 +23,12 @@ public class TypesActivityAdapterJpa implements TypesActivityPersistencePort {
 
     private final TypesActivityJpaRepository repository;
 
+    private final TypesActivityMapper mapper;
+
     @Override
     public Optional<TypesActivity> findById(String codAtividade) {
         return repository.findById(codAtividade)
-                .map(this::toDomain);
+            .map(mapper::toDomain);
     }
 
     @Override
@@ -38,9 +40,9 @@ public class TypesActivityAdapterJpa implements TypesActivityPersistencePort {
     public List<TypesActivity> findAll(String codStatus) {
         String normalizedStatus = (codStatus != null && !codStatus.isBlank()) ? codStatus : null;
         return repository.findAllByCodStatus(normalizedStatus)
-                .stream()
-                .map(this::toDomain)
-                .toList();
+            .stream()
+            .map(mapper::toDomain)
+            .toList();
     }
 
     @Override
@@ -52,16 +54,16 @@ public class TypesActivityAdapterJpa implements TypesActivityPersistencePort {
                     .orElseThrow();
             existing.setDesAtividade(typesActivity.getDesAtividade());
             existing.setDtManutencao(now);
-            return toDomain(repository.save(existing));
+            return mapper.toDomain(repository.save(existing));
         }
 
-        TypesActivityEntityJpa entity = toEntity(typesActivity);
+        TypesActivityEntityJpa entity = mapper.toEntity(typesActivity);
         if (entity.getCodStatus() == null || entity.getCodStatus().isBlank()) {
             entity.setCodStatus(STATUS_INACTIVE);
         }
         entity.setDtCadastro(now);
         entity.setDtManutencao(now);
-        return toDomain(repository.save(entity));
+        return mapper.toDomain(repository.save(entity));
     }
 
     @Override
@@ -74,22 +76,6 @@ public class TypesActivityAdapterJpa implements TypesActivityPersistencePort {
         repository.deleteById(codAtividade);
     }
 
-    private TypesActivity toDomain(TypesActivityEntityJpa entity) {
-        return new TypesActivity(
-                entity.getCodAtividade(),
-                entity.getDesAtividade(),
-                entity.getCodStatus(),
-                entity.getDtCadastro(),
-                entity.getDtManutencao());
-    }
 
-    private TypesActivityEntityJpa toEntity(TypesActivity domain) {
-        return new TypesActivityEntityJpa(
-                domain.getCodAtividade(),
-                domain.getDesAtividade(),
-                domain.getCodStatus(),
-                domain.getDtCadastro(),
-                domain.getDtManutencao());
-    }
 
 }
