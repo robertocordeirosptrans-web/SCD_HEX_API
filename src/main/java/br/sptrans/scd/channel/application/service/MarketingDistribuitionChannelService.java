@@ -1,5 +1,8 @@
+
 package br.sptrans.scd.channel.application.service;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -74,6 +77,7 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'marketing-' + #codCanalComercializacao + '-' + #codCanalDistribuicao")
     public MarketingDistribuitionChannel findMarketingDistribuitionChannel(
             String codCanalComercializacao, String codCanalDistribuicao) {
         return repository.findById(new MarketingDistribuitionChannelKey(codCanalComercializacao, codCanalDistribuicao))
@@ -82,7 +86,8 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
 
     @Override
     @Transactional(readOnly = true)
-    public Page<MarketingDistribuitionChannel> findAllMarketingDistribuitionChannels(Pageable pageable) {
+        @Cacheable(value = "canais", key = "'marketing-all-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+        public Page<MarketingDistribuitionChannel> findAllMarketingDistribuitionChannels(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
@@ -90,7 +95,8 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
 
 
     @Override
-    public void deleteMarketingDistribuitionChannel(String codCanalComercializacao, String codCanalDistribuicao) {
+        @CacheEvict(value = "canais", key = "'marketing-' + #codCanalComercializacao + '-' + #codCanalDistribuicao")
+        public void deleteMarketingDistribuitionChannel(String codCanalComercializacao, String codCanalDistribuicao) {
         MarketingDistribuitionChannelKey key =
                 new MarketingDistribuitionChannelKey(codCanalComercializacao, codCanalDistribuicao);
         if (!repository.existsById(key)) {

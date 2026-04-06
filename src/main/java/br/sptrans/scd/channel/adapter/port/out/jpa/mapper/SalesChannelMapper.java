@@ -7,7 +7,7 @@ import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
 
 import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.channel.adapter.port.in.rest.dto.CanalResponseDTO;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.SalesChannelResponseDTO;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.UserSimpleDTO;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.SalesChannelEntityJpa;
 import br.sptrans.scd.channel.domain.SalesChannel;
@@ -25,7 +25,7 @@ public interface SalesChannelMapper {
     @Mapping(source = "idUsuarioManutencao.codLogin", target = "usuarioManutencao")
     @Mapping(source = "idUsuarioCadastro", target = "usuarioCadastroInfo")
     @Mapping(source = "idUsuarioManutencao", target = "usuarioManutencaoInfo")
-    CanalResponseDTO toResponseDTO(SalesChannel channel);
+    SalesChannelResponseDTO toResponseDTO(SalesChannel channel);
 
     // Métodos para persistência (pode ignorar campos complexos, como no exemplo)
     @Mappings({

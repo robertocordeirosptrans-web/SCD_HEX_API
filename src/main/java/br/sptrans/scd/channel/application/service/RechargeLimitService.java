@@ -1,7 +1,10 @@
+
 package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -71,6 +74,7 @@ public class RechargeLimitService implements RechargeLimitUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'recharge-' + #key.codCanal + '-' + #key.codProduto")
     public RechargeLimit findRechargeLimit(RechargeLimitKey key) {
         RechargeLimit limit = repository.findById(key)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.RECHARGE_LIMIT_NOT_FOUND));
@@ -84,11 +88,13 @@ public class RechargeLimitService implements RechargeLimitUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'recharge-all-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<RechargeLimit> findAllRechargeLimits(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
     @Override
+    @CacheEvict(value = "canais", key = "'recharge-' + #key.codCanal + '-' + #key.codProduto")
     public void deleteRechargeLimit(RechargeLimitKey key) {
         RechargeLimit existing = repository.findById(key)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.RECHARGE_LIMIT_NOT_FOUND));

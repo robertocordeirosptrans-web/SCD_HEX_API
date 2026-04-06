@@ -1,5 +1,8 @@
+
 package br.sptrans.scd.channel.application.service;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -52,6 +55,7 @@ public class TypesActivityService implements TypesActivityUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'types-' + #codAtividade")
     public TypesActivity findByTypesActivity(String codAtividade) {
         return typesActivityRepository.findById(codAtividade)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.TYPES_ACTIVITY_NOT_FOUND));
@@ -59,11 +63,13 @@ public class TypesActivityService implements TypesActivityUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'types-all-' + (#codStatus != null ? #codStatus.name() : 'ALL') + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<TypesActivity> findAllTypesActivities(ChannelDomainStatus codStatus, Pageable pageable) {
         return typesActivityRepository.findAll(codStatus != null ? codStatus.getCode() : null, pageable);
     }
 
     @Override
+    @CacheEvict(value = "canais", key = "'types-' + #codAtividade")
     public void activateTypesActivity(String codAtividade) {
         TypesActivity existing = typesActivityRepository.findById(codAtividade)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.TYPES_ACTIVITY_NOT_FOUND));
@@ -74,6 +80,7 @@ public class TypesActivityService implements TypesActivityUseCase {
     }
 
     @Override
+    @CacheEvict(value = "canais", key = "'types-' + #codAtividade")
     public void inactivateTypesActivity(String codAtividade) {
         TypesActivity existing = typesActivityRepository.findById(codAtividade)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.TYPES_ACTIVITY_NOT_FOUND));
@@ -84,6 +91,7 @@ public class TypesActivityService implements TypesActivityUseCase {
     }
 
     @Override
+    @CacheEvict(value = "canais", key = "'types-' + #codAtividade")
     public void deleteTypesActivity(String codAtividade) {
         if (!typesActivityRepository.existsById(codAtividade)) {
             throw new ChannelException(ChannelErrorType.TYPES_ACTIVITY_NOT_FOUND);

@@ -1,8 +1,9 @@
 package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -92,6 +93,7 @@ public class ContactChannelService implements ContactChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'contact-' + #codContato")
     public ContactChannel findByContactChannel(String codContato) {
         return contactChannelRepository.findById(codContato)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.CONTACT_CHANNEL_NOT_FOUND));
@@ -99,11 +101,13 @@ public class ContactChannelService implements ContactChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'contact-all-' + #codCanal + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ContactChannel> findAllContactChannels(String codCanal, Pageable pageable) {
         return contactChannelRepository.findAllByCanal(codCanal, pageable);
     }
 
     @Override
+    @CacheEvict(value = "canais", key = "'contact-' + #codContato")
     public void deleteContactChannel(String codContato) {
         if (!contactChannelRepository.existsById(codContato)) {
             throw new ChannelException(ChannelErrorType.CONTACT_CHANNEL_NOT_FOUND);

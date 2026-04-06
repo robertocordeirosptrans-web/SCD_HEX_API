@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.channel.adapter.port.in.rest.dto.CanalResponseDTO;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.CreateSalesChannelRequest;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.SalesChannelResponseDTO;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.UpdateSalesChannelRequest;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.SalesChannelMapper;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
@@ -55,7 +55,7 @@ public class SalesChannelController {
             @ApiResponse(responseCode = "200", description = "Canal de venda cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<CanalResponseDTO> createSalesChannel(
+    public ResponseEntity<SalesChannelResponseDTO> createSalesChannel(
             @RequestBody CreateSalesChannelRequest request) {
         var usuario = userResolverHelper.getCurrentUser();
         SalesChannel result = salesChannelUseCase.createSalesChannel(new CreateSalesChannelCommand(
@@ -88,7 +88,7 @@ public class SalesChannelController {
 
     @PutMapping("/{codCanal}")
     @Operation(summary = "Atualiza dados de um canal de venda")
-    public ResponseEntity<CanalResponseDTO> updateSalesChannel(
+    public ResponseEntity<SalesChannelResponseDTO> updateSalesChannel(
             @PathVariable String codCanal,
             @RequestBody UpdateSalesChannelRequest request) {
         var usuario = userResolverHelper.getCurrentUser();
@@ -119,14 +119,14 @@ public class SalesChannelController {
 
     @GetMapping("/{codCanal}")
     @Operation(summary = "Busca canal de venda por código")
-    public ResponseEntity<CanalResponseDTO> findBySalesChannel(@PathVariable String codCanal) {
+    public ResponseEntity<SalesChannelResponseDTO> findBySalesChannel(@PathVariable String codCanal) {
         SalesChannel channel = salesChannelUseCase.findBySalesChannel(codCanal);
         return ResponseEntity.ok(salesChannelMapper.toResponseDTO(channel));
     }
 
     @GetMapping
     @Operation(summary = "Lista todos os canais de venda, com filtro opcional de status")
-    public ResponseEntity<PageResponse<CanalResponseDTO>> findAllSalesChannels(
+    public ResponseEntity<PageResponse<SalesChannelResponseDTO>> findAllSalesChannels(
             @RequestParam(required = false) String stCanais,
             Pageable pageable) {
         ChannelDomainStatus statusEnum = null;
@@ -138,7 +138,7 @@ public class SalesChannelController {
             }
         }
         Page<SalesChannel> page = salesChannelUseCase.findAllSalesChannels(statusEnum, pageable);
-        Page<CanalResponseDTO> dtoPage = page.map(salesChannelMapper::toResponseDTO);
+        Page<SalesChannelResponseDTO> dtoPage = page.map(salesChannelMapper::toResponseDTO);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 

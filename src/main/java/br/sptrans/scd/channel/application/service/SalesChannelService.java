@@ -1,7 +1,10 @@
+
 package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -139,6 +142,7 @@ public class SalesChannelService implements SalesChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "#codCanal")
     public SalesChannel findBySalesChannel(String codCanal) {
         return salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
@@ -146,11 +150,13 @@ public class SalesChannelService implements SalesChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "#stCanais != null ? #stCanais.name() : 'ALL' + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<SalesChannel> findAllSalesChannels(ChannelDomainStatus stCanais, Pageable pageable) {
         return salesChannelRepository.findAll(stCanais != null ? stCanais.getCode() : null, pageable);
     }
 
     @Override
+    @CacheEvict(value = "canais", key = "#codCanal")
     public void activateSalesChannel(String codCanal, User usuario) {
         SalesChannel existing = salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
@@ -161,6 +167,7 @@ public class SalesChannelService implements SalesChannelUseCase {
     }
 
     @Override
+    @CacheEvict(value = "canais", key = "#codCanal")
     public void inactivateSalesChannel(String codCanal, User usuario) {
         SalesChannel existing = salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
@@ -171,6 +178,7 @@ public class SalesChannelService implements SalesChannelUseCase {
     }
 
     @Override
+    @CacheEvict(value = "canais", key = "#codCanal")
     public void deleteSalesChannel(String codCanal) {
         if (!salesChannelRepository.existsById(codCanal)) {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND);

@@ -1,7 +1,10 @@
+
 package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -104,6 +107,7 @@ public class AddressChannelService implements AddressChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'address-' + #codEndereco")
     public AddressChannel findByAddressChannel(String codEndereco) {
         return addressChannelRepository.findById(codEndereco)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.ADDRESS_CHANNEL_NOT_FOUND));
@@ -111,11 +115,13 @@ public class AddressChannelService implements AddressChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'address-all-' + #codCanal + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<AddressChannel> findAllAddressChannels(String codCanal, Pageable pageable) {
         return addressChannelRepository.findAllByCanal(codCanal, pageable);
     }
 
     @Override
+    @CacheEvict(value = "canais", key = "'address-' + #codEndereco")
     public void deleteAddressChannel(String codEndereco) {
         if (!addressChannelRepository.existsById(codEndereco)) {
             throw new ChannelException(ChannelErrorType.ADDRESS_CHANNEL_NOT_FOUND);
