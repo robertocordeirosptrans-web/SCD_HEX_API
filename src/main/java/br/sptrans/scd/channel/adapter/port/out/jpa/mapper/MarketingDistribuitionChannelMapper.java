@@ -9,6 +9,7 @@ import br.sptrans.scd.channel.adapter.port.out.persistence.entity.MarketingDistr
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.MarketingDistribuitionChannelKeyEntityJpa;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannelKey;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 
 @Mapper(componentModel = "spring")
 public interface MarketingDistribuitionChannelMapper {
@@ -32,4 +33,14 @@ public interface MarketingDistribuitionChannelMapper {
     MarketingDistribuitionChannelKey toDomainKey(MarketingDistribuitionChannelKeyEntityJpa entityKey);
 
     MarketingDistribuitionChannelKeyEntityJpa toEntityKey(MarketingDistribuitionChannelKey domainKey);
+
+    default ChannelDomainStatus stringToChannelDomainStatus(String code) {
+        if (code == null || code.isBlank()) return null;
+        return ChannelDomainStatus.fromCode(code);
+    }
+
+    default String channelDomainStatusToString(ChannelDomainStatus status) {
+        if (status == null) return null;
+        return status.getCode();
+    }
 }

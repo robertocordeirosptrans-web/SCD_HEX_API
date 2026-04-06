@@ -8,6 +8,7 @@ import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AgreementValid
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AgreementValidityKeyEntityJpa;
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.channel.domain.AgreementValidityKey;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AgreementValidityMapper {
@@ -21,4 +22,14 @@ public interface AgreementValidityMapper {
     AgreementValidityKeyEntityJpa toEntityKey(AgreementValidityKey key);
 
     AgreementValidityKey toDomainKey(AgreementValidityKeyEntityJpa entityKey);
+
+    default ChannelDomainStatus stringToChannelDomainStatus(String code) {
+        if (code == null || code.isBlank()) return null;
+        return ChannelDomainStatus.fromCode(code);
+    }
+
+    default String channelDomainStatusToString(ChannelDomainStatus status) {
+        if (status == null) return null;
+        return status.getCode();
+    }
 }

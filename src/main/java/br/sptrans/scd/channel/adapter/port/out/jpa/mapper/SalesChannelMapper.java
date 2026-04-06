@@ -11,6 +11,7 @@ import br.sptrans.scd.channel.adapter.port.in.rest.dto.CanalResponseDTO;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.UserSimpleDTO;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.SalesChannelEntityJpa;
 import br.sptrans.scd.channel.domain.SalesChannel;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SalesChannelMapper {
@@ -61,6 +62,16 @@ public interface SalesChannelMapper {
             user.getCodLogin(),
             user.getNomUsuario()
         );
+    }
+
+    default ChannelDomainStatus stringToChannelDomainStatus(String code) {
+        if (code == null || code.isBlank()) return null;
+        return ChannelDomainStatus.fromCode(code);
+    }
+
+    default String channelDomainStatusToString(ChannelDomainStatus status) {
+        if (status == null) return null;
+        return status.getCode();
     }
 
 }

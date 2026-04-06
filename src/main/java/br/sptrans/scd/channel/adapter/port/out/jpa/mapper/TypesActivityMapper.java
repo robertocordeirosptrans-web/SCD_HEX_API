@@ -5,6 +5,7 @@ import org.mapstruct.factory.Mappers;
 
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.TypesActivityEntityJpa;
 import br.sptrans.scd.channel.domain.TypesActivity;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 
 @Mapper(componentModel = "spring")
 public interface TypesActivityMapper {
@@ -12,4 +13,14 @@ public interface TypesActivityMapper {
 
     TypesActivity toDomain(TypesActivityEntityJpa entity);
     TypesActivityEntityJpa toEntity(TypesActivity domain);
+
+    default ChannelDomainStatus stringToChannelDomainStatus(String code) {
+        if (code == null || code.isBlank()) return null;
+        return ChannelDomainStatus.fromCode(code);
+    }
+
+    default String channelDomainStatusToString(ChannelDomainStatus status) {
+        if (status == null) return null;
+        return status.getCode();
+    }
 }

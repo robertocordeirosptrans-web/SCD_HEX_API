@@ -1,6 +1,5 @@
 package br.sptrans.scd.channel.domain.enums;
 
-import br.sptrans.scd.initializedcards.domain.enums.DomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

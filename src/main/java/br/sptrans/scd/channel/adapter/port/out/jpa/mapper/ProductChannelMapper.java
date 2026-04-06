@@ -13,6 +13,7 @@ import br.sptrans.scd.channel.adapter.port.out.persistence.entity.ProductChannel
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ProductChannelMapper {
@@ -33,4 +34,14 @@ public interface ProductChannelMapper {
     ProductChResponseDTO toResponseDTO(ProductChannelProjection projection);
 
     List<ProductChResponseDTO> toResponseDTOList(List<ProductChannelProjection> projections);
+
+    default ChannelDomainStatus stringToChannelDomainStatus(String code) {
+        if (code == null || code.isBlank()) return null;
+        return ChannelDomainStatus.fromCode(code);
+    }
+
+    default String channelDomainStatusToString(ChannelDomainStatus status) {
+        if (status == null) return null;
+        return status.getCode();
+    }
 }

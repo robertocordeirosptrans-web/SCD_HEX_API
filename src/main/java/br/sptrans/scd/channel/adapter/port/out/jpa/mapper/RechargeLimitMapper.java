@@ -7,6 +7,7 @@ import org.mapstruct.ReportingPolicy;
 
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.RechargeLimitEntityJpa;
 import br.sptrans.scd.channel.domain.RechargeLimit;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RechargeLimitMapper {
@@ -20,5 +21,14 @@ public interface RechargeLimitMapper {
         @Mapping(target = "idUsuarioCadastro", ignore = true)})
     RechargeLimitEntityJpa toEntity(RechargeLimit domain);
 
+    default ChannelDomainStatus stringToChannelDomainStatus(String code) {
+        if (code == null || code.isBlank()) return null;
+        return ChannelDomainStatus.fromCode(code);
+    }
+
+    default String channelDomainStatusToString(ChannelDomainStatus status) {
+        if (status == null) return null;
+        return status.getCode();
+    }
 
 }
