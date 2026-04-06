@@ -2,7 +2,7 @@ package br.sptrans.scd.channel.adapter.port.in.rest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
