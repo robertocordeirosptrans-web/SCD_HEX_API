@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.adapter.port.in.rest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -44,6 +46,8 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Limites de Recarga v1", description = "Endpoints para gerenciamento de limites de recarga")
 public class RechargeLimitController {
 
+    private static final Logger log = LoggerFactory.getLogger(RechargeLimitController.class);
+
     private final RechargeLimitUseCase rechargeLimitUseCase;
     private final UserResolverHelper userResolverHelper;
     private final RechargeLimitMapper rechargeLimitMapper;
@@ -56,6 +60,7 @@ public class RechargeLimitController {
         })
     public ResponseEntity<RechargeLimitResponseDTO> createRechargeLimit(
             @RequestBody CreateRechargeLimitRequest request) {
+        log.info("REST POST /recharge-limits — Canal: {}, Produto: {}", request.codCanal(), request.codProduto());
         User usuario = userResolverHelper.getCurrentUser();
         RechargeLimit result = rechargeLimitUseCase.createRechargeLimit(
                 new CreateRechargeLimitCommand(
@@ -81,6 +86,7 @@ public class RechargeLimitController {
             @PathVariable String codCanal,
             @PathVariable String codProduto,
             @RequestBody UpdateRechargeLimitRequest request) {
+        log.info("REST PUT /recharge-limits/{}/{} — Atualizando", codCanal, codProduto);
         Long idUsuario = userResolverHelper.getCurrentUserId();
         RechargeLimit result = rechargeLimitUseCase.updateRechargeLimit(codCanal, codProduto,
                 new UpdateRechargeLimitCommand(
@@ -120,6 +126,7 @@ public class RechargeLimitController {
     public ResponseEntity<Void> deleteRechargeLimit(
             @PathVariable String codCanal,
             @PathVariable String codProduto) {
+        log.info("REST DELETE /recharge-limits/{}/{}", codCanal, codProduto);
         RechargeLimitKey key = new RechargeLimitKey(codCanal, codProduto);
         rechargeLimitUseCase.deleteRechargeLimit(key);
         return ResponseEntity.noContent().build();

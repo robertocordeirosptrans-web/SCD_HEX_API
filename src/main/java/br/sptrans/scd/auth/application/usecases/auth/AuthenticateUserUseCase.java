@@ -11,16 +11,14 @@ import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.out.AuthenticationPort;
 import br.sptrans.scd.auth.application.port.out.AuthorizationPort;
 import br.sptrans.scd.auth.application.port.out.GroupUserPort;
-
-
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
-
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.shared.exception.AccountBlockedException;
 import br.sptrans.scd.shared.exception.AuthenticationFailedException;
 import br.sptrans.scd.shared.exception.InactiveUserException;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
+import br.sptrans.scd.shared.helper.LogSanitizer;
 import br.sptrans.scd.shared.security.PasswordHashUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -63,25 +61,25 @@ public class AuthenticateUserUseCase {
      * @throws InactiveUserException se conta inativa
      */
     public User authenticate(AuthUseCase.AuthComand command) {
-        log.info("Iniciando autenticação para login: {}", command.codLogin());
+        log.info("Iniciando autenticação para login: {}", LogSanitizer.maskLogin(command.codLogin()));
         
         // Busca usuário
         User user = userPort.findByCodLogin(command.codLogin())
             .orElseThrow(() -> {
-                log.warn("Usuário não encontrado: {}", command.codLogin());
+                log.warn("Falha na autenticação — usuário não encontrado");
                 return new AuthenticationFailedException("Usuário ou senha inválidos.");
             });
         
         // Valida conta bloqueada
         if (user.isBlocked()) {
-            log.warn("Tentativa de acesso em conta bloqueada. Login: {}", user.getCodLogin());
+            log.warn("Tentativa de acesso em conta bloqueada. ID: {}", user.getIdUsuario());
             throw new AccountBlockedException(
                 "Conta bloqueada por excesso de tentativas. Contate o administrador.");
         }
         
         // Valida conta inativa
         if (user.isInactive()) {
-            log.warn("Tentativa de acesso em conta inativa. Login: {}", user.getCodLogin());
+            log.warn("Tentativa de acesso em conta inativa. ID: {}", user.getIdUsuario());
             throw new InactiveUserException(
                 "Conta inativa. Contate o administrador.");
         }
@@ -90,7 +88,7 @@ public class AuthenticateUserUseCase {
         String hashArmazenado = user.getCodSenha() != null ? user.getCodSenha().trim() : null;
 
         if (!PasswordHashUtil.verificar(command.senha(), hashArmazenado)) {
-            log.warn("Credenciais inválidas para o login: {}", user.getCodLogin());
+            log.warn("Credenciais inválidas. ID: {}, tentativa: {}", user.getIdUsuario(), user.getNumTentativasFalha() + 1);
             user.registrarTentativaFalha();
             
             authenticationPort.atualizarTentativasEStatus(
@@ -99,7 +97,7 @@ public class AuthenticateUserUseCase {
                     user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
             
             if (user.isBlocked()) {
-                log.warn("Conta bloqueada após excesso de tentativas. Login: {}", user.getCodLogin());
+                log.warn("Conta bloqueada após excesso de tentativas. ID: {}", user.getIdUsuario());
                 throw new AccountBlockedException(
                     "Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
             }
@@ -109,14 +107,13 @@ public class AuthenticateUserUseCase {
 
         // Valida jornada de acesso
         if (!user.acessoPermitidoAgora()) {
-            log.warn("Acesso não permitido para usuário: {} (restrição de jornada)", 
-                user.getCodLogin());
+            log.warn("Acesso fora da jornada permitida. ID: {}", user.getIdUsuario());
             throw new AuthenticationFailedException(
                 "Acesso não permitido neste dia/horário conforme sua jornada configurada.");
         }
         
         // Autentica com sucesso
-        log.info("Login bem-sucedido para usuário: {}", user.getCodLogin());
+        log.info("Login bem-sucedido. ID: {}", user.getIdUsuario());
         user.resetarTentativas();
         
         authenticationPort.atualizarTentativasEStatus(

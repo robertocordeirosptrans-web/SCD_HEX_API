@@ -1,5 +1,7 @@
 package br.sptrans.scd.channel.adapter.port.in.rest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -42,6 +44,8 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Contatos do Canal v1", description = "Endpoints para gerenciamento de contatos do canal")
 public class ContactChannelController {
 
+    private static final Logger log = LoggerFactory.getLogger(ContactChannelController.class);
+
     private final ContactChannelUseCase contactChannelUseCase;
     private final UserResolverHelper userResolverHelper;
     private final ContactChannelMapper contactChannelMapper;
@@ -54,6 +58,7 @@ public class ContactChannelController {
         })
     public ResponseEntity<ContactChannelResponseDTO> createContactChannel(
             @RequestBody CreateContactChannelRequest request) {
+        log.info("REST POST /contact-channels — Criando contato: {}", request.codContato());
         User usuario = userResolverHelper.getCurrentUser();
         ContactChannel result = contactChannelUseCase.createContactChannel(new CreateContactChannelCommand(
                 request.codContato(),
@@ -84,6 +89,7 @@ public class ContactChannelController {
     public ResponseEntity<ContactChannelResponseDTO> updateContactChannel(
             @PathVariable String codContato,
             @RequestBody UpdateContactChannelRequest request) {
+        log.info("REST PUT /contact-channels/{} — Atualizando contato", codContato);
         Long idUsuario = userResolverHelper.getCurrentUserId();
         ContactChannel result = contactChannelUseCase.updateContactChannel(codContato, new UpdateContactChannelCommand(
                 request.codFornecedor(),
@@ -122,6 +128,7 @@ public class ContactChannelController {
     @DeleteMapping("/{codContato}")
     @Operation(summary = "Remove um contato do canal")
     public ResponseEntity<Void> deleteContactChannel(@PathVariable String codContato) {
+        log.info("REST DELETE /contact-channels/{}", codContato);
         contactChannelUseCase.deleteContactChannel(codContato);
         return ResponseEntity.noContent().build();
     }

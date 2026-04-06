@@ -2,6 +2,8 @@ package br.sptrans.scd.channel.adapter.port.in.rest;
 
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -42,6 +44,8 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Endereços do Canal v1", description = "Endpoints para gerenciamento de endereços do canal")
 public class AddressChannelController {
 
+    private static final Logger log = LoggerFactory.getLogger(AddressChannelController.class);
+
     private final AddressChannelUseCase addressChannelUseCase;
     private final UserResolverHelper userResolverHelper;
     private final AddressChannelMapper addressChannelMapper;
@@ -50,6 +54,7 @@ public class AddressChannelController {
     @Operation(summary = "Cadastra um novo endereço do canal")
     public ResponseEntity<AddressChannelResponseDTO> createAddressChannel(
             @RequestBody CreateAddressChannelRequest request) {
+        log.info("REST POST /address-channels — Criando endereço: {}", request.codEndereco());
         User usuario = userResolverHelper.getCurrentUser();
         AddressChannel result = addressChannelUseCase.createAddressChannel(new CreateAddressChannelCommand(
                 request.codEndereco(),
@@ -77,6 +82,7 @@ public class AddressChannelController {
     public ResponseEntity<AddressChannelResponseDTO> updateAddressChannel(
             @PathVariable String codEndereco,
             @RequestBody UpdateAddressChannelRequest request) {
+        log.info("REST PUT /address-channels/{} — Atualizando endereço", codEndereco);
         Long idUsuario = userResolverHelper.getCurrentUserId();
         AddressChannel result = addressChannelUseCase.updateAddressChannel(codEndereco, new UpdateAddressChannelCommand(
                 request.codEmpregador(),
@@ -116,6 +122,7 @@ public class AddressChannelController {
     @DeleteMapping("/{codEndereco}")
     @Operation(summary = "Remove um endereço do canal")
     public ResponseEntity<Void> deleteAddressChannel(@PathVariable String codEndereco) {
+        log.info("REST DELETE /address-channels/{}", codEndereco);
         addressChannelUseCase.deleteAddressChannel(codEndereco);
         return ResponseEntity.noContent().build();
     }

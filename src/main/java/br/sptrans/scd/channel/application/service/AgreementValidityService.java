@@ -2,6 +2,8 @@ package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -25,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AgreementValidityService implements AgreementValidityUseCase {
 
+    private static final Logger log = LoggerFactory.getLogger(AgreementValidityService.class);
+
     private final AgreementValidityPersistencePort repository;
     private final SalesChannelPersistencePort salesChannelRepository;
     private final UserResolverHelper userResolverHelper;
@@ -32,6 +36,7 @@ public class AgreementValidityService implements AgreementValidityUseCase {
     @Override
     @CacheEvict(value = "canais", allEntries = true)
     public AgreementValidity createAgreementValidity(CreateAgreementValidityCommand cmd) {
+        log.info("Criando vigência de convênio. Canal: {}, Produto: {}", cmd.codCanal(), cmd.codProduto());
         salesChannelRepository.findById(cmd.codCanal())
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
         AgreementValidityKey key = new AgreementValidityKey(cmd.codCanal(), cmd.codProduto());
@@ -47,13 +52,16 @@ public class AgreementValidityService implements AgreementValidityUseCase {
             LocalDateTime.now(),
             cmd.usuario());
 
-        return repository.save(entity);
+        AgreementValidity saved = repository.save(entity);
+        log.info("Vigência de convênio criada. Canal: {}, Produto: {}", cmd.codCanal(), cmd.codProduto());
+        return saved;
     }
 
     @Override
     @CacheEvict(value = "canais", allEntries = true)
     public AgreementValidity updateAgreementValidity(String codCanal, String codProduto,
             UpdateAgreementValidityCommand cmd) {
+        log.info("Atualizando vigência de convênio. Canal: {}, Produto: {}", codCanal, codProduto);
         AgreementValidityKey key = new AgreementValidityKey(codCanal, codProduto);
         AgreementValidity existing = repository.findById(key)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.AGREEMENT_VALIDITY_NOT_FOUND));
@@ -61,7 +69,9 @@ public class AgreementValidityService implements AgreementValidityUseCase {
         existing.updateValidity(cmd.dtFimValidade(), cmd.usuario());
         existing.setCodStatus(ChannelDomainStatus.fromCode(cmd.codStatus()));
 
-        return repository.save(existing);
+        AgreementValidity saved = repository.save(existing);
+        log.info("Vigência de convênio atualizada. Canal: {}, Produto: {}", codCanal, codProduto);
+        return saved;
     }
 
     @Override

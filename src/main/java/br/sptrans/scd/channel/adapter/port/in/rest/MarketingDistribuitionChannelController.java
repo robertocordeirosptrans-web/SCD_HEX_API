@@ -2,6 +2,8 @@ package br.sptrans.scd.channel.adapter.port.in.rest;
 
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -42,6 +44,8 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Canais Comercialização/Distribuição v1", description = "Endpoints para gerenciamento de canais de comercialização e distribuição")
 public class MarketingDistribuitionChannelController {
 
+    private static final Logger log = LoggerFactory.getLogger(MarketingDistribuitionChannelController.class);
+
     private final MarketingDistribuitionChannelUseCase marketingUseCase;
     private final UserResolverHelper userResolverHelper;
     private final MarketingDistribuitionChannelMapper marketingMapper;
@@ -54,6 +58,8 @@ public class MarketingDistribuitionChannelController {
     })
     public ResponseEntity<MarketingDistribuitionChannelResponseDTO> createMarketingDistribuitionChannel(
             @RequestBody CreateMarketingDistribuitionChannelRequest request) {
+        log.info("REST POST /marketing-distribuition-channels — Comercialização: {}, Distribuição: {}",
+            request.codCanalComercializacao(), request.codCanalDistribuicao());
         User usuario = userResolverHelper.getCurrentUser();
         MarketingDistribuitionChannel result = marketingUseCase.createMarketingDistribuitionChannel(
                 new CreateMarketingDistribuitionChannelCommand(
@@ -74,6 +80,8 @@ public class MarketingDistribuitionChannelController {
             @PathVariable String codCanalComercializacao,
             @PathVariable String codCanalDistribuicao,
             @RequestBody UpdateMarketingDistribuitionChannelRequest request) {
+        log.info("REST PUT /marketing-distribuition-channels/{}/{} — Atualizando",
+            codCanalComercializacao, codCanalDistribuicao);
         User usuario = userResolverHelper.getCurrentUser();
         MarketingDistribuitionChannel result = marketingUseCase.updateMarketingDistribuitionChannel(
                 codCanalComercializacao, codCanalDistribuicao,
@@ -108,6 +116,8 @@ public class MarketingDistribuitionChannelController {
     public ResponseEntity<Void> deleteMarketingDistribuitionChannel(
             @PathVariable String codCanalComercializacao,
             @PathVariable String codCanalDistribuicao) {
+        log.info("REST DELETE /marketing-distribuition-channels/{}/{}",
+            codCanalComercializacao, codCanalDistribuicao);
         marketingUseCase.deleteMarketingDistribuitionChannel(codCanalComercializacao, codCanalDistribuicao);
         return ResponseEntity.noContent().build();
     }

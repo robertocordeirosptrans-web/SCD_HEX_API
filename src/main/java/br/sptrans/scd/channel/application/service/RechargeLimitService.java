@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -26,12 +28,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RechargeLimitService implements RechargeLimitUseCase {
 
+    private static final Logger log = LoggerFactory.getLogger(RechargeLimitService.class);
+
     private final RechargeLimitPersistencePort repository;
     private final SalesChannelPersistencePort salesChannelRepository;
     private final UserResolverHelper userResolverHelper;
 
     @Override
     public RechargeLimit createRechargeLimit(CreateRechargeLimitCommand cmd) {
+        log.info("Criando limite de recarga. Canal: {}, Produto: {}", cmd.codCanal(), cmd.codProduto());
         salesChannelRepository.findById(cmd.codCanal())
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
         RechargeLimitKey key = new RechargeLimitKey(cmd.codCanal(), cmd.codProduto());
@@ -50,11 +55,14 @@ public class RechargeLimitService implements RechargeLimitUseCase {
             LocalDateTime.now(),
             cmd.usuario());
 
-        return repository.save(entity);
+        RechargeLimit saved = repository.save(entity);
+        log.info("Limite de recarga criado. Canal: {}, Produto: {}", cmd.codCanal(), cmd.codProduto());
+        return saved;
     }
 
     @Override
     public RechargeLimit updateRechargeLimit(String codCanal, String codProduto, UpdateRechargeLimitCommand cmd) {
+        log.info("Atualizando limite de recarga. Canal: {}, Produto: {}", codCanal, codProduto);
         RechargeLimitKey key = new RechargeLimitKey(codCanal, codProduto);
         RechargeLimit existing = repository.findById(key)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.RECHARGE_LIMIT_NOT_FOUND));
@@ -69,7 +77,9 @@ public class RechargeLimitService implements RechargeLimitUseCase {
 
         existing.setCodStatus(ChannelDomainStatus.fromCode(cmd.codStatus()));
 
-        return repository.save(existing);
+        RechargeLimit saved = repository.save(existing);
+        log.info("Limite de recarga atualizado. Canal: {}, Produto: {}", codCanal, codProduto);
+        return saved;
     }
 
     @Override

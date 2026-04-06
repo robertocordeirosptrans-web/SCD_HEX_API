@@ -1,6 +1,8 @@
 
 package br.sptrans.scd.channel.application.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -24,12 +26,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MarketingDistribuitionChannelService implements MarketingDistribuitionChannelUseCase {
 
+    private static final Logger log = LoggerFactory.getLogger(MarketingDistribuitionChannelService.class);
+
     private final MarketingDistribuitionChannelPersistencePort repository;
     private final SalesChannelPersistencePort salesChannelRepository;
 
     @Override
     public MarketingDistribuitionChannel createMarketingDistribuitionChannel(
             CreateMarketingDistribuitionChannelCommand cmd) {
+        log.info("Criando canal de comercialização/distribuição. Comercialização: {}, Distribuição: {}",
+            cmd.codCanalComercializacao(), cmd.codCanalDistribuicao());
         salesChannelRepository.findById(cmd.codCanalComercializacao())
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
         salesChannelRepository.findById(cmd.codCanalDistribuicao())
@@ -50,13 +56,18 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
                 usuCad,
                 null);
 
-        return repository.save(entity);
+        MarketingDistribuitionChannel saved = repository.save(entity);
+        log.info("Canal de comercialização/distribuição criado. Comercialização: {}, Distribuição: {}",
+            cmd.codCanalComercializacao(), cmd.codCanalDistribuicao());
+        return saved;
     }
 
     @Override
     public MarketingDistribuitionChannel updateMarketingDistribuitionChannel(
             String codCanalComercializacao, String codCanalDistribuicao,
             UpdateMarketingDistribuitionChannelCommand cmd) {
+        log.info("Atualizando canal de comercialização/distribuição. Comercialização: {}, Distribuição: {}",
+            codCanalComercializacao, codCanalDistribuicao);
         MarketingDistribuitionChannelKey key =
                 new MarketingDistribuitionChannelKey(codCanalComercializacao, codCanalDistribuicao);
         MarketingDistribuitionChannel existing = repository.findById(key)
@@ -72,7 +83,10 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
                 existing.getIdUsuarioCadastro(),
                 usuMan);
 
-        return repository.save(updated);
+        MarketingDistribuitionChannel saved = repository.save(updated);
+        log.info("Canal de comercialização/distribuição atualizado. Comercialização: {}, Distribuição: {}",
+            codCanalComercializacao, codCanalDistribuicao);
+        return saved;
     }
 
     @Override
@@ -97,12 +111,16 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
     @Override
         @CacheEvict(value = "canais", key = "'marketing-' + #codCanalComercializacao + '-' + #codCanalDistribuicao")
         public void deleteMarketingDistribuitionChannel(String codCanalComercializacao, String codCanalDistribuicao) {
+        log.info("Removendo canal de comercialização/distribuição. Comercialização: {}, Distribuição: {}",
+            codCanalComercializacao, codCanalDistribuicao);
         MarketingDistribuitionChannelKey key =
                 new MarketingDistribuitionChannelKey(codCanalComercializacao, codCanalDistribuicao);
         if (!repository.existsById(key)) {
             throw new ChannelException(ChannelErrorType.MARKETING_CHANNEL_NOT_FOUND);
         }
         repository.deleteById(key);
+        log.info("Canal de comercialização/distribuição removido. Comercialização: {}, Distribuição: {}",
+            codCanalComercializacao, codCanalDistribuicao);
     }
 
 }

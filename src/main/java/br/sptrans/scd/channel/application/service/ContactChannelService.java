@@ -2,6 +2,8 @@ package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -25,12 +27,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ContactChannelService implements ContactChannelUseCase {
 
+    private static final Logger log = LoggerFactory.getLogger(ContactChannelService.class);
+
     private final ContactChannelPersistencePort contactChannelRepository;
     private final SalesChannelPersistencePort salesChannelRepository;
     private final UserResolverHelper userResolverHelper;
 
     @Override
     public ContactChannel createContactChannel(CreateContactChannelCommand cmd) {
+        log.info("Criando contato do canal. Código: {}", cmd.codContato());
         if (contactChannelRepository.existsById(cmd.codContato())) {
             throw new ChannelException(ChannelErrorType.CONTACT_CHANNEL_CODE_ALREADY_EXISTS);
         }
@@ -59,11 +64,14 @@ public class ContactChannelService implements ContactChannelUseCase {
                 null,
                 usuario,
                 channel);
-        return contactChannelRepository.save(contactChannel);
+        ContactChannel saved = contactChannelRepository.save(contactChannel);
+        log.info("Contato do canal criado. Código: {}", saved.getCodContato());
+        return saved;
     }
 
     @Override
     public ContactChannel updateContactChannel(String codContato, UpdateContactChannelCommand cmd) {
+        log.info("Atualizando contato do canal. Código: {}", codContato);
         ContactChannel existing = contactChannelRepository.findById(codContato)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.CONTACT_CHANNEL_NOT_FOUND));
 
@@ -88,7 +96,9 @@ public class ContactChannelService implements ContactChannelUseCase {
                 LocalDateTime.now(),
                 usuario,
                 channel);
-        return contactChannelRepository.save(existing);
+        ContactChannel saved = contactChannelRepository.save(existing);
+        log.info("Contato do canal atualizado. Código: {}", codContato);
+        return saved;
     }
 
     @Override
@@ -109,10 +119,12 @@ public class ContactChannelService implements ContactChannelUseCase {
     @Override
     @CacheEvict(value = "canais", key = "'contact-' + #codContato")
     public void deleteContactChannel(String codContato) {
+        log.info("Removendo contato do canal. Código: {}", codContato);
         if (!contactChannelRepository.existsById(codContato)) {
             throw new ChannelException(ChannelErrorType.CONTACT_CHANNEL_NOT_FOUND);
         }
         contactChannelRepository.deleteById(codContato);
+        log.info("Contato do canal removido. Código: {}", codContato);
     }
 
 }

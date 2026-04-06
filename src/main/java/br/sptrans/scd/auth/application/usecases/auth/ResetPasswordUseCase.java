@@ -11,7 +11,6 @@ import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.PasswordValidator;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenPort;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
-
 import br.sptrans.scd.auth.application.port.out.UserStatusPort;
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 import br.sptrans.scd.auth.domain.User;
@@ -75,14 +74,14 @@ public class ResetPasswordUseCase {
 
         // Valida expiração
         if (tokenObj.isExpired()) {
-            log.warn("Token expirado: {}", command.token());
+            log.warn("Token expirado para reset de senha");
             throw new AuthenticationFailedException(
                 "Token expirado. Solicite um novo e-mail de recuperação.");
         }
 
         // Valida se já foi utilizado
         if (!tokenObj.isValid()) {
-            log.warn("Token já utilizado: {}", command.token());
+            log.warn("Token já utilizado para reset de senha");
             throw new AuthenticationFailedException(
                 "Token já utilizado. Solicite um novo e-mail de recuperação.");
         }
@@ -90,7 +89,7 @@ public class ResetPasswordUseCase {
         // Busca usuário
         User user = userQueryPort.findById(tokenObj.getIdUsuario())
                 .orElseThrow(() -> {
-                    log.warn("Usuário não encontrado para token: {}", command.token());
+                    log.warn("Usuário não encontrado para token de reset");
                     return new ResourceNotFoundException("Usuário", "id", tokenObj.getIdUsuario());
                 });
 

@@ -1,6 +1,8 @@
 package br.sptrans.scd.channel.adapter.port.in.rest;
 
 // ...
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -45,6 +47,8 @@ import lombok.RequiredArgsConstructor;
 
 public class SalesChannelController {
 
+    private static final Logger log = LoggerFactory.getLogger(SalesChannelController.class);
+
     private final SalesChannelUseCase salesChannelUseCase;
     private final UserResolverHelper userResolverHelper;
     private final SalesChannelMapper salesChannelMapper;
@@ -57,6 +61,7 @@ public class SalesChannelController {
         })
     public ResponseEntity<SalesChannelResponseDTO> createSalesChannel(
             @RequestBody CreateSalesChannelRequest request) {
+        log.info("REST POST /sales-channels — Criando canal: {}", request.codCanal());
         var usuario = userResolverHelper.getCurrentUser();
         SalesChannel result = salesChannelUseCase.createSalesChannel(new CreateSalesChannelCommand(
             request.codCanal(),
@@ -91,6 +96,7 @@ public class SalesChannelController {
     public ResponseEntity<SalesChannelResponseDTO> updateSalesChannel(
             @PathVariable String codCanal,
             @RequestBody UpdateSalesChannelRequest request) {
+        log.info("REST PUT /sales-channels/{} — Atualizando canal", codCanal);
         var usuario = userResolverHelper.getCurrentUser();
         SalesChannel result = salesChannelUseCase.updateSalesChannel(codCanal, new UpdateSalesChannelCommand(
             request.codCanalSuperior(),
@@ -147,6 +153,7 @@ public class SalesChannelController {
     @Operation(summary = "Ativa um canal de venda")
     public ResponseEntity<Void> activateSalesChannel(
             @PathVariable String codCanal) {
+        log.info("REST PATCH /sales-channels/{}/activate", codCanal);
         salesChannelUseCase.activateSalesChannel(codCanal, userResolverHelper.getCurrentUser());
         return ResponseEntity.noContent().build();
     }
@@ -155,6 +162,7 @@ public class SalesChannelController {
     @Operation(summary = "Inativa um canal de venda")
     public ResponseEntity<Void> inactivateSalesChannel(
             @PathVariable String codCanal) {
+        log.info("REST PATCH /sales-channels/{}/inactivate", codCanal);
         salesChannelUseCase.inactivateSalesChannel(codCanal, userResolverHelper.getCurrentUser());
         return ResponseEntity.noContent().build();
     }
@@ -162,6 +170,7 @@ public class SalesChannelController {
     @DeleteMapping("/{codCanal}")
     @Operation(summary = "Remove um canal de venda")
     public ResponseEntity<Void> deleteSalesChannel(@PathVariable String codCanal) {
+        log.info("REST DELETE /sales-channels/{}", codCanal);
         salesChannelUseCase.deleteSalesChannel(codCanal);
         return ResponseEntity.noContent().build();
     }

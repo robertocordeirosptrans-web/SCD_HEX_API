@@ -12,10 +12,10 @@ import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.out.EmailSendingPort;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenPort;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
-
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
+import br.sptrans.scd.shared.helper.LogSanitizer;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -54,12 +54,12 @@ public class RequestPasswordResetUseCase {
      * @throws ResourceNotFoundException se e-mail não encontrado
      */
     public void requestPasswordReset(AuthUseCase.ResetRequestComand command) {
-        log.info("Solicitando reset de senha para e-mail: {}", command.email());
+        log.info("Solicitando reset de senha para e-mail: {}", LogSanitizer.maskEmail(command.email()));
         
         // Busca usuário pelo e-mail
         User user = userPort.findByNomEmail(command.email())
             .orElseThrow(() -> {
-                log.warn("E-mail não cadastrado: {}", command.email());
+                log.warn("Solicitação de reset para e-mail não cadastrado");
                 return new ResourceNotFoundException("E-mail não cadastrado.");
             });
 
@@ -82,6 +82,6 @@ public class RequestPasswordResetUseCase {
             user.getNomUsuario(),
             resetToken.getToken());
         
-        log.info("E-mail de recuperação enviado para: {}", user.getNomEmail());
+        log.info("E-mail de recuperação enviado para usuário ID: {}", user.getIdUsuario());
     }
 }

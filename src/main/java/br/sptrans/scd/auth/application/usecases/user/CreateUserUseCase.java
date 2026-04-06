@@ -9,12 +9,11 @@ import org.springframework.stereotype.Component;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.UserCommandPort;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
-
-
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.enums.UserStatus;
 import br.sptrans.scd.shared.cache.InvalidateUserCache;
 import br.sptrans.scd.shared.exception.DuplicateResourceException;
+import br.sptrans.scd.shared.helper.LogSanitizer;
 import br.sptrans.scd.shared.security.PasswordHashUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -54,11 +53,11 @@ public class CreateUserUseCase {
      */
     @InvalidateUserCache
     public User createUser(UserManagementUseCase.CreateUserCommand command) {
-        log.info("Criando novo usuário. Login: {}", command.codLogin());
+        log.info("Criando novo usuário. Login: {}", LogSanitizer.maskLogin(command.codLogin()));
         
         // Valida COD_LOGIN único
         if (userReader.existsByLogin(command.codLogin())) {
-            log.warn("Login duplicado: {}", command.codLogin());
+            log.warn("Tentativa de criação com login duplicado");
             throw new DuplicateResourceException("Login", "codLogin", command.codLogin());
         }
 

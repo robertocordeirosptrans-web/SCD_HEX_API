@@ -2,6 +2,8 @@ package br.sptrans.scd.auth.adapter.port.in.rest;
 
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -33,6 +35,8 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Autenticação v1", description = "Endpoints para autenticação e gerenciamento de usuários - Versão 1")
 public class AuthController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+
     private final AuthUseCase casoUso;
     private final TokenGeneratorPort tokenGenerator;
 
@@ -44,6 +48,7 @@ public class AuthController {
         @ApiResponse(responseCode = "403", description = "Credenciais inválidas ou usuário bloqueado/inativo")
     })
     public ResponseEntity<ResponseLogin> login(@RequestBody @Valid RequestLogin req) {
+        log.info("REST POST /auth/login — Tentativa de autenticação");
         AuthComand auth = new AuthComand(req.login(), req.password());
         User user = casoUso.autenticar(auth);
         String jwt = tokenGenerator.generate(user);
@@ -73,6 +78,7 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ResponseSimple> changePassword(@RequestBody ResquestChangePassword req) {
+        log.info("REST POST /auth/change-password — Solicitação de troca de senha");
         ResetPasswordComand reset = new ResetPasswordComand(req.token(), req.novaSenha());
         casoUso.resetPassword(reset);
         return ResponseEntity.ok(new ResponseSimple(
@@ -81,6 +87,7 @@ public class AuthController {
 
     @PostMapping("/recovery-password")
     public ResponseEntity<ResponseSimple> recoveryPassword(@RequestBody RequestRecoveryPassword req) {
+        log.info("REST POST /auth/recovery-password — Solicitação de recuperação de senha");
 
         ResetRequestComand cmd = new ResetRequestComand(req.email());
         casoUso.recoveryResetPassword(cmd);

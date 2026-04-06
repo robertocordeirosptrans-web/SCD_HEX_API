@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SalesChannelService implements SalesChannelUseCase {
 
+    private static final Logger log = LoggerFactory.getLogger(SalesChannelService.class);
+
     private final SalesChannelPersistencePort salesChannelRepository;
     private final TypesActivityPersistencePort typesActivityRepository;
     private final ClassificationPort classificationPort;
@@ -36,6 +40,7 @@ public class SalesChannelService implements SalesChannelUseCase {
 
     @Override
     public SalesChannel createSalesChannel(CreateSalesChannelCommand cmd) {
+        log.info("Criando canal de venda. Código: {}", cmd.codCanal());
         if (salesChannelRepository.existsById(cmd.codCanal())) {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_CODE_ALREADY_EXISTS);
         }
@@ -88,11 +93,14 @@ public class SalesChannelService implements SalesChannelUseCase {
                 typesActivity,
                 cmd.usuario(),
                 null);
-        return salesChannelRepository.save(salesChannel);
+        SalesChannel saved = salesChannelRepository.save(salesChannel);
+        log.info("Canal de venda criado com sucesso. Código: {}", saved.getCodCanal());
+        return saved;
     }
 
     @Override
     public SalesChannel updateSalesChannel(String codCanal, UpdateSalesChannelCommand cmd) {
+        log.info("Atualizando canal de venda. Código: {}", codCanal);
         SalesChannel existing = salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
 
@@ -137,7 +145,9 @@ public class SalesChannelService implements SalesChannelUseCase {
                 typesActivity,
                 existing.getIdUsuarioCadastro(),
                 cmd.usuario());
-        return salesChannelRepository.save(updated);
+        SalesChannel saved = salesChannelRepository.save(updated);
+        log.info("Canal de venda atualizado com sucesso. Código: {}", codCanal);
+        return saved;
     }
 
     @Override
@@ -158,32 +168,38 @@ public class SalesChannelService implements SalesChannelUseCase {
     @Override
     @CacheEvict(value = "canais", key = "#codCanal")
     public void activateSalesChannel(String codCanal, User usuario) {
+        log.info("Ativando canal de venda. Código: {}", codCanal);
         SalesChannel existing = salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
         if (ChannelDomainStatus.ACTIVE.equals(existing.getStCanais())) {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_ALREADY_ACTIVE);
         }
         salesChannelRepository.updateStatus(codCanal, ChannelDomainStatus.ACTIVE.getCode(), usuario);
+        log.info("Canal de venda ativado. Código: {}", codCanal);
     }
 
     @Override
     @CacheEvict(value = "canais", key = "#codCanal")
     public void inactivateSalesChannel(String codCanal, User usuario) {
+        log.info("Inativando canal de venda. Código: {}", codCanal);
         SalesChannel existing = salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
         if (ChannelDomainStatus.INACTIVE.equals(existing.getStCanais())) {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_ALREADY_INACTIVE);
         }
         salesChannelRepository.updateStatus(codCanal, ChannelDomainStatus.INACTIVE.getCode(), usuario);
+        log.info("Canal de venda inativado. Código: {}", codCanal);
     }
 
     @Override
     @CacheEvict(value = "canais", key = "#codCanal")
     public void deleteSalesChannel(String codCanal) {
+        log.info("Removendo canal de venda. Código: {}", codCanal);
         if (!salesChannelRepository.existsById(codCanal)) {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND);
         }
         salesChannelRepository.deleteById(codCanal);
+        log.info("Canal de venda removido. Código: {}", codCanal);
     }
 
 }

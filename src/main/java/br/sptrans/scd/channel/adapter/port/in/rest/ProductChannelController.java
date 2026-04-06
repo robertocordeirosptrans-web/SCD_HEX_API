@@ -1,7 +1,7 @@
 package br.sptrans.scd.channel.adapter.port.in.rest;
 
-import java.util.List;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -26,7 +26,6 @@ import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ProductChannelMapper;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.CreateProductChannelCommand;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.UpdateProductChannelCommand;
-import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.product.adapter.port.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.shared.dto.PageResponse;
@@ -48,6 +47,8 @@ import lombok.RequiredArgsConstructor;
 
 public class ProductChannelController {
 
+    private static final Logger log = LoggerFactory.getLogger(ProductChannelController.class);
+
     private final ProductChannelUseCase productChannelUseCase;
     private final UserResolverHelper userResolverHelper;
     private final ProductChannelMapper productChannelMapper;
@@ -61,6 +62,7 @@ public class ProductChannelController {
     })
         public ResponseEntity<ProductChannel> createProductChannel(
             @RequestBody CreateProductChannelRequest request) {
+        log.info("REST POST /product-channels — Canal: {}, Produto: {}", request.codCanal(), request.codProduto());
         User usuario = userResolverHelper.getCurrentUser();
         ProductChannel result = productChannelUseCase.createProductChannel(
             new CreateProductChannelCommand(
@@ -91,6 +93,7 @@ public class ProductChannelController {
             @PathVariable String codCanal,
             @PathVariable String codProduto,
             @RequestBody UpdateProductChannelRequest request) {
+        log.info("REST PUT /product-channels/{}/{} — Atualizando", codCanal, codProduto);
         User usuario = userResolverHelper.getCurrentUser();
         ProductChannel result = productChannelUseCase.updateProductChannel(codCanal, codProduto,
             new UpdateProductChannelCommand(
@@ -156,6 +159,7 @@ public class ProductChannelController {
     public ResponseEntity<Void> deleteProductChannel(
             @PathVariable String codCanal,
             @PathVariable String codProduto) {
+        log.info("REST DELETE /product-channels/{}/{}", codCanal, codProduto);
         productChannelUseCase.deleteProductChannel(codCanal, codProduto);
         return ResponseEntity.noContent().build();
     }

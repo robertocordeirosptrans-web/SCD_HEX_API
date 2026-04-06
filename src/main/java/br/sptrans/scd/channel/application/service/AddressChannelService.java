@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -26,12 +28,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AddressChannelService implements AddressChannelUseCase {
 
+    private static final Logger log = LoggerFactory.getLogger(AddressChannelService.class);
+
     private final AddressChannelPersistencePort addressChannelRepository;
     private final SalesChannelPersistencePort salesChannelRepository;
     private final UserResolverHelper userResolverHelper;
 
     @Override
     public AddressChannel createAddressChannel(CreateAddressChannelCommand cmd) {
+        log.info("Criando endereço do canal. Código: {}", cmd.codEndereco());
         if (addressChannelRepository.existsById(cmd.codEndereco())) {
             throw new ChannelException(ChannelErrorType.ADDRESS_CHANNEL_CODE_ALREADY_EXISTS);
         }
@@ -65,11 +70,14 @@ public class AddressChannelService implements AddressChannelUseCase {
                 usuario,
                 channel);
 
-        return addressChannelRepository.save(addressChannel);
+        AddressChannel saved = addressChannelRepository.save(addressChannel);
+        log.info("Endereço do canal criado. Código: {}", saved.getCodEndereco());
+        return saved;
     }
 
     @Override
     public AddressChannel updateAddressChannel(String codEndereco, UpdateAddressChannelCommand cmd) {
+        log.info("Atualizando endereço do canal. Código: {}", codEndereco);
         AddressChannel existing = addressChannelRepository.findById(codEndereco)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.ADDRESS_CHANNEL_NOT_FOUND));
 
@@ -102,7 +110,9 @@ public class AddressChannelService implements AddressChannelUseCase {
                 usuario,
                 channel);
 
-        return addressChannelRepository.save(updated);
+        AddressChannel saved = addressChannelRepository.save(updated);
+        log.info("Endereço do canal atualizado. Código: {}", codEndereco);
+        return saved;
     }
 
     @Override
@@ -123,10 +133,12 @@ public class AddressChannelService implements AddressChannelUseCase {
     @Override
     @CacheEvict(value = "canais", key = "'address-' + #codEndereco")
     public void deleteAddressChannel(String codEndereco) {
+        log.info("Removendo endereço do canal. Código: {}", codEndereco);
         if (!addressChannelRepository.existsById(codEndereco)) {
             throw new ChannelException(ChannelErrorType.ADDRESS_CHANNEL_NOT_FOUND);
         }
         addressChannelRepository.deleteById(codEndereco);
+        log.info("Endereço do canal removido. Código: {}", codEndereco);
     }
 
 }

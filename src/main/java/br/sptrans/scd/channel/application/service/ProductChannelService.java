@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.application.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -25,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 @RequiredArgsConstructor
 public class ProductChannelService implements ProductChannelUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(ProductChannelService.class);
 
     private final ProductChannelPersistencePort repository;
     private final SalesChannelPersistencePort salesChannelRepository;
@@ -66,6 +70,7 @@ public class ProductChannelService implements ProductChannelUseCase {
     @Override
     @CacheEvict(value = "canais", allEntries = true)
     public ProductChannel createProductChannel(CreateProductChannelCommand cmd) {
+        log.info("Criando produto do canal. Canal: {}, Produto: {}", cmd.codCanal(), cmd.codProduto());
         salesChannelRepository.findById(cmd.codCanal())
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
         ProductChannelKey key = new ProductChannelKey(cmd.codCanal(), cmd.codProduto());
@@ -92,13 +97,16 @@ public class ProductChannelService implements ProductChannelUseCase {
             usuCad,
             null
         );
-        return repository.save(entity);
+        ProductChannel saved = repository.save(entity);
+        log.info("Produto do canal criado. Canal: {}, Produto: {}", cmd.codCanal(), cmd.codProduto());
+        return saved;
     }
 
     @Override
     @CacheEvict(value = "canais", allEntries = true)
     public ProductChannel updateProductChannel(String codCanal, String codProduto,
             UpdateProductChannelCommand cmd) {
+        log.info("Atualizando produto do canal. Canal: {}, Produto: {}", codCanal, codProduto);
         ProductChannelKey key = new ProductChannelKey(codCanal, codProduto);
         ProductChannel existing = repository.findById(key)
             .orElseThrow(() -> new ChannelException(ChannelErrorType.PRODUCT_CHANNEL_NOT_FOUND));
@@ -119,7 +127,9 @@ public class ProductChannelService implements ProductChannelUseCase {
             cmd.flgCarac(),
             usuMan
         );
-        return repository.save(existing);
+        ProductChannel saved = repository.save(existing);
+        log.info("Produto do canal atualizado. Canal: {}, Produto: {}", codCanal, codProduto);
+        return saved;
     }
 
     @Override
@@ -154,11 +164,13 @@ public class ProductChannelService implements ProductChannelUseCase {
     @Override
     @CacheEvict(value = "canais", allEntries = true)
     public void deleteProductChannel(String codCanal, String codProduto) {
+        log.info("Removendo produto do canal. Canal: {}, Produto: {}", codCanal, codProduto);
         ProductChannelKey key = new ProductChannelKey(codCanal, codProduto);
         if (!repository.existsById(key)) {
             throw new ChannelException(ChannelErrorType.PRODUCT_CHANNEL_NOT_FOUND);
         }
         repository.deleteById(key);
+        log.info("Produto do canal removido. Canal: {}, Produto: {}", codCanal, codProduto);
     }
 
 

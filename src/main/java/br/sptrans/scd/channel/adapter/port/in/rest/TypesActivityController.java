@@ -1,5 +1,7 @@
 package br.sptrans.scd.channel.adapter.port.in.rest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -40,6 +42,8 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Tipos de Atividade v1", description = "Endpoints para gerenciamento de tipos de atividade")
 public class TypesActivityController {
 
+    private static final Logger log = LoggerFactory.getLogger(TypesActivityController.class);
+
     private final TypesActivityUseCase typesActivityUseCase;
     private final TypesActivityMapper typesActivityMapper;
 
@@ -51,6 +55,7 @@ public class TypesActivityController {
         })
     public ResponseEntity<TypesActivityResponseDTO> createTypesActivity(
             @RequestBody CreateTypesActivityRequest request) {
+        log.info("REST POST /types-activities — Criando atividade: {}", request.codAtividade());
         TypesActivity result = typesActivityUseCase.createTypesActivity(
                 new CreateTypesActivityCommand(request.codAtividade(), request.desAtividade()));
         return ResponseEntity.status(HttpStatus.CREATED).body(typesActivityMapper.toResponseDTO(result));
@@ -65,6 +70,7 @@ public class TypesActivityController {
     public ResponseEntity<TypesActivityResponseDTO> updateTypesActivity(
             @PathVariable String codAtividade,
             @RequestBody UpdateTypesActivityRequest request) {
+        log.info("REST PUT /types-activities/{} — Atualizando", codAtividade);
         TypesActivity result = typesActivityUseCase.updateTypesActivity(codAtividade,
                 new UpdateTypesActivityCommand(request.desAtividade()));
         return ResponseEntity.ok(typesActivityMapper.toResponseDTO(result));
@@ -118,6 +124,7 @@ public class TypesActivityController {
     @DeleteMapping("/{codAtividade}")
     @Operation(summary = "Remove um tipo de atividade")
     public ResponseEntity<Void> deleteTypesActivity(@PathVariable String codAtividade) {
+        log.info("REST DELETE /types-activities/{}", codAtividade);
         typesActivityUseCase.deleteTypesActivity(codAtividade);
         return ResponseEntity.noContent().build();
     }

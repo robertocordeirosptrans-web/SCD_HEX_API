@@ -2,6 +2,8 @@ package br.sptrans.scd.channel.adapter.port.in.rest;
 
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -42,6 +44,8 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Vigências de Convênio v1", description = "Endpoints para gerenciamento de vigências de convênio")
 public class AgreementValidityController {
 
+    private static final Logger log = LoggerFactory.getLogger(AgreementValidityController.class);
+
     private final AgreementValidityUseCase agreementValidityUseCase;
     private final UserResolverHelper userResolverHelper;
     private final AgreementValidityMapper agreementValidityMapper;
@@ -54,6 +58,7 @@ public class AgreementValidityController {
         })
     public ResponseEntity<AgreementValidityResponseDTO> createAgreementValidity(
             @RequestBody CreateAgreementValidityRequest request) {
+        log.info("REST POST /agreement-validities — Canal: {}, Produto: {}", request.codCanal(), request.codProduto());
         User usuario = userResolverHelper.getCurrentUser();
         AgreementValidity result = agreementValidityUseCase.createAgreementValidity(
                 new CreateAgreementValidityCommand(
@@ -76,6 +81,7 @@ public class AgreementValidityController {
             @PathVariable String codCanal,
             @PathVariable String codProduto,
             @RequestBody UpdateAgreementValidityRequest request) {
+        log.info("REST PUT /agreement-validities/{}/{} — Atualizando", codCanal, codProduto);
         User usuario = userResolverHelper.getCurrentUser();
         AgreementValidity result = agreementValidityUseCase.updateAgreementValidity(codCanal, codProduto,
                 new UpdateAgreementValidityCommand(
@@ -115,6 +121,7 @@ public class AgreementValidityController {
     public ResponseEntity<Void> deleteAgreementValidity(
             @PathVariable String codCanal,
             @PathVariable String codProduto) {
+        log.info("REST DELETE /agreement-validities/{}/{}", codCanal, codProduto);
         agreementValidityUseCase.deleteAgreementValidity(codCanal, codProduto);
         return ResponseEntity.noContent().build();
     }
