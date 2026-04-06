@@ -11,6 +11,7 @@ import br.sptrans.scd.channel.application.port.out.AgreementValidityPersistenceP
 import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.channel.domain.AgreementValidityKey;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
@@ -35,12 +36,12 @@ public class AgreementValidityService implements AgreementValidityUseCase {
         }
 
         AgreementValidity entity = new AgreementValidity(
-                key,
-                cmd.dtFimValidade(),
-                cmd.dtInicioValidade(),
-                cmd.codStatus(),
-                LocalDateTime.now(),
-                cmd.usuario());
+            key,
+            cmd.dtFimValidade(),
+            cmd.dtInicioValidade(),
+            ChannelDomainStatus.fromCode(cmd.codStatus()),
+            LocalDateTime.now(),
+            cmd.usuario());
 
         return repository.save(entity);
     }
@@ -53,7 +54,7 @@ public class AgreementValidityService implements AgreementValidityUseCase {
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.AGREEMENT_VALIDITY_NOT_FOUND));
 
         existing.updateValidity(cmd.dtFimValidade(), cmd.usuario());
-        existing.setCodStatus(cmd.codStatus());
+        existing.setCodStatus(ChannelDomainStatus.fromCode(cmd.codStatus()));
 
         return repository.save(existing);
     }

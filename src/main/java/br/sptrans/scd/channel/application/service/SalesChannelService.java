@@ -43,7 +43,7 @@ public class SalesChannelService implements SalesChannelUseCase {
             cmd.codTipoDocumento(),
             LocalDateTime.now(),
             cmd.desRazaoSocial(),
-            ChannelDomainStatus.INACTIVE.getCode(),
+            ChannelDomainStatus.INACTIVE,
             cmd.desNomeFantasia(),
             LocalDateTime.now(),
             cmd.vlCaucao(),
@@ -122,15 +122,15 @@ public class SalesChannelService implements SalesChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SalesChannel> findAllSalesChannels(String stCanais) {
-        return salesChannelRepository.findAll(stCanais);
+    public List<SalesChannel> findAllSalesChannels(ChannelDomainStatus stCanais) {
+        return salesChannelRepository.findAll(stCanais != null ? stCanais.getCode() : null);
     }
 
     @Override
     public void activateSalesChannel(String codCanal, User usuario) {
         SalesChannel existing = salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
-        if (ChannelDomainStatus.ACTIVE.getCode().equals(existing.getStCanais())) {
+        if (ChannelDomainStatus.ACTIVE.equals(existing.getStCanais())) {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_ALREADY_ACTIVE);
         }
         salesChannelRepository.updateStatus(codCanal, ChannelDomainStatus.ACTIVE.getCode(), usuario);
@@ -140,7 +140,7 @@ public class SalesChannelService implements SalesChannelUseCase {
     public void inactivateSalesChannel(String codCanal, User usuario) {
         SalesChannel existing = salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
-        if (ChannelDomainStatus.INACTIVE.getCode().equals(existing.getStCanais())) {
+        if (ChannelDomainStatus.INACTIVE.equals(existing.getStCanais())) {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_ALREADY_INACTIVE);
         }
         salesChannelRepository.updateStatus(codCanal, ChannelDomainStatus.INACTIVE.getCode(), usuario);

@@ -29,7 +29,7 @@ public class TypesActivityService implements TypesActivityUseCase {
         TypesActivity typesActivity = new TypesActivity(
             command.codAtividade(),
             command.desAtividade(),
-            ChannelDomainStatus.INACTIVE.getCode(),
+            ChannelDomainStatus.INACTIVE,
             null,
             null
         );
@@ -42,11 +42,11 @@ public class TypesActivityService implements TypesActivityUseCase {
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.TYPES_ACTIVITY_NOT_FOUND));
 
         TypesActivity updated = new TypesActivity(
-                existing.getCodAtividade(),
-                command.desAtividade(),
-                existing.getCodStatus(),
-                existing.getDtCadastro(),
-                existing.getDtManutencao()
+            existing.getCodAtividade(),
+            command.desAtividade(),
+            existing.getCodStatus(),
+            existing.getDtCadastro(),
+            existing.getDtManutencao()
         );
         return typesActivityRepository.save(updated);
     }
@@ -60,15 +60,15 @@ public class TypesActivityService implements TypesActivityUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TypesActivity> findAllTypesActivities(String codStatus) {
-        return typesActivityRepository.findAll(codStatus);
+    public List<TypesActivity> findAllTypesActivities(ChannelDomainStatus codStatus) {
+        return typesActivityRepository.findAll(codStatus != null ? codStatus.getCode() : null);
     }
 
     @Override
     public void activateTypesActivity(String codAtividade) {
         TypesActivity existing = typesActivityRepository.findById(codAtividade)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.TYPES_ACTIVITY_NOT_FOUND));
-        if (ChannelDomainStatus.ACTIVE.getCode().equals(existing.getCodStatus())) {
+        if (ChannelDomainStatus.ACTIVE.equals(existing.getCodStatus())) {
             throw new ChannelException(ChannelErrorType.TYPES_ACTIVITY_ALREADY_ACTIVE);
         }
         typesActivityRepository.updateStatus(codAtividade, ChannelDomainStatus.ACTIVE.getCode());
@@ -78,7 +78,7 @@ public class TypesActivityService implements TypesActivityUseCase {
     public void inactivateTypesActivity(String codAtividade) {
         TypesActivity existing = typesActivityRepository.findById(codAtividade)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.TYPES_ACTIVITY_NOT_FOUND));
-        if (ChannelDomainStatus.INACTIVE.getCode().equals(existing.getCodStatus())) {
+        if (ChannelDomainStatus.INACTIVE.equals(existing.getCodStatus())) {
             throw new ChannelException(ChannelErrorType.TYPES_ACTIVITY_ALREADY_INACTIVE);
         }
         typesActivityRepository.updateStatus(codAtividade, ChannelDomainStatus.INACTIVE.getCode());

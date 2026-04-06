@@ -11,6 +11,7 @@ import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannel
 import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannelKey;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
 
         MarketingDistribuitionChannel entity = new MarketingDistribuitionChannel(
                 key,
-                cmd.codStatus(),
+                ChannelDomainStatus.fromCode(cmd.codStatus()),
                 null,
                 null,
                 usuCad,
@@ -62,7 +63,7 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
 
         MarketingDistribuitionChannel updated = new MarketingDistribuitionChannel(
                 existing.getId(),
-                cmd.codStatus(),
+                ChannelDomainStatus.fromCode(cmd.codStatus()),
                 existing.getDtCadastro(),
                 null,
                 existing.getIdUsuarioCadastro(),

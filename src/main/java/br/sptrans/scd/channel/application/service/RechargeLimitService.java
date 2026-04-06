@@ -11,6 +11,7 @@ import br.sptrans.scd.channel.application.port.out.RechargeLimitPersistencePort;
 import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
@@ -35,15 +36,15 @@ public class RechargeLimitService implements RechargeLimitUseCase {
         }
 
         RechargeLimit entity = new RechargeLimit(
-                key,
-                cmd.dtInicioValidade(),
-                cmd.dtFimValidade(),
-                cmd.vlMinimoRecarga(),
-                cmd.vlMaximoRecarga(),
-                cmd.vlMaximoSaldo(),
-                cmd.codStatus(),
-                LocalDateTime.now(),
-                cmd.usuario());
+            key,
+            cmd.dtInicioValidade(),
+            cmd.dtFimValidade(),
+            cmd.vlMinimoRecarga(),
+            cmd.vlMaximoRecarga(),
+            cmd.vlMaximoSaldo(),
+            ChannelDomainStatus.fromCode(cmd.codStatus()),
+            LocalDateTime.now(),
+            cmd.usuario());
 
         return repository.save(entity);
     }
@@ -62,7 +63,7 @@ public class RechargeLimitService implements RechargeLimitUseCase {
                 cmd.dtFimValidade(),
                 userResolverHelper.resolve(cmd.idUsuario()));
 
-        existing.setCodStatus(cmd.codStatus());
+        existing.setCodStatus(ChannelDomainStatus.fromCode(cmd.codStatus()));
 
         return repository.save(existing);
     }

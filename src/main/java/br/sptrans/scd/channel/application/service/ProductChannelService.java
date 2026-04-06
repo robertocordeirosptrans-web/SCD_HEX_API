@@ -12,6 +12,7 @@ import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import lombok.RequiredArgsConstructor;
@@ -54,22 +55,22 @@ public class ProductChannelService implements ProductChannelUseCase {
 
         User usuCad = cmd.usuarioCadastro();
         ProductChannel entity = ProductChannel.criar(
-                key,
-                cmd.qtdLimiteComercializacao(),
-                cmd.qtdMinimaEstoque(),
-                cmd.qtdMaximaEstoque(),
-                cmd.qtdMinimaRessuprimento(),
-                cmd.qtdMaximaRessuprimento(),
-                cmd.codOrgaoEmissor(),
-                cmd.vlFace(),
-                cmd.codStatus(),
-                java.time.LocalDateTime.now(),
-                java.time.LocalDateTime.now(),
-                cmd.codConvenio(),
-                cmd.codTipoOperHM(),
-                cmd.flgCarac(),
-                usuCad,
-                null
+            key,
+            cmd.qtdLimiteComercializacao(),
+            cmd.qtdMinimaEstoque(),
+            cmd.qtdMaximaEstoque(),
+            cmd.qtdMinimaRessuprimento(),
+            cmd.qtdMaximaRessuprimento(),
+            cmd.codOrgaoEmissor(),
+            cmd.vlFace(),
+            ChannelDomainStatus.fromCode(cmd.codStatus()),
+            java.time.LocalDateTime.now(),
+            java.time.LocalDateTime.now(),
+            cmd.codConvenio(),
+            cmd.codTipoOperHM(),
+            cmd.flgCarac(),
+            usuCad,
+            null
         );
         return repository.save(entity);
     }
@@ -90,7 +91,7 @@ public class ProductChannelService implements ProductChannelUseCase {
             cmd.qtdMaximaRessuprimento(),
             cmd.codOrgaoEmissor(),
             cmd.vlFace(),
-            cmd.codStatus(),
+            ChannelDomainStatus.fromCode(cmd.codStatus()),
             java.time.LocalDateTime.now(),
             cmd.codConvenio(),
             cmd.codTipoOperHM(),
