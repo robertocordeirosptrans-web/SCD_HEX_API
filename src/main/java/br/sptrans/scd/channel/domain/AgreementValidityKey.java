@@ -5,11 +5,9 @@ import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 
 @Getter
-@NoArgsConstructor(force = true)
 @AllArgsConstructor
 @EqualsAndHashCode
 public class AgreementValidityKey implements Serializable{

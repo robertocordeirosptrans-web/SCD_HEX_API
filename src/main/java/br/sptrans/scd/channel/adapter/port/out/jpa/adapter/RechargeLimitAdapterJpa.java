@@ -6,8 +6,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.RechargeLimitMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.RechargeLimitJpaRepository;
+import br.sptrans.scd.channel.adapter.port.out.persistence.entity.RechargeLimitEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.RechargeLimitKeyEntityJpa;
 import br.sptrans.scd.channel.application.port.out.RechargeLimitPersistencePort;
 import br.sptrans.scd.channel.domain.RechargeLimit;
@@ -20,6 +22,15 @@ public class RechargeLimitAdapterJpa implements RechargeLimitPersistencePort {
 
     private final RechargeLimitJpaRepository rechargeLimitJpaRepository;
     private final RechargeLimitMapper rechargeLimitMapper;
+    private final UserPersistencePort userRepository;
+
+    private RechargeLimit toDomainWithUser(RechargeLimitEntityJpa entity) {
+        RechargeLimit domain = rechargeLimitMapper.toDomain(entity);
+        if (entity.getIdUsuarioCadastro() != null) {
+            domain.setIdUsuarioCadastro(userRepository.findById(entity.getIdUsuarioCadastro()).orElse(null));
+        }
+        return domain;
+    }
 
     @Override
     public Optional<RechargeLimit> findById(RechargeLimitKey id) {
@@ -28,14 +39,14 @@ public class RechargeLimitAdapterJpa implements RechargeLimitPersistencePort {
         }
 
         return rechargeLimitJpaRepository.findById(toEntityKey(id))
-                .map(rechargeLimitMapper::toDomain);
+                .map(this::toDomainWithUser);
     }
 
 
     @Override
     public Page<RechargeLimit> findAll(Pageable pageable) {
         return rechargeLimitJpaRepository.findAllRechargeLimits(pageable)
-                .map(rechargeLimitMapper::toDomain);
+                .map(this::toDomainWithUser);
     }
 
 
@@ -51,7 +62,7 @@ public class RechargeLimitAdapterJpa implements RechargeLimitPersistencePort {
     @Override
     public RechargeLimit save(RechargeLimit entity) {
         var saved = rechargeLimitJpaRepository.save(rechargeLimitMapper.toEntity(entity));
-        return rechargeLimitMapper.toDomain(saved);
+        return toDomainWithUser(saved);
     }
 
 

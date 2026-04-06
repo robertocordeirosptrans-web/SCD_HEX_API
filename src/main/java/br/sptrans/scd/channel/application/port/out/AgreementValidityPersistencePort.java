@@ -11,7 +11,7 @@ import br.sptrans.scd.channel.domain.AgreementValidityKey;
 public interface AgreementValidityPersistencePort {
     Optional<AgreementValidity> findById(AgreementValidityKey id);
 
-    Optional<AgreementValidity> findByIdOtimized(String codCanal, String codProduto);
+
 
     Page<AgreementValidity> findAll(Pageable pageable);
 

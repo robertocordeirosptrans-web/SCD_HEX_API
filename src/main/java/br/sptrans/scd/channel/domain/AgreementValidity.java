@@ -6,11 +6,9 @@ import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@NoArgsConstructor(force = true)
 @AllArgsConstructor
 public class AgreementValidity {
 

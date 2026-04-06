@@ -9,11 +9,9 @@ import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.shared.exception.ValidationException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
-@NoArgsConstructor(force = true)
 @AllArgsConstructor
 public class RechargeLimit {
 
@@ -34,7 +32,8 @@ public class RechargeLimit {
     @Setter
     private LocalDateTime dtManutencao;
 
-    private final User idUsuarioCadastro;
+    @Setter
+    private User idUsuarioCadastro;
 
     // -------------------------------------------------------------------------
     // Consultas de status
