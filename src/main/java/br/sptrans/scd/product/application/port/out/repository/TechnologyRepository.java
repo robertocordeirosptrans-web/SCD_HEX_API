@@ -24,3 +24,4 @@ public interface TechnologyRepository {
 
     void deleteById(String codTecnologia);
 }
+

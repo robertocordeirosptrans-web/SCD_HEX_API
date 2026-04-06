@@ -1,14 +1,16 @@
 package br.sptrans.scd.auth.adapter.specification;
 
-import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO;
-import org.springframework.data.jpa.domain.Specification;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.data.jpa.domain.Specification;
+
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserFilterRequestDTO;
+import br.sptrans.scd.auth.domain.User;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
 
 public class UserSpecification {
 

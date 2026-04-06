@@ -19,7 +19,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import br.sptrans.scd.auth.adapter.port.in.web.filter.JwtAuthFilter;
+import br.sptrans.scd.auth.adapter.in.web.filter.JwtAuthFilter;
 import br.sptrans.scd.shared.exception.dto.ErrorResponse;
 
 @Configuration
