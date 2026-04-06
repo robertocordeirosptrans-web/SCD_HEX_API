@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.TypesActivityResponseDTO;
+import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.TypesActivityMapper;
 import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase;
 import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase.CreateTypesActivityCommand;
 import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase.UpdateTypesActivityCommand;
@@ -39,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 public class TypesActivityController {
 
     private final TypesActivityUseCase typesActivityUseCase;
+    private final TypesActivityMapper typesActivityMapper;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo tipo de atividade")
@@ -46,11 +49,11 @@ public class TypesActivityController {
             @ApiResponse(responseCode = "200", description = "Tipo de atividade cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<TypesActivity> createTypesActivity(
+    public ResponseEntity<TypesActivityResponseDTO> createTypesActivity(
             @RequestBody CreateTypesActivityRequest request) {
         TypesActivity result = typesActivityUseCase.createTypesActivity(
                 new CreateTypesActivityCommand(request.codAtividade(), request.desAtividade()));
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(typesActivityMapper.toResponseDTO(result));
     }
 
     @PutMapping("/{codAtividade}")
@@ -59,12 +62,12 @@ public class TypesActivityController {
             @ApiResponse(responseCode = "200", description = "Tipo de atividade atualizado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<TypesActivity> updateTypesActivity(
+    public ResponseEntity<TypesActivityResponseDTO> updateTypesActivity(
             @PathVariable String codAtividade,
             @RequestBody UpdateTypesActivityRequest request) {
         TypesActivity result = typesActivityUseCase.updateTypesActivity(codAtividade,
                 new UpdateTypesActivityCommand(request.desAtividade()));
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(typesActivityMapper.toResponseDTO(result));
     }
 
     @GetMapping("/{codAtividade}")
@@ -73,8 +76,8 @@ public class TypesActivityController {
             @ApiResponse(responseCode = "200", description = "Tipo de atividade retornado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<TypesActivity> findByTypesActivity(@PathVariable String codAtividade) {
-        return ResponseEntity.ok(typesActivityUseCase.findByTypesActivity(codAtividade));
+    public ResponseEntity<TypesActivityResponseDTO> findByTypesActivity(@PathVariable String codAtividade) {
+        return ResponseEntity.ok(typesActivityMapper.toResponseDTO(typesActivityUseCase.findByTypesActivity(codAtividade)));
     }
 
     @GetMapping
@@ -83,7 +86,7 @@ public class TypesActivityController {
             @ApiResponse(responseCode = "200", description = "Lista de tipos de atividade retornada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<PageResponse<TypesActivity>> findAllTypesActivities(
+    public ResponseEntity<PageResponse<TypesActivityResponseDTO>> findAllTypesActivities(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
         ChannelDomainStatus statusEnum = null;
@@ -95,7 +98,7 @@ public class TypesActivityController {
             }
         }
         Page<TypesActivity> page = typesActivityUseCase.findAllTypesActivities(statusEnum, pageable);
-        return ResponseEntity.ok(PageResponse.fromPage(page));
+        return ResponseEntity.ok(PageResponse.fromPage(page.map(typesActivityMapper::toResponseDTO)));
     }
 
     @PatchMapping("/{codAtividade}/activate")

@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.AgreementValidityResponseDTO;
+import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.AgreementValidityMapper;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase.CreateAgreementValidityCommand;
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase.UpdateAgreementValidityCommand;
@@ -42,6 +44,7 @@ public class AgreementValidityController {
 
     private final AgreementValidityUseCase agreementValidityUseCase;
     private final UserResolverHelper userResolverHelper;
+    private final AgreementValidityMapper agreementValidityMapper;
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova vigência de convênio")
@@ -49,7 +52,7 @@ public class AgreementValidityController {
             @ApiResponse(responseCode = "200", description = "Vigência de convênio cadastrada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<AgreementValidity> createAgreementValidity(
+    public ResponseEntity<AgreementValidityResponseDTO> createAgreementValidity(
             @RequestBody CreateAgreementValidityRequest request) {
         User usuario = userResolverHelper.getCurrentUser();
         AgreementValidity result = agreementValidityUseCase.createAgreementValidity(
@@ -60,7 +63,7 @@ public class AgreementValidityController {
                         request.dtInicioValidade(),
                         request.codStatus(),
                         usuario));
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(agreementValidityMapper.toResponseDTO(result));
     }
 
     @PutMapping("/{codCanal}/{codProduto}")
@@ -69,7 +72,7 @@ public class AgreementValidityController {
             @ApiResponse(responseCode = "200", description = "Vigência de convênio atualizada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<AgreementValidity> updateAgreementValidity(
+    public ResponseEntity<AgreementValidityResponseDTO> updateAgreementValidity(
             @PathVariable String codCanal,
             @PathVariable String codProduto,
             @RequestBody UpdateAgreementValidityRequest request) {
@@ -79,20 +82,20 @@ public class AgreementValidityController {
                         request.dtFimValidade(),
                         request.codStatus(),
                         usuario));
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(agreementValidityMapper.toResponseDTO(result));
     }
 
     @GetMapping("/{codCanal}/{codProduto}")
     @Operation(summary = "Busca vigência de convênio por canal e produto")
-    public ResponseEntity<AgreementValidity> findAgreementValidity(
+    public ResponseEntity<AgreementValidityResponseDTO> findAgreementValidity(
             @PathVariable String codCanal,
             @PathVariable String codProduto) {
-        return ResponseEntity.ok(agreementValidityUseCase.findAgreementValidity(codCanal, codProduto));
+        return ResponseEntity.ok(agreementValidityMapper.toResponseDTO(agreementValidityUseCase.findAgreementValidity(codCanal, codProduto)));
     }
 
     @GetMapping
     @Operation(summary = "Lista vigências de convênio com filtro opcional por canal ou produto")
-    public ResponseEntity<PageResponse<AgreementValidity>> findAgreementValidities(
+    public ResponseEntity<PageResponse<AgreementValidityResponseDTO>> findAgreementValidities(
             @RequestParam(required = false) String codCanal,
             @RequestParam(required = false) String codProduto,
             Pageable pageable) {
@@ -104,7 +107,7 @@ public class AgreementValidityController {
         } else {
             page = agreementValidityUseCase.findAllAgreementValidities(pageable);
         }
-        return ResponseEntity.ok(PageResponse.fromPage(page));
+        return ResponseEntity.ok(PageResponse.fromPage(page.map(agreementValidityMapper::toResponseDTO)));
     }
 
     @DeleteMapping("/{codCanal}/{codProduto}")

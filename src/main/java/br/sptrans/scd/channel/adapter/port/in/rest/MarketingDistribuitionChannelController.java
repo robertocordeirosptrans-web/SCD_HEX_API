@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.MarketingDistribuitionChannelResponseDTO;
+import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.MarketingDistribuitionChannelMapper;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.CreateMarketingDistribuitionChannelCommand;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase.UpdateMarketingDistribuitionChannelCommand;
@@ -42,6 +44,7 @@ public class MarketingDistribuitionChannelController {
 
     private final MarketingDistribuitionChannelUseCase marketingUseCase;
     private final UserResolverHelper userResolverHelper;
+    private final MarketingDistribuitionChannelMapper marketingMapper;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo canal de comercialização/distribuição")
@@ -49,7 +52,7 @@ public class MarketingDistribuitionChannelController {
         @ApiResponse(responseCode = "200", description = "Canal de comercialização/distribuição cadastrado com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
-    public ResponseEntity<MarketingDistribuitionChannel> createMarketingDistribuitionChannel(
+    public ResponseEntity<MarketingDistribuitionChannelResponseDTO> createMarketingDistribuitionChannel(
             @RequestBody CreateMarketingDistribuitionChannelRequest request) {
         User usuario = userResolverHelper.getCurrentUser();
         MarketingDistribuitionChannel result = marketingUseCase.createMarketingDistribuitionChannel(
@@ -58,7 +61,7 @@ public class MarketingDistribuitionChannelController {
                         request.codCanalDistribuicao(),
                         request.codStatus(),
                         usuario));
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(marketingMapper.toResponseDTO(result));
     }
 
     @PutMapping("/{codCanalComercializacao}/{codCanalDistribuicao}")
@@ -67,7 +70,7 @@ public class MarketingDistribuitionChannelController {
         @ApiResponse(responseCode = "200", description = "Canal de comercialização/distribuição atualizado com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
-    public ResponseEntity<MarketingDistribuitionChannel> updateMarketingDistribuitionChannel(
+    public ResponseEntity<MarketingDistribuitionChannelResponseDTO> updateMarketingDistribuitionChannel(
             @PathVariable String codCanalComercializacao,
             @PathVariable String codCanalDistribuicao,
             @RequestBody UpdateMarketingDistribuitionChannelRequest request) {
@@ -77,26 +80,26 @@ public class MarketingDistribuitionChannelController {
                 new UpdateMarketingDistribuitionChannelCommand(
                         request.codStatus(),
                         usuario));
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(marketingMapper.toResponseDTO(result));
     }
 
     @GetMapping("/{codCanalComercializacao}/{codCanalDistribuicao}")
     @Operation(summary = "Busca canal de comercialização/distribuição por chave composta")
-    public ResponseEntity<MarketingDistribuitionChannel> findMarketingDistribuitionChannel(
+    public ResponseEntity<MarketingDistribuitionChannelResponseDTO> findMarketingDistribuitionChannel(
             @PathVariable String codCanalComercializacao,
             @PathVariable String codCanalDistribuicao) {
         return ResponseEntity.ok(
-                marketingUseCase.findMarketingDistribuitionChannel(codCanalComercializacao, codCanalDistribuicao));
+                marketingMapper.toResponseDTO(marketingUseCase.findMarketingDistribuitionChannel(codCanalComercializacao, codCanalDistribuicao)));
     }
 
     @GetMapping
     @Operation(summary = "Lista canais de comercialização/distribuição com filtro opcional")
-    public ResponseEntity<PageResponse<MarketingDistribuitionChannel>> findMarketingDistribuitionChannels(
+    public ResponseEntity<PageResponse<MarketingDistribuitionChannelResponseDTO>> findMarketingDistribuitionChannels(
             @RequestParam(required = false) String codCanalComercializacao,
             @RequestParam(required = false) String codCanalDistribuicao,
             Pageable pageable) {
         Page<MarketingDistribuitionChannel> page = marketingUseCase.findAllMarketingDistribuitionChannels(pageable);
-        return ResponseEntity.ok(PageResponse.fromPage(page));
+        return ResponseEntity.ok(PageResponse.fromPage(page.map(marketingMapper::toResponseDTO)));
 
     }
 

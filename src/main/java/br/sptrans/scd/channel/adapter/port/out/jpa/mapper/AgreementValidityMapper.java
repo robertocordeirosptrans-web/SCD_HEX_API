@@ -4,6 +4,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.AgreementValidityResponseDTO;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.UserSimpleDTO;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AgreementValidityEntityJpa;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AgreementValidityKeyEntityJpa;
 import br.sptrans.scd.channel.domain.AgreementValidity;
@@ -22,6 +25,22 @@ public interface AgreementValidityMapper {
     AgreementValidityKeyEntityJpa toEntityKey(AgreementValidityKey key);
 
     AgreementValidityKey toDomainKey(AgreementValidityKeyEntityJpa entityKey);
+
+    @Mapping(source = "id.codCanal", target = "codCanal")
+    @Mapping(source = "id.codProduto", target = "codProduto")
+    @Mapping(source = "usuario", target = "usuario")
+    AgreementValidityResponseDTO toResponseDTO(AgreementValidity domain);
+
+    default UserSimpleDTO mapUserToUserSimpleDTO(User user) {
+        if (user == null) {
+            return null;
+        }
+        return new UserSimpleDTO(
+            user.getIdUsuario(),
+            user.getCodLogin(),
+            user.getNomUsuario()
+        );
+    }
 
     default ChannelDomainStatus stringToChannelDomainStatus(String code) {
         if (code == null || code.isBlank()) return null;

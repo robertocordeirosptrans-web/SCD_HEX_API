@@ -3,7 +3,6 @@ package br.sptrans.scd.channel.adapter.port.in.rest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -20,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.RechargeLimitResponseDTO;
+import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.RechargeLimitMapper;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.CreateRechargeLimitCommand;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.UpdateRechargeLimitCommand;
@@ -45,6 +46,7 @@ public class RechargeLimitController {
 
     private final RechargeLimitUseCase rechargeLimitUseCase;
     private final UserResolverHelper userResolverHelper;
+    private final RechargeLimitMapper rechargeLimitMapper;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo limite de recarga")
@@ -52,7 +54,7 @@ public class RechargeLimitController {
             @ApiResponse(responseCode = "200", description = "Limite de recarga cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<RechargeLimit> createRechargeLimit(
+    public ResponseEntity<RechargeLimitResponseDTO> createRechargeLimit(
             @RequestBody CreateRechargeLimitRequest request) {
         User usuario = userResolverHelper.getCurrentUser();
         RechargeLimit result = rechargeLimitUseCase.createRechargeLimit(
@@ -66,7 +68,7 @@ public class RechargeLimitController {
                         request.vlMaximoSaldo(),
                         request.codStatus(),
                         usuario));
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(rechargeLimitMapper.toResponseDTO(result));
     }
 
     @PutMapping("/{codCanal}/{codProduto}")
@@ -75,7 +77,7 @@ public class RechargeLimitController {
             @ApiResponse(responseCode = "200", description = "Limite de recarga atualizado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<RechargeLimit> updateRechargeLimit(
+    public ResponseEntity<RechargeLimitResponseDTO> updateRechargeLimit(
             @PathVariable String codCanal,
             @PathVariable String codProduto,
             @RequestBody UpdateRechargeLimitRequest request) {
@@ -89,28 +91,28 @@ public class RechargeLimitController {
                         request.vlMaximoSaldo(),
                         request.codStatus(),
                         idUsuario));
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(rechargeLimitMapper.toResponseDTO(result));
     }
 
     @GetMapping("/{codCanal}/{codProduto}")
     @Operation(summary = "Busca limite de recarga por canal e produto")
-    public ResponseEntity<RechargeLimit> findRechargeLimit(
+    public ResponseEntity<RechargeLimitResponseDTO> findRechargeLimit(
             @PathVariable String codCanal,
             @PathVariable String codProduto) {
         
         RechargeLimitKey key = new RechargeLimitKey(codCanal, codProduto);
 
-        return ResponseEntity.ok(rechargeLimitUseCase.findRechargeLimit(key));
+        return ResponseEntity.ok(rechargeLimitMapper.toResponseDTO(rechargeLimitUseCase.findRechargeLimit(key)));
     }
 
     @GetMapping
     @Operation(summary = "Lista limites de recarga com filtro opcional por canal ou produto")
-    public ResponseEntity<PageResponse<RechargeLimit>> findRechargeLimits(
+    public ResponseEntity<PageResponse<RechargeLimitResponseDTO>> findRechargeLimits(
             @RequestParam(required = false) String codCanal,
             @RequestParam(required = false) String codProduto,
             Pageable pageable) {
         Page<RechargeLimit> page = rechargeLimitUseCase.findAllRechargeLimits(pageable);
-        return ResponseEntity.ok(PageResponse.fromPage(page));
+        return ResponseEntity.ok(PageResponse.fromPage(page.map(rechargeLimitMapper::toResponseDTO)));
     }
 
     @DeleteMapping("/{codCanal}/{codProduto}")
