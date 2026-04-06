@@ -7,10 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.sptrans.scd.auth.application.port.out.ClassificationPort;
 import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
+import br.sptrans.scd.channel.application.port.out.TypesActivityPersistencePort;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.TypesActivity;
 import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
@@ -25,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 public class SalesChannelService implements SalesChannelUseCase {
 
     private final SalesChannelPersistencePort salesChannelRepository;
+    private final TypesActivityPersistencePort typesActivityRepository;
+    private final ClassificationPort classificationPort;
     private final UserResolverHelper userResolverHelper;
 
     @Override
@@ -33,7 +37,24 @@ public class SalesChannelService implements SalesChannelUseCase {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_CODE_ALREADY_EXISTS);
         }
 
+        ClassificationPerson classificationPerson = null;
+        if (cmd.codClassificacaoPessoa() != null) {
+            classificationPerson = classificationPort.findById(cmd.codClassificacaoPessoa())
+                    .orElseThrow(() -> new ChannelException(ChannelErrorType.CLASSIFICATION_PERSON_NOT_FOUND));
+        }
 
+        TypesActivity typesActivity = null;
+        if (cmd.codAtividade() != null) {
+            typesActivity = typesActivityRepository.findById(cmd.codAtividade())
+                    .orElseThrow(() -> new ChannelException(ChannelErrorType.TYPES_ACTIVITY_NOT_FOUND));
+        }
+
+        if(cmd.usuario() != null) {
+            var user = userResolverHelper.resolve(cmd.usuario().getIdUsuario());
+            if (user == null) {
+                throw new ChannelException(ChannelErrorType.USER_NOT_FOUND);
+            }
+        }
 
         SalesChannel salesChannel = new SalesChannel(
                 cmd.codCanal(),
@@ -60,13 +81,8 @@ public class SalesChannelService implements SalesChannelUseCase {
                 cmd.flgEmiteReciboPedido(),
                 cmd.flgSupercanal(),
                 cmd.flgPagtoFuturo(),
-                cmd.codClassificacaoPessoa() != null
-                        ? new ClassificationPerson(cmd.codClassificacaoPessoa(), null, null, null, null, null, null,
-                                null)
-                        : null,
-                cmd.codAtividade() != null
-                        ? new TypesActivity(cmd.codAtividade(), null, null, null, null)
-                        : null,
+                classificationPerson,
+                typesActivity,
                 cmd.usuario(),
                 null);
         return salesChannelRepository.save(salesChannel);
@@ -76,6 +92,19 @@ public class SalesChannelService implements SalesChannelUseCase {
     public SalesChannel updateSalesChannel(String codCanal, UpdateSalesChannelCommand cmd) {
         SalesChannel existing = salesChannelRepository.findById(codCanal)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
+
+        ClassificationPerson classificationPerson = null;
+        if (cmd.codClassificacaoPessoa() != null) {
+            classificationPerson = classificationPort.findById(cmd.codClassificacaoPessoa())
+                    .orElseThrow(() -> new ChannelException(ChannelErrorType.CLASSIFICATION_PERSON_NOT_FOUND));
+        }
+
+        TypesActivity typesActivity = null;
+        if (cmd.codAtividade() != null) {
+            typesActivity = typesActivityRepository.findById(cmd.codAtividade())
+                    .orElseThrow(() -> new ChannelException(ChannelErrorType.TYPES_ACTIVITY_NOT_FOUND));
+        }
+
         SalesChannel updated = new SalesChannel(
                 existing.getCodCanal(),
                 existing.getCodDocumento(),
@@ -101,13 +130,8 @@ public class SalesChannelService implements SalesChannelUseCase {
                 cmd.flgEmiteReciboPedido(),
                 cmd.flgSupercanal(),
                 cmd.flgPagtoFuturo(),
-                cmd.codClassificacaoPessoa() != null
-                        ? new ClassificationPerson(cmd.codClassificacaoPessoa(), null, null, null, null, null, null,
-                                null)
-                        : null,
-                cmd.codAtividade() != null
-                        ? new TypesActivity(cmd.codAtividade(), null, null, null, null)
-                        : null,
+                classificationPerson,
+                typesActivity,
                 existing.getIdUsuarioCadastro(),
                 cmd.usuario());
         return salesChannelRepository.save(updated);

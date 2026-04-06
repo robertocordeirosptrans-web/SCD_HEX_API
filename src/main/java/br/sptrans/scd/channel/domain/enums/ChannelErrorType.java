@@ -9,6 +9,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ChannelErrorType {
 
+    // ClassificationPerson
+    CLASSIFICATION_PERSON_NOT_FOUND("Classificação de pessoa não encontrada.", HttpStatus.NOT_FOUND),
+
     // TypesActivity
     TYPES_ACTIVITY_NOT_FOUND("Tipo de atividade não encontrado.", HttpStatus.NOT_FOUND),
     TYPES_ACTIVITY_CODE_ALREADY_EXISTS("Código de tipo de atividade já cadastrado.", HttpStatus.CONFLICT),
