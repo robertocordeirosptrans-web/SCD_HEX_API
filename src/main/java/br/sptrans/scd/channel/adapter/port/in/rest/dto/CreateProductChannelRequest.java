@@ -1,5 +1,7 @@
 package br.sptrans.scd.channel.adapter.port.in.rest.dto;
 
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
+
     public record CreateProductChannelRequest(
             String codCanal,
             String codProduto,
@@ -10,7 +12,7 @@ package br.sptrans.scd.channel.adapter.port.in.rest.dto;
             Integer qtdMaximaRessuprimento,
             Integer codOrgaoEmissor,
             Integer vlFace,
-            String codStatus,
+            ChannelDomainStatus codStatus,
             Integer codConvenio,
             Integer codTipoOperHM,
             String flgCarac) {
