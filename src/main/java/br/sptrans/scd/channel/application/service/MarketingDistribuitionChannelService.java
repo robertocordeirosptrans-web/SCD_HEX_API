@@ -44,9 +44,7 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
                 null,
                 null,
                 usuCad,
-                null,
-                cmd.codCanalComercializacao(),
-                cmd.codCanalDistribuicao());
+                null);
 
         return repository.save(entity);
     }
@@ -68,9 +66,7 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
                 existing.getDtCadastro(),
                 null,
                 existing.getIdUsuarioCadastro(),
-                usuMan,
-                existing.getCodCanalComercializacao(),
-                existing.getCodCanalDistribuicao());
+                usuMan);
 
         return repository.save(updated);
     }

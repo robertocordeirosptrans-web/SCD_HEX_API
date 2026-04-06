@@ -76,21 +76,58 @@ public class AgreementValidity {
     // Atualização de dados
     // -------------------------------------------------------------------------
 
+    // -------------------------------------------------------------------------
+    // Vigência
+    // -------------------------------------------------------------------------
+
+    /**
+     * Verifica se a vigência de convênio está vigente:
+     * status ativo E dentro do período de validade.
+     */
+    public boolean isVigente() {
+        if (!isAtivo()) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        if (dtInicioValidade != null && now.isBefore(dtInicioValidade)) {
+            return false;
+        }
+        if (dtFimValidade != null && now.isAfter(dtFimValidade)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Encerra a vigência do convênio, definindo {@code dtFimValidade}
+     * para o momento atual e inativando o registro.
+     *
+     * @param operador usuário responsável pela operação
+     */
+    public void expire(User operador) {
+        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.dtFimValidade = LocalDateTime.now();
+        this.usuario = operador;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    // -------------------------------------------------------------------------
+    // Atualização de dados
+    // -------------------------------------------------------------------------
+
     /**
      * Atualiza o período de vigência do convênio.
      *
-     * <p>Regra de negócio: {@code dtInicio} não pode ser posterior a {@code dtFim}.</p>
+     * <p>Regra de negócio: {@code dtFim} não pode ser anterior a {@code dtInicioValidade} existente.</p>
      *
-     * @param dtInicio nova data de início de vigência
      * @param dtFim    nova data de fim de vigência
      * @param operador usuário responsável pela operação
      */
-    public void updateValidity(LocalDateTime dtInicio, LocalDateTime dtFim, User operador) {
-        if (dtInicio != null && dtFim != null && dtInicio.isAfter(dtFim)) {
+    public void updateValidity(LocalDateTime dtFim, User operador) {
+        if (this.dtInicioValidade != null && dtFim != null && this.dtInicioValidade.isAfter(dtFim)) {
             throw new IllegalArgumentException(
                 "Data de início de vigência não pode ser posterior à data de fim");
         }
-        this.dtInicioValidade = dtInicio;
         this.dtFimValidade = dtFim;
         this.usuario = operador;
         this.dtManutencao = LocalDateTime.now();

@@ -22,6 +22,7 @@ import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.CreateRechargeLimitCommand;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase.UpdateRechargeLimitCommand;
 import br.sptrans.scd.channel.domain.RechargeLimit;
+import br.sptrans.scd.channel.domain.RechargeLimitKey;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -94,7 +95,10 @@ public class RechargeLimitController {
     public ResponseEntity<RechargeLimit> findRechargeLimit(
             @PathVariable String codCanal,
             @PathVariable String codProduto) {
-        return ResponseEntity.ok(rechargeLimitUseCase.findRechargeLimit(codCanal, codProduto));
+        
+        RechargeLimitKey key = new RechargeLimitKey(codCanal, codProduto);
+
+        return ResponseEntity.ok(rechargeLimitUseCase.findRechargeLimit(key));
     }
 
     @GetMapping
@@ -105,13 +109,9 @@ public class RechargeLimitController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<RechargeLimit> all;
-        if (codCanal != null) {
-            all = rechargeLimitUseCase.findByCodCanal(codCanal);
-        } else if (codProduto != null) {
-            all = rechargeLimitUseCase.findByCodProduto(codProduto);
-        } else {
-            all = rechargeLimitUseCase.findAllRechargeLimits();
-        }
+
+        all = rechargeLimitUseCase.findAllRechargeLimits();
+        
         return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 
@@ -120,7 +120,8 @@ public class RechargeLimitController {
     public ResponseEntity<Void> deleteRechargeLimit(
             @PathVariable String codCanal,
             @PathVariable String codProduto) {
-        rechargeLimitUseCase.deleteRechargeLimit(codCanal, codProduto);
+        RechargeLimitKey key = new RechargeLimitKey(codCanal, codProduto);
+        rechargeLimitUseCase.deleteRechargeLimit(key);
         return ResponseEntity.noContent().build();
     }
 

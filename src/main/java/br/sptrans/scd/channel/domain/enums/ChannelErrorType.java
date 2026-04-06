@@ -32,6 +32,7 @@ public enum ChannelErrorType {
     // AgreementValidity
     AGREEMENT_VALIDITY_NOT_FOUND("Vigência de convênio não encontrada.", HttpStatus.NOT_FOUND),
     AGREEMENT_VALIDITY_ALREADY_EXISTS("Vigência de convênio já cadastrada para este canal e produto.", HttpStatus.CONFLICT),
+    AGREEMENT_VALIDITY_NOT_VIGENTE("Não há vigência de convênio parametrizada para este canal e produto.", HttpStatus.NOT_FOUND),
 
     // MarketingDistribuitionChannel
     MARKETING_CHANNEL_NOT_FOUND("Canal de comercialização/distribuição não encontrado.", HttpStatus.NOT_FOUND),

@@ -13,6 +13,7 @@ import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.channel.domain.AgreementValidityKey;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,6 +23,7 @@ public class AgreementValidityService implements AgreementValidityUseCase {
 
     private final AgreementValidityPersistencePort repository;
     private final SalesChannelPersistencePort salesChannelRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @Override
     public AgreementValidity createAgreementValidity(CreateAgreementValidityCommand cmd) {
@@ -50,10 +52,8 @@ public class AgreementValidityService implements AgreementValidityUseCase {
         AgreementValidity existing = repository.findById(key)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.AGREEMENT_VALIDITY_NOT_FOUND));
 
-        existing.setDtFimValidade(cmd.dtFimValidade());
-        existing.setDtInicioValidade(cmd.dtInicioValidade());
+        existing.updateValidity(cmd.dtFimValidade(), cmd.usuario());
         existing.setCodStatus(cmd.codStatus());
-        existing.setUsuario(cmd.usuario());
 
         return repository.save(existing);
     }
@@ -61,8 +61,12 @@ public class AgreementValidityService implements AgreementValidityUseCase {
     @Override
     @Transactional(readOnly = true)
     public AgreementValidity findAgreementValidity(String codCanal, String codProduto) {
-        return repository.findById(new AgreementValidityKey(codCanal, codProduto))
+        AgreementValidity validity = repository.findById(new AgreementValidityKey(codCanal, codProduto))
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.AGREEMENT_VALIDITY_NOT_FOUND));
+        if (!validity.isVigente()) {
+            throw new ChannelException(ChannelErrorType.AGREEMENT_VALIDITY_NOT_VIGENTE);
+        }
+        return validity;
     }
 
     @Override
@@ -86,9 +90,11 @@ public class AgreementValidityService implements AgreementValidityUseCase {
     @Override
     public void deleteAgreementValidity(String codCanal, String codProduto) {
         AgreementValidityKey key = new AgreementValidityKey(codCanal, codProduto);
-        if (!repository.existsById(key)) {
-            throw new ChannelException(ChannelErrorType.AGREEMENT_VALIDITY_NOT_FOUND);
-        }
-        repository.deleteById(key);
+        AgreementValidity existing = repository.findById(key)
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.AGREEMENT_VALIDITY_NOT_FOUND));
+
+        existing.expire(userResolverHelper.getCurrentUser());
+
+        repository.save(existing);
     }
 }

@@ -26,9 +26,6 @@ public class MarketingDistribuitionChannel {
 
     @Setter private User idUsuarioManutencao;
 
-    @Setter private String codCanalComercializacao;
-
-    @Setter private String codCanalDistribuicao;
 
     // -------------------------------------------------------------------------
     // Consultas de status

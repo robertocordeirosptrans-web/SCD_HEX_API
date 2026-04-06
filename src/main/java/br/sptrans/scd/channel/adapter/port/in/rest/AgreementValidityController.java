@@ -76,7 +76,6 @@ public class AgreementValidityController {
         AgreementValidity result = agreementValidityUseCase.updateAgreementValidity(codCanal, codProduto,
                 new UpdateAgreementValidityCommand(
                         request.dtFimValidade(),
-                        request.dtInicioValidade(),
                         request.codStatus(),
                         usuario));
         return ResponseEntity.ok(result);
@@ -128,6 +127,5 @@ public class AgreementValidityController {
 
     public record UpdateAgreementValidityRequest(
             LocalDateTime dtFimValidade,
-            LocalDateTime dtInicioValidade,
             String codStatus) {}
 }
