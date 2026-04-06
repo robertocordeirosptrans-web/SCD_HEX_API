@@ -67,7 +67,7 @@ public class AddressChannelController {
                 request.desObs(),
                 request.stEnderecos(),
                 request.desNumero(),
-                request.codCanal(),
+                request.codCanalId(),
                 usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(addressChannelMapper.toResponseDTO(result));
     }

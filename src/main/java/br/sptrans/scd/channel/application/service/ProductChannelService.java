@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.application.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class ProductChannelService implements ProductChannelUseCase {
     
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'product-projections-' + #codCanal + '-' + (#codProduto != null ? #codProduto : 'ALL')")
     public List<ProductChannelProjection> findProjections(String codCanal, String codProduto) {
         // Exemplo: busca por canal, pode ser adaptado para outros filtros
         if (codCanal != null && !codCanal.isEmpty()) {
@@ -48,6 +51,7 @@ public class ProductChannelService implements ProductChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'product-projections-' + #codCanal + '-' + (#codProduto != null ? #codProduto : 'ALL') + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ProductChannelProjection> findProjections(String codCanal, String codProduto, Pageable pageable) {
         if (codCanal != null && !codCanal.isEmpty()) {
             try {
@@ -60,6 +64,7 @@ public class ProductChannelService implements ProductChannelUseCase {
     }
 
     @Override
+    @CacheEvict(value = "canais", allEntries = true)
     public ProductChannel createProductChannel(CreateProductChannelCommand cmd) {
         salesChannelRepository.findById(cmd.codCanal())
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
@@ -91,6 +96,7 @@ public class ProductChannelService implements ProductChannelUseCase {
     }
 
     @Override
+    @CacheEvict(value = "canais", allEntries = true)
     public ProductChannel updateProductChannel(String codCanal, String codProduto,
             UpdateProductChannelCommand cmd) {
         ProductChannelKey key = new ProductChannelKey(codCanal, codProduto);
@@ -118,6 +124,7 @@ public class ProductChannelService implements ProductChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'product-' + #codCanal + '-' + #codProduto")
     public ProductChannel findProductChannel(String codCanal, String codProduto) {
         return repository.findById(new ProductChannelKey(codCanal, codProduto))
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.PRODUCT_CHANNEL_NOT_FOUND));
@@ -125,23 +132,27 @@ public class ProductChannelService implements ProductChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'product-all-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ProductChannel> findAllProductChannels(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'product-canal-' + #codCanal + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ProductChannel> findByCodCanal(String codCanal, Pageable pageable) {
         return repository.findByCodCanal(codCanal, pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "canais", key = "'product-produto-' + #codProduto + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<ProductChannel> findByCodProduto(String codProduto, Pageable pageable) {
         return repository.findByCodProduto(codProduto, pageable);
     }
 
     @Override
+    @CacheEvict(value = "canais", allEntries = true)
     public void deleteProductChannel(String codCanal, String codProduto) {
         ProductChannelKey key = new ProductChannelKey(codCanal, codProduto);
         if (!repository.existsById(key)) {
