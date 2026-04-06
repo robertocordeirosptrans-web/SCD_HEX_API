@@ -2,11 +2,10 @@ package br.sptrans.scd.channel.application.port.in;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
-import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.domain.SalesChannel;
 
 public interface SalesChannelUseCase {
 
@@ -16,7 +15,7 @@ public interface SalesChannelUseCase {
 
     SalesChannel findBySalesChannel(String codCanal);
 
-    List<SalesChannel> findAllSalesChannels(String stCanais);
+        List<SalesChannel> findAllSalesChannels(br.sptrans.scd.channel.domain.enums.ChannelDomainStatus stCanais);
 
     void activateSalesChannel(String codCanal, User usuario);
 
