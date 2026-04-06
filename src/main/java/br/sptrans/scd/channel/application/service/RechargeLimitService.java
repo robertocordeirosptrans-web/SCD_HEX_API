@@ -14,7 +14,7 @@ import br.sptrans.scd.channel.domain.RechargeLimitKey;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 
 import br.sptrans.scd.channel.domain.exception.ChannelException;
-import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class RechargeLimitService implements RechargeLimitUseCase {
 
     private final RechargeLimitPersistencePort repository;
-    private final UserResolverHelperImpl userResolverHelper;
+    private final UserResolverHelper userResolverHelper;
 
     @Override
     public RechargeLimit createRechargeLimit(CreateRechargeLimitCommand cmd) {
