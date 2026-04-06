@@ -2,6 +2,8 @@ package br.sptrans.scd.auth.adapter.port.out.jpa.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -37,4 +39,10 @@ public interface UserProfileJpaRepository extends JpaRepository<UserProfileJpa, 
 
         @Query("SELECT up FROM UserProfileJpa up ORDER BY up.id.idUsuario, up.id.codPerfil")
         List<UserProfileJpa> listAllUserProfiles();
+
+        @Query("SELECT up FROM UserProfileJpa up ORDER BY up.id.idUsuario, up.id.codPerfil")
+        Page<UserProfileJpa> listAllUserProfiles(Pageable pageable);
+
+        @Query("SELECT up FROM UserProfileJpa up WHERE up.id.codPerfil = :codPerfil ORDER BY up.id.idUsuario")
+        Page<UserProfileJpa> findByIdCodPerfil(@Param("codPerfil") String codPerfil, Pageable pageable);
 }

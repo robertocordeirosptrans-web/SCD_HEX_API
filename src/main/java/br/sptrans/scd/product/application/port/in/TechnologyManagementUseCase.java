@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.application.port.in;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.product.domain.Technology;
 
@@ -15,7 +16,7 @@ public interface TechnologyManagementUseCase {
 
     Technology findByTechnology(String codTecnologia);
 
-    List<Technology> findAllTechnologies(String codStatus);
+    Page<Technology> findAllTechnologies(String codStatus, Pageable pageable);
 
     void activateTechnology(String codTecnologia, Long idUsuario);
 

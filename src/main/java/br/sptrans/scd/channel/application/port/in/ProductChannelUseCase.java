@@ -26,6 +26,8 @@ public interface ProductChannelUseCase {
 
         List<ProductChannelProjection> findProjections(String codCanal, String codProduto);
 
+        Page<ProductChannelProjection> findProjections(String codCanal, String codProduto, Pageable pageable);
+
         void deleteProductChannel(String codCanal, String codProduto);
 
         // ── Commands ──────────────────────────────────────────────────────────────

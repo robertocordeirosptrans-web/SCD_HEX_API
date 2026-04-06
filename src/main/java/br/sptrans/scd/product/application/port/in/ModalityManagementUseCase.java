@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.application.port.in;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.product.domain.Modality;
 
@@ -15,7 +16,7 @@ public interface ModalityManagementUseCase {
 
     Modality findByModality(String codModalidade);
 
-    List<Modality> findAllModalities(String codStatus);
+    Page<Modality> findAllModalities(String codStatus, Pageable pageable);
 
     void activateModality(String codModalidade, Long idUsuario);
 

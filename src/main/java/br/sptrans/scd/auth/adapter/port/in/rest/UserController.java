@@ -61,6 +61,8 @@ public class UserController {
         return PageResponse.of(content, page, size, totalElements);
     }
 
+
+
     @GetMapping("/{idUsuario}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Busca de usuarios por id")

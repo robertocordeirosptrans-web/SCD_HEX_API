@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.application.port.in;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.product.domain.Family;
 
@@ -15,7 +16,7 @@ public interface FamilyManagementUseCase {
 
     Family findByFamily(String codFamilia);
 
-    List<Family> findAllFamilies(String codStatus);
+    Page<Family> findAllFamilies(String codStatus, Pageable pageable);
 
     void activateFamily(String codFamilia, Long idUsuario);
 

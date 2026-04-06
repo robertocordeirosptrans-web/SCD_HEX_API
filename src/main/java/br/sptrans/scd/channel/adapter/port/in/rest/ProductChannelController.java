@@ -145,11 +145,10 @@ public class ProductChannelController {
     public ResponseEntity<PageResponse<ProductChResponseDTO>> findProductChannels(
             @RequestParam(required = false) String codCanal,
             @RequestParam(required = false) String codProduto,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<ProductChannelProjection> projections = productChannelUseCase.findProjections(codCanal, codProduto);
-        List<ProductChResponseDTO> dtos = productChannelMapper.toResponseDTOList(projections);
-        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
+            Pageable pageable) {
+        Page<ProductChResponseDTO> dtoPage = productChannelUseCase.findProjections(codCanal, codProduto, pageable)
+                .map(productChannelMapper::toResponseDTO);
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @DeleteMapping("/{codCanal}/{codProduto}")

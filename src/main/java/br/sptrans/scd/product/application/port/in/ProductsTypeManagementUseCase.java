@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.application.port.in;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.product.domain.ProductType;
 
@@ -15,7 +16,7 @@ public interface ProductsTypeManagementUseCase {
 
     ProductType findByProductsType(String codTipoProduto);
 
-    List<ProductType> findAllProductsTypes(String codStatus);
+    Page<ProductType> findAllProductsTypes(String codStatus, Pageable pageable);
 
     void activateProductsType(String codTipoProduto, Long idUsuario);
 

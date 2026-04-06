@@ -1,8 +1,7 @@
 package br.sptrans.scd.product.adapter.port.in.rest;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -93,10 +92,8 @@ public class TechnologyController {
     @Operation(summary = "Lista todas as tecnologias, com filtro opcional de status")
     public ResponseEntity<PageResponse<TechnologyResponseDTO>> findAllTechnologies(
             @RequestParam(required = false) String codStatus,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<Technology> all = technologyManagementUseCase.findAllTechnologies(codStatus);
-        List<TechnologyResponseDTO> dtos = all.stream()
+            Pageable pageable) {
+        Page<TechnologyResponseDTO> dtoPage = technologyManagementUseCase.findAllTechnologies(codStatus, pageable)
             .map(technology -> new TechnologyResponseDTO(
                 technology.getCodTecnologia(),
                 technology.getDesTecnologia(),
@@ -105,9 +102,8 @@ public class TechnologyController {
                 technology.getDtManutencao(),
                 UserSimpleMapper.toDto(technology.getIdUsuarioCadastro()),
                 UserSimpleMapper.toDto(technology.getIdUsuarioManutencao())
-            ))
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
+            ));
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @PatchMapping("/{codTecnologia}/activate")

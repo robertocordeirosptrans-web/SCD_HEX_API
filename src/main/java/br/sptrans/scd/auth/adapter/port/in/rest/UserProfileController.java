@@ -2,8 +2,10 @@ package br.sptrans.scd.auth.adapter.port.in.rest;
 
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
@@ -46,13 +48,10 @@ public class UserProfileController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PageResponse<UserProfileResponseDTO>> listUserProfiles(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<UserProfile> all = groupProfileManagementUseCase.listUserProfiles();
-        List<UserProfileResponseDTO> userDTOs = all.stream()
-                .map(UserProfileResponseDTO::new)
-                .toList();
-        return ResponseEntity.ok(PageResponse.fromList(userDTOs, page, size));
+            Pageable pageable) {
+        Page<UserProfileResponseDTO> dtoPage = groupProfileManagementUseCase.listUserProfiles(pageable)
+                .map(UserProfileResponseDTO::new);
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @GetMapping("/perfil/{codPerfil}")
@@ -63,17 +62,14 @@ public class UserProfileController {
         @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<UserProfileResponseDTO>> getUsersByProfile(@RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size, @PathVariable String codPerfil) {
-        List<UserProfile> associados = groupProfileManagementUseCase.listUserProfiles();
-        List<UserProfileResponseDTO> associadosDTO = associados.stream()
-                .filter(up -> up.getId() != null && codPerfil.equals(up.getId().getCodPerfil()))
-                .map(UserProfileResponseDTO::new)
-                .toList();
-        if (associadosDTO.isEmpty()) {
+    public ResponseEntity<PageResponse<UserProfileResponseDTO>> getUsersByProfile(
+            Pageable pageable, @PathVariable String codPerfil) {
+        Page<UserProfileResponseDTO> dtoPage = groupProfileManagementUseCase.listUserProfilesByPerfil(codPerfil, pageable)
+                .map(UserProfileResponseDTO::new);
+        if (dtoPage.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(PageResponse.fromList(associadosDTO, page, size));
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @PostMapping

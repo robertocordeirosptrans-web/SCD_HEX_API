@@ -3,6 +3,9 @@ package br.sptrans.scd.auth.application.port.in;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.GroupUser;
@@ -61,6 +64,7 @@ public interface GroupProfileManagementUseCase {
      * Lista todos os grupos, opcionalmente filtrado por status.
      */
     List<Group> listGroups(String statusCode);
+    Page<Group> listGroups(String statusCode, Pageable pageable);
 
     // ══════════════════════════════════════════════════════════════════════════
     // PERFIS
@@ -100,6 +104,7 @@ public interface GroupProfileManagementUseCase {
      * Lista todos os perfis, opcionalmente filtrado por status.
      */
     List<Profile> listProfiles(String statusCode);
+    Page<Profile> listProfiles(String statusCode, Pageable pageable);
 
     /**
      * Lista funcionalidades disponíveis para vinculação (todas ativas).
@@ -113,6 +118,7 @@ public interface GroupProfileManagementUseCase {
      * Lista todas as associações grupo-usuário.
      */
     List<GroupUser> listGroupUsers();
+    Page<GroupUser> listGroupUsers(Pageable pageable);
 
         /**
          * Lista todas as associações grupo-usuário de um grupo específico (apenas ativos).
@@ -125,11 +131,14 @@ public interface GroupProfileManagementUseCase {
      * Lista todas as associações usuário-perfil.
      */
     List<UserProfile> listUserProfiles();
+    Page<UserProfile> listUserProfiles(Pageable pageable);
+    Page<UserProfile> listUserProfilesByPerfil(String codPerfil, Pageable pageable);
 
     /**
      * Lista todas as associações perfil-funcionalidade.
      */
     List<ProfileFunctionality> listProfileFunctionalities();
+    Page<ProfileFunctionality> listProfileFunctionalities(Pageable pageable);
 
     // ══════════════════════════════════════════════════════════════════════════
     // Commands

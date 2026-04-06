@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.GroupMapper;
@@ -49,6 +51,12 @@ public class GroupAdapterJpa implements GroupPort {
                 .stream()
                 .map(GroupMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<Group> listGroups(String codStatus, Pageable pageable) {
+        return groupJpaRepository.findAllByCodStatus(codStatus, pageable)
+                .map(GroupMapper::toDomain);
     }
 
     @Override
@@ -107,6 +115,19 @@ public class GroupAdapterJpa implements GroupPort {
                     return groupUser;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<GroupUser> listGroupUsers(Pageable pageable) {
+        return groupUserJpaRepository.findAllGroupUsers(pageable).map(gu -> {
+            GroupUser groupUser = new GroupUser();
+            var idJpa = gu.getId();
+            groupUser.setId(idJpa != null ? new GroupUserKey(idJpa.getIdUsuario(), idJpa.getCodGrupo()) : null);
+            groupUser.setCodStatus(gu.getCodStatus());
+            groupUser.setIdUsuarioManutencao(gu.getIdUsuarioManutencao());
+            groupUser.setDtModi(gu.getDtManutencao());
+            return groupUser;
+        });
     }
 
     // Métodos migrados do GroupUserAdapterJpa
@@ -246,6 +267,11 @@ public class GroupAdapterJpa implements GroupPort {
         return groupProfileJpaRepository.findAll().stream()
                 .map(this::toDomainGroupProfile)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<GroupProfile> findAllGroupProfile(Pageable pageable) {
+        return groupProfileJpaRepository.findAll(pageable).map(this::toDomainGroupProfile);
     }
 
     @Override

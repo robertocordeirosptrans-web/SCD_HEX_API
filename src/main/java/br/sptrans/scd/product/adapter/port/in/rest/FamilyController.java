@@ -1,8 +1,7 @@
 package br.sptrans.scd.product.adapter.port.in.rest;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -94,10 +93,8 @@ public class FamilyController {
     @Operation(summary = "Lista todas as famílias, com filtro opcional de status")
     public ResponseEntity<PageResponse<FamilyResponseDTO>> findAllFamilies(
             @RequestParam(required = false) String codStatus,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<Family> all = familyManagementUseCase.findAllFamilies(codStatus);
-        List<FamilyResponseDTO> dtos = all.stream()
+            Pageable pageable) {
+        Page<FamilyResponseDTO> dtoPage = familyManagementUseCase.findAllFamilies(codStatus, pageable)
             .map(family -> new FamilyResponseDTO(
                 family.getCodFamilia(),
                 family.getDesFamilia(),
@@ -106,9 +103,8 @@ public class FamilyController {
                 family.getDtManutencao(),
                 UserSimpleMapper.toDto(family.getIdUsuarioCadastro()),
                 UserSimpleMapper.toDto(family.getIdUsuarioManutencao())
-            ))
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
+            ));
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @PatchMapping("/{codFamilia}/activate")

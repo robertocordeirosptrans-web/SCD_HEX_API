@@ -3,6 +3,9 @@ package br.sptrans.scd.auth.application.port.out;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.GroupUserKey;
 
@@ -19,6 +22,7 @@ public interface GroupUserPort {
     Optional<GroupUser> findById(GroupUserKey id);
 
     List<GroupUser> listGroupUsers();
+    Page<GroupUser> listGroupUsers(Pageable pageable);
 
     GroupUser save(GroupUser entity);
 

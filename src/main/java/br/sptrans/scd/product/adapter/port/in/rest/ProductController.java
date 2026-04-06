@@ -1,8 +1,9 @@
 package br.sptrans.scd.product.adapter.port.in.rest;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -86,10 +87,9 @@ public class ProductController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PageResponse<Product>> findAllProducts(
             @RequestParam(required = false) String codStatus,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<Product> all = productUseCase.findAllProducts(codStatus);
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+            Pageable pageable) {
+        Page<Product> page = productUseCase.findAllProducts(codStatus, pageable);
+        return ResponseEntity.ok(PageResponse.fromPage(page));
     }
 
     @GetMapping("/{codProduto}")

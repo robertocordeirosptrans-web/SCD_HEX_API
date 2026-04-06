@@ -47,6 +47,19 @@ public class ProductChannelService implements ProductChannelUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<ProductChannelProjection> findProjections(String codCanal, String codProduto, Pageable pageable) {
+        if (codCanal != null && !codCanal.isEmpty()) {
+            try {
+                return repository.findCompletoByCanal(codCanal, pageable);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("codCanal deve ser um número inteiro", e);
+            }
+        }
+        throw new UnsupportedOperationException("Filtro de projections não implementado para os parâmetros fornecidos");
+    }
+
+    @Override
     public ProductChannel createProductChannel(CreateProductChannelCommand cmd) {
         salesChannelRepository.findById(cmd.codCanal())
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));

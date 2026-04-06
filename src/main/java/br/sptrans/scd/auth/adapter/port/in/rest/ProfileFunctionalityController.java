@@ -1,8 +1,10 @@
 package br.sptrans.scd.auth.adapter.port.in.rest;
 
 import java.time.LocalDate;
-import java.util.List;
 
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
@@ -45,13 +47,10 @@ public class ProfileFunctionalityController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PageResponse<ProfileFunctionalityResponseDTO>> listProfileFunctionalities(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<ProfileFunctionality> all = groupProfileManagementUseCase.listProfileFunctionalities();
-        List<ProfileFunctionalityResponseDTO> proDTOs = all.stream()
-                .map(ProfileFunctionalityResponseDTO::new)
-                .toList();
-        return ResponseEntity.ok(PageResponse.fromList(proDTOs, page, size));
+            Pageable pageable) {
+        Page<ProfileFunctionalityResponseDTO> dtoPage = groupProfileManagementUseCase.listProfileFunctionalities(pageable)
+                .map(ProfileFunctionalityResponseDTO::new);
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @PostMapping

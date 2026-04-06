@@ -102,4 +102,16 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
         }
     }
 
+    @Override
+    public Page<ProductChannelProjection> findCompletoByCanal(String codCanal, Pageable pageable) {
+        if (codCanal == null || codCanal.isEmpty()) {
+            throw new IllegalArgumentException("codCanal não pode ser nulo ou vazio");
+        }
+        try {
+            return productChannelJpaRepository.findCompletoByCanalPageable(codCanal, pageable);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("codCanal deve ser um número inteiro", e);
+        }
+    }
+
 }

@@ -3,6 +3,8 @@ package br.sptrans.scd.auth.adapter.port.out.jpa;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.adapter.port.out.jpa.repository.ProfileJpaRepository;
@@ -49,6 +51,11 @@ public class ProfileAdapterJpa implements ProfilePort {
     @Override
     public List<Profile> listProfile(String codStatus) {
         return profileJpaRepository.findByCodStatus(codStatus).stream().map(this::toDomainProfile).toList();
+    }
+
+    @Override
+    public Page<Profile> listProfile(String codStatus, Pageable pageable) {
+        return profileJpaRepository.findByCodStatus(codStatus, pageable).map(this::toDomainProfile);
     }
 
     @Override
@@ -131,6 +138,16 @@ public class ProfileAdapterJpa implements ProfilePort {
     }
 
     @Override
+    public Page<UserProfile> listUserProfiles(Pageable pageable) {
+        return userProfileJpaRepository.listAllUserProfiles(pageable).map(this::toDomainUserProfile);
+    }
+
+    @Override
+    public Page<UserProfile> listUserProfilesByPerfil(String codPerfil, Pageable pageable) {
+        return userProfileJpaRepository.findByIdCodPerfil(codPerfil, pageable).map(this::toDomainUserProfile);
+    }
+
+    @Override
     public void save(Profile perfil) {
         profileJpaRepository.save(toEntityProfile(perfil));
     }
@@ -159,6 +176,11 @@ public class ProfileAdapterJpa implements ProfilePort {
         return profileFunctionalityJpaRepository.findAll().stream()
                 .map(this::toDomainProfileFunctionality)
                 .toList();
+    }
+
+    @Override
+    public Page<ProfileFunctionality> listProfileFunctionalities(Pageable pageable) {
+        return profileFunctionalityJpaRepository.findAll(pageable).map(this::toDomainProfileFunctionality);
     }
 
     private ProfileFunctionality toDomainProfileFunctionality(ProfileFunctionalityJpa entity) {

@@ -3,6 +3,9 @@ package br.sptrans.scd.auth.application.port.out;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.FunctionalityKey;
 import br.sptrans.scd.auth.domain.Profile;
@@ -22,6 +25,7 @@ public interface ProfilePort extends ProfileFunctionalityPort {
     boolean existsByCode(String codPerfil);
 
     List<Profile> listProfile(String codStatus);
+    Page<Profile> listProfile(String codStatus, Pageable pageable);
 
     void save(Profile perfil);
 
@@ -57,10 +61,13 @@ public interface ProfilePort extends ProfileFunctionalityPort {
      * Lista todas as associações usuário-perfil.
      */
     List<UserProfile> listUserProfiles();
+    Page<UserProfile> listUserProfiles(Pageable pageable);
+    Page<UserProfile> listUserProfilesByPerfil(String codPerfil, Pageable pageable);
 
     /**
      * Lista todas as associações perfil-funcionalidade.
      */
     List<ProfileFunctionality> listProfileFunctionalities();
+    Page<ProfileFunctionality> listProfileFunctionalities(Pageable pageable);
 
 }

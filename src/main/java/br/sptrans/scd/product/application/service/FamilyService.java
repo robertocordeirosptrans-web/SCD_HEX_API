@@ -1,8 +1,9 @@
 package br.sptrans.scd.product.application.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,8 +73,8 @@ public class FamilyService implements FamilyManagementUseCase {
     }
 
     @Override
-    public List<Family> findAllFamilies(String codStatus) {
-        return familyRepository.findAll(codStatus);
+    public Page<Family> findAllFamilies(String codStatus, Pageable pageable) {
+        return familyRepository.findAll(codStatus, pageable);
     }
 
     @Override

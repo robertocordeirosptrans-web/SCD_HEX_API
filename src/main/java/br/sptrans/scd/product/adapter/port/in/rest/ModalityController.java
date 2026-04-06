@@ -1,8 +1,7 @@
 package br.sptrans.scd.product.adapter.port.in.rest;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -93,10 +92,8 @@ public class ModalityController {
     @Operation(summary = "Lista todas as modalidades, com filtro opcional de status")
     public ResponseEntity<PageResponse<ModalityResponseDTO>> findAllModalities(
             @RequestParam(required = false) String codStatus,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<Modality> all = modalityManagementUseCase.findAllModalities(codStatus);
-        List<ModalityResponseDTO> dtos = all.stream()
+            Pageable pageable) {
+        Page<ModalityResponseDTO> dtoPage = modalityManagementUseCase.findAllModalities(codStatus, pageable)
             .map(modality -> new ModalityResponseDTO(
                 modality.getCodModalidade(),
                 modality.getDesModalidade(),
@@ -105,9 +102,8 @@ public class ModalityController {
                 modality.getDtManutencao(),
                 UserSimpleMapper.toDto(modality.getIdUsuarioCadastro()),
                 UserSimpleMapper.toDto(modality.getIdUsuarioManutencao())
-            ))
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
+            ));
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @PatchMapping("/{codModalidade}/activate")

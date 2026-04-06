@@ -1,8 +1,7 @@
 package br.sptrans.scd.product.adapter.port.in.rest;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -93,10 +92,8 @@ public class ProductsTypeController {
     @Operation(summary = "Lista todos os tipos de produto, com filtro opcional de status")
     public ResponseEntity<PageResponse<ProductsTypeResponseDTO>> findAllProductsTypes(
             @RequestParam(required = false) String codStatus,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<ProductType> all = productsTypeManagementUseCase.findAllProductsTypes(codStatus);
-        List<ProductsTypeResponseDTO> dtos = all.stream()
+            Pageable pageable) {
+        Page<ProductsTypeResponseDTO> dtoPage = productsTypeManagementUseCase.findAllProductsTypes(codStatus, pageable)
             .map(productType -> new ProductsTypeResponseDTO(
                 productType.getCodTipoProduto(),
                 productType.getDesTipoProduto(),
@@ -105,9 +102,8 @@ public class ProductsTypeController {
                 productType.getDtManutencao(),
                 UserSimpleMapper.toDto(productType.getIdUsuarioCadastro()),
                 UserSimpleMapper.toDto(productType.getIdUsuarioManutencao())
-            ))
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
+            ));
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @PatchMapping("/{codTipoProduto}/activate")

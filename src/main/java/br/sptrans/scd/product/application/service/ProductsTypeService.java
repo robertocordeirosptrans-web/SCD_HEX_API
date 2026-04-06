@@ -1,8 +1,9 @@
 package br.sptrans.scd.product.application.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,8 +73,8 @@ public class ProductsTypeService implements ProductsTypeManagementUseCase {
     }
 
     @Override
-    public List<ProductType> findAllProductsTypes(String codStatus) {
-        return productsTypeRepository.findAll(codStatus);
+    public Page<ProductType> findAllProductsTypes(String codStatus, Pageable pageable) {
+        return productsTypeRepository.findAll(codStatus, pageable);
     }
 
     @Override

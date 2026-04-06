@@ -2,6 +2,8 @@ package br.sptrans.scd.auth.adapter.port.out.jpa.repository;
 
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.ProfileEntityJpa;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -25,4 +27,7 @@ public interface ProfileJpaRepository extends JpaRepository<ProfileEntityJpa, St
 
     @Query("SELECT p FROM ProfileEntityJpa p WHERE (:codStatus IS NULL OR p.codStatus = :codStatus)")
     List<ProfileEntityJpa> findByCodStatus(@Param("codStatus") String codStatus);
+
+    @Query("SELECT p FROM ProfileEntityJpa p WHERE (:codStatus IS NULL OR p.codStatus = :codStatus)")
+    Page<ProfileEntityJpa> findByCodStatus(@Param("codStatus") String codStatus, Pageable pageable);
 }

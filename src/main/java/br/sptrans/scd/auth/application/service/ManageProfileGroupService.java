@@ -3,6 +3,8 @@ package br.sptrans.scd.auth.application.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
@@ -32,6 +34,10 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     // ══════════════════════════════════════════════════════════════════════════
     public List<GroupProfile> findAllGroupProfile() {
         return groupProfileRepository.findAllGroupProfile();
+    }
+
+    public Page<GroupProfile> findAllGroupProfile(Pageable pageable) {
+        return groupProfileRepository.findAllGroupProfile(pageable);
     }
 
     public Optional<GroupProfile> findByCodGrupoAndCodPerfil(String codGrupo, String codPerfil) {
@@ -86,6 +92,11 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
+    public Page<Group> listGroups(String statusCode, Pageable pageable) {
+        return manageGroupProfileUseCase.listGroups(statusCode, pageable);
+    }
+
+    @Override
     public List<GroupUser> listGroupUsersByCodGrupo(String codGrupo) {
         return manageGroupProfileUseCase.listGroupUsersByCodGrupo(codGrupo);
     }
@@ -128,6 +139,11 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         return manageGroupProfileUseCase.listProfiles(statusCode);
     }
 
+    @Override
+    public Page<Profile> listProfiles(String statusCode, Pageable pageable) {
+        return manageGroupProfileUseCase.listProfiles(statusCode, pageable);
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // MÉTODOS LEGADOS (Compatibilidade)
     // ══════════════════════════════════════════════════════════════════════════
@@ -137,12 +153,32 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
+    public Page<GroupUser> listGroupUsers(Pageable pageable) {
+        return manageGroupProfileUseCase.listGroupUsers(pageable);
+    }
+
+    @Override
     public List<UserProfile> listUserProfiles() {
         return manageGroupProfileUseCase.listUserProfiles();
+    }
+
+
+    public Page<UserProfile> listUserProfiles(Pageable pageable) {
+        return manageGroupProfileUseCase.listUserProfiles(pageable);
+    }
+
+
+    public Page<UserProfile> listUserProfilesByPerfil(String codPerfil, Pageable pageable) {
+        return manageGroupProfileUseCase.listUserProfilesByPerfil(codPerfil, pageable);
     }
 
     @Override
     public List<ProfileFunctionality> listProfileFunctionalities() {
         return manageGroupProfileUseCase.listProfileFunctionalities();
+    }
+
+
+    public Page<ProfileFunctionality> listProfileFunctionalities(Pageable pageable) {
+        return manageGroupProfileUseCase.listProfileFunctionalities(pageable);
     }
 }

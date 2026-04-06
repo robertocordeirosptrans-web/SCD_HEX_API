@@ -1,8 +1,9 @@
 package br.sptrans.scd.product.application.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,8 +73,8 @@ public class SpeciesService implements SpeciesManagementUseCase {
     }
 
     @Override
-    public List<Species> findAllSpecies(String codStatus) {
-        return speciesRepository.findAll(codStatus);
+    public Page<Species> findAllSpecies(String codStatus, Pageable pageable) {
+        return speciesRepository.findAll(codStatus, pageable);
     }
 
     @Override

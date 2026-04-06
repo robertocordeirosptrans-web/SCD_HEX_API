@@ -5,6 +5,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
@@ -256,6 +258,11 @@ public class ManageGroupProfileUseCase {
         return groupRepository.listGroups(statusCode);
     }
 
+    public Page<Group> listGroups(String statusCode, Pageable pageable) {
+        log.debug("Listando grupos paginados. Status: {}", statusCode);
+        return groupRepository.listGroups(statusCode, pageable);
+    }
+
     /**
      * Lista usuários ativos de um grupo.
      * 
@@ -460,16 +467,37 @@ public class ManageGroupProfileUseCase {
         return profileRepository.listProfile(statusCode);
     }
 
+    public Page<Profile> listProfiles(String statusCode, Pageable pageable) {
+        log.debug("Listando perfis paginados. Status: {}", statusCode);
+        return profileRepository.listProfile(statusCode, pageable);
+    }
+
     public List<GroupUser> listGroupUsers() {
         return groupUserRepository.listGroupUsers();
+    }
+
+    public Page<GroupUser> listGroupUsers(Pageable pageable) {
+        return groupUserRepository.listGroupUsers(pageable);
     }
 
     public List<UserProfile> listUserProfiles() {
         return profileRepository.listUserProfiles();
     }
 
+    public Page<UserProfile> listUserProfiles(Pageable pageable) {
+        return profileRepository.listUserProfiles(pageable);
+    }
+
+    public Page<UserProfile> listUserProfilesByPerfil(String codPerfil, Pageable pageable) {
+        return profileRepository.listUserProfilesByPerfil(codPerfil, pageable);
+    }
+
     public List<ProfileFunctionality> listProfileFunctionalities() {
         return profileRepository.listProfileFunctionalities();
+    }
+
+    public Page<ProfileFunctionality> listProfileFunctionalities(Pageable pageable) {
+        return profileRepository.listProfileFunctionalities(pageable);
     }
 
     // ── Utilitários privados ──────────────────────────────────────────────────

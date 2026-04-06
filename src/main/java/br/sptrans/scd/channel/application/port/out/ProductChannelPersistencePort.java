@@ -18,6 +18,8 @@ public interface ProductChannelPersistencePort {
 
     List<ProductChannelProjection> findCompletoByCanal(String codCanal);
 
+    Page<ProductChannelProjection> findCompletoByCanal(String codCanal, Pageable pageable);
+
     Page<ProductChannel> findByCodCanal(String codCanal, Pageable pageable);
 
     Page<ProductChannel> findByCodProduto(String codProduto, Pageable pageable);

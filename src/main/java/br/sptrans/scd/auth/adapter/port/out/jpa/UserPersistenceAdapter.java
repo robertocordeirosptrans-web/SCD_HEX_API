@@ -1,18 +1,23 @@
 package br.sptrans.scd.auth.adapter.port.out.jpa;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.adapter.port.in.rest.dto.UserFilterRequestDTO;
 import br.sptrans.scd.auth.adapter.port.out.jpa.mapper.UserMapper;
 import br.sptrans.scd.auth.adapter.port.out.jpa.repository.UserRepositoryJpa;
 import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserEntityJpa;
+import br.sptrans.scd.auth.adapter.specification.UserSpecification;
 import br.sptrans.scd.auth.application.port.out.AuthenticationPort;
 import br.sptrans.scd.auth.application.port.out.AuthorizationPort;
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
@@ -83,24 +88,11 @@ public class UserPersistenceAdapter implements UserPersistencePort {
     }
 
     @Override
-    public List<User> findAllPaginated(String status, String nome, String email, String perfil,
-                                       int offset, int limit, String sortBy, String sortDir) {
-        List<UserEntityJpa> entities = userRepositoryJpa.findAllByCodStatus(status);
-        List<User> users = new ArrayList<>();
-        for (UserEntityJpa entity : entities) {
-            if (nome == null || entity.getNomUsuario().toLowerCase().contains(nome.toLowerCase())) {
-                users.add(userMapper.toDomain(entity));
-            } else if (email == null || entity.getNomEmail().toLowerCase().contains(email.toLowerCase())) {
-                users.add(userMapper.toDomain(entity));
-            } else if (status == null || entity.getCodStatus().toLowerCase().contains(status.toLowerCase())) {
-                users.add(userMapper.toDomain(entity));
-            }
-        }
-        int toIndex = Math.min(offset + limit, users.size());
-        if (offset > toIndex) {
-            return new ArrayList<>();
-        }
-        return users.subList(offset, toIndex);
+    public List<User> findAllPaginated(String status, String nome, String email, String perfil, int offset, int limit, String sortBy, String sortDir) {
+        UserFilterRequestDTO filtro = new UserFilterRequestDTO(nome, email, perfil, status);
+        Specification<User> spec = UserSpecification.filterUsers(filtro);
+        Pageable pageable = PageRequest.of(offset / limit, limit, Sort.Direction.fromString(sortDir), sortBy);
+        return null;
     }
 
     @Override

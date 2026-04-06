@@ -3,6 +3,8 @@ package br.sptrans.scd.product.adapter.out.jpa.adapter;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
@@ -43,6 +45,16 @@ public class ProductsTypeAdapterJpa implements ProductsTypeRepository {
         return repository.findAll().stream()
                 .map(entity -> ProductsTypeMapper.toDomain(entity, userRepository))
                 .toList();
+    }
+
+    @Override
+    public Page<ProductType> findAll(String codStatus, Pageable pageable) {
+        if (codStatus != null && !codStatus.isBlank()) {
+            return repository.findByCodStatus(codStatus, pageable)
+                    .map(entity -> ProductsTypeMapper.toDomain(entity, userRepository));
+        }
+        return repository.findAll(pageable)
+                .map(entity -> ProductsTypeMapper.toDomain(entity, userRepository));
     }
 
     @Override

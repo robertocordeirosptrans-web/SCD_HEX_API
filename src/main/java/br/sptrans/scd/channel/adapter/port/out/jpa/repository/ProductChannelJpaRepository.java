@@ -163,6 +163,75 @@ public interface ProductChannelJpaRepository extends JpaRepository<ProductChanne
     List<ProductChannelProjection> findCompletoByCanal(@Param("codCanal") String codCanal);
 
     @Query(value = """
+  SELECT DISTINCT 
+        cp.COD_CANAL as codCanal,
+        cp.COD_PRODUTO as codProduto,
+        p.DES_PRODUTO as desProduto,
+        cp.ST_CANAIS_PRODUTOS as statusCanalProduto,
+        cp.QTD_LIMITE_COMERCIALIZACAO as qtdLimiteComercializacao,
+        cp.QTD_MINIMA_ESTOQUE as qtdMinimaEstoque,
+        cp.QTD_MAXIMA_ESTOQUE as qtdMaximaEstoque,
+        cp.QTD_MINIMA_RESSUPRIMENTO as qtdMinimaRessuprimento,
+        cp.QTD_MAXIMA_RESSUPRIMENTO as qtdMaximaRessuprimento,
+        cp.VL_FACE as vlFace,
+        cp.COD_CONVENIO as codConvenio,
+        cp.TIPO_OPER_HM as tipoOperHm,
+        cp.FLG_CARAC as flgCarac,
+        cp.COD_ORGAO_EMISSOR as codOrgaoEmissor,
+        cv.DT_INICIO_VALIDADE as inicioValidade,
+        cv.DT_FIM_VALIDADE as fimValidade,
+        cv.COD_STATUS as statusVigencia,
+        t.ID_TAXA as idTaxa,
+        t.DSC_TAXA as descricaoTaxa,
+        t.DT_INICIAL as taxaInicio,
+        t.DT_FINAL as taxaFim,
+        ta.REC_INICIAL as taxaAdmRecInicial,
+        ta.REC_FINAL as taxaAdmRecFinal,
+        ta.VAL_FIXO as taxaAdmValFixo,
+        ta.VAL_PERCENTUAL as taxaAdmPercentual,
+        ts.REC_INICIAL as taxaServRecInicial,
+        ts.REC_FINAL as taxaServRecFinal,
+        ts.VAL_FIXO as taxaServValFixo,
+        ts.VAL_PERCENTUAL as taxaServPercentual,
+        ts.VAL_MINIMO as taxaServValMinimo,
+        tc.VL_T_INICIO as taxaCanalVlInicio,
+        tc.VL_T_FINAL as taxaCanalVlFinal,
+        tc.VL_PERCENTUAL as taxaCanalPercentual,
+        tc.DT_INICIO as taxaCanalInicio,
+        tc.DT_FIM as taxaCanalFim,
+        td.COD_CANALDESTINO as canaisDestino,
+        lr.DT_INICIO_VALIDADE as limiteInicioValidade,
+        lr.DT_FIM_VALIDADE as limiteFimValidade,
+        lr.VL_MINIMO_RECARGA as vlMinimoRecarga,
+        lr.VL_MAXIMO_RECARGA as vlMaximoRecarga,
+        lr.VL_MAXIMO_SALDO as vlMaximoSaldo,
+        lr.COD_STATUS as statusLimite
+    FROM SPTRANSDBA.CANAIS_PRODUTOS cp
+    INNER JOIN SPTRANSDBA.PRODUTOS p ON cp.COD_PRODUTO = p.COD_PRODUTO
+    LEFT JOIN SPTRANSDBA.CONVENIOS_VIGENCIAS cv ON cp.COD_CANAL = cv.COD_CANAL AND cp.COD_PRODUTO = cv.COD_PRODUTO
+    LEFT JOIN SPTRANSDBA.TAXAS t ON cp.COD_CANAL = t.COD_CANAL AND cp.COD_PRODUTO = t.COD_PRODUTO
+    LEFT JOIN SPTRANSDBA.TAXAS_ADMINISTRATIVA ta ON t.ID_TAXA = ta.ID_TAXA
+    LEFT JOIN SPTRANSDBA.TAXAS_SERVICO ts ON t.ID_TAXA = ts.ID_TAXA
+    LEFT JOIN SPTRANSDBA.TAXA_SCANAL tc ON cp.COD_CANAL = tc.COD_CANAL
+    LEFT JOIN SPTRANSDBA.TAXAS_DESTINO td ON t.ID_TAXA = td.ID_TAXA
+    LEFT JOIN SPTRANSDBA.LIMITES_RECARGA lr ON cp.COD_CANAL = lr.COD_CANAL AND cp.COD_PRODUTO = lr.COD_PRODUTO
+    WHERE cp.COD_CANAL = :codCanal
+        AND cp.ST_CANAIS_PRODUTOS = 'A'
+    ORDER BY cp.COD_PRODUTO, t.ID_TAXA, td.COD_CANALDESTINO
+        """,
+    countQuery = """
+    SELECT COUNT(DISTINCT cp.COD_CANAL || '-' || cp.COD_PRODUTO)
+    FROM SPTRANSDBA.CANAIS_PRODUTOS cp
+    INNER JOIN SPTRANSDBA.PRODUTOS p ON cp.COD_PRODUTO = p.COD_PRODUTO
+    LEFT JOIN SPTRANSDBA.TAXAS t ON cp.COD_CANAL = t.COD_CANAL AND cp.COD_PRODUTO = t.COD_PRODUTO
+    LEFT JOIN SPTRANSDBA.TAXAS_DESTINO td ON t.ID_TAXA = td.ID_TAXA
+    WHERE cp.COD_CANAL = :codCanal
+        AND cp.ST_CANAIS_PRODUTOS = 'A'
+        """,
+    nativeQuery = true)
+    Page<ProductChannelProjection> findCompletoByCanalPageable(@Param("codCanal") String codCanal, Pageable pageable);
+
+    @Query(value = """
        SELECT DISTINCT 
         -- Informações do CANAL DE DISTRIBUIÇÃO (receptor)
         :codCanalDistribuicao as codCanalDistribuicao,

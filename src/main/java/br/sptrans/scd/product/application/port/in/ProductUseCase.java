@@ -1,7 +1,9 @@
 package br.sptrans.scd.product.application.port.in;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ProductVersion;
@@ -45,7 +47,7 @@ public interface ProductUseCase {
     /**
      * Lista todos os produtos, com filtro opcional de status.
      */
-    List<Product> findAllProducts(String codStatus);
+    Page<Product> findAllProducts(String codStatus, Pageable pageable);
 
     // =========================================================================
     // Gestão de Versões

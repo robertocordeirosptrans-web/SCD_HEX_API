@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.application.port.in;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.product.domain.Species;
 
@@ -15,7 +16,7 @@ public interface SpeciesManagementUseCase {
 
     Species findBySpecies(String codEspecie);
 
-    List<Species> findAllSpecies(String codStatus);
+    Page<Species> findAllSpecies(String codStatus, Pageable pageable);
 
     void activateSpecies(String codEspecie, Long idUsuario);
 
