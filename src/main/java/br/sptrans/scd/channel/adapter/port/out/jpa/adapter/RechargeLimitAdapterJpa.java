@@ -1,18 +1,17 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Repository;
+
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.RechargeLimitMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.RechargeLimitJpaRepository;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.RechargeLimitKeyEntityJpa;
 import br.sptrans.scd.channel.application.port.out.RechargeLimitPersistencePort;
-
-
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -31,6 +30,7 @@ public class RechargeLimitAdapterJpa implements RechargeLimitPersistencePort {
                 .map(rechargeLimitMapper::toDomain);
     }
 
+
     @Override
     public List<RechargeLimit> findAll() {
         return rechargeLimitJpaRepository.findAllRechargeLimits().stream()
@@ -38,18 +38,14 @@ public class RechargeLimitAdapterJpa implements RechargeLimitPersistencePort {
                 .toList();
     }
 
-    @Override
-    public List<RechargeLimit> findByCodCanal(String codCanal) {
-        return rechargeLimitJpaRepository.findByCodCanal(codCanal).stream()
-                .map(rechargeLimitMapper::toDomain)
-                .toList();
-    }
+
 
     @Override
-    public List<RechargeLimit> findByCodProduto(String codProduto) {
-        return rechargeLimitJpaRepository.findByCodProduto(codProduto).stream()
-                .map(rechargeLimitMapper::toDomain)
-                .toList();
+    public boolean existsById(RechargeLimitKey id) {
+        if (id == null) {
+            return false;
+        }
+        return rechargeLimitJpaRepository.existsById(toEntityKey(id));
     }
 
     @Override

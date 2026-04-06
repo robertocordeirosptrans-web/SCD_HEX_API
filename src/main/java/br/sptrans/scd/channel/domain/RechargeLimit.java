@@ -113,4 +113,38 @@ public class RechargeLimit {
         this.dtFimValidade = dtFim;
         this.dtManutencao = LocalDateTime.now();
     }
+
+    // -------------------------------------------------------------------------
+    // Vigência
+    // -------------------------------------------------------------------------
+
+    /**
+     * Verifica se o limite de recarga está vigente:
+     * status ativo E dentro do período de validade.
+     */
+    public boolean isVigente() {
+        if (!isAtivo()) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        if (dtInicioValidade != null && now.isBefore(dtInicioValidade)) {
+            return false;
+        }
+        if (dtFimValidade != null && now.isAfter(dtFimValidade)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Encerra a vigência do limite de recarga, definindo {@code dtFimValidade}
+     * para o momento atual e inativando o registro.
+     *
+     * @param operador usuário responsável pela operação
+     */
+    public void expire(User operador) {
+        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.dtFimValidade = LocalDateTime.now();
+        this.dtManutencao = LocalDateTime.now();
+    }
 }

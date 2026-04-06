@@ -11,9 +11,7 @@ public interface RechargeLimitPersistencePort {
 
     List<RechargeLimit> findAll();
 
-    List<RechargeLimit> findByCodCanal(String codCanal);
-
-    List<RechargeLimit> findByCodProduto(String codProduto);
+    boolean existsById(RechargeLimitKey id);
 
     RechargeLimit save(RechargeLimit entity);
 }
