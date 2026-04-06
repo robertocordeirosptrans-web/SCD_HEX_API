@@ -2,6 +2,8 @@ package br.sptrans.scd.shared.dto;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 public record PageResponse<T>(
     List<T> content,
     int page,
@@ -30,5 +32,17 @@ public record PageResponse<T>(
         int end = Math.min(start + size, allItems.size());
         List<T> content = allItems.subList(start, end);
         return of(content, page, size, totalElements);
+    }
+
+    public static <T> PageResponse<T> fromPage(Page<T> springPage) {
+        return new PageResponse<>(
+            springPage.getContent(),
+            springPage.getNumber(),
+            springPage.getSize(),
+            springPage.getTotalElements(),
+            springPage.getTotalPages(),
+            springPage.isFirst(),
+            springPage.isLast()
+        );
     }
 }

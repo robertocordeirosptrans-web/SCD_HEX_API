@@ -3,19 +3,19 @@ package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ProductChannelMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.ProductChannelJpaRepository;
-import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 import br.sptrans.scd.channel.application.port.out.ProductChannelPersistencePort;
-
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
-
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -43,36 +43,33 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
     }
 
     @Override
-    public List<ProductChannel> findAll() {
-        return productChannelJpaRepository.findAll().stream()
+    public Page<ProductChannel> findAll(Pageable pageable) {
+        return productChannelJpaRepository.findAll(pageable)
                 .map(entity -> {
                     User userCad = resolveUser(entity.getIdUsuarioCadastro());
                     User userMan = resolveUser(entity.getIdUsuarioManutencao());
                     return productChannelMapper.toDomain(entity, userCad, userMan);
-                })
-                .toList();
+                });
     }
 
     @Override
-    public List<ProductChannel> findByCodCanal(String codCanal) {
-        return productChannelJpaRepository.findByIdCodCanal(codCanal).stream()
+    public Page<ProductChannel> findByCodCanal(String codCanal, Pageable pageable) {
+        return productChannelJpaRepository.findByIdCodCanal(codCanal, pageable)
                 .map(entity -> {
                     User userCad = resolveUser(entity.getIdUsuarioCadastro());
                     User userMan = resolveUser(entity.getIdUsuarioManutencao());
                     return productChannelMapper.toDomain(entity, userCad, userMan);
-                })
-                .toList();
+                });
     }
 
     @Override
-    public List<ProductChannel> findByCodProduto(String codProduto) {
-        return productChannelJpaRepository.findByIdCodProduto(codProduto).stream()
+    public Page<ProductChannel> findByCodProduto(String codProduto, Pageable pageable) {
+        return productChannelJpaRepository.findByIdCodProduto(codProduto, pageable)
                 .map(entity -> {
                     User userCad = resolveUser(entity.getIdUsuarioCadastro());
                     User userMan = resolveUser(entity.getIdUsuarioManutencao());
                     return productChannelMapper.toDomain(entity, userCad, userMan);
-                })
-                .toList();
+                });
     }
 
     @Override

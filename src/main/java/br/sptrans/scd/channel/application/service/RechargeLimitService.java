@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.application.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,8 +85,8 @@ public class RechargeLimitService implements RechargeLimitUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RechargeLimit> findAllRechargeLimits() {
-        return repository.findAll();
+    public Page<RechargeLimit> findAllRechargeLimits(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     @Override

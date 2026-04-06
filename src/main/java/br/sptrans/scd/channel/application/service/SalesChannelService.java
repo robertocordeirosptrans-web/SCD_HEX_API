@@ -1,8 +1,9 @@
 package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,86 +33,85 @@ public class SalesChannelService implements SalesChannelUseCase {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_CODE_ALREADY_EXISTS);
         }
 
-        
 
 
         SalesChannel salesChannel = new SalesChannel(
-            cmd.codCanal(),
-            cmd.codDocumento(),
-            cmd.codCanalSuperior(),
-            cmd.desCanal(),
-            cmd.codTipoDocumento(),
-            LocalDateTime.now(),
-            cmd.desRazaoSocial(),
-            ChannelDomainStatus.INACTIVE,
-            cmd.desNomeFantasia(),
-            LocalDateTime.now(),
-            cmd.vlCaucao(),
-            cmd.dtInicioCaucao(),
-            cmd.dtFimCaucao(),
-            cmd.seqNivel(),
-            cmd.flgCriticaNumlote(),
-            cmd.flgLimiteDias(),
-            cmd.flgProcessamentoAutomatico(),
-            cmd.flgProcessamentoParcial(),
-            cmd.flgSaldoDevedor(),
-            cmd.numMinutoIniLibRecarga(),
-            cmd.numMinutoFimLibRecarga(),
-            cmd.flgEmiteReciboPedido(),
-            cmd.flgSupercanal(),
-            cmd.flgPagtoFuturo(),
-            cmd.codClassificacaoPessoa() != null
-                ? new ClassificationPerson(cmd.codClassificacaoPessoa(), null, null, null, null, null, null, null)
-                : null,
-            cmd.codAtividade() != null
-                ? new TypesActivity(cmd.codAtividade(), null, null, null, null)
-                : null,
-            cmd.usuario(),
-            null
-        );
+                cmd.codCanal(),
+                cmd.codDocumento(),
+                cmd.codCanalSuperior(),
+                cmd.desCanal(),
+                cmd.codTipoDocumento(),
+                LocalDateTime.now(),
+                cmd.desRazaoSocial(),
+                ChannelDomainStatus.INACTIVE,
+                cmd.desNomeFantasia(),
+                LocalDateTime.now(),
+                cmd.vlCaucao(),
+                cmd.dtInicioCaucao(),
+                cmd.dtFimCaucao(),
+                cmd.seqNivel(),
+                cmd.flgCriticaNumlote(),
+                cmd.flgLimiteDias(),
+                cmd.flgProcessamentoAutomatico(),
+                cmd.flgProcessamentoParcial(),
+                cmd.flgSaldoDevedor(),
+                cmd.numMinutoIniLibRecarga(),
+                cmd.numMinutoFimLibRecarga(),
+                cmd.flgEmiteReciboPedido(),
+                cmd.flgSupercanal(),
+                cmd.flgPagtoFuturo(),
+                cmd.codClassificacaoPessoa() != null
+                        ? new ClassificationPerson(cmd.codClassificacaoPessoa(), null, null, null, null, null, null,
+                                null)
+                        : null,
+                cmd.codAtividade() != null
+                        ? new TypesActivity(cmd.codAtividade(), null, null, null, null)
+                        : null,
+                cmd.usuario(),
+                null);
         return salesChannelRepository.save(salesChannel);
     }
 
     @Override
-        public SalesChannel updateSalesChannel(String codCanal, UpdateSalesChannelCommand cmd) {
+    public SalesChannel updateSalesChannel(String codCanal, UpdateSalesChannelCommand cmd) {
         SalesChannel existing = salesChannelRepository.findById(codCanal)
-            .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
         SalesChannel updated = new SalesChannel(
-            existing.getCodCanal(),
-            existing.getCodDocumento(),
-            cmd.codCanalSuperior(),
-            cmd.desCanal(),
-            existing.getCodTipoDocumento(),
-            LocalDateTime.now(),
-            cmd.desRazaoSocial(),
-            existing.getStCanais(),
-            cmd.desNomeFantasia(),
-            existing.getDtCadastro(),
-            cmd.vlCaucao(),
-            cmd.dtInicioCaucao(),
-            cmd.dtFimCaucao(),
-            cmd.seqNivel(),
-            cmd.flgCriticaNumlote(),
-            cmd.flgLimiteDias(),
-            cmd.flgProcessamentoAutomatico(),
-            cmd.flgProcessamentoParcial(),
-            cmd.flgSaldoDevedor(),
-            cmd.numMinutoIniLibRecarga(),
-            cmd.numMinutoFimLibRecarga(),
-            cmd.flgEmiteReciboPedido(),
-            cmd.flgSupercanal(),
-            cmd.flgPagtoFuturo(),
-            cmd.codClassificacaoPessoa() != null
-                ? new ClassificationPerson(cmd.codClassificacaoPessoa(), null, null, null, null, null, null, null)
-                : null,
-            cmd.codAtividade() != null
-                ? new TypesActivity(cmd.codAtividade(), null, null, null, null)
-                : null,
-            existing.getIdUsuarioCadastro(),
-            cmd.usuario()
-        );
+                existing.getCodCanal(),
+                existing.getCodDocumento(),
+                cmd.codCanalSuperior(),
+                cmd.desCanal(),
+                existing.getCodTipoDocumento(),
+                LocalDateTime.now(),
+                cmd.desRazaoSocial(),
+                existing.getStCanais(),
+                cmd.desNomeFantasia(),
+                existing.getDtCadastro(),
+                cmd.vlCaucao(),
+                cmd.dtInicioCaucao(),
+                cmd.dtFimCaucao(),
+                cmd.seqNivel(),
+                cmd.flgCriticaNumlote(),
+                cmd.flgLimiteDias(),
+                cmd.flgProcessamentoAutomatico(),
+                cmd.flgProcessamentoParcial(),
+                cmd.flgSaldoDevedor(),
+                cmd.numMinutoIniLibRecarga(),
+                cmd.numMinutoFimLibRecarga(),
+                cmd.flgEmiteReciboPedido(),
+                cmd.flgSupercanal(),
+                cmd.flgPagtoFuturo(),
+                cmd.codClassificacaoPessoa() != null
+                        ? new ClassificationPerson(cmd.codClassificacaoPessoa(), null, null, null, null, null, null,
+                                null)
+                        : null,
+                cmd.codAtividade() != null
+                        ? new TypesActivity(cmd.codAtividade(), null, null, null, null)
+                        : null,
+                existing.getIdUsuarioCadastro(),
+                cmd.usuario());
         return salesChannelRepository.save(updated);
-        }
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -122,8 +122,8 @@ public class SalesChannelService implements SalesChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SalesChannel> findAllSalesChannels(ChannelDomainStatus stCanais) {
-        return salesChannelRepository.findAll(stCanais != null ? stCanais.getCode() : null);
+    public Page<SalesChannel> findAllSalesChannels(ChannelDomainStatus stCanais, Pageable pageable) {
+        return salesChannelRepository.findAll(stCanais != null ? stCanais.getCode() : null, pageable);
     }
 
     @Override

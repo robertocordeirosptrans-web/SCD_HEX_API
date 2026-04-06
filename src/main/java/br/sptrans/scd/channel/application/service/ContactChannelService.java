@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.application.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,8 +99,8 @@ public class ContactChannelService implements ContactChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ContactChannel> findAllContactChannels(String codCanal) {
-        return contactChannelRepository.findAllByCanal(codCanal);
+    public Page<ContactChannel> findAllContactChannels(String codCanal, Pageable pageable) {
+        return contactChannelRepository.findAllByCanal(codCanal, pageable);
     }
 
     @Override

@@ -3,6 +3,9 @@ package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.SalesChannelMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.SalesChannelJpaRepository;
@@ -37,9 +40,9 @@ public class SalesChannelAdapterJpa implements SalesChannelPersistencePort {
     }
 
     @Override
-    public List<SalesChannel> findAll(String stCanais) {
-        List<SalesChannelEntityJpa> entities = repository.findAllByStCanais(stCanais);
-        return entities.stream().map(mapper::toDomain).toList();
+    public Page<SalesChannel> findAll(String stCanais, Pageable pageable) {
+        return repository.findAllByStCanais(stCanais, pageable)
+                .map(mapper::toDomain);
     }
 
     @Override

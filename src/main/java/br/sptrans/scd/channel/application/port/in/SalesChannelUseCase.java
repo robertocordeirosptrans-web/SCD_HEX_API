@@ -2,7 +2,9 @@ package br.sptrans.scd.channel.application.port.in;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.domain.SalesChannel;
@@ -15,7 +17,7 @@ public interface SalesChannelUseCase {
 
     SalesChannel findBySalesChannel(String codCanal);
 
-        List<SalesChannel> findAllSalesChannels(br.sptrans.scd.channel.domain.enums.ChannelDomainStatus stCanais);
+        Page<SalesChannel> findAllSalesChannels(br.sptrans.scd.channel.domain.enums.ChannelDomainStatus stCanais, Pageable pageable);
 
     void activateSalesChannel(String codCanal, User usuario);
 

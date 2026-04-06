@@ -2,6 +2,8 @@ package br.sptrans.scd.channel.adapter.port.in.rest;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -92,10 +94,9 @@ public class MarketingDistribuitionChannelController {
     public ResponseEntity<PageResponse<MarketingDistribuitionChannel>> findMarketingDistribuitionChannels(
             @RequestParam(required = false) String codCanalComercializacao,
             @RequestParam(required = false) String codCanalDistribuicao,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<MarketingDistribuitionChannel> all = marketingUseCase.findAllMarketingDistribuitionChannels();
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+            Pageable pageable) {
+        Page<MarketingDistribuitionChannel> page = marketingUseCase.findAllMarketingDistribuitionChannels(pageable);
+        return ResponseEntity.ok(PageResponse.fromPage(page));
 
     }
 

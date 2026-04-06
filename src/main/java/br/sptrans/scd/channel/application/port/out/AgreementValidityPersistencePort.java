@@ -1,7 +1,9 @@
 package br.sptrans.scd.channel.application.port.out;
 
-import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.channel.domain.AgreementValidityKey;
@@ -11,11 +13,11 @@ public interface AgreementValidityPersistencePort {
 
     Optional<AgreementValidity> findByIdOtimized(String codCanal, String codProduto);
 
-    List<AgreementValidity> findAll();
+    Page<AgreementValidity> findAll(Pageable pageable);
 
-    List<AgreementValidity> findByCodCanal(String codCanal);
+    Page<AgreementValidity> findByCodCanal(String codCanal, Pageable pageable);
 
-    List<AgreementValidity> findByCodProduto(String codProduto);
+    Page<AgreementValidity> findByCodProduto(String codProduto, Pageable pageable);
 
     AgreementValidity save(AgreementValidity entity);
 

@@ -1,7 +1,7 @@
 package br.sptrans.scd.channel.application.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,8 +82,8 @@ public class MarketingDistribuitionChannelService implements MarketingDistribuit
 
     @Override
     @Transactional(readOnly = true)
-    public List<MarketingDistribuitionChannel> findAllMarketingDistribuitionChannels() {
-        return repository.findAll();
+    public Page<MarketingDistribuitionChannel> findAllMarketingDistribuitionChannels(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
 

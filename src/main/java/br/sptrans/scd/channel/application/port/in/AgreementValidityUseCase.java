@@ -1,7 +1,9 @@
 package br.sptrans.scd.channel.application.port.in;
 
 import java.time.LocalDateTime;
-import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.domain.AgreementValidity;
@@ -14,11 +16,11 @@ public interface AgreementValidityUseCase {
 
     AgreementValidity findAgreementValidity(String codCanal, String codProduto);
 
-    List<AgreementValidity> findAllAgreementValidities();
+    Page<AgreementValidity> findAllAgreementValidities(Pageable pageable);
 
-    List<AgreementValidity> findByCodCanal(String codCanal);
+    Page<AgreementValidity> findByCodCanal(String codCanal, Pageable pageable);
 
-    List<AgreementValidity> findByCodProduto(String codProduto);
+    Page<AgreementValidity> findByCodProduto(String codProduto, Pageable pageable);
 
     void deleteAgreementValidity(String codCanal, String codProduto);
 

@@ -1,7 +1,9 @@
 package br.sptrans.scd.channel.application.port.out;
 
-import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannelKey;
@@ -9,7 +11,7 @@ import br.sptrans.scd.channel.domain.MarketingDistribuitionChannelKey;
 public interface MarketingDistribuitionChannelPersistencePort {
     Optional<MarketingDistribuitionChannel> findById(MarketingDistribuitionChannelKey id);
 
-    List<MarketingDistribuitionChannel> findAll();
+    Page<MarketingDistribuitionChannel> findAll(Pageable pageable);
 
     /**
      * Busca CanaisComerDistrib ativo para um canal de distribuição.

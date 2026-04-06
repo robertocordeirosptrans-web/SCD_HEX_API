@@ -1,7 +1,9 @@
 package br.sptrans.scd.channel.application.port.out;
 
-import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.channel.domain.TypesActivity;
 
@@ -10,7 +12,7 @@ public interface TypesActivityPersistencePort {
 
     boolean existsById(String codAtividade);
 
-    List<TypesActivity> findAll(String codStatus);
+    Page<TypesActivity> findAll(String codStatus, Pageable pageable);
 
     TypesActivity save(TypesActivity typesActivity);
 

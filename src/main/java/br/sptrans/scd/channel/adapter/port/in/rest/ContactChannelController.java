@@ -1,7 +1,7 @@
 package br.sptrans.scd.channel.adapter.port.in.rest;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -111,10 +111,9 @@ public class ContactChannelController {
     @Operation(summary = "Lista contatos do canal, com filtro opcional por canal")
     public ResponseEntity<PageResponse<ContactChannel>> findAllContactChannels(
             @RequestParam(required = false) String codCanal,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<ContactChannel> all = contactChannelUseCase.findAllContactChannels(codCanal);
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+            Pageable pageable) {
+        Page<ContactChannel> page = contactChannelUseCase.findAllContactChannels(codCanal, pageable);
+        return ResponseEntity.ok(PageResponse.fromPage(page));
     }
 
     @DeleteMapping("/{codContato}")

@@ -1,19 +1,19 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.AddressChannelMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.SalesChannelMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.AddressChannelJpaRepository;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.SalesChannelJpaRepository;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.AddressChannelEntityJpa;
-import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 import br.sptrans.scd.channel.application.port.out.AddressChannelPersistencePort;
-
 import br.sptrans.scd.channel.domain.AddressChannel;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
@@ -61,11 +61,11 @@ public class AddressChannelAdapterJpa implements AddressChannelPersistencePort {
     }
 
     @Override
-    public List<AddressChannel> findAllByCanal(String codCanal) {
+    public Page<AddressChannel> findAllByCanal(String codCanal, Pageable pageable) {
         if (codCanal != null && !codCanal.isBlank()) {
-            return repository.findAllByCodCanal(codCanal).stream().map(this::toDomain).toList();
+            return repository.findAllByCodCanal(codCanal, pageable).map(this::toDomain);
         }
-        return repository.findAllOrderByCodEndereco().stream().map(this::toDomain).toList();
+        return repository.findAllOrderByCodEndereco(pageable).map(this::toDomain);
     }
 
     @Override

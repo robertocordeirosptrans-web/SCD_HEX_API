@@ -1,9 +1,10 @@
 package br.sptrans.scd.channel.application.port.in;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import br.sptrans.scd.channel.domain.ContactChannel;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.domain.ContactChannel;
 
 public interface ContactChannelUseCase {
 
@@ -13,7 +14,7 @@ public interface ContactChannelUseCase {
 
     ContactChannel findByContactChannel(String codContato);
 
-    List<ContactChannel> findAllContactChannels(String codCanal);
+    Page<ContactChannel> findAllContactChannels(String codCanal, Pageable pageable);
 
     void deleteContactChannel(String codContato);
 

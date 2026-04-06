@@ -1,9 +1,10 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,12 +38,10 @@ public class TypesActivityAdapterJpa implements TypesActivityPersistencePort {
     }
 
     @Override
-    public List<TypesActivity> findAll(String codStatus) {
+    public Page<TypesActivity> findAll(String codStatus, Pageable pageable) {
         String normalizedStatus = (codStatus != null && !codStatus.isBlank()) ? codStatus : null;
-        return repository.findAllByCodStatus(normalizedStatus)
-            .stream()
-            .map(mapper::toDomain)
-            .toList();
+        return repository.findAllByCodStatus(normalizedStatus, pageable)
+            .map(mapper::toDomain);
     }
 
     @Override

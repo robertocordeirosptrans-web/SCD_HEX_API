@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.adapter.port.in.rest;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -94,17 +96,16 @@ public class AgreementValidityController {
     public ResponseEntity<PageResponse<AgreementValidity>> findAgreementValidities(
             @RequestParam(required = false) String codCanal,
             @RequestParam(required = false) String codProduto,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<AgreementValidity> all;
+            Pageable pageable) {
+        Page<AgreementValidity> page;
         if (codCanal != null) {
-            all = agreementValidityUseCase.findByCodCanal(codCanal);
+            page = agreementValidityUseCase.findByCodCanal(codCanal, pageable);
         } else if (codProduto != null) {
-            all = agreementValidityUseCase.findByCodProduto(codProduto);
+            page = agreementValidityUseCase.findByCodProduto(codProduto, pageable);
         } else {
-            all = agreementValidityUseCase.findAllAgreementValidities();
+            page = agreementValidityUseCase.findAllAgreementValidities(pageable);
         }
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+        return ResponseEntity.ok(PageResponse.fromPage(page));
     }
 
     @DeleteMapping("/{codCanal}/{codProduto}")

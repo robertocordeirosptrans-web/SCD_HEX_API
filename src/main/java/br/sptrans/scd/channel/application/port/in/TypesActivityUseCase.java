@@ -1,6 +1,7 @@
 package br.sptrans.scd.channel.application.port.in;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.channel.domain.TypesActivity;
 import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
@@ -13,7 +14,7 @@ public interface TypesActivityUseCase {
 
         TypesActivity findByTypesActivity(String codAtividade);
 
-        List<TypesActivity> findAllTypesActivities(ChannelDomainStatus codStatus);
+        Page<TypesActivity> findAllTypesActivities(ChannelDomainStatus codStatus, Pageable pageable);
 
         void activateTypesActivity(String codAtividade);
 

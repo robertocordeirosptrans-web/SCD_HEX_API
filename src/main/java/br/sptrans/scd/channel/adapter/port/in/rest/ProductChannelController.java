@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.adapter.port.in.rest;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -113,19 +115,10 @@ public class ProductChannelController {
     public ResponseEntity<PageResponse<ProductChDTO>> findProductChannel(
             @PathVariable String codCanal,
             @PathVariable String codProduto,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        List<ProductChannel> all;
-        if (codCanal != null) {
-            all = productChannelUseCase.findByCodCanal(codCanal);
-        } else if (codProduto != null) {
-            all = productChannelUseCase.findByCodProduto(codProduto);
-        } else {
-            all = productChannelUseCase.findAllProductChannels();
-        }
+            Pageable pageable) {
+        Page<ProductChannel> pageResult = productChannelUseCase.findAllProductChannels(pageable);
 
-        List<ProductChDTO> dtos = all.stream()
-            .map(channel -> new ProductChDTO(
+        Page<ProductChDTO> dtoPage = pageResult.map(channel -> new ProductChDTO(
             channel.getQtdLimiteComercializacao(),
             channel.getQtdMinimaEstoque(),
             channel.getQtdMaximaEstoque(),
@@ -143,10 +136,9 @@ public class ProductChannelController {
             channel.getId() != null ? channel.getId().getCodCanal() : null,
             UserSimpleMapper.toDto(channel.getIdUsuarioCadastro()),
             UserSimpleMapper.toDto(channel.getIdUsuarioManutencao())
-        ))
-            .collect(Collectors.toList());
+        ));
 
-        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @GetMapping

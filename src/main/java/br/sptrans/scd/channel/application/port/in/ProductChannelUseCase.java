@@ -2,6 +2,9 @@ package br.sptrans.scd.channel.application.port.in;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
@@ -15,11 +18,11 @@ public interface ProductChannelUseCase {
 
         ProductChannel findProductChannel(String codCanal, String codProduto);
 
-        List<ProductChannel> findAllProductChannels();
+        Page<ProductChannel> findAllProductChannels(Pageable pageable);
 
-        List<ProductChannel> findByCodCanal(String codCanal);
+        Page<ProductChannel> findByCodCanal(String codCanal, Pageable pageable);
 
-        List<ProductChannel> findByCodProduto(String codProduto);
+        Page<ProductChannel> findByCodProduto(String codProduto, Pageable pageable);
 
         List<ProductChannelProjection> findProjections(String codCanal, String codProduto);
 

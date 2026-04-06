@@ -1,8 +1,9 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.RechargeLimitMapper;
@@ -32,10 +33,9 @@ public class RechargeLimitAdapterJpa implements RechargeLimitPersistencePort {
 
 
     @Override
-    public List<RechargeLimit> findAll() {
-        return rechargeLimitJpaRepository.findAllRechargeLimits().stream()
-                .map(rechargeLimitMapper::toDomain)
-                .toList();
+    public Page<RechargeLimit> findAll(Pageable pageable) {
+        return rechargeLimitJpaRepository.findAllRechargeLimits(pageable)
+                .map(rechargeLimitMapper::toDomain);
     }
 
 

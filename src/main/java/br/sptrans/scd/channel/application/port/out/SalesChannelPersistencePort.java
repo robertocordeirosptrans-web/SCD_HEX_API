@@ -3,6 +3,9 @@ package br.sptrans.scd.channel.application.port.out;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.domain.SalesChannel;
 
@@ -12,7 +15,7 @@ public interface SalesChannelPersistencePort {
 
     boolean existsById(String codCanal);
 
-    List<SalesChannel> findAll(String stCanais);
+    Page<SalesChannel> findAll(String stCanais, Pageable pageable);
 
     SalesChannel save(SalesChannel salesChannel);
 

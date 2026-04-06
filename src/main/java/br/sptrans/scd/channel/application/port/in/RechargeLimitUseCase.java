@@ -2,7 +2,9 @@ package br.sptrans.scd.channel.application.port.in;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.domain.RechargeLimit;
@@ -16,7 +18,7 @@ public interface RechargeLimitUseCase {
 
         RechargeLimit findRechargeLimit(RechargeLimitKey key);
 
-        List<RechargeLimit> findAllRechargeLimits();
+        Page<RechargeLimit> findAllRechargeLimits(Pageable pageable);
 
         void deleteRechargeLimit(RechargeLimitKey key);
 

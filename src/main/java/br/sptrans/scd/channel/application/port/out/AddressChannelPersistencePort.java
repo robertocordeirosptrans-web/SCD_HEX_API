@@ -1,7 +1,9 @@
 package br.sptrans.scd.channel.application.port.out;
 
-import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.channel.domain.AddressChannel;
 
@@ -10,7 +12,7 @@ public interface AddressChannelPersistencePort {
 
     boolean existsById(String codEndereco);
 
-    List<AddressChannel> findAllByCanal(String codCanal);
+    Page<AddressChannel> findAllByCanal(String codCanal, Pageable pageable);
 
     AddressChannel save(AddressChannel addressChannel);
 

@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.adapter.port.out.jpa.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -22,6 +24,9 @@ public interface SalesChannelJpaRepository extends JpaRepository<SalesChannelEnt
 
     @Query("SELECT c FROM SalesChannelEntityJpa c WHERE (:stCanais IS NULL OR c.stCanais = :stCanais) ORDER BY c.codCanal")
     List<SalesChannelEntityJpa> findAllByStCanais(@Param("stCanais") String stCanais);
+
+    @Query("SELECT c FROM SalesChannelEntityJpa c WHERE (:stCanais IS NULL OR c.stCanais = :stCanais)")
+    Page<SalesChannelEntityJpa> findAllByStCanais(@Param("stCanais") String stCanais, Pageable pageable);
 
     @Modifying
     @Transactional

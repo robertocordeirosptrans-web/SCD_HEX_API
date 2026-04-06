@@ -1,8 +1,8 @@
 package br.sptrans.scd.channel.adapter.port.in.rest;
 
 // ...
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -128,20 +128,18 @@ public class SalesChannelController {
     @Operation(summary = "Lista todos os canais de venda, com filtro opcional de status")
     public ResponseEntity<PageResponse<CanalResponseDTO>> findAllSalesChannels(
             @RequestParam(required = false) String stCanais,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            Pageable pageable) {
         ChannelDomainStatus statusEnum = null;
         if (stCanais != null) {
             try {
                 statusEnum = ChannelDomainStatus.fromCode(stCanais);
             } catch (Exception e) {
-                // Se valor inválido, retorna lista vazia ou erro, conforme política do sistema
-                return ResponseEntity.ok(PageResponse.fromList(List.of(), page, size));
+                return ResponseEntity.ok(PageResponse.fromPage(Page.empty(pageable)));
             }
         }
-        List<SalesChannel> all = salesChannelUseCase.findAllSalesChannels(statusEnum);
-        List<CanalResponseDTO> dtos = all.stream().map(salesChannelMapper::toResponseDTO).toList();
-        return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
+        Page<SalesChannel> page = salesChannelUseCase.findAllSalesChannels(statusEnum, pageable);
+        Page<CanalResponseDTO> dtoPage = page.map(salesChannelMapper::toResponseDTO);
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
 

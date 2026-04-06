@@ -1,8 +1,9 @@
 package br.sptrans.scd.channel.adapter.port.out.jpa.adapter;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.AgreementValidityMapper;
@@ -37,26 +38,21 @@ public class AgreementValidityAdapterJpa implements AgreementValidityPersistence
     }
 
     @Override
-    public List<AgreementValidity> findAll() {
-        return jpaRepository.findAllAgreementValidity().stream()
-                .map(agreementValidityMapper::toDomain)
-                .toList();
+    public Page<AgreementValidity> findAll(Pageable pageable) {
+        return jpaRepository.findAllAgreementValidity(pageable)
+                .map(agreementValidityMapper::toDomain);
     }
 
     @Override
-    public List<AgreementValidity> findByCodCanal(String codCanal) {
-        return jpaRepository.findAllAgreementValidity().stream()
-                .filter(e -> e.getId().getCodCanal().equals(codCanal))
-                .map(agreementValidityMapper::toDomain)
-                .toList();
+    public Page<AgreementValidity> findByCodCanal(String codCanal, Pageable pageable) {
+        return jpaRepository.findByCodCanal(codCanal, pageable)
+                .map(agreementValidityMapper::toDomain);
     }
 
     @Override
-    public List<AgreementValidity> findByCodProduto(String codProduto) {
-        return jpaRepository.findAllAgreementValidity().stream()
-                .filter(e -> e.getId().getCodProduto().equals(codProduto))
-                .map(agreementValidityMapper::toDomain)
-                .toList();
+    public Page<AgreementValidity> findByCodProduto(String codProduto, Pageable pageable) {
+        return jpaRepository.findByCodProduto(codProduto, pageable)
+                .map(agreementValidityMapper::toDomain);
     }
 
     @Override

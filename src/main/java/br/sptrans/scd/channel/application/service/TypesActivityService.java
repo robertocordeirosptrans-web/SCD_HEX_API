@@ -1,16 +1,15 @@
 package br.sptrans.scd.channel.application.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase;
 import br.sptrans.scd.channel.application.port.out.TypesActivityPersistencePort;
-
 import br.sptrans.scd.channel.domain.TypesActivity;
-import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
+import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import lombok.RequiredArgsConstructor;
 
@@ -60,8 +59,8 @@ public class TypesActivityService implements TypesActivityUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TypesActivity> findAllTypesActivities(ChannelDomainStatus codStatus) {
-        return typesActivityRepository.findAll(codStatus != null ? codStatus.getCode() : null);
+    public Page<TypesActivity> findAllTypesActivities(ChannelDomainStatus codStatus, Pageable pageable) {
+        return typesActivityRepository.findAll(codStatus != null ? codStatus.getCode() : null, pageable);
     }
 
     @Override

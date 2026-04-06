@@ -1,9 +1,10 @@
 package br.sptrans.scd.channel.application.port.in;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 
 public interface MarketingDistribuitionChannelUseCase {
 
@@ -13,7 +14,7 @@ public interface MarketingDistribuitionChannelUseCase {
 
     MarketingDistribuitionChannel findMarketingDistribuitionChannel(String codCanalComercializacao, String codCanalDistribuicao);
 
-    List<MarketingDistribuitionChannel> findAllMarketingDistribuitionChannels();
+    Page<MarketingDistribuitionChannel> findAllMarketingDistribuitionChannels(Pageable pageable);
 
 
 

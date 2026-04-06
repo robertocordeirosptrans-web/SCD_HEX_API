@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.adapter.port.out.jpa.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +20,9 @@ public interface RechargeLimitJpaRepository extends JpaRepository<RechargeLimitE
 
     @Query("SELECT r FROM RechargeLimitEntityJpa r")
     List<RechargeLimitEntityJpa> findAllRechargeLimits();
+
+    @Query("SELECT r FROM RechargeLimitEntityJpa r")
+    Page<RechargeLimitEntityJpa> findAllRechargeLimits(Pageable pageable);
 
     @Query("SELECT r FROM RechargeLimitEntityJpa r WHERE r.id.codCanal = :codCanal")
     List<RechargeLimitEntityJpa> findByCodCanal(@Param("codCanal") String codCanal);

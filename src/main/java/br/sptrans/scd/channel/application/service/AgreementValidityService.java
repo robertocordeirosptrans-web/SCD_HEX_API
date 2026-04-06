@@ -1,8 +1,9 @@
 package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,20 +73,20 @@ public class AgreementValidityService implements AgreementValidityUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AgreementValidity> findAllAgreementValidities() {
-        return repository.findAll();
+    public Page<AgreementValidity> findAllAgreementValidities(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AgreementValidity> findByCodCanal(String codCanal) {
-        return repository.findByCodCanal(codCanal);
+    public Page<AgreementValidity> findByCodCanal(String codCanal, Pageable pageable) {
+        return repository.findByCodCanal(codCanal, pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AgreementValidity> findByCodProduto(String codProduto) {
-        return repository.findByCodProduto(codProduto);
+    public Page<AgreementValidity> findByCodProduto(String codProduto, Pageable pageable) {
+        return repository.findByCodProduto(codProduto, pageable);
     }
 
     @Override

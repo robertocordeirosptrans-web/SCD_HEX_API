@@ -3,6 +3,8 @@ package br.sptrans.scd.channel.application.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -110,20 +112,20 @@ public class ProductChannelService implements ProductChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductChannel> findAllProductChannels() {
-        return repository.findAll();
+    public Page<ProductChannel> findAllProductChannels(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductChannel> findByCodCanal(String codCanal) {
-        return repository.findByCodCanal(codCanal);
+    public Page<ProductChannel> findByCodCanal(String codCanal, Pageable pageable) {
+        return repository.findByCodCanal(codCanal, pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductChannel> findByCodProduto(String codProduto) {
-        return repository.findByCodProduto(codProduto);
+    public Page<ProductChannel> findByCodProduto(String codProduto, Pageable pageable) {
+        return repository.findByCodProduto(codProduto, pageable);
     }
 
     @Override

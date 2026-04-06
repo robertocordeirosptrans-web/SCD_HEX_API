@@ -1,9 +1,10 @@
 package br.sptrans.scd.channel.application.port.in;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import br.sptrans.scd.channel.domain.AddressChannel;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.domain.AddressChannel;
 
 public interface AddressChannelUseCase {
 
@@ -13,7 +14,7 @@ public interface AddressChannelUseCase {
 
     AddressChannel findByAddressChannel(String codEndereco);
 
-    List<AddressChannel> findAllAddressChannels(String codCanal);
+    Page<AddressChannel> findAllAddressChannels(String codCanal, Pageable pageable);
 
     void deleteAddressChannel(String codEndereco);
 

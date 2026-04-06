@@ -1,7 +1,7 @@
 package br.sptrans.scd.channel.adapter.port.in.rest;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -85,19 +85,17 @@ public class TypesActivityController {
         })
     public ResponseEntity<PageResponse<TypesActivity>> findAllTypesActivities(
             @RequestParam(required = false) String codStatus,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            Pageable pageable) {
         ChannelDomainStatus statusEnum = null;
         if (codStatus != null) {
             try {
                 statusEnum = ChannelDomainStatus.fromCode(codStatus);
             } catch (Exception e) {
-                // Se valor inválido, retorna lista vazia ou erro, conforme política do sistema
-                return ResponseEntity.ok(PageResponse.fromList(List.of(), page, size));
+                return ResponseEntity.ok(PageResponse.fromPage(Page.empty(pageable)));
             }
         }
-        List<TypesActivity> all = typesActivityUseCase.findAllTypesActivities(statusEnum);
-        return ResponseEntity.ok(PageResponse.fromList(all, page, size));
+        Page<TypesActivity> page = typesActivityUseCase.findAllTypesActivities(statusEnum, pageable);
+        return ResponseEntity.ok(PageResponse.fromPage(page));
     }
 
     @PatchMapping("/{codAtividade}/activate")

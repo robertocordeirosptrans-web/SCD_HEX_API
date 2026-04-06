@@ -2,6 +2,8 @@ package br.sptrans.scd.channel.adapter.port.out.jpa.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -14,6 +16,9 @@ public interface TypesActivityJpaRepository extends JpaRepository<TypesActivityE
 
 	@Query("SELECT t FROM TypesActivityEntityJpa t WHERE (:codStatus IS NULL OR t.codStatus = :codStatus) ORDER BY t.codAtividade")
 	List<TypesActivityEntityJpa> findAllByCodStatus(@Param("codStatus") String codStatus);
+
+	@Query("SELECT t FROM TypesActivityEntityJpa t WHERE (:codStatus IS NULL OR t.codStatus = :codStatus)")
+	Page<TypesActivityEntityJpa> findAllByCodStatus(@Param("codStatus") String codStatus, Pageable pageable);
 
 	@Modifying
 	@Query("UPDATE TypesActivityEntityJpa t SET t.desAtividade = :desAtividade, t.dtManutencao = CURRENT_TIMESTAMP  WHERE t.codAtividade = :codAtividade")
