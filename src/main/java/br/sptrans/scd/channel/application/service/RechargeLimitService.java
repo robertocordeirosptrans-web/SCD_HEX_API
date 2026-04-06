@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.RechargeLimitUseCase;
 import br.sptrans.scd.channel.application.port.out.RechargeLimitPersistencePort;
+import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
@@ -23,10 +24,13 @@ import lombok.RequiredArgsConstructor;
 public class RechargeLimitService implements RechargeLimitUseCase {
 
     private final RechargeLimitPersistencePort repository;
+    private final SalesChannelPersistencePort salesChannelRepository;
     private final UserResolverHelper userResolverHelper;
 
     @Override
     public RechargeLimit createRechargeLimit(CreateRechargeLimitCommand cmd) {
+        salesChannelRepository.findById(cmd.codCanal())
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
         RechargeLimitKey key = new RechargeLimitKey(cmd.codCanal(), cmd.codProduto());
         if (repository.findById(key).isPresent()) {
             throw new ChannelException(ChannelErrorType.RECHARGE_LIMIT_ALREADY_EXISTS);

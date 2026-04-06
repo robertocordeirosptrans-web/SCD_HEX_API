@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase;
 import br.sptrans.scd.channel.application.port.out.AgreementValidityPersistencePort;
-
+import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.channel.domain.AgreementValidityKey;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
@@ -21,9 +21,12 @@ import lombok.RequiredArgsConstructor;
 public class AgreementValidityService implements AgreementValidityUseCase {
 
     private final AgreementValidityPersistencePort repository;
+    private final SalesChannelPersistencePort salesChannelRepository;
 
     @Override
     public AgreementValidity createAgreementValidity(CreateAgreementValidityCommand cmd) {
+        salesChannelRepository.findById(cmd.codCanal())
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
         AgreementValidityKey key = new AgreementValidityKey(cmd.codCanal(), cmd.codProduto());
         if (repository.existsById(key)) {
             throw new ChannelException(ChannelErrorType.AGREEMENT_VALIDITY_ALREADY_EXISTS);

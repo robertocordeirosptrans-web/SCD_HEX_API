@@ -8,13 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.ProductChannelPersistencePort;
-
+import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
-
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
-
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import lombok.RequiredArgsConstructor;
 
@@ -24,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductChannelService implements ProductChannelUseCase {
 
     private final ProductChannelPersistencePort repository;
+    private final SalesChannelPersistencePort salesChannelRepository;
 
 
 
@@ -46,6 +45,8 @@ public class ProductChannelService implements ProductChannelUseCase {
 
     @Override
     public ProductChannel createProductChannel(CreateProductChannelCommand cmd) {
+        salesChannelRepository.findById(cmd.codCanal())
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
         ProductChannelKey key = new ProductChannelKey(cmd.codCanal(), cmd.codProduto());
         if (repository.existsById(key)) {
             throw new ChannelException(ChannelErrorType.PRODUCT_CHANNEL_ALREADY_EXISTS);

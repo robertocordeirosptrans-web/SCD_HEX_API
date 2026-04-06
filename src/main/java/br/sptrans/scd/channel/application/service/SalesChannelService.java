@@ -10,13 +10,12 @@ import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
-
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.TypesActivity;
-import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
+import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
-import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -25,13 +24,17 @@ import lombok.RequiredArgsConstructor;
 public class SalesChannelService implements SalesChannelUseCase {
 
     private final SalesChannelPersistencePort salesChannelRepository;
-    private final UserResolverHelperImpl userResolverHelper;
+    private final UserResolverHelper userResolverHelper;
 
     @Override
     public SalesChannel createSalesChannel(CreateSalesChannelCommand cmd) {
         if (salesChannelRepository.existsById(cmd.codCanal())) {
             throw new ChannelException(ChannelErrorType.SALES_CHANNEL_CODE_ALREADY_EXISTS);
         }
+
+        
+
+
         SalesChannel salesChannel = new SalesChannel(
             cmd.codCanal(),
             cmd.codDocumento(),

@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelPersistencePort;
-
+import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannelKey;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
@@ -21,10 +21,15 @@ import lombok.RequiredArgsConstructor;
 public class MarketingDistribuitionChannelService implements MarketingDistribuitionChannelUseCase {
 
     private final MarketingDistribuitionChannelPersistencePort repository;
+    private final SalesChannelPersistencePort salesChannelRepository;
 
     @Override
     public MarketingDistribuitionChannel createMarketingDistribuitionChannel(
             CreateMarketingDistribuitionChannelCommand cmd) {
+        salesChannelRepository.findById(cmd.codCanalComercializacao())
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
+        salesChannelRepository.findById(cmd.codCanalDistribuicao())
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
         MarketingDistribuitionChannelKey key =
                 new MarketingDistribuitionChannelKey(cmd.codCanalComercializacao(), cmd.codCanalDistribuicao());
         if (repository.existsById(key)) {

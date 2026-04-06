@@ -16,10 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.CreateProductChannelRequest;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChDTO;
 import br.sptrans.scd.channel.adapter.port.in.rest.dto.ProductChResponseDTO;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.UpdateProductChannelRequest;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.ProductChannelMapper;
-import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.CreateProductChannelCommand;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase.UpdateProductChannelCommand;
@@ -168,36 +170,5 @@ public class ProductChannelController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Request DTOs ──────────────────────────────────────────────────────────
-    public record CreateProductChannelRequest(
-            String codCanal,
-            String codProduto,
-            Integer qtdLimiteComercializacao,
-            Integer qtdMinimaEstoque,
-            Integer qtdMaximaEstoque,
-            Integer qtdMinimaRessuprimento,
-            Integer qtdMaximaRessuprimento,
-            Integer codOrgaoEmissor,
-            Integer vlFace,
-            String codStatus,
-            Integer codConvenio,
-            Integer codTipoOperHM,
-            String flgCarac) {
 
-    }
-
-    public record UpdateProductChannelRequest(
-            Integer qtdLimiteComercializacao,
-            Integer qtdMinimaEstoque,
-            Integer qtdMaximaEstoque,
-            Integer qtdMinimaRessuprimento,
-            Integer qtdMaximaRessuprimento,
-            Integer codOrgaoEmissor,
-            Integer vlFace,
-            String codStatus,
-            Integer codConvenio,
-            Integer codTipoOperHM,
-            String flgCarac) {
-
-    }
 }

@@ -9,12 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.ContactChannelPersistencePort;
-
+import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.domain.ContactChannel;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
-import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -23,7 +23,8 @@ import lombok.RequiredArgsConstructor;
 public class ContactChannelService implements ContactChannelUseCase {
 
     private final ContactChannelPersistencePort contactChannelRepository;
-    private final UserResolverHelperImpl userResolverHelper;
+    private final SalesChannelPersistencePort salesChannelRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @Override
     public ContactChannel createContactChannel(CreateContactChannelCommand cmd) {
@@ -32,62 +33,58 @@ public class ContactChannelService implements ContactChannelUseCase {
         }
 
         User usuario = cmd.usuario();
-        SalesChannel canal = cmd.codCanal() != null
-            ? new SalesChannel(cmd.codCanal(), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
-            : null;
+        SalesChannel channel = salesChannelRepository.findById(cmd.codCanal())
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
 
         ContactChannel contactChannel = ContactChannel.criar(
-            cmd.codContato(),
-            cmd.codFornecedor(),
-            cmd.codEmpregador(),
-            cmd.desContato(),
-            cmd.desEmailContato(),
-            cmd.numDDD(),
-            cmd.numFone(),
-            cmd.numFoneRamal(),
-            cmd.numFax(),
-            cmd.numFaxRamal(),
-            cmd.stEntidadeContato(),
-            cmd.desComentarios(),
-            cmd.codTipoDocumento(),
-            cmd.codDocumento(),
-            LocalDateTime.now(),
-            LocalDateTime.now(),
-            null,
-            usuario,
-            canal
-        );
+                cmd.codContato(),
+                cmd.codFornecedor(),
+                cmd.codEmpregador(),
+                cmd.desContato(),
+                cmd.desEmailContato(),
+                cmd.numDDD(),
+                cmd.numFone(),
+                cmd.numFoneRamal(),
+                cmd.numFax(),
+                cmd.numFaxRamal(),
+                cmd.stEntidadeContato(),
+                cmd.desComentarios(),
+                cmd.codTipoDocumento(),
+                cmd.codDocumento(),
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                null,
+                usuario,
+                channel);
         return contactChannelRepository.save(contactChannel);
     }
 
     @Override
     public ContactChannel updateContactChannel(String codContato, UpdateContactChannelCommand cmd) {
         ContactChannel existing = contactChannelRepository.findById(codContato)
-            .orElseThrow(() -> new ChannelException(ChannelErrorType.CONTACT_CHANNEL_NOT_FOUND));
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.CONTACT_CHANNEL_NOT_FOUND));
 
         User usuario = userResolverHelper.resolve(cmd.idUsuario());
-        SalesChannel canal = cmd.codCanal() != null
-            ? new SalesChannel(cmd.codCanal(), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
-            : null;
-
+        SalesChannel channel = salesChannelRepository.findById(cmd.codCanal())
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
+                
         existing.atualizar(
-            cmd.codFornecedor(),
-            cmd.codEmpregador(),
-            cmd.desContato(),
-            cmd.desEmailContato(),
-            cmd.numDDD(),
-            cmd.numFone(),
-            cmd.numFoneRamal(),
-            cmd.numFax(),
-            cmd.numFaxRamal(),
-            cmd.stEntidadeContato(),
-            cmd.desComentarios(),
-            cmd.codTipoDocumento(),
-            cmd.codDocumento(),
-            LocalDateTime.now(),
-            usuario,
-            canal
-        );
+                cmd.codFornecedor(),
+                cmd.codEmpregador(),
+                cmd.desContato(),
+                cmd.desEmailContato(),
+                cmd.numDDD(),
+                cmd.numFone(),
+                cmd.numFoneRamal(),
+                cmd.numFax(),
+                cmd.numFaxRamal(),
+                cmd.stEntidadeContato(),
+                cmd.desComentarios(),
+                cmd.codTipoDocumento(),
+                cmd.codDocumento(),
+                LocalDateTime.now(),
+                usuario,
+                channel);
         return contactChannelRepository.save(existing);
     }
 

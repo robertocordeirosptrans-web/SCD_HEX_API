@@ -9,11 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.AddressChannelPersistencePort;
+import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.domain.AddressChannel;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
-import br.sptrans.scd.shared.helper.UserResolverHelperImpl;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,13 +23,17 @@ import lombok.RequiredArgsConstructor;
 public class AddressChannelService implements AddressChannelUseCase {
 
     private final AddressChannelPersistencePort addressChannelRepository;
-    private final UserResolverHelperImpl userResolverHelper;
+    private final SalesChannelPersistencePort salesChannelRepository;
+    private final UserResolverHelper userResolverHelper;
 
     @Override
     public AddressChannel createAddressChannel(CreateAddressChannelCommand cmd) {
         if (addressChannelRepository.existsById(cmd.codEndereco())) {
             throw new ChannelException(ChannelErrorType.ADDRESS_CHANNEL_CODE_ALREADY_EXISTS);
         }
+
+        SalesChannel channel = salesChannelRepository.findById(cmd.codCanal())
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
 
         User usuario = cmd.usuario();
 
@@ -54,10 +59,7 @@ public class AddressChannelService implements AddressChannelUseCase {
                 cmd.desNumero(),
                 null,
                 usuario,
-                cmd.codCanal() != null
-                        ? new SalesChannel(cmd.codCanal(), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
-                        : null
-        );
+                channel);
 
         return addressChannelRepository.save(addressChannel);
     }
@@ -66,6 +68,9 @@ public class AddressChannelService implements AddressChannelUseCase {
     public AddressChannel updateAddressChannel(String codEndereco, UpdateAddressChannelCommand cmd) {
         AddressChannel existing = addressChannelRepository.findById(codEndereco)
                 .orElseThrow(() -> new ChannelException(ChannelErrorType.ADDRESS_CHANNEL_NOT_FOUND));
+
+        SalesChannel channel = salesChannelRepository.findById(cmd.codCanal())
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND));
 
         User usuario = userResolverHelper.resolve(cmd.idUsuario());
 
@@ -91,10 +96,7 @@ public class AddressChannelService implements AddressChannelUseCase {
                 cmd.desNumero(),
                 existing.getIdUsuarioCadastro(),
                 usuario,
-                cmd.codCanal() != null
-                        ? new SalesChannel(cmd.codCanal(), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null)
-                        : null
-        );
+                channel);
 
         return addressChannelRepository.save(updated);
     }
