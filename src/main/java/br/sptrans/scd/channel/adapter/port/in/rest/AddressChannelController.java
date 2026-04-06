@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.CreateAddressChannelRequest;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.UpdateAddressChannelRequest;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.CreateAddressChannelCommand;
 import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.UpdateAddressChannelCommand;
@@ -114,39 +116,6 @@ public class AddressChannelController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Request DTOs ──────────────────────────────────────────────────────────
-    public record CreateAddressChannelRequest(
-            String codEndereco,
-            String codEmpregador,
-            String desLogradouro,
-            String codFornecedor,
-            String codTipoEndereco,
-            String codCEP,
-            String desBairro,
-            String desCidade,
-            String desUF,
-            Integer numDDD,
-            Integer numFone,
-            Integer numFax,
-            String desObs,
-            String stEnderecos,
-            String desNumero,
-            String codCanal) {}
 
-    public record UpdateAddressChannelRequest(
-            String codEmpregador,
-            String desLogradouro,
-            String codFornecedor,
-            String codTipoEndereco,
-            String codCEP,
-            String desBairro,
-            String desCidade,
-            String desUF,
-            Integer numDDD,
-            Integer numFone,
-            Integer numFax,
-            String desObs,
-            String stEnderecos,
-            String desNumero,
-            String codCanal) {}
+
 }

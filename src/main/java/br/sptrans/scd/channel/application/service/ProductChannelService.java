@@ -1,5 +1,6 @@
 package br.sptrans.scd.channel.application.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -12,7 +13,6 @@ import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
-import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.channel.domain.enums.ChannelErrorType;
 import br.sptrans.scd.channel.domain.exception.ChannelException;
 import lombok.RequiredArgsConstructor;
@@ -63,9 +63,9 @@ public class ProductChannelService implements ProductChannelUseCase {
             cmd.qtdMaximaRessuprimento(),
             cmd.codOrgaoEmissor(),
             cmd.vlFace(),
-            ChannelDomainStatus.fromCode(cmd.codStatus()),
-            java.time.LocalDateTime.now(),
-            java.time.LocalDateTime.now(),
+            cmd.codStatus(),
+            LocalDateTime.now(),
+            LocalDateTime.now(),
             cmd.codConvenio(),
             cmd.codTipoOperHM(),
             cmd.flgCarac(),
@@ -91,7 +91,7 @@ public class ProductChannelService implements ProductChannelUseCase {
             cmd.qtdMaximaRessuprimento(),
             cmd.codOrgaoEmissor(),
             cmd.vlFace(),
-            ChannelDomainStatus.fromCode(cmd.codStatus()),
+            cmd.codStatus(),
             java.time.LocalDateTime.now(),
             cmd.codConvenio(),
             cmd.codTipoOperHM(),

@@ -1,5 +1,7 @@
 package br.sptrans.scd.channel.adapter.port.in.rest.dto;
 
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
+
 public record ProductChDTO(
         Integer qtdLimiteComercializacao,
         Integer qtdMinimaEstoque,
@@ -8,7 +10,7 @@ public record ProductChDTO(
         Integer qtdMaximaRessuprimento,
         Integer codOrgaoEmissor,
         Integer vlFace,
-        String codStatus,
+        ChannelDomainStatus codStatus,
         String dtCadastro,
         String dtManutencao,
         Integer codConvenio,

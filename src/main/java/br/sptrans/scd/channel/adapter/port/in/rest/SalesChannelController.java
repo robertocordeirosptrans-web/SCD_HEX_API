@@ -1,7 +1,6 @@
 package br.sptrans.scd.channel.adapter.port.in.rest;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+// ...
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -26,6 +25,7 @@ import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.CreateSalesChannelCommand;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.UpdateSalesChannelCommand;
 import br.sptrans.scd.channel.domain.SalesChannel;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -59,30 +59,30 @@ public class SalesChannelController {
             @RequestBody CreateSalesChannelRequest request) {
         var usuario = userResolverHelper.getCurrentUser();
         SalesChannel result = salesChannelUseCase.createSalesChannel(new CreateSalesChannelCommand(
-                request.codCanal(),
-                request.codDocumento(),
-                request.codCanalSuperior(),
-                request.desCanal(),
-                request.codTipoDocumento(),
-                request.desRazaoSocial(),
-                request.desNomeFantasia(),
-                request.vlCaucao(),
-                request.dtInicioCaucao(),
-                request.dtFimCaucao(),
-                request.seqNivel(),
-                request.flgCriticaNumlote(),
-                request.flgLimiteDias(),
-                request.flgProcessamentoAutomatico(),
-                request.flgProcessamentoParcial(),
-                request.flgSaldoDevedor(),
-                request.numMinutoIniLibRecarga(),
-                request.numMinutoFimLibRecarga(),
-                request.flgEmiteReciboPedido(),
-                request.flgSupercanal(),
-                request.flgPagtoFuturo(),
-                request.codClassificacaoPessoa(),
-                request.codAtividade(),
-                usuario));
+            request.codCanal(),
+            request.codDocumento(),
+            request.codCanalSuperior(),
+            request.desCanal(),
+            request.codTipoDocumento(),
+            request.desRazaoSocial(),
+            request.desNomeFantasia(),
+            request.vlCaucao(),
+            request.dtInicioCaucao() != null ? request.dtInicioCaucao().toLocalDate() : null,
+            request.dtFimCaucao() != null ? request.dtFimCaucao().toLocalDate() : null,
+            request.seqNivel(),
+            request.flgCriticaNumlote(),
+            request.flgLimiteDias(),
+            request.flgProcessamentoAutomatico(),
+            request.flgProcessamentoParcial(),
+            request.flgSaldoDevedor(),
+            request.numMinutoIniLibRecarga(),
+            request.numMinutoFimLibRecarga(),
+            request.flgEmiteReciboPedido(),
+            request.flgSupercanal(),
+            request.flgPagtoFuturo(),
+            request.codClassificacaoPessoa(),
+            request.codAtividade(),
+            usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(salesChannelMapper.toResponseDTO(result));
     }
 
@@ -93,27 +93,27 @@ public class SalesChannelController {
             @RequestBody UpdateSalesChannelRequest request) {
         var usuario = userResolverHelper.getCurrentUser();
         SalesChannel result = salesChannelUseCase.updateSalesChannel(codCanal, new UpdateSalesChannelCommand(
-                request.codCanalSuperior(),
-                request.desCanal(),
-                request.desRazaoSocial(),
-                request.desNomeFantasia(),
-                request.vlCaucao(),
-                request.dtInicioCaucao(),
-                request.dtFimCaucao(),
-                request.seqNivel(),
-                request.flgCriticaNumlote(),
-                request.flgLimiteDias(),
-                request.flgProcessamentoAutomatico(),
-                request.flgProcessamentoParcial(),
-                request.flgSaldoDevedor(),
-                request.numMinutoIniLibRecarga(),
-                request.numMinutoFimLibRecarga(),
-                request.flgEmiteReciboPedido(),
-                request.flgSupercanal(),
-                request.flgPagtoFuturo(),
-                request.codClassificacaoPessoa(),
-                request.codAtividade(),
-                usuario));
+            request.codCanalSuperior(),
+            request.desCanal(),
+            request.desRazaoSocial(),
+            request.desNomeFantasia(),
+            request.vlCaucao(),
+            request.dtInicioCaucao() != null ? request.dtInicioCaucao().toLocalDate() : null,
+            request.dtFimCaucao() != null ? request.dtFimCaucao().toLocalDate() : null,
+            request.seqNivel(),
+            request.flgCriticaNumlote(),
+            request.flgLimiteDias(),
+            request.flgProcessamentoAutomatico(),
+            request.flgProcessamentoParcial(),
+            request.flgSaldoDevedor(),
+            request.numMinutoIniLibRecarga(),
+            request.numMinutoFimLibRecarga(),
+            request.flgEmiteReciboPedido(),
+            request.flgSupercanal(),
+            request.flgPagtoFuturo(),
+            request.codClassificacaoPessoa(),
+            request.codAtividade(),
+            usuario));
         return ResponseEntity.ok(salesChannelMapper.toResponseDTO(result));
     }
 
@@ -130,7 +130,16 @@ public class SalesChannelController {
             @RequestParam(required = false) String stCanais,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        List<SalesChannel> all = salesChannelUseCase.findAllSalesChannels(stCanais);
+        ChannelDomainStatus statusEnum = null;
+        if (stCanais != null) {
+            try {
+                statusEnum = ChannelDomainStatus.fromCode(stCanais);
+            } catch (Exception e) {
+                // Se valor inválido, retorna lista vazia ou erro, conforme política do sistema
+                return ResponseEntity.ok(PageResponse.fromList(List.of(), page, size));
+            }
+        }
+        List<SalesChannel> all = salesChannelUseCase.findAllSalesChannels(statusEnum);
         List<CanalResponseDTO> dtos = all.stream().map(salesChannelMapper::toResponseDTO).toList();
         return ResponseEntity.ok(PageResponse.fromList(dtos, page, size));
     }

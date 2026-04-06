@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public record SalesChannelReponseDTO(
+public record SalesChannelResponseDTO(
         String codCanal,
         String codDocumento,
         String codCanalSuperior,

@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.CreateContactChannelRequest;
+import br.sptrans.scd.channel.adapter.port.in.rest.dto.UpdateContactChannelRequest;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase.CreateContactChannelCommand;
 import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase.UpdateContactChannelCommand;
@@ -122,37 +124,5 @@ public class ContactChannelController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Request DTOs ──────────────────────────────────────────────────────────
-    public record CreateContactChannelRequest(
-            String codContato,
-            String codFornecedor,
-            String codEmpregador,
-            String desContato,
-            String desEmailContato,
-            Integer numDDD,
-            Integer numFone,
-            Integer numFoneRamal,
-            Integer numFax,
-            Integer numFaxRamal,
-            String stEntidadeContato,
-            String desComentarios,
-            String codTipoDocumento,
-            String codDocumento,
-            String codCanal) {}
-
-    public record UpdateContactChannelRequest(
-            String codFornecedor,
-            String codEmpregador,
-            String desContato,
-            String desEmailContato,
-            Integer numDDD,
-            Integer numFone,
-            Integer numFoneRamal,
-            Integer numFax,
-            Integer numFaxRamal,
-            String stEntidadeContato,
-            String desComentarios,
-            String codTipoDocumento,
-            String codDocumento,
-            String codCanal) {}
+ 
 }

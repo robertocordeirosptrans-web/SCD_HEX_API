@@ -20,6 +20,7 @@ import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase;
 import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase.CreateTypesActivityCommand;
 import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase.UpdateTypesActivityCommand;
 import br.sptrans.scd.channel.domain.TypesActivity;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
@@ -86,7 +87,16 @@ public class TypesActivityController {
             @RequestParam(required = false) String codStatus,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        List<TypesActivity> all = typesActivityUseCase.findAllTypesActivities(codStatus);
+        ChannelDomainStatus statusEnum = null;
+        if (codStatus != null) {
+            try {
+                statusEnum = ChannelDomainStatus.fromCode(codStatus);
+            } catch (Exception e) {
+                // Se valor inválido, retorna lista vazia ou erro, conforme política do sistema
+                return ResponseEntity.ok(PageResponse.fromList(List.of(), page, size));
+            }
+        }
+        List<TypesActivity> all = typesActivityUseCase.findAllTypesActivities(statusEnum);
         return ResponseEntity.ok(PageResponse.fromList(all, page, size));
     }
 

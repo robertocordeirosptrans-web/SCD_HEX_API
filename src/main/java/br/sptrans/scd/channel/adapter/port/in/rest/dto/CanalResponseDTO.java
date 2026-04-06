@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record CanalResponseDTO(
-        Long codCanal,
+        String codCanal,
         String codDocumento,
         String codCanalSuperior,
         String desCanal,
