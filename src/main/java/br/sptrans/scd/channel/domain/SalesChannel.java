@@ -17,7 +17,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SalesChannel {
 
-    private final String codCanal;
+    @Setter private String codCanal;
 
     @Setter private String codDocumento;
 
@@ -69,7 +69,7 @@ public class SalesChannel {
 
     @Setter private TypesActivity codAtividade;
 
-    private final User idUsuarioCadastro;
+    @Setter private User idUsuarioCadastro;
 
     @Setter private User idUsuarioManutencao;
     // --- Métodos de negócio (DDD) ---

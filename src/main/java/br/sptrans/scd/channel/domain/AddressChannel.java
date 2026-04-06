@@ -14,7 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AddressChannel {
 
-    private final String codEndereco;
+    @Setter private String codEndereco;
     @Setter private String codEmpregador;
     @Setter private String desLogradouro;
     @Setter private String codFornecedor;

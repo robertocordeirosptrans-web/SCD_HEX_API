@@ -7,12 +7,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.application.port.out.ClassificationPort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.port.out.jpa.mapper.SalesChannelMapper;
 import br.sptrans.scd.channel.adapter.port.out.jpa.repository.SalesChannelJpaRepository;
 import br.sptrans.scd.channel.adapter.port.out.persistence.entity.SalesChannelEntityJpa;
 import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
+import br.sptrans.scd.channel.application.port.out.TypesActivityPersistencePort;
 import br.sptrans.scd.channel.domain.SalesChannel;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 
@@ -23,11 +26,38 @@ public class SalesChannelAdapterJpa implements SalesChannelPersistencePort {
 
     private final SalesChannelJpaRepository repository;
     private final SalesChannelMapper mapper;
+    private final TypesActivityPersistencePort typesActivityPort;
+    private final ClassificationPort classificationPort;
+    private final UserResolverHelper userResolverHelper;
+
+    private SalesChannel enrichDomain(SalesChannelEntityJpa entity, SalesChannel domain) {
+        if (entity.getCodAtividade() != null) {
+            typesActivityPort.findById(entity.getCodAtividade())
+                    .ifPresent(domain::setCodAtividade);
+        }
+        if (entity.getCodClassificacaoPessoa() != null) {
+            classificationPort.findById(entity.getCodClassificacaoPessoa())
+                    .ifPresent(domain::setCodClassificacaoPessoa);
+        }
+        if (entity.getIdUsuarioCadastro() != null) {
+            User userCadastro = userResolverHelper.resolve(entity.getIdUsuarioCadastro());
+            if (userCadastro != null) {
+                domain.setIdUsuarioCadastro(userCadastro);
+            }
+        }
+        if (entity.getIdUsuarioManutencao() != null) {
+            User userManutencao = userResolverHelper.resolve(entity.getIdUsuarioManutencao());
+            if (userManutencao != null) {
+                domain.setIdUsuarioManutencao(userManutencao);
+            }
+        }
+        return domain;
+    }
 
     @Override
     public Optional<SalesChannel> findById(String codCanal) {
         return repository.findByCodCanal(codCanal)
-                .map(mapper::toDomain);
+                .map(entity -> enrichDomain(entity, mapper.toDomain(entity)));
     }
 
     @Override
@@ -38,14 +68,14 @@ public class SalesChannelAdapterJpa implements SalesChannelPersistencePort {
     @Override
     public Page<SalesChannel> findAll(String stCanais, Pageable pageable) {
         return repository.findAllByStCanais(stCanais, pageable)
-                .map(mapper::toDomain);
+                .map(entity -> enrichDomain(entity, mapper.toDomain(entity)));
     }
 
     @Override
     public SalesChannel save(SalesChannel sc) {
         SalesChannelEntityJpa entity = mapper.toEntity(sc);
         SalesChannelEntityJpa saved = repository.save(entity);
-        return mapper.toDomain(saved);
+        return enrichDomain(saved, mapper.toDomain(saved));
     }
 
     @Override

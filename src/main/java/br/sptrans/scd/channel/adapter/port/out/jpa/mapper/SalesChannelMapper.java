@@ -37,18 +37,18 @@ public interface SalesChannelMapper {
     SalesChannel toDomain(SalesChannelEntityJpa entity);
 
     @Mappings({
-        @Mapping(target = "codClassificacaoPessoa", ignore = true),
-        @Mapping(target = "codAtividade", ignore = true),
-        @Mapping(target = "idUsuarioCadastro", ignore = true),
-        @Mapping(target = "idUsuarioManutencao", ignore = true)
+        @Mapping(source = "codClassificacaoPessoa.codClassificacaoPessoa", target = "codClassificacaoPessoa"),
+        @Mapping(source = "codAtividade.codAtividade", target = "codAtividade"),
+        @Mapping(source = "idUsuarioCadastro.idUsuario", target = "idUsuarioCadastro"),
+        @Mapping(source = "idUsuarioManutencao.idUsuario", target = "idUsuarioManutencao")
     })
     SalesChannelEntityJpa toEntity(SalesChannel domain);
 
     @Mappings({
-        @Mapping(target = "codClassificacaoPessoa", ignore = true),
-        @Mapping(target = "codAtividade", ignore = true),
-        @Mapping(target = "idUsuarioCadastro", ignore = true),
-        @Mapping(target = "idUsuarioManutencao", ignore = true)
+        @Mapping(source = "codClassificacaoPessoa.codClassificacaoPessoa", target = "codClassificacaoPessoa"),
+        @Mapping(source = "codAtividade.codAtividade", target = "codAtividade"),
+        @Mapping(source = "idUsuarioCadastro.idUsuario", target = "idUsuarioCadastro"),
+        @Mapping(source = "idUsuarioManutencao.idUsuario", target = "idUsuarioManutencao")
     })
     void updateFromDomain(SalesChannel domain, @MappingTarget SalesChannelEntityJpa entity);
 
