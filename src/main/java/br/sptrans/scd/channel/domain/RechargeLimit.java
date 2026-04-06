@@ -22,7 +22,7 @@ public class RechargeLimit {
     @Setter private BigDecimal vlMinimoRecarga;
     @Setter private BigDecimal vlMaximoRecarga;
     @Setter private BigDecimal vlMaximoSaldo;
-    @Setter private String codStatus;
+    @Setter private ChannelDomainStatus codStatus;
     @Setter private LocalDateTime dtManutencao;
 
     private final User idUsuarioCadastro;
@@ -32,19 +32,11 @@ public class RechargeLimit {
     // -------------------------------------------------------------------------
 
     public boolean isAtivo() {
-        try {
-            return ChannelDomainStatus.ACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
-        } catch (Exception e) {
-            return false;
-        }
+        return ChannelDomainStatus.ACTIVE.equals(codStatus);
     }
 
     public boolean isInativo() {
-        try {
-            return ChannelDomainStatus.INACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
-        } catch (Exception e) {
-            return false;
-        }
+        return ChannelDomainStatus.INACTIVE.equals(codStatus);
     }
 
     // -------------------------------------------------------------------------
@@ -57,7 +49,7 @@ public class RechargeLimit {
      * @param operador usuário responsável pela operação
      */
     public void activate(User operador) {
-        this.codStatus = ChannelDomainStatus.ACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.ACTIVE;
         this.dtManutencao = LocalDateTime.now();
     }
 
@@ -67,7 +59,7 @@ public class RechargeLimit {
      * @param operador usuário responsável pela operação
      */
     public void inactivate(User operador) {
-        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.INACTIVE;
         this.dtManutencao = LocalDateTime.now();
     }
 
@@ -143,7 +135,7 @@ public class RechargeLimit {
      * @param operador usuário responsável pela operação
      */
     public void expire(User operador) {
-        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.INACTIVE;
         this.dtFimValidade = LocalDateTime.now();
         this.dtManutencao = LocalDateTime.now();
     }

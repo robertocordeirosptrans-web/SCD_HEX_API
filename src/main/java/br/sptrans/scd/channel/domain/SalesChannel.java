@@ -31,7 +31,7 @@ public class SalesChannel {
 
     @Setter private String desRazaoSocial;
 
-    @Setter private String stCanais;
+    @Setter private ChannelDomainStatus stCanais;
 
     @Setter private String desNomeFantasia;
 
@@ -134,13 +134,7 @@ public class SalesChannel {
      * Verifica se o canal está ativo usando o enum ChannelDomainStatus.
      */
     public boolean isAtivo() {
-        try {
-            return ChannelDomainStatus.ACTIVE.equals(
-                ChannelDomainStatus.fromCode(stCanais)
-            );
-        } catch (Exception e) {
-            return false;
-        }
+        return ChannelDomainStatus.ACTIVE.equals(stCanais);
     }
 
     // -------------------------------------------------------------------------
@@ -153,7 +147,7 @@ public class SalesChannel {
      * @param operador usuário responsável pela operação
      */
     public void activate(User operador) {
-        this.stCanais = ChannelDomainStatus.ACTIVE.getCode();
+        this.stCanais = ChannelDomainStatus.ACTIVE;
         this.idUsuarioManutencao = operador;
         this.dtManutencao = LocalDateTime.now();
     }
@@ -164,7 +158,7 @@ public class SalesChannel {
      * @param operador usuário responsável pela operação
      */
     public void inactivate(User operador) {
-        this.stCanais = ChannelDomainStatus.INACTIVE.getCode();
+        this.stCanais = ChannelDomainStatus.INACTIVE;
         this.idUsuarioManutencao = operador;
         this.dtManutencao = LocalDateTime.now();
     }

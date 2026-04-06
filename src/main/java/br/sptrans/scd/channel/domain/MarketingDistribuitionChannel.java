@@ -16,7 +16,7 @@ public class MarketingDistribuitionChannel {
 
     private final MarketingDistribuitionChannelKey id;
 
-    @Setter private String codStatus;
+    @Setter private ChannelDomainStatus codStatus;
 
     private final LocalDateTime dtCadastro;
 
@@ -32,19 +32,11 @@ public class MarketingDistribuitionChannel {
     // -------------------------------------------------------------------------
 
     public boolean isAtivo() {
-        try {
-            return ChannelDomainStatus.ACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
-        } catch (Exception e) {
-            return false;
-        }
+        return ChannelDomainStatus.ACTIVE.equals(codStatus);
     }
 
     public boolean isInativo() {
-        try {
-            return ChannelDomainStatus.INACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
-        } catch (Exception e) {
-            return false;
-        }
+        return ChannelDomainStatus.INACTIVE.equals(codStatus);
     }
 
     // -------------------------------------------------------------------------
@@ -57,7 +49,7 @@ public class MarketingDistribuitionChannel {
      * @param operador usuário responsável pela operação
      */
     public void activate(User operador) {
-        this.codStatus = ChannelDomainStatus.ACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.ACTIVE;
         this.idUsuarioManutencao = operador;
         this.dtManutencao = LocalDateTime.now();
     }
@@ -68,7 +60,7 @@ public class MarketingDistribuitionChannel {
      * @param operador usuário responsável pela operação
      */
     public void inactivate(User operador) {
-        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.INACTIVE;
         this.idUsuarioManutencao = operador;
         this.dtManutencao = LocalDateTime.now();
     }

@@ -17,7 +17,7 @@ public class TypesActivity {
 
     @Setter private String desAtividade;
 
-    @Setter private String codStatus;
+    @Setter private ChannelDomainStatus codStatus;
 
     private final LocalDateTime dtCadastro;
 
@@ -28,19 +28,11 @@ public class TypesActivity {
     // -------------------------------------------------------------------------
 
     public boolean isAtivo() {
-        try {
-            return ChannelDomainStatus.ACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
-        } catch (Exception e) {
-            return false;
-        }
+        return ChannelDomainStatus.ACTIVE.equals(codStatus);
     }
 
     public boolean isInativo() {
-        try {
-            return ChannelDomainStatus.INACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
-        } catch (Exception e) {
-            return false;
-        }
+        return ChannelDomainStatus.INACTIVE.equals(codStatus);
     }
 
     // -------------------------------------------------------------------------
@@ -51,7 +43,7 @@ public class TypesActivity {
      * Ativa o tipo de atividade.
      */
     public void activate() {
-        this.codStatus = ChannelDomainStatus.ACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.ACTIVE;
         this.dtManutencao = LocalDateTime.now();
     }
 
@@ -59,7 +51,7 @@ public class TypesActivity {
      * Inativa o tipo de atividade.
      */
     public void inactivate() {
-        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.INACTIVE;
         this.dtManutencao = LocalDateTime.now();
     }
 }

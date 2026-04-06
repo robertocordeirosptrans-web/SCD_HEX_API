@@ -30,7 +30,7 @@ public class ProductChannel {
 
     @Setter private Integer vlFace;
 
-    @Setter private String codStatus;
+    @Setter private ChannelDomainStatus codStatus;
 
     private final LocalDateTime dtCadastro;
 
@@ -60,7 +60,7 @@ public class ProductChannel {
             Integer qtdMaximaRessuprimento,
             Integer codOrgaoEmissor,
             Integer vlFace,
-            String codStatus,
+            ChannelDomainStatus codStatus,
             LocalDateTime dtCadastro,
             LocalDateTime dtManutencao,
             Integer codConvenio,
@@ -72,7 +72,7 @@ public class ProductChannel {
         if (id == null) {
             throw new IllegalArgumentException("Chave do ProductChannel é obrigatória");
         }
-        if (codStatus == null || codStatus.isEmpty()) {
+        if (codStatus == null) {
             throw new IllegalArgumentException("Status do ProductChannel é obrigatório");
         }
         // Outras validações podem ser adicionadas aqui
@@ -92,14 +92,14 @@ public class ProductChannel {
             Integer qtdMaximaRessuprimento,
             Integer codOrgaoEmissor,
             Integer vlFace,
-            String codStatus,
+            ChannelDomainStatus codStatus,
             LocalDateTime dtManutencao,
             Integer codConvenio,
             Integer codTipoOperHM,
             String flgCarac,
             User idUsuarioManutencao
     ) {
-        if (codStatus == null || codStatus.isEmpty()) {
+        if (codStatus == null) {
             throw new IllegalArgumentException("Status do ProductChannel é obrigatório");
         }
         this.qtdLimiteComercializacao = qtdLimiteComercializacao;
@@ -122,19 +122,11 @@ public class ProductChannel {
     // -------------------------------------------------------------------------
 
     public boolean isAtivo() {
-        try {
-            return ChannelDomainStatus.ACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
-        } catch (Exception e) {
-            return false;
-        }
+        return ChannelDomainStatus.ACTIVE.equals(codStatus);
     }
 
     public boolean isInativo() {
-        try {
-            return ChannelDomainStatus.INACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
-        } catch (Exception e) {
-            return false;
-        }
+        return ChannelDomainStatus.INACTIVE.equals(codStatus);
     }
 
     // -------------------------------------------------------------------------
@@ -147,7 +139,7 @@ public class ProductChannel {
      * @param operador usuário responsável pela operação
      */
     public void activate(User operador) {
-        this.codStatus = ChannelDomainStatus.ACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.ACTIVE;
         this.idUsuarioManutencao = operador;
         this.dtManutencao = LocalDateTime.now();
     }
@@ -158,7 +150,7 @@ public class ProductChannel {
      * @param operador usuário responsável pela operação
      */
     public void inactivate(User operador) {
-        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.INACTIVE;
         this.idUsuarioManutencao = operador;
         this.dtManutencao = LocalDateTime.now();
     }

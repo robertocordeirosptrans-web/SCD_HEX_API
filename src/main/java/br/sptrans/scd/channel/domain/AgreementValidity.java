@@ -20,7 +20,7 @@ public class AgreementValidity {
 
     @Setter private LocalDateTime dtInicioValidade;
 
-    @Setter private String codStatus;
+    @Setter private ChannelDomainStatus codStatus;
 
     @Setter private LocalDateTime dtManutencao;
 
@@ -31,19 +31,11 @@ public class AgreementValidity {
     // -------------------------------------------------------------------------
 
     public boolean isAtivo() {
-        try {
-            return ChannelDomainStatus.ACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
-        } catch (Exception e) {
-            return false;
-        }
+        return ChannelDomainStatus.ACTIVE.equals(codStatus);
     }
 
     public boolean isInativo() {
-        try {
-            return ChannelDomainStatus.INACTIVE.equals(ChannelDomainStatus.fromCode(codStatus));
-        } catch (Exception e) {
-            return false;
-        }
+        return ChannelDomainStatus.INACTIVE.equals(codStatus);
     }
 
     // -------------------------------------------------------------------------
@@ -56,7 +48,7 @@ public class AgreementValidity {
      * @param operador usuário responsável pela operação
      */
     public void activate(User operador) {
-        this.codStatus = ChannelDomainStatus.ACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.ACTIVE;
         this.usuario = operador;
         this.dtManutencao = LocalDateTime.now();
     }
@@ -67,7 +59,7 @@ public class AgreementValidity {
      * @param operador usuário responsável pela operação
      */
     public void inactivate(User operador) {
-        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.INACTIVE;
         this.usuario = operador;
         this.dtManutencao = LocalDateTime.now();
     }
@@ -105,7 +97,7 @@ public class AgreementValidity {
      * @param operador usuário responsável pela operação
      */
     public void expire(User operador) {
-        this.codStatus = ChannelDomainStatus.INACTIVE.getCode();
+        this.codStatus = ChannelDomainStatus.INACTIVE;
         this.dtFimValidade = LocalDateTime.now();
         this.usuario = operador;
         this.dtManutencao = LocalDateTime.now();
