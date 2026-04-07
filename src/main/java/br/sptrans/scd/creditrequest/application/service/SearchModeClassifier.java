@@ -1,4 +1,4 @@
-package br.sptrans.scd.creditrequest.domain;
+package br.sptrans.scd.creditrequest.application.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

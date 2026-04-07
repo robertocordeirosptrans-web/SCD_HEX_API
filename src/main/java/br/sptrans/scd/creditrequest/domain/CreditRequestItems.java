@@ -3,6 +3,7 @@ package br.sptrans.scd.creditrequest.domain;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import lombok.Getter;
 import lombok.Setter;
@@ -140,6 +141,46 @@ public class CreditRequestItems {
     }
 
     // --- Métodos de transição de estado ---
+
+    /**
+     * Valida se a transição de status é permitida para o item.
+     * Pode ser expandido para regras mais complexas.
+     */
+    public void validarTransicao(String novoStatus) {
+        // Exemplo simples: não permite voltar para CRIADO se já avançou
+        if (SituationCreditRequestItems.CRIADO.getCode().equals(codSituacao) && !SituationCreditRequestItems.CRIADO.getCode().equals(novoStatus)) {
+            // ok
+        } else if (isTerminal()) {
+            throw new IllegalStateException("Não é possível transitar de um estado terminal");
+        }
+        // Outras regras podem ser adicionadas aqui
+    }
+
+    /**
+     * Cria um histórico do item a partir do estado atual.
+     */
+    public HistCreditRequestItems criarHistorico(Long seqHistSdis, String origemTransicao, User usuario) {
+        HistCreditRequestItems hist = new HistCreditRequestItems();
+        var histId = new HistCreditRequestItemsKey();
+        histId.setNumSolicitacao(this.id.getNumSolicitacao());
+        histId.setNumSolicitacaoItem(this.id.getNumSolicitacaoItem());
+        histId.setCodCanal(this.id.getCodCanal());
+        histId.setSeqHistSdis(seqHistSdis);
+        hist.setId(histId);
+        hist.setCodTipoDocumento(this.codTipoDocumento);
+        hist.setCodSituacao(this.codSituacao);
+        hist.setDtTransicao(LocalDateTime.now());
+        hist.setIdOrigemTransicao(origemTransicao);
+        hist.setDtCadastro(this.dtCadastro);
+        hist.setDtManutencao(this.dtManutencao);
+        hist.setDtPgtoEconomica(this.dtPagtoEconomica);
+        hist.setSqPID(this.sqPid);
+        hist.setDtInicProcesso(this.dtInicProcesso);
+        hist.setDtFimProcesso(this.dtRetornoHm); // ou outro campo adequado
+        hist.setDesOcorrencia(null); // preencher se necessário
+        hist.setIdUsuarioTransicao(usuario);
+        return hist;
+    }
 
     /**
      * Solicita o cancelamento do item de recarga.

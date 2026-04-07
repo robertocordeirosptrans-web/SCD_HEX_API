@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import lombok.Getter;
 import lombok.Setter;
@@ -118,6 +119,43 @@ public class CreditRequest {
     // -------------------------------------------------------------------------
     // Transições de estado
     // -------------------------------------------------------------------------
+
+    /**
+     * Valida se a transição de status é permitida para a solicitação.
+     * Pode ser expandido para regras mais complexas.
+     */
+    public void validarTransicao(String novoStatus) {
+        if (isTerminal()) {
+            throw new IllegalStateException("Não é possível transitar de um estado terminal");
+        }
+        // Outras regras podem ser adicionadas aqui
+    }
+
+    /**
+     * Cria um histórico da solicitação a partir do estado atual.
+     */
+    public HistCreditRequest criarHistorico(Long seqHistSdis, String origemTransicao, User usuario) {
+        HistCreditRequest hist = new HistCreditRequest();
+        var histId = new HistCreditRequestKey();
+        histId.setNumSolicitacao(this.numSolicitacao);
+        histId.setNumSolicitacaoItem(null); // ou preencher se aplicável
+        histId.setCodCanal(this.codCanal);
+        histId.setSeqHistSdis(seqHistSdis);
+        hist.setId(histId);
+        hist.setCodTipoDocumento(this.codTipoDocumento);
+        hist.setCodSituacao(this.codSituacao);
+        hist.setDtTransicao(LocalDateTime.now());
+        hist.setIdOrigemTransicao(origemTransicao);
+        hist.setDtCadastro(this.dtCadastro);
+        hist.setDtManutencao(this.dtManutencao);
+        hist.setDtPgtoEconomica(this.dtPagtoEconomica);
+        hist.setSqPID(this.sqPid);
+        hist.setDtInicProcesso(this.dtInicProcesso);
+        hist.setDtFimProcesso(this.dtFinanceira); // ou outro campo adequado
+        hist.setDesOcorrencia(null); // preencher se necessário
+        hist.setIdUsuarioTransicao(usuario);
+        return hist;
+    }
 
     /**
      * Solicita o cancelamento da solicitação de crédito.

@@ -13,7 +13,6 @@ import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageResponse;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
-import br.sptrans.scd.creditrequest.domain.SearchModeClassifier;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
