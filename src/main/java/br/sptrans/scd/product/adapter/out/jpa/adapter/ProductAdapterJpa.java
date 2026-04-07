@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductJpaRepository;
 import br.sptrans.scd.product.application.port.out.repository.ProductPort;
@@ -18,23 +19,24 @@ import lombok.RequiredArgsConstructor;
 public class ProductAdapterJpa implements ProductPort {
 
     private final ProductJpaRepository repository;
+    private final ProductMapper productMapper;
 
     @Override
     public Optional<Product> findById(String codProduto) {
         return repository.findById(codProduto)
-                .map(ProductMapper::toDomain);
+                .map(productMapper::toDomain);
     }
 
     @Override
     public List<Product> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findAll().stream()
-                    .map(ProductMapper::toDomain)
+                    .map(productMapper::toDomain)
                     .filter(p -> codStatus.equals(p.getCodStatus()))
                     .toList();
         }
         return repository.findAll().stream()
-                .map(ProductMapper::toDomain)
+                .map(productMapper::toDomain)
                 .toList();
     }
 
@@ -42,17 +44,17 @@ public class ProductAdapterJpa implements ProductPort {
     public Page<Product> findAll(String codStatus, Pageable pageable) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findByCodStatus(codStatus, pageable)
-                    .map(ProductMapper::toDomain);
+                    .map(productMapper::toDomain);
         }
         return repository.findAll(pageable)
-                .map(ProductMapper::toDomain);
+                .map(productMapper::toDomain);
     }
 
     @Override
     public Product save(Product product) {
-        var entity = ProductMapper.toEntity(product);
+        var entity = productMapper.toEntity(product);
         var saved = repository.save(entity);
-        return ProductMapper.toDomain(saved);
+        return productMapper.toDomain(saved);
     }
 
     @Override
@@ -60,7 +62,9 @@ public class ProductAdapterJpa implements ProductPort {
         repository.findById(codProduto).ifPresent(entity -> {
             entity.setCodStatus(codStatus);
             if (idUsuario != null) {
-                entity.setIdUsuarioManutencao(idUsuario);
+                UserEntityJpa userRef = new UserEntityJpa();
+                userRef.setIdUsuario(idUsuario);
+                entity.setUsuarioManutencao(userRef);
             }
             repository.save(entity);
         });

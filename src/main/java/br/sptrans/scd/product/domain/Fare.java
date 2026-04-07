@@ -2,7 +2,6 @@ package br.sptrans.scd.product.domain;
 
 import java.time.LocalDateTime;
 
-import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,11 +34,11 @@ public class Fare {
 
     private Integer valTarifa;
 
-    private User idUsuarioCadastro;
+    private Long idUsuarioCadastro;
 
-    private User idUsuarioManutencao;
+    private Long idUsuarioManutencao;
 
-    private Product codProduto;
+    private String codProduto;
 
     public boolean isActive() {
         return ProductDomainStatus.ACTIVE.getCode().equals(this.codStatus);
@@ -49,21 +48,21 @@ public class Fare {
         return ProductDomainStatus.INACTIVE.getCode().equals(this.codStatus);
     }
 
-    public void activate(User idUsuario) {
+    public void activate(Long idUsuario) {
         this.codStatus = ProductDomainStatus.ACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
 
-    public void deactivate(User idUsuario) {
+    public void deactivate(Long idUsuario) {
         this.codStatus = ProductDomainStatus.INACTIVE.getCode();
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
 
-    public void extendValidity(LocalDateTime dtFim, User usuario) {
+    public void extendValidity(LocalDateTime dtFim, Long idUsuario) {
         this.dtVigenciaFim = dtFim;
-        this.idUsuarioManutencao = usuario;
+        this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
 

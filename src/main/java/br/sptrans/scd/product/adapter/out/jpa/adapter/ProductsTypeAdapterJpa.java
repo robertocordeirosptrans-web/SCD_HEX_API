@@ -7,11 +7,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductsTypeMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductsTypeJpaRepository;
-import br.sptrans.scd.product.adapter.out.persistence.entity.ProductTypesEntityJpa;
 import br.sptrans.scd.product.application.port.out.repository.ProductsTypePort;
 import br.sptrans.scd.product.domain.ProductType;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +19,12 @@ import lombok.RequiredArgsConstructor;
 public class ProductsTypeAdapterJpa implements ProductsTypePort {
 
     private final ProductsTypeJpaRepository repository;
-    private final UserPersistencePort userRepository;
+    private final ProductsTypeMapper productsTypeMapper;
 
     @Override
     public Optional<ProductType> findById(String codTipoProduto) {
         return repository.findById(codTipoProduto)
-                .map(entity -> ProductsTypeMapper.toDomain(entity, userRepository));
+                .map(productsTypeMapper::toDomain);
     }
 
     @Override
@@ -38,12 +36,12 @@ public class ProductsTypeAdapterJpa implements ProductsTypePort {
     public List<ProductType> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findAll().stream()
-                    .map(entity -> ProductsTypeMapper.toDomain(entity, userRepository))
+                    .map(productsTypeMapper::toDomain)
                     .filter(t -> codStatus.equals(t.getCodStatus()))
                     .toList();
         }
         return repository.findAll().stream()
-                .map(entity -> ProductsTypeMapper.toDomain(entity, userRepository))
+                .map(productsTypeMapper::toDomain)
                 .toList();
     }
 
@@ -51,36 +49,28 @@ public class ProductsTypeAdapterJpa implements ProductsTypePort {
     public Page<ProductType> findAll(String codStatus, Pageable pageable) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findByCodStatus(codStatus, pageable)
-                    .map(entity -> ProductsTypeMapper.toDomain(entity, userRepository));
+                    .map(productsTypeMapper::toDomain);
         }
         return repository.findAll(pageable)
-                .map(entity -> ProductsTypeMapper.toDomain(entity, userRepository));
+                .map(productsTypeMapper::toDomain);
     }
 
     @Override
     public ProductType save(ProductType type) {
-        var entity = new ProductTypesEntityJpa();
-        entity.setCodTipoProduto(type.getCodTipoProduto());
-        entity.setDesTipoProduto(type.getDesTipoProduto());
-        entity.setCodStatus(type.getCodStatus());
-        entity.setDtCadastro(type.getDtCadastro());
-        entity.setDtManutencao(type.getDtManutencao());
-        if (type.getIdUsuarioCadastro() != null) {
-            entity.setIdUsuarioCadastro(type.getIdUsuarioCadastro().getIdUsuario());
-        }
-        if (type.getIdUsuarioManutencao() != null) {
-            entity.setIdUsuarioManutencao(type.getIdUsuarioManutencao().getIdUsuario());
-        }
+        var entity = productsTypeMapper.toEntity(type);
         var saved = repository.save(entity);
-        return ProductsTypeMapper.toDomain(saved, userRepository);
+        return productsTypeMapper.toDomain(saved);
     }
 
     @Override
     public void updateStatus(String codTipoProduto, String codStatus, Long idUsuario) {
         repository.findById(codTipoProduto).ifPresent(entity -> {
             entity.setCodStatus(codStatus);
-            // Supondo que existe setIdUsuarioManutencao
-            // Se existir campo de usuário, implemente aqui
+            if (idUsuario != null) {
+                UserEntityJpa userRef = new UserEntityJpa();
+                userRef.setIdUsuario(idUsuario);
+                entity.setUsuarioManutencao(userRef);
+            }
             repository.save(entity);
         });
     }

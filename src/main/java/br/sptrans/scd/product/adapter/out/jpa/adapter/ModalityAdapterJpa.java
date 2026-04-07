@@ -7,9 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
-import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ModalityMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ModalityJpaRepository;
 import br.sptrans.scd.product.application.port.out.repository.ModalityPort;
@@ -21,12 +19,12 @@ import lombok.RequiredArgsConstructor;
 public class ModalityAdapterJpa implements ModalityPort {
 
     private final ModalityJpaRepository repository;
-    private final UserPersistencePort userRepository;
+    private final ModalityMapper modalityMapper;
 
     @Override
     public Optional<Modality> findById(String codModalidade) {
         return repository.findById(codModalidade)
-                .map(entity -> ModalityMapper.toDomain(entity, userRepository));
+                .map(modalityMapper::toDomain);
     }
 
     @Override
@@ -38,12 +36,12 @@ public class ModalityAdapterJpa implements ModalityPort {
     public List<Modality> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findAll().stream()
-                    .map(entity -> ModalityMapper.toDomain(entity, userRepository))
+                    .map(modalityMapper::toDomain)
                     .filter(m -> codStatus.equals(m.getCodStatus()))
                     .toList();
         }
         return repository.findAll().stream()
-                .map(entity -> ModalityMapper.toDomain(entity, userRepository))
+                .map(modalityMapper::toDomain)
                 .toList();
     }
 
@@ -51,17 +49,17 @@ public class ModalityAdapterJpa implements ModalityPort {
     public Page<Modality> findAll(String codStatus, Pageable pageable) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findByCodStatus(codStatus, pageable)
-                    .map(entity -> ModalityMapper.toDomain(entity, userRepository));
+                    .map(modalityMapper::toDomain);
         }
         return repository.findAll(pageable)
-                .map(entity -> ModalityMapper.toDomain(entity, userRepository));
+                .map(modalityMapper::toDomain);
     }
 
     @Override
     public Modality save(Modality modality) {
-        var entity = ModalityMapper.toEntity(modality);
+        var entity = modalityMapper.toEntity(modality);
         var saved = repository.save(entity);
-        return ModalityMapper.toDomain(saved, userRepository);
+        return modalityMapper.toDomain(saved);
     }
 
     @Override
@@ -69,9 +67,9 @@ public class ModalityAdapterJpa implements ModalityPort {
         repository.findById(codModalidade).ifPresent(entity -> {
             entity.setCodStatus(codStatus);
             if (idUsuario != null) {
-                User user = new User();
-                user.setIdUsuario(idUsuario);
-                entity.setIdUsuarioManutencao(user.getIdUsuario());
+                UserEntityJpa userRef = new UserEntityJpa();
+                userRef.setIdUsuario(idUsuario);
+                entity.setUsuarioManutencao(userRef);
             }
             repository.save(entity);
         });

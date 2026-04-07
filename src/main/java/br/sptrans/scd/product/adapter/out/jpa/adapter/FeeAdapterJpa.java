@@ -30,10 +30,8 @@ import br.sptrans.scd.product.domain.Fee;
 import br.sptrans.scd.product.domain.ServiceFee;
 import lombok.RequiredArgsConstructor;
 
-
 @Repository
 @RequiredArgsConstructor
-
 public class FeeAdapterJpa implements FeePersistencePort {
 
     private final FeeJpaRepository feeRepository;
@@ -41,25 +39,30 @@ public class FeeAdapterJpa implements FeePersistencePort {
     private final ServiceFeeJpaRepository serviceFeeRepository;
     private final ChannelFeeJpaRepository channelFeeRepository;
     private final DestinyFeeJpaRepository destinyFeeRepository;
+    private final FeeMapper feeMapper;
+    private final AdministrativeFeeMapper administrativeFeeMapper;
+    private final ServiceFeeMapper serviceFeeMapper;
+    private final ChannelFeeMapper channelFeeMapper;
+    private final DestinyFeeMapper destinyFeeMapper;
 
     // ================= Fee =================
     @Override
     public Fee save(Fee taxa) {
-        FeeEntityJpa entity = FeeMapper.toEntity(taxa);
+        FeeEntityJpa entity = feeMapper.toEntity(taxa);
         FeeEntityJpa saved = feeRepository.save(entity);
-        return FeeMapper.toDomain(saved);
+        return feeMapper.toDomain(saved);
     }
 
     @Override
     public Optional<Fee> findByIdFee(Long codTaxa) {
-        return feeRepository.findById(codTaxa).map(FeeMapper::toDomain);
+        return feeRepository.findById(codTaxa).map(feeMapper::toDomain);
     }
 
     @Override
     public List<Fee> findByCanal(String codCanal) {
         return feeRepository.findAll().stream()
                 .filter(f -> codCanal.equals(f.getCodCanal()))
-                .map(FeeMapper::toDomain)
+                .map(feeMapper::toDomain)
                 .toList();
     }
 
@@ -67,7 +70,7 @@ public class FeeAdapterJpa implements FeePersistencePort {
     public List<Fee> findByProduto(String codProduto) {
         return feeRepository.findAll().stream()
                 .filter(f -> codProduto.equals(f.getCodProduto()))
-                .map(FeeMapper::toDomain)
+                .map(feeMapper::toDomain)
                 .toList();
     }
 
@@ -75,7 +78,7 @@ public class FeeAdapterJpa implements FeePersistencePort {
     public List<Fee> findByCanalProduto(String codCanal, String codProduto) {
         return feeRepository.findAll().stream()
                 .filter(f -> codCanal.equals(f.getCodCanal()) && codProduto.equals(f.getCodProduto()))
-                .map(FeeMapper::toDomain)
+                .map(feeMapper::toDomain)
                 .toList();
     }
 
@@ -83,7 +86,7 @@ public class FeeAdapterJpa implements FeePersistencePort {
     public Optional<Fee> findAtivaByCanalProduto(String codCanal, String codProduto) {
         return feeRepository.findAll().stream()
                 .filter(f -> codCanal.equals(f.getCodCanal()) && codProduto.equals(f.getCodProduto()))
-                .map(FeeMapper::toDomain)
+                .map(feeMapper::toDomain)
                 .findFirst();
     }
 
@@ -100,60 +103,60 @@ public class FeeAdapterJpa implements FeePersistencePort {
     // ========== AdministrativeFee ==========
     @Override
     public Optional<AdministrativeFee> findAdmById(Long codTaxaAdm) {
-        return administrativeFeeRepository.findById(codTaxaAdm).map(AdministrativeFeeMapper::toDomain);
+        return administrativeFeeRepository.findById(codTaxaAdm).map(administrativeFeeMapper::toDomain);
     }
 
     @Override
     public AdministrativeFee save(AdministrativeFee taxasAdm) {
-        AdministrativeFeeEntityJpa entity = AdministrativeFeeMapper.toEntity(taxasAdm);
+        AdministrativeFeeEntityJpa entity = administrativeFeeMapper.toEntity(taxasAdm);
         AdministrativeFeeEntityJpa saved = administrativeFeeRepository.save(entity);
-        return AdministrativeFeeMapper.toDomain(saved);
+        return administrativeFeeMapper.toDomain(saved);
     }
 
     // ========== ServiceFee ==========
     @Override
     public Optional<ServiceFee> findSrvById(Long codTaxaSrv) {
-        return serviceFeeRepository.findById(codTaxaSrv).map(ServiceFeeMapper::toDomain);
+        return serviceFeeRepository.findById(codTaxaSrv).map(serviceFeeMapper::toDomain);
     }
 
     @Override
     public ServiceFee save(ServiceFee taxasServico) {
-        ServiceFeeEntityJpa entity = ServiceFeeMapper.toEntity(taxasServico);
+        ServiceFeeEntityJpa entity = serviceFeeMapper.toEntity(taxasServico);
         ServiceFeeEntityJpa saved = serviceFeeRepository.save(entity);
-        return ServiceFeeMapper.toDomain(saved);
+        return serviceFeeMapper.toDomain(saved);
     }
 
     // ========== ChannelFee ==========
     @Override
     public Optional<ChannelFee> findById(ChannelFeeKey id) {
-        ChannelFeeKeyEntityJpa entityKey = ChannelFeeMapper.toEntityKey(id);
-        return channelFeeRepository.findById(entityKey).map(ChannelFeeMapper::toDomain);
+        ChannelFeeKeyEntityJpa entityKey = channelFeeMapper.toEntityKey(id);
+        return channelFeeRepository.findById(entityKey).map(channelFeeMapper::toDomain);
     }
 
     @Override
     public ChannelFee save(ChannelFee taxasScanal) {
-        ChannelFeeEntityJpa entity = ChannelFeeMapper.toEntity(taxasScanal);
+        ChannelFeeEntityJpa entity = channelFeeMapper.toEntity(taxasScanal);
         ChannelFeeEntityJpa saved = channelFeeRepository.save(entity);
-        return ChannelFeeMapper.toDomain(saved);
+        return channelFeeMapper.toDomain(saved);
     }
 
     @Override
     public boolean existsByKey(ChannelFeeKey id) {
-        ChannelFeeKeyEntityJpa entityKey = ChannelFeeMapper.toEntityKey(id);
+        ChannelFeeKeyEntityJpa entityKey = channelFeeMapper.toEntityKey(id);
         return channelFeeRepository.existsById(entityKey);
     }
 
     // ========== DestinyFee ==========
     @Override
     public Optional<DestinyFee> findDesById(Long id) {
-        return destinyFeeRepository.findById(id).map(DestinyFeeMapper::toDomain);
+        return destinyFeeRepository.findById(id).map(destinyFeeMapper::toDomain);
     }
 
     @Override
     public DestinyFee save(DestinyFee taxasDes) {
-        DestinyFeeEntityJpa entity = DestinyFeeMapper.toEntity(taxasDes);
+        DestinyFeeEntityJpa entity = destinyFeeMapper.toEntity(taxasDes);
         DestinyFeeEntityJpa saved = destinyFeeRepository.save(entity);
-        return DestinyFeeMapper.toDomain(saved);
+        return destinyFeeMapper.toDomain(saved);
     }
 
     @Override

@@ -7,8 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.TechnologyMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.TechnologyJpaRepository;
 import br.sptrans.scd.product.application.port.out.repository.TechnologyPort;
@@ -17,16 +16,15 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-
 public class TechnologyAdapterJpa implements TechnologyPort {
 
     private final TechnologyJpaRepository repository;
-    private final UserPersistencePort userRepository;
+    private final TechnologyMapper technologyMapper;
 
     @Override
     public Optional<Technology> findById(String codTecnologia) {
         return repository.findById(codTecnologia)
-                .map(entity -> TechnologyMapper.toDomain(entity, userRepository));
+                .map(technologyMapper::toDomain);
     }
 
     @Override
@@ -38,12 +36,12 @@ public class TechnologyAdapterJpa implements TechnologyPort {
     public List<Technology> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findAll().stream()
-                    .map(entity -> TechnologyMapper.toDomain(entity, userRepository))
+                    .map(technologyMapper::toDomain)
                     .filter(t -> codStatus.equals(t.getCodStatus()))
                     .toList();
         }
         return repository.findAll().stream()
-                .map(entity -> TechnologyMapper.toDomain(entity, userRepository))
+                .map(technologyMapper::toDomain)
                 .toList();
     }
 
@@ -51,17 +49,17 @@ public class TechnologyAdapterJpa implements TechnologyPort {
     public Page<Technology> findAll(String codStatus, Pageable pageable) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findByCodStatus(codStatus, pageable)
-                    .map(entity -> TechnologyMapper.toDomain(entity, userRepository));
+                    .map(technologyMapper::toDomain);
         }
         return repository.findAll(pageable)
-                .map(entity -> TechnologyMapper.toDomain(entity, userRepository));
+                .map(technologyMapper::toDomain);
     }
 
     @Override
     public Technology save(Technology technology) {
-        var entity = TechnologyMapper.toEntity(technology);
+        var entity = technologyMapper.toEntity(technology);
         var saved = repository.save(entity);
-        return TechnologyMapper.toDomain(saved, userRepository);
+        return technologyMapper.toDomain(saved);
     }
 
     @Override
@@ -69,9 +67,9 @@ public class TechnologyAdapterJpa implements TechnologyPort {
         repository.findById(codTecnologia).ifPresent(entity -> {
             entity.setCodStatus(codStatus);
             if (idUsuario != null) {
-                User user = new User();
-                user.setIdUsuario(idUsuario);
-                entity.setIdUsuarioManutencao(user.getIdUsuario());
+                UserEntityJpa userRef = new UserEntityJpa();
+                userRef.setIdUsuario(idUsuario);
+                entity.setUsuarioManutencao(userRef);
             }
             repository.save(entity);
         });

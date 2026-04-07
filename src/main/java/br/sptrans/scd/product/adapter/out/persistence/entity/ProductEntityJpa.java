@@ -3,9 +3,13 @@ package br.sptrans.scd.product.adapter.out.persistence.entity;
 
 import java.time.LocalDateTime;
 
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -112,10 +116,12 @@ public class ProductEntityJpa {
     @Column(name = "COD_ESPECIE")
     private String codEspecie;
 
-    @Column(name = "ID_USUARIO_CADASTRO")
-    private Long idUsuarioCadastro;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO_CADASTRO")
+    private UserEntityJpa usuarioCadastro;
 
     @NotNull
-    @Column(name = "ID_USUARIO_MANUTENCAO")
-    private Long idUsuarioManutencao;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO_MANUTENCAO")
+    private UserEntityJpa usuarioManutencao;
 }

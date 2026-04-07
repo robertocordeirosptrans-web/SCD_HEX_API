@@ -7,8 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.SpeciesMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.SpeciesJpaRepository;
 import br.sptrans.scd.product.application.port.out.repository.SpeciesPort;
@@ -20,12 +19,12 @@ import lombok.RequiredArgsConstructor;
 public class SpeciesAdapterJpa implements SpeciesPort {
 
     private final SpeciesJpaRepository repository;
-    private final UserPersistencePort userRepository;
+    private final SpeciesMapper speciesMapper;
 
     @Override
     public Optional<Species> findById(String codEspecie) {
         return repository.findById(codEspecie)
-                .map(entity -> SpeciesMapper.toDomain(entity, userRepository));
+                .map(speciesMapper::toDomain);
     }
 
     @Override
@@ -37,12 +36,12 @@ public class SpeciesAdapterJpa implements SpeciesPort {
     public List<Species> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findAll().stream()
-                    .map(entity -> SpeciesMapper.toDomain(entity, userRepository))
+                    .map(speciesMapper::toDomain)
                     .filter(s -> codStatus.equals(s.getCodStatus()))
                     .toList();
         }
         return repository.findAll().stream()
-                .map(entity -> SpeciesMapper.toDomain(entity, userRepository))
+                .map(speciesMapper::toDomain)
                 .toList();
     }
 
@@ -50,24 +49,28 @@ public class SpeciesAdapterJpa implements SpeciesPort {
     public Page<Species> findAll(String codStatus, Pageable pageable) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findByCodStatus(codStatus, pageable)
-                    .map(entity -> SpeciesMapper.toDomain(entity, userRepository));
+                    .map(speciesMapper::toDomain);
         }
         return repository.findAll(pageable)
-                .map(entity -> SpeciesMapper.toDomain(entity, userRepository));
+                .map(speciesMapper::toDomain);
     }
 
     @Override
     public Species save(Species species) {
-        var entity = SpeciesMapper.toEntity(species);
+        var entity = speciesMapper.toEntity(species);
         var saved = repository.save(entity);
-        return SpeciesMapper.toDomain(saved, userRepository);
+        return speciesMapper.toDomain(saved);
     }
 
     @Override
     public void updateStatus(String codEspecie, String codStatus, Long idUsuario) {
         repository.findById(codEspecie).ifPresent(entity -> {
             entity.setCodStatus(codStatus);
-            // Se existir campo de usuário, implemente aqui
+            if (idUsuario != null) {
+                UserEntityJpa userRef = new UserEntityJpa();
+                userRef.setIdUsuario(idUsuario);
+                entity.setUsuarioManutencao(userRef);
+            }
             repository.save(entity);
         });
     }

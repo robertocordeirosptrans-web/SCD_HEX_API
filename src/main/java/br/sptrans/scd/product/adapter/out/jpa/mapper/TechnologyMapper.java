@@ -1,52 +1,20 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-import br.sptrans.scd.auth.domain.User;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+
 import br.sptrans.scd.product.adapter.out.persistence.entity.TechnologyEntityJpa;
 import br.sptrans.scd.product.domain.Technology;
 
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = UserEntityJpaMapper.class)
 public interface TechnologyMapper {
-    static Technology toDomain(TechnologyEntityJpa entity, UserPersistencePort userRepository) {
-        if (entity == null) {
-            return null;
-        }
-        Technology tech = new Technology();
-        tech.setCodTecnologia(entity.getCodTecnologia());
-        tech.setDesTecnologia(entity.getDesTecnologia());
-        tech.setDtCadastro(entity.getDtCadastro());
-        tech.setDtManutencao(entity.getDtManutencao());
-        tech.setCodStatus(entity.getCodStatus());
 
-        if (entity.getIdUsuarioCadastro() != null) {
-            User user = userRepository.findById(entity.getIdUsuarioCadastro()).orElse(null);
-            tech.setIdUsuarioCadastro(user);
-        }
-        if (entity.getIdUsuarioManutencao() != null) {
-            User user = userRepository.findById(entity.getIdUsuarioManutencao()).orElse(null);
-            tech.setIdUsuarioManutencao(user);
-        }
+    @Mapping(source = "usuarioCadastro", target = "idUsuarioCadastro")
+    @Mapping(source = "usuarioManutencao", target = "idUsuarioManutencao")
+    Technology toDomain(TechnologyEntityJpa entity);
 
-        return tech;
-    }
-
-    static TechnologyEntityJpa toEntity(Technology tech) {
-        if (tech == null) {
-            return null;
-        }
-        TechnologyEntityJpa entity = new TechnologyEntityJpa();
-        entity.setCodTecnologia(tech.getCodTecnologia());
-        entity.setDesTecnologia(tech.getDesTecnologia());
-        entity.setDtCadastro(tech.getDtCadastro());
-        entity.setDtManutencao(tech.getDtManutencao());
-        entity.setCodStatus(tech.getCodStatus());
-
-        if (tech.getIdUsuarioCadastro() != null) {
-            entity.setIdUsuarioCadastro(tech.getIdUsuarioCadastro().getIdUsuario());
-        }
-        if (tech.getIdUsuarioManutencao() != null) {
-            entity.setIdUsuarioManutencao(tech.getIdUsuarioManutencao().getIdUsuario());
-        }
-
-        return entity;
-    }
+    @Mapping(source = "idUsuarioCadastro", target = "usuarioCadastro")
+    @Mapping(source = "idUsuarioManutencao", target = "usuarioManutencao")
+    TechnologyEntityJpa toEntity(Technology tech);
 }

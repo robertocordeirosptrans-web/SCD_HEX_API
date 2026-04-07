@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.FareMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.FareJpaRepository;
 import br.sptrans.scd.product.adapter.out.persistence.entity.FareEntityJpa;
@@ -16,51 +17,48 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-
 public class FareAdapterJpa implements FarePort {
 
     private final FareJpaRepository fareJpaRepository;
-
-
+    private final FareMapper fareMapper;
 
     @Override
     public Optional<Fare> findById(String codTarifa) {
         return fareJpaRepository.findById(codTarifa)
-                .map(FareMapper::toDomain);
+                .map(fareMapper::toDomain);
     }
 
     @Override
     public Fare save(Fare fare) {
-        FareEntityJpa entity = FareMapper.toEntity(fare);
+        FareEntityJpa entity = fareMapper.toEntity(fare);
         FareEntityJpa saved = fareJpaRepository.save(entity);
-        return FareMapper.toDomain(saved);
+        return fareMapper.toDomain(saved);
     }
-
 
     @Override
     public void extendsValidity(String codTarifa, LocalDateTime dtFim, Long idUsuario) {
         fareJpaRepository.findById(codTarifa).ifPresent(entity -> {
             entity.setDtVigenciaFim(dtFim);
             entity.setDtManutencao(LocalDateTime.now());
-            entity.setIdUsuarioManutencao(idUsuario);
+            UserEntityJpa userRef = new UserEntityJpa();
+            userRef.setIdUsuario(idUsuario);
+            entity.setUsuarioManutencao(userRef);
             fareJpaRepository.save(entity);
         });
     }
 
     @Override
     public List<Fare> listByProductChannel(String codProduto, String codCanal) {
-
         return fareJpaRepository.findAll().stream()
                 .filter(e -> e.getCodProduto() != null && e.getCodProduto().equals(codProduto))
                 .sorted((a, b) -> a.getDtVigenciaInicio().compareTo(b.getDtVigenciaInicio()))
-                .map(FareMapper::toDomain)
+                .map(fareMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
     public boolean isConflictValidity(String codProduto, String codCanal,
             LocalDateTime dtInicio, LocalDateTime dtFim, Long excluirIdTaxa) {
-
         return fareJpaRepository.findAll().stream()
                 .filter(e -> e.getCodProduto() != null && e.getCodProduto().equals(codProduto))
                 .filter(e -> excluirIdTaxa == null || !e.getCodTarifa().equals(excluirIdTaxa.toString()))
@@ -71,15 +69,12 @@ public class FareAdapterJpa implements FarePort {
     @Override
     public Optional<Fare> searchCurrent(String codProduto, String codCanal,
             LocalDateTime dataOperacao) {
-
         return fareJpaRepository.findAll().stream()
                 .filter(e -> e.getCodProduto() != null && e.getCodProduto().equals(codProduto))
                 .filter(e -> e.getDtVigenciaInicio() != null && !e.getDtVigenciaInicio().isAfter(dataOperacao))
                 .filter(e -> e.getDtVigenciaFim() == null || !e.getDtVigenciaFim().isBefore(dataOperacao))
                 .sorted((a, b) -> b.getDtVigenciaInicio().compareTo(a.getDtVigenciaInicio()))
-                .map(FareMapper::toDomain)
+                .map(fareMapper::toDomain)
                 .findFirst();
     }
-
-   
 }

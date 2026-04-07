@@ -109,9 +109,9 @@ public class FeeFareService implements FeeFareManagementUseCase {
                 command.desTarifa(),
                 ProductDomainStatus.ACTIVE.getCode(),
                 command.valTarifa() != null ? command.valTarifa().intValue() : null,
-                usuario,
+                usuario.getIdUsuario(),
                 null,
-                produto);
+                produto.getCodProduto());
 
         auditLogger.info("[AUDIT] Usuário {} criou Tarifa {} para Produto {}", usuario.getCodLogin(), fare.getCodTarifa(), produto.getCodProduto());
 
@@ -124,7 +124,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
                 .orElseThrow(() -> new ProductException(ProductErrorType.FARE_NOT_FOUND));
 
         User usuario = userResolverHelper.resolve(command.idUsuario());
-        fare.extendValidity(command.dtFim(), usuario);
+        fare.extendValidity(command.dtFim(), usuario.getIdUsuario());
         auditLogger.info("[AUDIT] Usuário {} atualizou Tarifa {}", usuario.getCodLogin(), fare.getCodTarifa());
         return fareRepository.save(fare);
     }

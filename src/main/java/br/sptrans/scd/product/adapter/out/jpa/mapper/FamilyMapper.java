@@ -1,49 +1,20 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-import br.sptrans.scd.auth.domain.User;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+
 import br.sptrans.scd.product.adapter.out.persistence.entity.FamilyEntityJpa;
 import br.sptrans.scd.product.domain.Family;
 
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = UserEntityJpaMapper.class)
 public interface FamilyMapper {
 
-    static Family toDomain(FamilyEntityJpa entity, UserPersistencePort userRepository) {
-        if (entity == null) {
-            return null;
-        }
-        User usuarioCadastro = entity.getIdUsuarioCadastro() != null
-                ? userRepository.findById(entity.getIdUsuarioCadastro()).orElse(null)
-                : null;
-        User usuarioManutencao = entity.getIdUsuarioManutencao() != null
-                ? userRepository.findById(entity.getIdUsuarioManutencao()).orElse(null)
-                : null;
-        return new Family(
-                entity.getCodFamilia(),
-                entity.getDesFamilia(),
-                entity.getCodStatus(),
-                entity.getDtCadastro(),
-                entity.getDtManutencao(),
-                usuarioCadastro,
-                usuarioManutencao
-        );
-    }
+    @Mapping(source = "usuarioCadastro", target = "idUsuarioCadastro")
+    @Mapping(source = "usuarioManutencao", target = "idUsuarioManutencao")
+    Family toDomain(FamilyEntityJpa entity);
 
-    static FamilyEntityJpa toEntity(Family family) {
-        if (family == null) {
-            return null;
-        }
-        FamilyEntityJpa entity = new FamilyEntityJpa();
-        entity.setCodFamilia(family.getCodFamilia());
-        entity.setDesFamilia(family.getDesFamilia());
-        entity.setCodStatus(family.getCodStatus());
-        entity.setDtCadastro(family.getDtCadastro());
-        entity.setDtManutencao(family.getDtManutencao());
-        if (family.getIdUsuarioCadastro() != null) {
-            entity.setIdUsuarioCadastro(family.getIdUsuarioCadastro().getIdUsuario());
-        }
-        if (family.getIdUsuarioManutencao() != null) {
-            entity.setIdUsuarioManutencao(family.getIdUsuarioManutencao().getIdUsuario());
-        }
-        return entity;
-    }
+    @Mapping(source = "idUsuarioCadastro", target = "usuarioCadastro")
+    @Mapping(source = "idUsuarioManutencao", target = "usuarioManutencao")
+    FamilyEntityJpa toEntity(Family family);
 }

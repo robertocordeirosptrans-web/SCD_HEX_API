@@ -4,9 +4,13 @@ package br.sptrans.scd.product.adapter.out.persistence.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,6 +47,7 @@ public class ChannelFeeEntityJpa {
     @Column(name = "DT_MODI", nullable = false)
     private LocalDateTime dtManutencao;
 
-    @Column(name = "ID_USUARIO_MANUTENCAO")
-    private Long idUsuarioManutencao;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO_MANUTENCAO")
+    private UserEntityJpa usuarioManutencao;
 }

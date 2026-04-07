@@ -1,52 +1,24 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+
 import br.sptrans.scd.product.adapter.out.persistence.entity.ChannelFeeEntityJpa;
 import br.sptrans.scd.product.adapter.out.persistence.entity.ChannelFeeKeyEntityJpa;
 import br.sptrans.scd.product.domain.ChannelFee;
 import br.sptrans.scd.product.domain.ChannelFeeKey;
 
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = UserEntityJpaMapper.class)
 public interface ChannelFeeMapper {
-    static ChannelFee toDomain(ChannelFeeEntityJpa entity) {
-        if (entity == null) return null;
-        ChannelFee fee = new ChannelFee();
-        fee.setId(toDomainKey(entity.getId()));
-        fee.setValInicio(entity.getValInicio());
-        fee.setValFim(entity.getValFim());
-        fee.setValPercentual(entity.getValPercentual());
-        fee.setDtInicio(entity.getDtInicio());
-        fee.setDtFim(entity.getDtFim());
-        fee.setDtManutencao(entity.getDtManutencao());
-        // fee.setIdUsuarioManutencao(null); // relacionamento não mapeado
-        return fee;
-    }
 
-    static ChannelFeeEntityJpa toEntity(ChannelFee fee) {
-        if (fee == null) return null;
-        ChannelFeeEntityJpa entity = new ChannelFeeEntityJpa();
-        entity.setId(toEntityKey(fee.getId()));
-        entity.setValInicio(fee.getValInicio());
-        entity.setValFim(fee.getValFim());
-        entity.setValPercentual(fee.getValPercentual());
-        entity.setDtInicio(fee.getDtInicio());
-        entity.setDtFim(fee.getDtFim());
-        entity.setDtManutencao(fee.getDtManutencao());
-        // entity.setIdUsuarioManutencao(null); // relacionamento não mapeado
-        return entity;
-    }
+    @Mapping(source = "usuarioManutencao", target = "idUsuarioManutencao")
+    ChannelFee toDomain(ChannelFeeEntityJpa entity);
 
-    static ChannelFeeKey toDomainKey(ChannelFeeKeyEntityJpa entityKey) {
-        if (entityKey == null) return null;
-        return new ChannelFeeKey(
-            entityKey.getCodCanal(),
-            entityKey.getCodProduto()
-        );
-    }
+    @Mapping(source = "idUsuarioManutencao", target = "usuarioManutencao")
+    ChannelFeeEntityJpa toEntity(ChannelFee fee);
 
-    static ChannelFeeKeyEntityJpa toEntityKey(ChannelFeeKey domainKey) {
-        if (domainKey == null) return null;
-        return new ChannelFeeKeyEntityJpa(
-            domainKey.getCodCanal(),
-            domainKey.getCodProduto()
-        );
-    }
+    ChannelFeeKey toDomainKey(ChannelFeeKeyEntityJpa entityKey);
+
+    ChannelFeeKeyEntityJpa toEntityKey(ChannelFeeKey domainKey);
 }

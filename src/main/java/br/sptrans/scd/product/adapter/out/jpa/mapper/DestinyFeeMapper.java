@@ -1,22 +1,15 @@
 package br.sptrans.scd.product.adapter.out.jpa.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
+
 import br.sptrans.scd.product.adapter.out.persistence.entity.DestinyFeeEntityJpa;
 import br.sptrans.scd.product.domain.DestinyFee;
 
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface DestinyFeeMapper {
-    static DestinyFee toDomain(DestinyFeeEntityJpa entity) {
-        if (entity == null) return null;
-        return new DestinyFee(
-            entity.getCodTaxaDes(),
-            entity.getCodCanalDestino()
-        );
-    }
 
-    static DestinyFeeEntityJpa toEntity(DestinyFee fee) {
-        if (fee == null) return null;
-        DestinyFeeEntityJpa entity = new DestinyFeeEntityJpa();
-        entity.setCodTaxaDes(fee.getCodTaxaDes());
-        entity.setCodCanalDestino(fee.getCodCanalDestino());
-        return entity;
-    }
+    DestinyFee toDomain(DestinyFeeEntityJpa entity);
+
+    DestinyFeeEntityJpa toEntity(DestinyFee fee);
 }

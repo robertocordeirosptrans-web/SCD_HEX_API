@@ -3,9 +3,13 @@ package br.sptrans.scd.product.adapter.out.persistence.entity;
 
 import java.time.LocalDateTime;
 
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,9 +40,11 @@ public class FamilyEntityJpa {
     @Column(name = "DT_MANUTENCAO", length = 20)
     private LocalDateTime dtManutencao;
 
-    @Column(name = "ID_USUARIO", length = 20)
-    private Long idUsuarioCadastro;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO")
+    private UserEntityJpa usuarioCadastro;
 
-    @Column(name = "ID_USUARIO_MANUTENCAO", length = 20)
-    private Long idUsuarioManutencao;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO_MANUTENCAO")
+    private UserEntityJpa usuarioManutencao;
 }
