@@ -22,4 +22,20 @@ public class DocumentsType {
     private LocalDateTime dtManutencao;
     private Long idUsuarioManutencao;
     private List<Situation> situacoes;
+
+    /**
+     * Verifica se o tipo de documento está ativo.
+     */
+    public boolean isTipoAtivo() {
+        return "A".equalsIgnoreCase(this.stTiposDocumentos); // Ajuste conforme regra real
+    }
+
+    /**
+     * Verifica se o tipo de documento está vigente.
+     */
+    public boolean isVigente() {
+        java.time.LocalDateTime agora = java.time.LocalDateTime.now();
+        return (dtInicioVigencia == null || !agora.isBefore(dtInicioVigencia)) &&
+                (dtTerminoVigencia == null || !agora.isAfter(dtTerminoVigencia));
+    }
 }
