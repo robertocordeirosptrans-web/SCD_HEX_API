@@ -8,18 +8,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.TechnologyMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.TechnologyJpaRepository;
 import br.sptrans.scd.product.application.port.out.repository.TechnologyPort;
 import br.sptrans.scd.product.domain.Technology;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-@Transactional
+
 public class TechnologyAdapterJpa implements TechnologyPort {
 
     private final TechnologyJpaRepository repository;

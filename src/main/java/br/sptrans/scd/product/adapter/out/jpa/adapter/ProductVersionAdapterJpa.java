@@ -9,12 +9,10 @@ import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductVersionMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductVersionJpaRepository;
 import br.sptrans.scd.product.application.port.out.repository.ProductVersionPort;
 import br.sptrans.scd.product.domain.ProductVersion;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-@Transactional
 public class ProductVersionAdapterJpa implements ProductVersionPort {
 
     private final ProductVersionJpaRepository repository;

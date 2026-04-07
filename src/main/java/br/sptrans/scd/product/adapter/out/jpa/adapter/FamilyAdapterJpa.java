@@ -13,12 +13,10 @@ import br.sptrans.scd.product.adapter.out.jpa.repository.FamilyJpaRepository;
 import br.sptrans.scd.product.adapter.out.persistence.entity.FamilyEntityJpa;
 import br.sptrans.scd.product.application.port.out.repository.FamilyPort;
 import br.sptrans.scd.product.domain.Family;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-@Transactional
 
 public class FamilyAdapterJpa implements FamilyPort {
 

@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class FamilyService implements FamilyManagementUseCase {
+public class FamilyService extends AbstractCatalogueService<Family, String> {
 
     private final FamilyPort familyRepository;
     private final UserResolverHelper userResolverHelper;

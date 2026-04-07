@@ -21,22 +21,19 @@ import br.sptrans.scd.product.adapter.out.persistence.entity.ChannelFeeKeyEntity
 import br.sptrans.scd.product.adapter.out.persistence.entity.DestinyFeeEntityJpa;
 import br.sptrans.scd.product.adapter.out.persistence.entity.FeeEntityJpa;
 import br.sptrans.scd.product.adapter.out.persistence.entity.ServiceFeeEntityJpa;
-
 import br.sptrans.scd.product.application.port.out.repository.FeePersistencePort;
-
 import br.sptrans.scd.product.domain.AdministrativeFee;
 import br.sptrans.scd.product.domain.ChannelFee;
 import br.sptrans.scd.product.domain.ChannelFeeKey;
 import br.sptrans.scd.product.domain.DestinyFee;
 import br.sptrans.scd.product.domain.Fee;
 import br.sptrans.scd.product.domain.ServiceFee;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 
 @Repository
 @RequiredArgsConstructor
-@Transactional
+
 public class FeeAdapterJpa implements FeePersistencePort {
 
     private final FeeJpaRepository feeRepository;

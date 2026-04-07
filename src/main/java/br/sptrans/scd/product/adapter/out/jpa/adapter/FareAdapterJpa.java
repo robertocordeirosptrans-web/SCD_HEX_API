@@ -12,12 +12,11 @@ import br.sptrans.scd.product.adapter.out.jpa.repository.FareJpaRepository;
 import br.sptrans.scd.product.adapter.out.persistence.entity.FareEntityJpa;
 import br.sptrans.scd.product.application.port.out.repository.FarePort;
 import br.sptrans.scd.product.domain.Fare;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-@Transactional
+
 public class FareAdapterJpa implements FarePort {
 
     private final FareJpaRepository fareJpaRepository;
