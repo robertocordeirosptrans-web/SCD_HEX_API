@@ -28,7 +28,7 @@ public class HistCreditRequestController {
     public ResponseEntity<?> getCreditRequestHistory(
             @RequestParam("numSolicitacao") Long numSolicitacao,
             @RequestParam("numSolicitacaoItem") Long numSolicitacaoItem,
-            @RequestParam(value = "codCanal", required = false, defaultValue = "152") String codCanal) {
+            @RequestParam(value = "codCanal", required = false) String codCanal) {
         log.info("[HistCreditRequestController] Recebida requisição: numSolicitacao={}, numSolicitacaoItem={}, codCanal={}", numSolicitacao, numSolicitacaoItem, codCanal);
         var historico = histUseCase.findItemStatusHistory(numSolicitacao, numSolicitacaoItem, codCanal);
         return ResponseEntity.ok(historico);

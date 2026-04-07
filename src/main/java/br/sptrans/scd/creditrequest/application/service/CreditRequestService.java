@@ -167,7 +167,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
         for (CreateRequestCredit.CreditRequest pedido : request.pedidos()) {
             //Validar o numero de lote para cada pedido
-            validationService.validarNumLote(pedido.numLote(), request.codCanal(), creditRequestRepository);
+            validationService.validarNumLote(pedido.numLote(), request.codCanal());
 
             // Verificar se já existe a solicitação na base (SOL_DISTRIBUICOES)
             boolean solicitacaoExiste = creditRequestRepository.findByNumSolicitacaoAndCodCanal(pedido.numSolicitacao(), request.codCanal()).isPresent();

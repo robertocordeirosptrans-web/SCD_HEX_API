@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.creditrequest.application.port.in.LogRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.RechargeLogPort;
@@ -11,6 +12,7 @@ import br.sptrans.scd.creditrequest.domain.RechargeLog;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class RechargeLogService implements LogRechargeUseCase {
 

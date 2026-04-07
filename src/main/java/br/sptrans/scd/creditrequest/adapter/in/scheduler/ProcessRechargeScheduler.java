@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class ProcessRechargeSheduler {
+public class ProcessRechargeScheduler {
 
     private final CreditRequestPort creditRequestRepository;
     private final ProcessRechargeUseCase processRechargeUseCase;

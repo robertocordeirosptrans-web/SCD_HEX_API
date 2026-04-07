@@ -37,6 +37,7 @@ public class CreditRequestValidationService {
     private final RechargeLimitPersistencePort rechargeLimitRepository;
     private final SalesChannelPersistencePort salesChannelRepository;
     private final ProductVersionPort productVersionRepository;
+    private final CreditRequestPort creditRequestRepository;
 
     public SalesChannel validarCanal(String codCanal) {
         SalesChannel canal = salesChannelRepository.findById(codCanal)
@@ -48,7 +49,7 @@ public class CreditRequestValidationService {
         return canal;
     }
 
-    public void validarNumLote(String numLote, String codCanal, CreditRequestPort creditRequestRepository) {
+    public void validarNumLote(String numLote, String codCanal) {
         if (creditRequestRepository.existsByNumLoteAndCodCanal(numLote, codCanal)) {
             throw new IllegalStateException(
                     "Número de lote já utilizado para este canal: " + numLote);
