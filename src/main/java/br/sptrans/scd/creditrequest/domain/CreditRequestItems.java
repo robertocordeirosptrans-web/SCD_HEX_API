@@ -3,6 +3,7 @@ package br.sptrans.scd.creditrequest.domain;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -111,4 +112,69 @@ public class CreditRequestItems {
                 .add(valorEvento != null ? valorEvento : BigDecimal.ZERO);
         return valorEfetivo.compareTo(BigDecimal.ZERO) <= 0;
     }
+
+    // --- Métodos de consulta de estado ---
+
+    public boolean isRecarregado() {
+        return SituationCreditRequestItems.RECARREGADO.getCode().equals(codSituacao);
+    }
+
+    public boolean isCancelado() {
+        return SituationCreditRequestItems.CANCELADO.getCode().equals(codSituacao);
+    }
+
+    public boolean isBloqueado() {
+        return SituationCreditRequestItems.BLOQUEADO.getCode().equals(codSituacao);
+    }
+
+    public boolean isPendenteLiquidacao() {
+        return SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO.getCode().equals(codSituacao);
+    }
+
+    public boolean isLiberadoParaRecarga() {
+        return SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode().equals(codSituacao);
+    }
+
+    public boolean isTerminal() {
+        return isRecarregado() || isCancelado();
+    }
+
+    // --- Métodos de transição de estado ---
+
+    /**
+     * Solicita o cancelamento do item de recarga.
+     * Não é permitido cancelar um item já recarregado.
+     */
+    public void cancelar(Long idUsuario) {
+        if (isRecarregado()) {
+            throw new IllegalStateException("Não é possível cancelar um item já recarregado");
+        }
+        this.codSituacao = SituationCreditRequestItems.CANCELAMENTO_SOLICITADO.getCode();
+        this.idUsuarioManutencao = idUsuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    /**
+     * Solicita o bloqueio do item de recarga.
+     * Não é permitido bloquear um item cancelado.
+     */
+    public void bloquear(Long idUsuario) {
+        if (isCancelado()) {
+            throw new IllegalStateException("Não é possível bloquear um item cancelado");
+        }
+        this.codSituacao = SituationCreditRequestItems.BLOQUEIO_SOLICITADO.getCode();
+        this.idUsuarioManutencao = idUsuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    /**
+     * Solicita o desbloqueio do item de recarga.
+     */
+    public void desbloquear(Long idUsuario) {
+        this.codSituacao = SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode();
+        this.idUsuarioManutencao = idUsuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
+    
 }
