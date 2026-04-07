@@ -5,6 +5,10 @@ package br.sptrans.scd.auth.adapter.in.rest.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDateTime;
 
 public record UserRequestDTO(
         @NotBlank(message = "Login é obrigatório") @Size(min = 3, max = 10, message = "Login deve ter entre 3 e 10 caracteres") String codLogin,
@@ -30,8 +34,20 @@ public record UserRequestDTO(
         @NotBlank(message = "Classificação da pessoa é obrigatória") String codClassificacaoPessoa,
 
         @NotBlank(message = "Código da empresa é obrigatório") @Size(max = 20, message = "Código da empresa deve ter no máximo 20 caracteres") String codEmpresa,
-        String dtJornadaIni,
-        String dtJornadaFim,
+
+
+        @NotBlank(message = "Data/hora inicial da jornada é obrigatória")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm[:ss]")
+        LocalDateTime dtJornadaIni,
+
+        @NotBlank(message = "Data/hora final da jornada é obrigatória")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm[:ss]")
+        LocalDateTime dtJornadaFim,
+
+        @NotBlank(message = "Padrão de dias da semana é obrigatório")
+        @Pattern(regexp = "[01]{7}", message = "Padrão de dias deve conter exatamente 7 caracteres 0 ou 1")
         String numDiasSemanasPermitidos
     ) {
 }

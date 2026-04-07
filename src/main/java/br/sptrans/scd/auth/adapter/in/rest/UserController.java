@@ -90,6 +90,7 @@ public class UserController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public UserResponseDTO createUser(@RequestBody UserRequestDTO dto) {
+        Long idUsuarioLogado = userResolverHelper.getCurrentUserId();
         User user = userManagementUseCase.createUser(new CreateUserCommand(
                 dto.codLogin(),
                 dto.nomUsuario(),
@@ -99,7 +100,7 @@ public class UserController {
                 dto.numDiasSemanasPermitidos(),
                 dto.dtJornadaIni(),
                 dto.dtJornadaFim(),
-                dto.idUsuarioLogado()
+                idUsuarioLogado
         ));
         return toResponseDTO(user);
     }
