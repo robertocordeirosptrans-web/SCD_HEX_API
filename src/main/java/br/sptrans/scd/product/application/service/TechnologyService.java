@@ -2,12 +2,12 @@ package br.sptrans.scd.product.application.service;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase;
-import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.CreateTechnologyCommand;
-import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.UpdateTechnologyCommand;
 import br.sptrans.scd.product.application.port.out.repository.TechnologyPort;
 import br.sptrans.scd.product.domain.Technology;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -23,6 +23,8 @@ public class TechnologyService extends
         implements TechnologyManagementUseCase {
     private final TechnologyPort technologyRepository;
     private final UserResolverHelper userResolverHelper;
+
+    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT_TECHNOLOGY");
 
     private Technology getByIdOrThrow(String codTecnologia) {
         return technologyRepository.findById(codTecnologia)
@@ -41,6 +43,8 @@ public class TechnologyService extends
         entity.setActive(true);
         entity.setIdUsuarioCadastro(usuario);
         entity.setDtCadastro(java.time.LocalDateTime.now());
+
+        auditLogger.info("[AUDIT] Usuário {} criou Tecnologia {} - {}", usuario.getCodLogin(), entity.getId(), entity.getDesTecnologia());
         return technologyRepository.save(entity);
     }
 
@@ -51,6 +55,8 @@ public class TechnologyService extends
         existing.setDesTecnologia(command.desTecnologia());
         existing.setIdUsuarioManutencao(usuario);
         existing.setDtManutencao(java.time.LocalDateTime.now());
+
+        auditLogger.info("[AUDIT] Usuário {} atualizou Tecnologia {} - {}", usuario.getCodLogin(), existing.getId(), existing.getDesTecnologia());
         return technologyRepository.save(existing);
     }
 
@@ -60,6 +66,8 @@ public class TechnologyService extends
         var usuario = userResolverHelper.resolve(idUsuario);
         technology.activate(usuario);
         technologyRepository.save(technology);
+
+        auditLogger.info("[AUDIT] Usuário {} ativou Tecnologia {} - {}", usuario.getCodLogin(), technology.getId(), technology.getDesTecnologia());
     }
 
     @Override
@@ -68,11 +76,14 @@ public class TechnologyService extends
         var usuario = userResolverHelper.resolve(idUsuario);
         technology.deactivate(usuario);
         technologyRepository.save(technology);
+
+        auditLogger.info("[AUDIT] Usuário {} inativou Tecnologia {} - {}", usuario.getCodLogin(), technology.getId(), technology.getDesTecnologia());
     }
 
     @Override
     public void delete(String codTecnologia) {
         technologyRepository.deleteById(codTecnologia);
+        auditLogger.info("[AUDIT] Tecnologia deletada: {}", codTecnologia);
     }
 
     @Override

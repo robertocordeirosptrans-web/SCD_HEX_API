@@ -3,6 +3,8 @@ package br.sptrans.scd.product.application.service;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -13,7 +15,6 @@ import br.sptrans.scd.product.application.port.out.repository.FamilyPort;
 import br.sptrans.scd.product.domain.Family;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
-
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
@@ -27,6 +28,8 @@ public class FamilyService extends
     private final FamilyPort familyRepository;
     private final UserResolverHelper userResolverHelper;
 
+    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT_FAMILY");
+
     @Override
     public Family create(CreateFamilyCommand command) {
         if (familyRepository.existsById(command.codFamilia())) {
@@ -39,6 +42,8 @@ public class FamilyService extends
         entity.setActive(true);
         entity.setIdUsuarioCadastro(usuario);
         entity.setDtCadastro(java.time.LocalDateTime.now());
+
+        auditLogger.info("[AUDIT] Usuário {} criou Família {} - {}", usuario.getCodLogin(), entity.getId(), entity.getDesFamilia());
         return familyRepository.save(entity);
     }
 
@@ -49,6 +54,8 @@ public class FamilyService extends
         existing.setDesFamilia(command.desFamilia());
         existing.setIdUsuarioManutencao(usuario);
         existing.setDtManutencao(java.time.LocalDateTime.now());
+
+        auditLogger.info("[AUDIT] Usuário {} atualizou Família {} - {}", usuario.getCodLogin(), existing.getId(), existing.getDesFamilia());
         return familyRepository.save(existing);
     }
 
@@ -58,6 +65,8 @@ public class FamilyService extends
         var usuario = userResolverHelper.resolve(idUsuario);
         family.activate(usuario);
         familyRepository.save(family);
+
+        auditLogger.info("[AUDIT] Usuário {} ativou Família {} - {}", usuario.getCodLogin(), family.getId(), family.getDesFamilia());
     }
 
     @Override
@@ -66,11 +75,14 @@ public class FamilyService extends
         var usuario = userResolverHelper.resolve(idUsuario);
         family.deactivate(usuario);
         familyRepository.save(family);
+
+        auditLogger.info("[AUDIT] Usuário {} inativou Família {} - {}", usuario.getCodLogin(), family.getId(), family.getDesFamilia());
     }
 
     @Override
     public void delete(String codFamilia) {
         familyRepository.deleteById(codFamilia);
+        auditLogger.info("[AUDIT] Família deletada: {}", codFamilia);
     }
 
     private Family getByIdOrThrow(String codFamilia) {

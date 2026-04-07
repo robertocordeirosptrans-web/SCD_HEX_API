@@ -3,17 +3,16 @@ package br.sptrans.scd.product.application.service;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase;
-import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase.CreateModalityCommand;
 import br.sptrans.scd.product.application.port.out.repository.ModalityPort;
 import br.sptrans.scd.product.domain.Modality;
-
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
@@ -25,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 public class ModalityService extends AbstractCatalogueService<Modality, String, ModalityManagementUseCase.CreateModalityCommand, ModalityManagementUseCase.UpdateModalityCommand> implements ModalityManagementUseCase {
     private final ModalityPort modalityRepository;
     private final UserResolverHelper userResolverHelper;
+
+    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT_MODALITY");
 
     private Modality getByIdOrThrow(String codModalidade) {
         return modalityRepository.findById(codModalidade)
@@ -43,6 +44,8 @@ public class ModalityService extends AbstractCatalogueService<Modality, String, 
         entity.setActive(true);
         entity.setIdUsuarioCadastro(usuario);
         entity.setDtCadastro(java.time.LocalDateTime.now());
+
+        auditLogger.info("[AUDIT] Usuário {} criou Modalidade {} - {}", usuario.getCodLogin(), entity.getId(), entity.getDesModalidade());
         return modalityRepository.save(entity);
     }
 
@@ -53,6 +56,8 @@ public class ModalityService extends AbstractCatalogueService<Modality, String, 
         existing.setDesModalidade(command.desModalidade());
         existing.setIdUsuarioManutencao(usuario);
         existing.setDtManutencao(java.time.LocalDateTime.now());
+
+        auditLogger.info("[AUDIT] Usuário {} atualizou Modalidade {} - {}", usuario.getCodLogin(), existing.getId(), existing.getDesModalidade());
         return modalityRepository.save(existing);
     }
 
@@ -62,6 +67,8 @@ public class ModalityService extends AbstractCatalogueService<Modality, String, 
         var usuario = userResolverHelper.resolve(idUsuario);
         modality.activate(usuario);
         modalityRepository.save(modality);
+
+        auditLogger.info("[AUDIT] Usuário {} ativou Modalidade {} - {}", usuario.getCodLogin(), modality.getId(), modality.getDesModalidade());
     }
 
     @Override
@@ -70,11 +77,14 @@ public class ModalityService extends AbstractCatalogueService<Modality, String, 
         var usuario = userResolverHelper.resolve(idUsuario);
         modality.deactivate(usuario);
         modalityRepository.save(modality);
+
+        auditLogger.info("[AUDIT] Usuário {} inativou Modalidade {} - {}", usuario.getCodLogin(), modality.getId(), modality.getDesModalidade());
     }
 
     @Override
     public void delete(String codModalidade) {
         modalityRepository.deleteById(codModalidade);
+        auditLogger.info("[AUDIT] Modalidade deletada: {}", codModalidade);
     }
 
     @Override

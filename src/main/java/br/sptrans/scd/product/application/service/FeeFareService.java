@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +39,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
     private final ProductPort productRepository;
     private final UserResolverHelper userResolverHelper;
     private final LiminarGateway liminarGateway;
+
+    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT_FEEFARE");
 
     /**
      * Calcula as taxas administrativas e de serviço para um pedido, aplicando
@@ -109,6 +113,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
                 null,
                 produto);
 
+        auditLogger.info("[AUDIT] Usuário {} criou Tarifa {} para Produto {}", usuario.getCodLogin(), fare.getCodTarifa(), produto.getCodProduto());
+
         return fareRepository.save(fare);
     }
 
@@ -119,6 +125,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
 
         User usuario = userResolverHelper.resolve(command.idUsuario());
         fare.extendValidity(command.dtFim(), usuario);
+        auditLogger.info("[AUDIT] Usuário {} atualizou Tarifa {}", usuario.getCodLogin(), fare.getCodTarifa());
         return fareRepository.save(fare);
     }
 
@@ -187,6 +194,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
 
         existing.update(command.desTaxa(), command.dtFim());
         Fee savedFee = feeRepository.save(existing);
+
+        auditLogger.info("[AUDIT] Taxa atualizada: {} por comando {}", codTaxa, command);
 
         if (existing.getTaxaAdministrativa() != null) {
             AdministrativeFee taxaAdm = new AdministrativeFee(

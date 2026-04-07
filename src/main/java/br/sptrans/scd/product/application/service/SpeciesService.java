@@ -3,14 +3,14 @@ package br.sptrans.scd.product.application.service;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase;
-import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase.CreateSpeciesCommand;
-import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase.UpdateSpeciesCommand;
 import br.sptrans.scd.product.application.port.out.repository.SpeciesPort;
 import br.sptrans.scd.product.domain.Species;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -24,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 public class SpeciesService extends AbstractCatalogueService<Species, String, SpeciesManagementUseCase.CreateSpeciesCommand, SpeciesManagementUseCase.UpdateSpeciesCommand> implements SpeciesManagementUseCase {
     private final SpeciesPort speciesRepository;
     private final UserResolverHelper userResolverHelper;
+
+    private static final Logger auditLogger = LoggerFactory.getLogger("AUDIT_SPECIES");
 
     private Species getByIdOrThrow(String codEspecie) {
         return speciesRepository.findById(codEspecie)
@@ -42,6 +44,8 @@ public class SpeciesService extends AbstractCatalogueService<Species, String, Sp
         entity.setActive(true);
         entity.setIdUsuarioCadastro(usuario);
         entity.setDtCadastro(java.time.LocalDateTime.now());
+
+        auditLogger.info("[AUDIT] Usuário {} criou Espécie {} - {}", usuario.getCodLogin(), entity.getId(), entity.getDesEspecie());
         return speciesRepository.save(entity);
     }
 
@@ -52,6 +56,8 @@ public class SpeciesService extends AbstractCatalogueService<Species, String, Sp
         existing.setDesEspecie(command.desEspecie());
         existing.setIdUsuarioManutencao(usuario);
         existing.setDtManutencao(java.time.LocalDateTime.now());
+
+        auditLogger.info("[AUDIT] Usuário {} atualizou Espécie {} - {}", usuario.getCodLogin(), existing.getId(), existing.getDesEspecie());
         return speciesRepository.save(existing);
     }
 
@@ -61,6 +67,8 @@ public class SpeciesService extends AbstractCatalogueService<Species, String, Sp
         var usuario = userResolverHelper.resolve(idUsuario);
         species.activate(usuario);
         speciesRepository.save(species);
+
+        auditLogger.info("[AUDIT] Usuário {} ativou Espécie {} - {}", usuario.getCodLogin(), species.getId(), species.getDesEspecie());
     }
 
     @Override
@@ -69,11 +77,14 @@ public class SpeciesService extends AbstractCatalogueService<Species, String, Sp
         var usuario = userResolverHelper.resolve(idUsuario);
         species.deactivate(usuario);
         speciesRepository.save(species);
+
+        auditLogger.info("[AUDIT] Usuário {} inativou Espécie {} - {}", usuario.getCodLogin(), species.getId(), species.getDesEspecie());
     }
 
     @Override
     public void delete(String codEspecie) {
         speciesRepository.deleteById(codEspecie);
+        auditLogger.info("[AUDIT] Espécie deletada: {}", codEspecie);
     }
 
     @Override
