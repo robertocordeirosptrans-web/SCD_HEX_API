@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Modality {
+public class Modality implements CatalogueEntity<String> {
 
     private String codModalidade;
     private String desModalidade;
@@ -22,6 +22,22 @@ public class Modality {
     private LocalDateTime dtManutencao;
     private User idUsuarioCadastro;
     private User idUsuarioManutencao;
+
+    @Override
+    public String getId() {
+        return codModalidade;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.codModalidade = id;
+    }
+
+    @Override
+    public void setActive(boolean active) {
+        this.codStatus = active ? ProductDomainStatus.ACTIVE.getCode() : ProductDomainStatus.INACTIVE.getCode();
+    }
+
 
     public boolean isActive() {
         return ProductDomainStatus.ACTIVE.getCode().equals(this.codStatus);

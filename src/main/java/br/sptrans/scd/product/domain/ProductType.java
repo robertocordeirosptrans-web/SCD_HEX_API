@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductType {
+public class ProductType implements CatalogueEntity<String> {
 
     private String codTipoProduto;
     private String desTipoProduto;
@@ -22,6 +22,21 @@ public class ProductType {
     private LocalDateTime dtManutencao;
     private User idUsuarioCadastro;
     private User idUsuarioManutencao;
+
+    @Override
+    public String getId() {
+        return codTipoProduto;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.codTipoProduto = id;
+    }
+
+    @Override
+    public void setActive(boolean active) {
+        this.codStatus = active ? ProductDomainStatus.ACTIVE.getCode() : ProductDomainStatus.INACTIVE.getCode();
+    }
 
     public boolean isActive() {
         return ProductDomainStatus.ACTIVE.getCode().equals(this.codStatus);

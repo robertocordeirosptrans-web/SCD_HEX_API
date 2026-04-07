@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Technology {
+public class Technology implements CatalogueEntity<String> {
 
     private String codTecnologia;
     private String desTecnologia;
@@ -22,6 +22,21 @@ public class Technology {
     private LocalDateTime dtManutencao;
     private User idUsuarioCadastro;
     private User idUsuarioManutencao;
+
+    @Override
+    public String getId() {
+        return codTecnologia;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.codTecnologia = id;
+    }
+
+    @Override
+    public void setActive(boolean active) {
+        this.codStatus = active ? ProductDomainStatus.ACTIVE.getCode() : ProductDomainStatus.INACTIVE.getCode();
+    }
 
     public boolean isActive() {
         return ProductDomainStatus.ACTIVE.getCode().equals(this.codStatus);

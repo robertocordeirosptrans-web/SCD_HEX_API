@@ -7,11 +7,13 @@ import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Family {
+public class Family implements CatalogueEntity<String> {
 
     private String codFamilia;
     private String desFamilia;
@@ -21,12 +23,27 @@ public class Family {
     private User idUsuarioCadastro;
     private User idUsuarioManutencao;
 
+    @Override
+    public String getId() {
+        return codFamilia;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.codFamilia = id;
+    }
+
     public boolean isActive() {
         return ProductDomainStatus.ACTIVE.getCode().equals(this.codStatus);
     }
 
     public boolean isInactive() {
         return ProductDomainStatus.INACTIVE.getCode().equals(this.codStatus);
+    }
+
+    @Override
+    public void setActive(boolean active) {
+        this.codStatus = active ? ProductDomainStatus.ACTIVE.getCode() : ProductDomainStatus.INACTIVE.getCode();
     }
 
     public void activate(User idUsuario) {

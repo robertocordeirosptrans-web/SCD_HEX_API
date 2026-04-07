@@ -1,16 +1,14 @@
 package br.sptrans.scd.product.application.service;
 
-import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase;
 import br.sptrans.scd.product.application.port.out.repository.SpeciesPort;
-
 import br.sptrans.scd.product.domain.Species;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -21,87 +19,64 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class SpeciesService implements SpeciesManagementUseCase {
-
+public class SpeciesService extends AbstractCatalogueService<Species, String> {
     private final SpeciesPort speciesRepository;
     private final UserResolverHelper userResolverHelper;
 
     @Override
-    public Species createSpecies(CreateSpeciesCommand command) {
-        if (speciesRepository.existsById(command.codEspecie())) {
+    public Species create(Species entity, Long idUsuario) {
+        if (speciesRepository.existsById(entity.getId())) {
             throw new ProductException(ProductErrorType.SPECIES_CODE_ALREADY_EXISTS);
         }
-
-        User usuario = userResolverHelper.resolve(command.idUsuario());
-
-        Species species = new Species(
-                command.codEspecie(),
-                command.desEspecie(),
-                ProductDomainStatus.INACTIVE.getCode(),
-                LocalDateTime.now(),
-                LocalDateTime.now(),
-                usuario,
-                null
-        );
-
-        return speciesRepository.save(species);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        entity.setIdUsuarioCadastro(usuario);
+        entity.setDtCadastro(java.time.LocalDateTime.now());
+        return speciesRepository.save(entity);
     }
 
     @Override
-    public Species updateSpecies(String codEspecie, UpdateSpeciesCommand command) {
-        Species existing = speciesRepository.findById(codEspecie)
+    public Species update(String id, Species entity, Long idUsuario) {
+        Species existing = speciesRepository.findById(id)
                 .orElseThrow(() -> new ProductException(ProductErrorType.SPECIES_NOT_FOUND));
-
-        User usuario = userResolverHelper.resolve(command.idUsuario());
-
-        existing.update(command.desEspecie(), usuario);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        existing.setDesEspecie(entity.getDesEspecie() != null ? entity.getDesEspecie() : existing.getDesEspecie());
+        existing.setIdUsuarioManutencao(usuario);
+        existing.setDtManutencao(java.time.LocalDateTime.now());
         return speciesRepository.save(existing);
     }
 
     @Override
-    public Species findBySpecies(String codEspecie) {
-        return speciesRepository.findById(codEspecie)
-                .orElseThrow(() -> new ProductException(ProductErrorType.SPECIES_NOT_FOUND));
+    public Optional<Species> findById(String id) {
+        return speciesRepository.findById(id);
     }
 
     @Override
-    public Page<Species> findAllSpecies(String codStatus, Pageable pageable) {
-        return speciesRepository.findAll(codStatus, pageable);
+    public List<Species> findAll(Long idUsuario) {
+        userResolverHelper.resolve(idUsuario);
+        return speciesRepository.findAll(ProductDomainStatus.ACTIVE.getCode(), Pageable.unpaged()).getContent();
     }
 
     @Override
-    public void activateSpecies(String codEspecie, Long idUsuario) {
-        Species species = speciesRepository.findById(codEspecie)
+    public void activate(String id, Long idUsuario) {
+        Species species = speciesRepository.findById(id)
                 .orElseThrow(() -> new ProductException(ProductErrorType.SPECIES_NOT_FOUND));
-
         if (species.isActive()) {
             throw new ProductException(ProductErrorType.SPECIES_ALREADY_ACTIVE);
         }
-
         User usuario = userResolverHelper.resolve(idUsuario);
         species.activate(usuario);
         speciesRepository.save(species);
     }
 
     @Override
-    public void inactivateSpecies(String codEspecie, Long idUsuario) {
-        Species species = speciesRepository.findById(codEspecie)
+    public void inactivate(String id, Long idUsuario) {
+        Species species = speciesRepository.findById(id)
                 .orElseThrow(() -> new ProductException(ProductErrorType.SPECIES_NOT_FOUND));
-
         if (species.isInactive()) {
             throw new ProductException(ProductErrorType.SPECIES_ALREADY_INACTIVE);
         }
-
         User usuario = userResolverHelper.resolve(idUsuario);
         species.deactivate(usuario);
         speciesRepository.save(species);
-    }
-
-    @Override
-    public void deleteSpecies(String codEspecie) {
-        if (!speciesRepository.existsById(codEspecie)) {
-            throw new ProductException(ProductErrorType.SPECIES_NOT_FOUND);
-        }
-        speciesRepository.deleteById(codEspecie);
     }
 }

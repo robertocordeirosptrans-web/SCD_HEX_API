@@ -1,6 +1,5 @@
 package br.sptrans.scd.product.adapter.out.jpa.adapter;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -36,20 +35,6 @@ public class FamilyAdapterJpa implements FamilyPort {
         return repository.existsById(codFamilia);
     }
 
-    @Override
-
-    public List<Family> findAll(String codStatus) {
-        if (codStatus != null && !codStatus.isBlank()) {
-            return repository.findByCodStatusOrderByCodFamilia(codStatus)
-                    .stream()
-                    .map(entity -> FamilyMapper.toDomain(entity, userRepository))
-                    .toList();
-        }
-        return repository.findAllByOrderByCodFamilia()
-                .stream()
-                .map(entity -> FamilyMapper.toDomain(entity, userRepository))
-                .toList();
-    }
 
     @Override
     public Page<Family> findAll(String codStatus, Pageable pageable) {

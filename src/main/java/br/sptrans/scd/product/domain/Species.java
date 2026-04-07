@@ -7,11 +7,13 @@ import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Species {
+public class Species implements CatalogueEntity<String> {
 
     private String codEspecie;
     private String desEspecie;
@@ -20,6 +22,21 @@ public class Species {
     private LocalDateTime dtManutencao;
     private User idUsuarioCadastro;
     private User idUsuarioManutencao;
+
+    @Override
+    public String getId() {
+        return codEspecie;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.codEspecie = id;
+    }
+
+    @Override
+    public void setActive(boolean active) {
+        this.codStatus = active ? ProductDomainStatus.ACTIVE.getCode() : ProductDomainStatus.INACTIVE.getCode();
+    }
 
     public boolean isActive() {
         return ProductDomainStatus.ACTIVE.getCode().equals(this.codStatus);
