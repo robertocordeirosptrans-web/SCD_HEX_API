@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.domain.enums.ProductVersionStatus;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ProductVersion {
 
     private String codVersao;
@@ -96,10 +98,6 @@ public class ProductVersion {
         this.dtManutencao = LocalDateTime.now();
     }
 
-    public void block(User idUsuario) {
-        this.codStatus = ProductVersionStatus.BLOCKED.getCode();
-        this.idUsuarioManutencao = idUsuario;
-        this.dtManutencao = LocalDateTime.now();
-    }
+
 
 }

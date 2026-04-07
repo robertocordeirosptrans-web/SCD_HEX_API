@@ -41,52 +41,67 @@ public class ProductService implements ProductUseCase {
 
         User usuarioCadastro = userResolverHelper.resolve(cmd.idUsuario());
 
-        Product product = new Product(
-            cmd.codProduto(),
-            cmd.desProduto(),
-            cmd.desEmissorResponsavel(),
-            ProductStatus.INACTIVE.getCode(),
-            cmd.desUtilizacao(),
-            LocalDateTime.now(),
-            LocalDateTime.now(),
-            cmd.flgBloqFabricacao(),
-            cmd.flgBloqVenda(),
-            cmd.flgBloqDistribuicao(),
-            cmd.flgBloqTroca(),
-            cmd.flgBloqAquisicao(),
-            cmd.flgBloqPedido(),
-            cmd.flgBloqDevolucao(),
-            cmd.flgInicializado(),
-            cmd.flgComercializado(),
-            cmd.flgRestManual(),
-            cmd.codEntidade(),
-            cmd.codTipoCartao(),
-            cmd.codClassificacaoPessoa(),
-            cmd.codTipoProduto(),
-            cmd.codTecnologia(),
-            cmd.codModalidade(),
-            cmd.codFamilia(),
-            cmd.codEspecie(),
-            usuarioCadastro.getIdUsuario(),
-            null
-        );
+        Product product = Product.builder()
+            .codProduto(cmd.codProduto())
+            .desProduto(cmd.desProduto())
+            .desEmissorResponsavel(cmd.desEmissorResponsavel())
+            .codStatus(ProductStatus.ACTIVE.getCode())
+            .desUtilizacao(cmd.desUtilizacao())
+            .dtCadastro(LocalDateTime.now())
+            .dtManutencao(LocalDateTime.now())
+            .flgBloqFabricacao(cmd.flgBloqFabricacao())
+            .flgBloqVenda(cmd.flgBloqVenda())
+            .flgBloqDistribuicao(cmd.flgBloqDistribuicao())
+            .flgBloqTroca(cmd.flgBloqTroca())
+            .flgBloqAquisicao(cmd.flgBloqAquisicao())
+            .flgBloqPedido(cmd.flgBloqPedido())
+            .flgBloqDevolucao(cmd.flgBloqDevolucao())
+            .flgInicializado(cmd.flgInicializado())
+            .flgComercializado(cmd.flgComercializado())
+            .flgRestManual(cmd.flgRestManual())
+            .codEntidade(cmd.codEntidade())
+            .codTipoCartao(cmd.codTipoCartao())
+            .codClassificacaoPessoa(cmd.codClassificacaoPessoa())
+            .codTipoProduto(cmd.codTipoProduto())
+            .codTecnologia(cmd.codTecnologia())
+            .codModalidade(cmd.codModalidade())
+            .codFamilia(cmd.codFamilia())
+            .codEspecie(cmd.codEspecie())
+            .idUsuarioCadastro(usuarioCadastro.getIdUsuario())
+            .idUsuarioManutencao(usuarioCadastro.getIdUsuario())
+            .build();
 
         productRepository.save(product);
 
         // Versão 1 criada automaticamente
-        ProductVersion initialVersion = new ProductVersion(
-                "1",
-                cmd.codProduto(),
-                null, null, null, null, null, null, null,
-                null, null, null, null,
-                null, null, null, null, null, null, null,
-                LocalDateTime.now(),
-                null,
-                ProductVersionStatus.INACTIVE.getCode(),
-                null,
-                usuarioCadastro,
-                null
-        );
+        ProductVersion initialVersion = ProductVersion.builder()
+            .codVersao("1")
+            .codProduto(cmd.codProduto())
+            .dtValidade(null)
+            .dtVidaInicio(null)
+            .dtVidaFim(null)
+            .dtLiberacao(null)
+            .dtLancamento(null)
+            .dtVendaInicio(null)
+            .dtVendaFim(null)
+            .dtUsoInicio(null)
+            .dtUsoFim(null)
+            .dtTrocaInicio(null)
+            .dtTrocaFim(null)
+            .flgBloqFabricacao("N")
+            .flgBloqVenda("N")
+            .flgBloqDistribuicao("N")
+            .flgBloqTroca("N")
+            .flgBloqAquisicao("N")
+            .flgBloqPedido("N")
+            .flgBloqDevolucao("N")
+            .dtCadastro(LocalDateTime.now())
+            .dtManutencao(LocalDateTime.now())
+            .codStatus(ProductVersionStatus.ACTIVE.getCode())
+            .desProdutoVersoes("Versão Inicial")
+            .idUsuarioCadastro(usuarioCadastro)
+            .idUsuarioManutencao(usuarioCadastro)
+            .build();
 
         productVersionRepository.save(initialVersion);
     }
@@ -124,39 +139,39 @@ public class ProductService implements ProductUseCase {
     @Override
     public void updateProduct(String productCode, UpdateProductCommand cmd) {
         Product existing = productRepository.findById(productCode)
-                .orElseThrow(() -> new ProductException(ProductErrorType.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new ProductException(ProductErrorType.PRODUCT_NOT_FOUND));
 
         User usuarioManutencao = userResolverHelper.resolve(cmd.idUsuario());
 
-        Product updated = new Product(
-                existing.getCodProduto(),
-                cmd.desProduto(),
-                cmd.desEmissorResponsavel(),
-                existing.getCodStatus(),
-                cmd.desUtilizacao(),
-                existing.getDtCadastro(),
-                LocalDateTime.now(),
-                cmd.flgBloqFabricacao(),
-                cmd.flgBloqVenda(),
-                cmd.flgBloqDistribuicao(),
-                cmd.flgBloqTroca(),
-                cmd.flgBloqAquisicao(),
-                cmd.flgBloqPedido(),
-                cmd.flgBloqDevolucao(),
-                cmd.flgInicializado(),
-                cmd.flgComercializado(),
-                cmd.flgRestManual(),
-                cmd.codEntidade(),
-                cmd.codTipoCartao(),
-                cmd.codClassificacaoPessoa(),
-                cmd.codTipoProduto(),
-                cmd.codTecnologia(),
-                cmd.codModalidade(),
-                cmd.codFamilia(),
-                cmd.codEspecie(),
-                existing.getIdUsuarioCadastro(),
-                usuarioManutencao.getIdUsuario()
-        );
+        Product updated = Product.builder()
+            .codProduto(existing.getCodProduto())
+            .desProduto(cmd.desProduto())
+            .desEmissorResponsavel(cmd.desEmissorResponsavel())
+            .codStatus(existing.getCodStatus())
+            .desUtilizacao(cmd.desUtilizacao())
+            .dtCadastro(existing.getDtCadastro())
+            .dtManutencao(LocalDateTime.now())
+            .flgBloqFabricacao(cmd.flgBloqFabricacao())
+            .flgBloqVenda(cmd.flgBloqVenda())
+            .flgBloqDistribuicao(cmd.flgBloqDistribuicao())
+            .flgBloqTroca(cmd.flgBloqTroca())
+            .flgBloqAquisicao(cmd.flgBloqAquisicao())
+            .flgBloqPedido(cmd.flgBloqPedido())
+            .flgBloqDevolucao(cmd.flgBloqDevolucao())
+            .flgInicializado(cmd.flgInicializado())
+            .flgComercializado(cmd.flgComercializado())
+            .flgRestManual(cmd.flgRestManual())
+            .codEntidade(cmd.codEntidade())
+            .codTipoCartao(cmd.codTipoCartao())
+            .codClassificacaoPessoa(cmd.codClassificacaoPessoa())
+            .codTipoProduto(cmd.codTipoProduto())
+            .codTecnologia(cmd.codTecnologia())
+            .codModalidade(cmd.codModalidade())
+            .codFamilia(cmd.codFamilia())
+            .codEspecie(cmd.codEspecie())
+            .idUsuarioCadastro(existing.getIdUsuarioCadastro())
+            .idUsuarioManutencao(usuarioManutencao.getIdUsuario())
+            .build();
 
         productRepository.save(updated);
     }
@@ -185,34 +200,34 @@ public class ProductService implements ProductUseCase {
         String newVersionCode = generateNextVersionCode(codProduto);
         User usuarioCadastro = userResolverHelper.resolve(cmd.idUsuario());
 
-        ProductVersion version = new ProductVersion(
-                newVersionCode,
-                codProduto,
-                cmd.dtValidade(),
-                cmd.dtVidaInicio(),
-                cmd.dtVidaFim(),
-                cmd.dtLiberacao(),
-                cmd.dtLancamento(),
-                cmd.dtVendaInicio(),
-                cmd.dtVendaFim(),
-                cmd.dtUsoIni(),
-                cmd.dtUsoFim(),
-                cmd.dtTrocaIni(),
-                cmd.dtTrocaFim(),
-                cmd.flgBloqFabricacao(),
-                cmd.flgBloqVenda(),
-                cmd.flgBloqDistribuicao(),
-                cmd.flgBloqTroca(),
-                cmd.flgBloqAquisicao(),
-                cmd.flgBloqPedido(),
-                cmd.flgBloqDevolucao(),
-                LocalDateTime.now(),
-                null,
-                ProductVersionStatus.INACTIVE.getCode(),
-                cmd.desProdutoVersoes(),
-                usuarioCadastro,
-                null
-        );
+        ProductVersion version = ProductVersion.builder()
+            .codVersao(newVersionCode)
+            .codProduto(codProduto)
+            .dtValidade(cmd.dtValidade())
+            .dtVidaInicio(cmd.dtVidaInicio())
+            .dtVidaFim(cmd.dtVidaFim())
+            .dtLiberacao(cmd.dtLiberacao())
+            .dtLancamento(cmd.dtLancamento())
+            .dtVendaInicio(cmd.dtVendaInicio())
+            .dtVendaFim(cmd.dtVendaFim())
+            .dtUsoInicio(cmd.dtUsoIni())
+            .dtUsoFim(cmd.dtUsoFim())
+            .dtTrocaInicio(cmd.dtTrocaIni())
+            .dtTrocaFim(cmd.dtTrocaFim())
+            .flgBloqFabricacao(cmd.flgBloqFabricacao())
+            .flgBloqVenda(cmd.flgBloqVenda())
+            .flgBloqDistribuicao(cmd.flgBloqDistribuicao())
+            .flgBloqTroca(cmd.flgBloqTroca())
+            .flgBloqAquisicao(cmd.flgBloqAquisicao())
+            .flgBloqPedido(cmd.flgBloqPedido())
+            .flgBloqDevolucao(cmd.flgBloqDevolucao())
+            .dtCadastro(LocalDateTime.now())
+            .dtManutencao(null)
+            .codStatus(ProductVersionStatus.INACTIVE.getCode())
+            .desProdutoVersoes(cmd.desProdutoVersoes())
+            .idUsuarioCadastro(usuarioCadastro)
+            .idUsuarioManutencao(null)
+            .build();
 
         return productVersionRepository.save(version);
     }
@@ -222,6 +237,34 @@ public class ProductService implements ProductUseCase {
         return productVersionRepository.findById(codVersao)
                 .orElseThrow(() -> new ProductException(ProductErrorType.VERSION_NOT_FOUND));
     }
+
+    // =========================================================================
+    // Operações de status de Versão de Produto
+    // =========================================================================
+
+    public void activateProductVersion(String codVersao, Long idUsuario) {
+        ProductVersion version = productVersionRepository.findById(codVersao)
+                .orElseThrow(() -> new ProductException(ProductErrorType.VERSION_NOT_FOUND));
+        if (version.isActive()) {
+            throw new ProductException(ProductErrorType.PRODUCT_ALREADY_ACTIVE);
+        }
+        User usuarioManutencao = userResolverHelper.resolve(idUsuario);
+        version.activate(usuarioManutencao);
+        productVersionRepository.save(version);
+    }
+
+    public void inactivateProductVersion(String codVersao, Long idUsuario) {
+        ProductVersion version = productVersionRepository.findById(codVersao)
+                .orElseThrow(() -> new ProductException(ProductErrorType.VERSION_NOT_FOUND));
+        if (version.isInactive()) {
+            throw new ProductException(ProductErrorType.PRODUCT_ALREADY_INACTIVE);
+        }
+        User usuarioManutencao = userResolverHelper.resolve(idUsuario);
+        version.deactivate(usuarioManutencao);
+        productVersionRepository.save(version);
+    }
+
+
 
     // =========================================================================
     // Helpers
@@ -236,4 +279,3 @@ public class ProductService implements ProductUseCase {
                 .orElse("1");
     }
 }
-

@@ -32,6 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -52,7 +53,7 @@ public class ModalityController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
             public ResponseEntity<Modality> createModality(
-                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ModalityRequest request) {
+                @Valid @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ModalityRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Modality modality = modalityManagementUseCase.create(
             new CreateModalityCommand(
@@ -70,7 +71,7 @@ public class ModalityController {
         })
             public ResponseEntity<Modality> updateModality(
                 @PathVariable String codModalidade,
-                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ModalityRequest request) {
+                 @Valid @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ModalityRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Modality modality = modalityManagementUseCase.update(codModalidade,
             new UpdateModalityCommand(request.desModalidade(), idUsuario));
@@ -135,6 +136,5 @@ public class ModalityController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Request DTOs ──────────────────────────────────────────────────────────
-    // Request DTOs removidos, usar ModalityRequest
+
 }

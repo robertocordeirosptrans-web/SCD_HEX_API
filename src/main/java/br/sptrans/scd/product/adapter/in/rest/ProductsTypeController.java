@@ -32,6 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -52,7 +53,7 @@ public class ProductsTypeController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
             public ResponseEntity<ProductType> createProductsType(
-                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ProductTypesRequest request) {
+                @Valid @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ProductTypesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         ProductType productType = productsTypeManagementUseCase.create(
             new CreateProductsTypeCommand(
@@ -70,7 +71,7 @@ public class ProductsTypeController {
         })
             public ResponseEntity<ProductType> updateProductsType(
                 @PathVariable String codTipoProduto,
-                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ProductTypesRequest request) {
+                @Valid @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ProductTypesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         ProductType productType = productsTypeManagementUseCase.update(codTipoProduto,
             new UpdateProductsTypeCommand(request.desTipoProduto(), idUsuario));
@@ -134,7 +135,4 @@ public class ProductsTypeController {
         productsTypeManagementUseCase.delete(codTipoProduto);
         return ResponseEntity.noContent().build();
     }
-
-    // ── Request DTOs ──────────────────────────────────────────────────────────
-    // Request DTOs removidos, usar ProductTypesRequest
 }

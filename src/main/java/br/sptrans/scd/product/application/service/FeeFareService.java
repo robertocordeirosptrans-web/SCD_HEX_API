@@ -12,8 +12,6 @@ import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.FeeFareManagementUseCase;
 import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
 import br.sptrans.scd.product.application.port.out.repository.FarePort;
-
-
 import br.sptrans.scd.product.application.port.out.repository.FeePersistencePort;
 import br.sptrans.scd.product.application.port.out.repository.ProductPort;
 import br.sptrans.scd.product.domain.AdministrativeFee;
@@ -25,6 +23,7 @@ import br.sptrans.scd.product.domain.ServiceFee;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
+import br.sptrans.scd.product.domain.vo.TaxaCalculada;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
@@ -77,30 +76,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
         return new TaxaCalculada(valorTaxaAdm, valorTaxaServ);
     }
 
-    /**
-     * DTO para retorno do cálculo de taxas.
-     */
-    public static class TaxaCalculada {
-        private final BigDecimal valorTaxaAdm;
-        private final BigDecimal valorTaxaServ;
 
-        public TaxaCalculada(BigDecimal valorTaxaAdm, BigDecimal valorTaxaServ) {
-            this.valorTaxaAdm = valorTaxaAdm;
-            this.valorTaxaServ = valorTaxaServ;
-        }
-
-        public static TaxaCalculada isenta() {
-            return new TaxaCalculada(BigDecimal.ZERO, BigDecimal.ZERO);
-        }
-
-        public BigDecimal getValorTaxaAdm() {
-            return valorTaxaAdm;
-        }
-
-        public BigDecimal getValorTaxaServ() {
-            return valorTaxaServ;
-        }
-    }
 
     // =========================================================================
     // Gestão de Tarifas (Fare)

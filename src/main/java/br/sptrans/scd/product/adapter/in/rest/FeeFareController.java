@@ -19,6 +19,7 @@ import br.sptrans.scd.product.application.port.in.FeeFareManagementUseCase;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -34,7 +35,7 @@ public class FeeFareController {
 
 
     @PostMapping("/tarifa")
-    public ResponseEntity<?> createFare(@RequestBody RegisterFareRequest request) {
+    public ResponseEntity<?> createFare(@Valid @RequestBody RegisterFareRequest request) {
         var command = new FeeFareManagementUseCase.RegisterFareCommand(
             request.codProduto(),
             request.codVersao(),
@@ -51,7 +52,7 @@ public class FeeFareController {
 
 
     @PostMapping("/tarifa/{codTarifa}")
-    public ResponseEntity<?> updateFare(@PathVariable String codTarifa, @RequestBody UpdateFareRequest request) {
+    public ResponseEntity<?> updateFare(@PathVariable String codTarifa, @Valid @RequestBody UpdateFareRequest request) {
         var command = new FeeFareManagementUseCase.UpdateFareCommand(
             request.desTarifa(),
             request.dtFim(),

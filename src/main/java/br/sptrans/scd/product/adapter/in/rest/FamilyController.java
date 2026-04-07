@@ -33,6 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -53,7 +54,7 @@ public class FamilyController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
             public ResponseEntity<Family> createFamily(
-                @RequestBody FamilyRequest request) {
+               @Valid  @RequestBody FamilyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Family family = familyManagementUseCase.create(
             new CreateFamilyCommand(
@@ -71,7 +72,7 @@ public class FamilyController {
         })
             public ResponseEntity<Family> updateFamily(
                 @PathVariable String codFamilia,
-                @RequestBody FamilyRequest request) {
+                @Valid @RequestBody FamilyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Family family = familyManagementUseCase.update(codFamilia,
             new UpdateFamilyCommand(request.desFamilia(), idUsuario));
@@ -136,6 +137,4 @@ public class FamilyController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Request DTOs ──────────────────────────────────────────────────────────
-    // Request DTOs removidos, usar FamilyRequest
 }

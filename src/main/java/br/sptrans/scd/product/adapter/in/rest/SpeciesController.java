@@ -33,6 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -53,7 +54,7 @@ public class SpeciesController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<Species> createSpecies(
-            @RequestBody SpeciesRequest request) {
+            @Valid @RequestBody SpeciesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Species species = speciesManagementUseCase.create(
                 new CreateSpeciesCommand(
@@ -71,7 +72,7 @@ public class SpeciesController {
     })
     public ResponseEntity<Species> updateSpecies(
             @PathVariable String codEspecie,
-                        @RequestBody SpeciesRequest request) {
+                        @Valid @RequestBody SpeciesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
                 Species species = speciesManagementUseCase.update(codEspecie,
                                 new UpdateSpeciesCommand(request.desEspecie(), idUsuario));
@@ -134,6 +135,5 @@ public class SpeciesController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Request DTOs ──────────────────────────────────────────────────────────
-        // ── Request DTOs removidos, usar SpeciesRequest
+
 }

@@ -8,7 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ProductVersionStatus {
     ACTIVE("A", "Ativo"),
-    BLOCKED("B", "Bloqueado"),
     INACTIVE("I", "Inativo");
 
     private final String code;

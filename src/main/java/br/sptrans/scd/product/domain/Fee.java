@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import br.sptrans.scd.channel.domain.SalesChannel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Fee {
 
     private Long codTaxa;

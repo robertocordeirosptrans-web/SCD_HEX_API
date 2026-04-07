@@ -39,6 +39,7 @@ import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import br.sptrans.scd.product.application.service.FeeFareService;
 import br.sptrans.scd.product.domain.Fee;
+import br.sptrans.scd.product.domain.vo.TaxaCalculada;
 import br.sptrans.scd.shared.cache.InvalidateOrderCache;
 import br.sptrans.scd.shared.exception.ValidationException;
 import br.sptrans.scd.shared.idempotency.IdempotencyStore;
@@ -369,7 +370,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         }
         Fee taxa = taxaOpt.get();
         // Calcular taxas
-        FeeFareService.TaxaCalculada taxas = feeFareService.calcularTaxas(
+        TaxaCalculada taxas = feeFareService.calcularTaxas(
             item.valorTotal(),
             request.codCanal(),
             pedido.numSolicitacao() != null ? pedido.numSolicitacao().toString() : null,

@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -52,7 +53,7 @@ public class ProductController {
     })
 
     public ResponseEntity<Void> createProduct(
-            @RequestBody ProductRequest request) {
+           @Valid  @RequestBody ProductRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         productUseCase.createProduct(new CreateProductCommand(
                 request.codProduto(),
@@ -104,7 +105,7 @@ public class ProductController {
 
     public ResponseEntity<Void> updateProduct(
             @PathVariable String codProduto,
-            @RequestBody ProductRequest request) {
+            @Valid @RequestBody ProductRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         productUseCase.updateProduct(codProduto, new UpdateProductCommand(
                 request.desProduto(),
@@ -156,7 +157,7 @@ public class ProductController {
 
     public ResponseEntity<ProductVersion> createNewVersion(
             @PathVariable String codProduto,
-            @RequestBody ProductVersionRequest request) {
+            @Valid @RequestBody ProductVersionRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         ProductVersion version = productUseCase.createNewVersion(codProduto, new CreateVersionCommand(
                 request.dtValidade(),
