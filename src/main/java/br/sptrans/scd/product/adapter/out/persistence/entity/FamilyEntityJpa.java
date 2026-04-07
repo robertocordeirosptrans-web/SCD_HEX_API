@@ -1,5 +1,6 @@
 package br.sptrans.scd.product.adapter.out.persistence.entity;
 
+
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;

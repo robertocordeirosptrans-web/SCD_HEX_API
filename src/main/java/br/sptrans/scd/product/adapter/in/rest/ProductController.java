@@ -50,7 +50,7 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Produto cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-        @SecurityRequirement(name = "bearerAuth")
+     
     public ResponseEntity<Void> createProduct(
             @RequestBody CreateProductRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
@@ -84,7 +84,7 @@ public class ProductController {
 
     @GetMapping
     @Operation(summary = "Lista todos os produtos, com filtro opcional de status")
-    @SecurityRequirement(name = "bearerAuth")
+  
     public ResponseEntity<PageResponse<Product>> findAllProducts(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
@@ -95,14 +95,14 @@ public class ProductController {
     @GetMapping("/{codProduto}")
 
     @Operation(summary = "Busca produto por código")
-    @SecurityRequirement(name = "bearerAuth")
+
     public ResponseEntity<Product> findByProduct(@PathVariable String codProduto) {
         return ResponseEntity.ok(productUseCase.findByProduct(codProduto));
     }
 
     @PutMapping("/{codProduto}")
     @Operation(summary = "Atualiza dados de um produto")
-    @SecurityRequirement(name = "bearerAuth")
+
     public ResponseEntity<Void> updateProduct(
             @PathVariable String codProduto,
             @RequestBody UpdateProductRequest request) {
@@ -135,7 +135,7 @@ public class ProductController {
     }
 
     @PatchMapping("/{codProduto}/activate")
-    @SecurityRequirement(name = "bearerAuth")
+
     @Operation(summary = "Ativa um produto")
     public ResponseEntity<Void> activateProduct(
             @PathVariable String codProduto) {
@@ -145,7 +145,7 @@ public class ProductController {
 
     @PatchMapping("/{codProduto}/inactivate")
     @Operation(summary = "Inativa um produto")
-    @SecurityRequirement(name = "bearerAuth")
+
     public ResponseEntity<Void> inactivateProduct(
             @PathVariable String codProduto) {
         productUseCase.inactivateProduct(codProduto, userResolverHelper.getCurrentUserId());
@@ -155,7 +155,7 @@ public class ProductController {
     // ── Versões ───────────────────────────────────────────────────────────────
     @PostMapping("/{codProduto}/versions")
     @Operation(summary = "Cria uma nova versão para um produto")
-    @SecurityRequirement(name = "bearerAuth")
+  
     public ResponseEntity<ProductVersion> createNewVersion(
             @PathVariable String codProduto,
             @RequestBody CreateVersionRequest request) {
@@ -187,7 +187,7 @@ public class ProductController {
 
     @GetMapping("/versions/{codVersao}")
     @Operation(summary = "Busca uma versão de produto por código")
-    @SecurityRequirement(name = "bearerAuth")
+   
     public ResponseEntity<ProductVersion> findByVersion(@PathVariable String codVersao) {
         return ResponseEntity.ok(productUseCase.findByVersion(codVersao));
     }

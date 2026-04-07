@@ -21,6 +21,6 @@ public class DestinyFeeEntityJpa {
     @Column(name = "ID_TAXA", nullable = false)
     private Long codTaxaDes;
 
-    @Column(name = "COD_CANALDESTINO", length = 20)
+    @Column(name = "COD_CANALDESTINO", nullable = false, length = 20)
     private String codCanalDestino;
 }

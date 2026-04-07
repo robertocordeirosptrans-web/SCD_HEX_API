@@ -1,11 +1,13 @@
 package br.sptrans.scd.product.adapter.out.persistence.entity;
 
+
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,10 +22,11 @@ import lombok.Setter;
 public class ModalityEntityJpa {
 
     @Id
+    @NotNull
     @Column(name = "COD_MODALIDADE", nullable = false, length = 20)
     private String codModalidade;
 
-    @Column(name = "DES_MODALIDADE", length = 20)
+    @Column(name = "DES_MODALIDADE", length = 60)
     private String desModalidade;
 
     @Column(name = "ST_MODALIDADES", length = 1)

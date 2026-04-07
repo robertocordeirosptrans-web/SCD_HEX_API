@@ -51,6 +51,6 @@ public class FareEntityJpa {
     private Long idUsuarioManutencao;
 
     @Column(name = "ST_TARIFAS", nullable = false)
-    private String codStatus;   
+    private String codStatus;
 
 }

@@ -1,11 +1,13 @@
 package br.sptrans.scd.product.adapter.out.persistence.entity;
 
+
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,9 +22,11 @@ import lombok.Setter;
 public class ProductVersionEntityJpa {
 
     @Id
+    @NotNull
     @Column(name = "COD_VERSAO", nullable = false, length = 20)
     private String codVersao;
 
+    @NotNull
     @Column(name = "COD_PRODUTO", length = 20)
     private String codProduto;
 
@@ -65,6 +69,7 @@ public class ProductVersionEntityJpa {
     @Column(name = "FLG_BLOQ_VENDA", length = 1)
     private String flgBloqVenda;
 
+    @NotNull
     @Column(name = "FLG_BLOQ_DISTRIBUICAO", length = 1)
     private String flgBloqDistribuicao;
 
@@ -89,6 +94,7 @@ public class ProductVersionEntityJpa {
     @Column(name = "ST_PRODUTOS_VERSOES", length = 1)
     private String codStatus;
 
+    @NotNull
     @Column(name = "DES_PROD_VERSAO", length = 60)
     private String desProdutoVersoes;
 

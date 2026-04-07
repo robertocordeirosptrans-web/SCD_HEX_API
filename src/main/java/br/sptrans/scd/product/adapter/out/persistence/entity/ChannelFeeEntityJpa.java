@@ -1,5 +1,6 @@
 package br.sptrans.scd.product.adapter.out.persistence.entity;
 
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -32,13 +33,14 @@ public class ChannelFeeEntityJpa {
     @Column(name = "VL_PERCENTUAL")
     private BigDecimal valPercentual;
 
-    @Column(name = "DT_INICIO")
+    @Column(name = "DT_INICIO", nullable = false)
     private LocalDateTime dtInicio;
 
     @Column(name = "DT_FIM")
     private LocalDateTime dtFim;
 
-    @Column(name = "DT_MODI")
+   
+    @Column(name = "DT_MODI", nullable = false)
     private LocalDateTime dtManutencao;
 
     @Column(name = "ID_USUARIO_MANUTENCAO")

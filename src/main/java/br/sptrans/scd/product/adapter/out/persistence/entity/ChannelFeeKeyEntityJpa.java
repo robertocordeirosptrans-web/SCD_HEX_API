@@ -18,9 +18,9 @@ import lombok.Setter;
 @EqualsAndHashCode
 public class ChannelFeeKeyEntityJpa implements Serializable {
 
-    @Column(name = "COD_CANAL")
+    @Column(name = "COD_CANAL", nullable=false)
     private String codCanal;
 
-    @Column(name = "COD_PRODUTO")
+    @Column(name = "COD_PRODUTO" , nullable = false)
     private String codProduto;
 }

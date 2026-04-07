@@ -23,7 +23,7 @@ public class AdministrativeFeeEntityJpa {
     @Column(name = "ID_TAXA", nullable = false)
     private Long codTaxaAdm;
 
-    @Column(name = "REC_INICIAL")
+    @Column(name = "REC_INICIAL", nullable = false)
     private Byte recInicial;
 
     @Column(name = "REC_FINAL")
