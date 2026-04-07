@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.product.adapter.in.rest.dto.FamilyRequest;
 import br.sptrans.scd.product.adapter.in.rest.dto.FamilyResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase;
@@ -51,13 +52,16 @@ public class FamilyController {
             @ApiResponse(responseCode = "200", description = "Família cadastrada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<Family> createFamily(
-            @RequestBody CreateFamilyRequest request) {
+            public ResponseEntity<Family> createFamily(
+                @RequestBody FamilyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Family family = familyManagementUseCase.create(
-                new CreateFamilyCommand(request.codFamilia(), request.desFamilia(), idUsuario));
+            new CreateFamilyCommand(
+                request.codFamilia(),
+                request.desFamilia(),
+                idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(family);
-    }
+        }
 
     @PutMapping("/{codFamilia}")
     @Operation(summary = "Atualiza dados de uma família")
@@ -65,14 +69,14 @@ public class FamilyController {
             @ApiResponse(responseCode = "200", description = "Família atualizada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<Family> updateFamily(
-            @PathVariable String codFamilia,
-            @RequestBody UpdateFamilyRequest request) {
+            public ResponseEntity<Family> updateFamily(
+                @PathVariable String codFamilia,
+                @RequestBody FamilyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Family family = familyManagementUseCase.update(codFamilia,
-                new UpdateFamilyCommand(request.desFamilia(), idUsuario));
+            new UpdateFamilyCommand(request.desFamilia(), idUsuario));
         return ResponseEntity.ok(family);
-    }
+        }
 
     @GetMapping("/{codFamilia}")
     @Operation(summary = "Busca família por código")
@@ -133,6 +137,5 @@ public class FamilyController {
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
-    public record CreateFamilyRequest(String codFamilia, String desFamilia) {}
-    public record UpdateFamilyRequest(String desFamilia) {}
+    // Request DTOs removidos, usar FamilyRequest
 }

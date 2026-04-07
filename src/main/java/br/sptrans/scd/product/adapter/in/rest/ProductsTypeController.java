@@ -51,13 +51,16 @@ public class ProductsTypeController {
             @ApiResponse(responseCode = "200", description = "Tipo de produto cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<ProductType> createProductsType(
-            @RequestBody CreateProductsTypeRequest request) {
+            public ResponseEntity<ProductType> createProductsType(
+                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ProductTypesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         ProductType productType = productsTypeManagementUseCase.create(
-                new CreateProductsTypeCommand(request.codTipoProduto(), request.desTipoProduto(), idUsuario));
+            new CreateProductsTypeCommand(
+                request.codTipoProduto(),
+                request.desTipoProduto(),
+                idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(productType);
-    }
+        }
 
     @PutMapping("/{codTipoProduto}")
     @Operation(summary = "Atualiza dados de um tipo de produto")
@@ -65,14 +68,14 @@ public class ProductsTypeController {
             @ApiResponse(responseCode = "200", description = "Tipo de produto atualizado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<ProductType> updateProductsType(
-            @PathVariable String codTipoProduto,
-            @RequestBody UpdateProductsTypeRequest request) {
+            public ResponseEntity<ProductType> updateProductsType(
+                @PathVariable String codTipoProduto,
+                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ProductTypesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         ProductType productType = productsTypeManagementUseCase.update(codTipoProduto,
-                new UpdateProductsTypeCommand(request.desTipoProduto(), idUsuario));
+            new UpdateProductsTypeCommand(request.desTipoProduto(), idUsuario));
         return ResponseEntity.ok(productType);
-    }
+        }
 
     @GetMapping("/{codTipoProduto}")
     @Operation(summary = "Busca tipo de produto por código")
@@ -133,6 +136,5 @@ public class ProductsTypeController {
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
-    public record CreateProductsTypeRequest(String codTipoProduto, String desTipoProduto) {}
-    public record UpdateProductsTypeRequest(String desTipoProduto) {}
+    // Request DTOs removidos, usar ProductTypesRequest
 }

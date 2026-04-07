@@ -51,13 +51,16 @@ public class ModalityController {
             @ApiResponse(responseCode = "200", description = "Modalidade cadastrada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<Modality> createModality(
-            @RequestBody CreateModalityRequest request) {
+            public ResponseEntity<Modality> createModality(
+                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ModalityRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Modality modality = modalityManagementUseCase.create(
-                new CreateModalityCommand(request.codModalidade(), request.desModalidade(), idUsuario));
+            new CreateModalityCommand(
+                request.codModalidade(),
+                request.desModalidade(),
+                idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(modality);
-    }
+        }
 
     @PutMapping("/{codModalidade}")
     @Operation(summary = "Atualiza dados de uma modalidade")
@@ -65,14 +68,14 @@ public class ModalityController {
             @ApiResponse(responseCode = "200", description = "Modalidade atualizada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<Modality> updateModality(
-            @PathVariable String codModalidade,
-            @RequestBody UpdateModalityRequest request) {
+            public ResponseEntity<Modality> updateModality(
+                @PathVariable String codModalidade,
+                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ModalityRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Modality modality = modalityManagementUseCase.update(codModalidade,
-                new UpdateModalityCommand(request.desModalidade(), idUsuario));
+            new UpdateModalityCommand(request.desModalidade(), idUsuario));
         return ResponseEntity.ok(modality);
-    }
+        }
 
     @GetMapping("/{codModalidade}")
     @Operation(summary = "Busca modalidade por código")
@@ -133,6 +136,5 @@ public class ModalityController {
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
-    public record CreateModalityRequest(String codModalidade, String desModalidade) {}
-    public record UpdateModalityRequest(String desModalidade) {}
+    // Request DTOs removidos, usar ModalityRequest
 }

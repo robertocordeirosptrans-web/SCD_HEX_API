@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.product.adapter.in.rest.dto.SpeciesRequest;
 import br.sptrans.scd.product.adapter.in.rest.dto.SpeciesResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase;
@@ -52,10 +53,13 @@ public class SpeciesController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<Species> createSpecies(
-            @RequestBody CreateSpeciesRequest request) {
+            @RequestBody SpeciesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Species species = speciesManagementUseCase.create(
-                new CreateSpeciesCommand(request.codEspecie(), request.desEspecie(), idUsuario));
+                new CreateSpeciesCommand(
+                        request.codEspecie(),
+                        request.desEspecie(),
+                        idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(species);
     }
 
@@ -67,10 +71,10 @@ public class SpeciesController {
     })
     public ResponseEntity<Species> updateSpecies(
             @PathVariable String codEspecie,
-            @RequestBody UpdateSpeciesRequest request) {
+                        @RequestBody SpeciesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-        Species species = speciesManagementUseCase.update(codEspecie,
-                new UpdateSpeciesCommand(request.desEspecie(), idUsuario));
+                Species species = speciesManagementUseCase.update(codEspecie,
+                                new UpdateSpeciesCommand(request.desEspecie(), idUsuario));
         return ResponseEntity.ok(species);
     }
 
@@ -131,9 +135,5 @@ public class SpeciesController {
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
-    public record CreateSpeciesRequest(String codEspecie, String desEspecie) {
-    }
-
-    public record UpdateSpeciesRequest(String desEspecie) {
-    }
+        // ── Request DTOs removidos, usar SpeciesRequest
 }

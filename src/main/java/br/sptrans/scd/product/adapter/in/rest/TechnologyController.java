@@ -51,13 +51,16 @@ public class TechnologyController {
             @ApiResponse(responseCode = "200", description = "Tecnologia cadastrada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<Technology> createTechnology(
-            @RequestBody CreateTechnologyRequest request) {
+            public ResponseEntity<Technology> createTechnology(
+                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.TechnologyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Technology technology = technologyManagementUseCase.create(
-                new CreateTechnologyCommand(request.codTecnologia(), request.desTecnologia(), idUsuario));
+            new CreateTechnologyCommand(
+                request.codTecnologia(),
+                request.desTecnologia(),
+                idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(technology);
-    }
+        }
 
     @PutMapping("/{codTecnologia}")
     @Operation(summary = "Atualiza dados de uma tecnologia")
@@ -65,14 +68,14 @@ public class TechnologyController {
             @ApiResponse(responseCode = "200", description = "Tecnologia atualizada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<Technology> updateTechnology(
-            @PathVariable String codTecnologia,
-            @RequestBody UpdateTechnologyRequest request) {
+            public ResponseEntity<Technology> updateTechnology(
+                @PathVariable String codTecnologia,
+                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.TechnologyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Technology technology = technologyManagementUseCase.update(codTecnologia,
-                new UpdateTechnologyCommand(request.desTecnologia(), idUsuario));
+            new UpdateTechnologyCommand(request.desTecnologia(), idUsuario));
         return ResponseEntity.ok(technology);
-    }
+        }
 
     @GetMapping("/{codTecnologia}")
     @Operation(summary = "Busca tecnologia por código")
@@ -133,6 +136,5 @@ public class TechnologyController {
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
-    public record CreateTechnologyRequest(String codTecnologia, String desTecnologia) {}
-    public record UpdateTechnologyRequest(String desTecnologia) {}
+    // Request DTOs removidos, usar TechnologyRequest
 }
