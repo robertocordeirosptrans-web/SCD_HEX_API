@@ -22,6 +22,8 @@ import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase.CreateModalityCommand;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase.UpdateModalityCommand;
 import br.sptrans.scd.product.domain.Modality;
+import br.sptrans.scd.product.domain.enums.ProductErrorType;
+import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -52,7 +54,7 @@ public class ModalityController {
     public ResponseEntity<Modality> createModality(
             @RequestBody CreateModalityRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-        Modality modality = modalityManagementUseCase.createModality(
+        Modality modality = modalityManagementUseCase.create(
                 new CreateModalityCommand(request.codModalidade(), request.desModalidade(), idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(modality);
     }
@@ -67,7 +69,7 @@ public class ModalityController {
             @PathVariable String codModalidade,
             @RequestBody UpdateModalityRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-        Modality modality = modalityManagementUseCase.updateModality(codModalidade,
+        Modality modality = modalityManagementUseCase.update(codModalidade,
                 new UpdateModalityCommand(request.desModalidade(), idUsuario));
         return ResponseEntity.ok(modality);
     }
@@ -75,7 +77,8 @@ public class ModalityController {
     @GetMapping("/{codModalidade}")
     @Operation(summary = "Busca modalidade por código")
     public ResponseEntity<ModalityResponseDTO> findByModality(@PathVariable String codModalidade) {
-        Modality modality = modalityManagementUseCase.findByModality(codModalidade);
+        Modality modality = modalityManagementUseCase.findById(codModalidade)
+                .orElseThrow(() -> new ProductException(ProductErrorType.MODALITY_NOT_FOUND));
         ModalityResponseDTO dto = new ModalityResponseDTO(
             modality.getCodModalidade(),
             modality.getDesModalidade(),
@@ -93,7 +96,7 @@ public class ModalityController {
     public ResponseEntity<PageResponse<ModalityResponseDTO>> findAllModalities(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
-        Page<ModalityResponseDTO> dtoPage = modalityManagementUseCase.findAllModalities(codStatus, pageable)
+        Page<ModalityResponseDTO> dtoPage = modalityManagementUseCase.findAll(codStatus, pageable)
             .map(modality -> new ModalityResponseDTO(
                 modality.getCodModalidade(),
                 modality.getDesModalidade(),
@@ -110,7 +113,7 @@ public class ModalityController {
     @Operation(summary = "Ativa uma modalidade")
     public ResponseEntity<Void> activateModality(
             @PathVariable String codModalidade) {
-        modalityManagementUseCase.activateModality(codModalidade, userResolverHelper.getCurrentUserId());
+        modalityManagementUseCase.activate(codModalidade, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -118,14 +121,14 @@ public class ModalityController {
     @Operation(summary = "Inativa uma modalidade")
     public ResponseEntity<Void> inactivateModality(
             @PathVariable String codModalidade) {
-        modalityManagementUseCase.inactivateModality(codModalidade, userResolverHelper.getCurrentUserId());
+        modalityManagementUseCase.inactivate(codModalidade, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{codModalidade}")
     @Operation(summary = "Remove uma modalidade")
     public ResponseEntity<Void> deleteModality(@PathVariable String codModalidade) {
-        modalityManagementUseCase.deleteModality(codModalidade);
+        modalityManagementUseCase.delete(codModalidade);
         return ResponseEntity.noContent().build();
     }
 

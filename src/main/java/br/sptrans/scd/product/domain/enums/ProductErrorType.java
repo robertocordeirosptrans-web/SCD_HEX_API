@@ -9,6 +9,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ProductErrorType {
     PRODUCT_NOT_FOUND("Produto não encontrado.", HttpStatus.NOT_FOUND),
+    PRODUCT_TYPE_NOT_FOUND("Tipo de produto não encontrado.", HttpStatus.NOT_FOUND),
     CODE_ALREADY_EXISTS("Código de produto já cadastrado.", HttpStatus.CONFLICT),
     PRODUCT_ALREADY_ACTIVE("Produto já está ativo.", HttpStatus.CONFLICT),
     PRODUCT_ALREADY_INACTIVE("Produto já está inativo.", HttpStatus.CONFLICT),

@@ -1,16 +1,15 @@
 package br.sptrans.scd.product.application.service;
 
-import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase;
+import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.CreateTechnologyCommand;
+import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.UpdateTechnologyCommand;
 import br.sptrans.scd.product.application.port.out.repository.TechnologyPort;
 import br.sptrans.scd.product.domain.Technology;
-import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
@@ -19,64 +18,71 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class TechnologyService extends AbstractCatalogueService<Technology, String> {
+public class TechnologyService extends
+        AbstractCatalogueService<Technology, String, TechnologyManagementUseCase.CreateTechnologyCommand, TechnologyManagementUseCase.UpdateTechnologyCommand>
+        implements TechnologyManagementUseCase {
     private final TechnologyPort technologyRepository;
     private final UserResolverHelper userResolverHelper;
 
+    private Technology getByIdOrThrow(String codTecnologia) {
+        return technologyRepository.findById(codTecnologia)
+                .orElseThrow(() -> new ProductException(ProductErrorType.TECHNOLOGY_NOT_FOUND));
+    }
+
     @Override
-    public Technology create(Technology entity, Long idUsuario) {
-        if (technologyRepository.existsById(entity.getId())) {
+    public Technology create(CreateTechnologyCommand command) {
+        if (technologyRepository.existsById(command.codTecnologia())) {
             throw new ProductException(ProductErrorType.TECHNOLOGY_CODE_ALREADY_EXISTS);
         }
-        User usuario = userResolverHelper.resolve(idUsuario);
+        var usuario = userResolverHelper.resolve(command.idUsuario());
+        Technology entity = new Technology();
+        entity.setId(command.codTecnologia());
+        entity.setDesTecnologia(command.desTecnologia());
+        entity.setActive(true);
         entity.setIdUsuarioCadastro(usuario);
         entity.setDtCadastro(java.time.LocalDateTime.now());
         return technologyRepository.save(entity);
     }
 
     @Override
-    public Technology update(String id, Technology entity, Long idUsuario) {
-        Technology existing = technologyRepository.findById(id)
-                .orElseThrow(() -> new ProductException(ProductErrorType.TECHNOLOGY_NOT_FOUND));
-        User usuario = userResolverHelper.resolve(idUsuario);
-        existing.setDesTecnologia(entity.getDesTecnologia() != null ? entity.getDesTecnologia() : existing.getDesTecnologia());
+    public Technology update(String codTecnologia, UpdateTechnologyCommand command) {
+        Technology existing = getByIdOrThrow(codTecnologia);
+        var usuario = userResolverHelper.resolve(command.idUsuario());
+        existing.setDesTecnologia(command.desTecnologia());
         existing.setIdUsuarioManutencao(usuario);
         existing.setDtManutencao(java.time.LocalDateTime.now());
         return technologyRepository.save(existing);
     }
 
     @Override
-    public Optional<Technology> findById(String id) {
-        return technologyRepository.findById(id);
-    }
-
-    @Override
-    public List<Technology> findAll(Long idUsuario) {
-        userResolverHelper.resolve(idUsuario);
-        return technologyRepository.findAll(ProductDomainStatus.ACTIVE.getCode(), Pageable.unpaged()).getContent();
-    }
-
-    @Override
-    public void activate(String id, Long idUsuario) {
-        Technology technology = technologyRepository.findById(id)
-                .orElseThrow(() -> new ProductException(ProductErrorType.TECHNOLOGY_NOT_FOUND));
-        if (technology.isActive()) {
-            throw new ProductException(ProductErrorType.TECHNOLOGY_ALREADY_ACTIVE);
-        }
-        User usuario = userResolverHelper.resolve(idUsuario);
+    public void activate(String codTecnologia, Long idUsuario) {
+        Technology technology = getByIdOrThrow(codTecnologia);
+        var usuario = userResolverHelper.resolve(idUsuario);
         technology.activate(usuario);
         technologyRepository.save(technology);
     }
 
     @Override
-    public void inactivate(String id, Long idUsuario) {
-        Technology technology = technologyRepository.findById(id)
-                .orElseThrow(() -> new ProductException(ProductErrorType.TECHNOLOGY_NOT_FOUND));
-        if (technology.isInactive()) {
-            throw new ProductException(ProductErrorType.TECHNOLOGY_ALREADY_INACTIVE);
-        }
-        User usuario = userResolverHelper.resolve(idUsuario);
+    public void inactivate(String codTecnologia, Long idUsuario) {
+        Technology technology = getByIdOrThrow(codTecnologia);
+        var usuario = userResolverHelper.resolve(idUsuario);
         technology.deactivate(usuario);
         technologyRepository.save(technology);
+    }
+
+    @Override
+    public void delete(String codTecnologia) {
+        technologyRepository.deleteById(codTecnologia);
+    }
+
+    @Override
+    public Optional<Technology> findById(String codTecnologia) {
+        return technologyRepository.findById(codTecnologia);
+    }
+
+    @Override
+    public org.springframework.data.domain.Page<Technology> findAll(String codStatus,
+            org.springframework.data.domain.Pageable pageable) {
+        return technologyRepository.findAll(codStatus, pageable);
     }
 }

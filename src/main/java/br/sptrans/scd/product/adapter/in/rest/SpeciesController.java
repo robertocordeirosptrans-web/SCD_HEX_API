@@ -22,6 +22,8 @@ import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase.CreateSpeciesCommand;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase.UpdateSpeciesCommand;
 import br.sptrans.scd.product.domain.Species;
+import br.sptrans.scd.product.domain.enums.ProductErrorType;
+import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -45,29 +47,29 @@ public class SpeciesController {
 
     @PostMapping
     @Operation(summary = "Cadastra uma nova espécie")
-        @ApiResponses(value = {
+    @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Espécie cadastrada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
+    })
     public ResponseEntity<Species> createSpecies(
             @RequestBody CreateSpeciesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-        Species species = speciesManagementUseCase.createSpecies(
+        Species species = speciesManagementUseCase.create(
                 new CreateSpeciesCommand(request.codEspecie(), request.desEspecie(), idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(species);
     }
 
     @PutMapping("/{codEspecie}")
     @Operation(summary = "Atualiza dados de uma espécie")
-        @ApiResponses(value = {
+    @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Espécie atualizada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
+    })
     public ResponseEntity<Species> updateSpecies(
             @PathVariable String codEspecie,
             @RequestBody UpdateSpeciesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-        Species species = speciesManagementUseCase.updateSpecies(codEspecie,
+        Species species = speciesManagementUseCase.update(codEspecie,
                 new UpdateSpeciesCommand(request.desEspecie(), idUsuario));
         return ResponseEntity.ok(species);
     }
@@ -75,16 +77,16 @@ public class SpeciesController {
     @GetMapping("/{codEspecie}")
     @Operation(summary = "Busca espécie por código")
     public ResponseEntity<SpeciesResponseDTO> findBySpecies(@PathVariable String codEspecie) {
-        Species species = speciesManagementUseCase.findBySpecies(codEspecie);
+        Species species = speciesManagementUseCase.findById(codEspecie)
+                .orElseThrow(() -> new ProductException(ProductErrorType.SPECIES_NOT_FOUND));
         SpeciesResponseDTO dto = new SpeciesResponseDTO(
-            species.getCodEspecie(),
-            species.getDesEspecie(),
-            species.getCodStatus(),
-            species.getDtCadastro(),
-            species.getDtManutencao(),
-            UserSimpleMapper.toDto(species.getIdUsuarioCadastro()),
-            UserSimpleMapper.toDto(species.getIdUsuarioManutencao())
-        );
+                species.getCodEspecie(),
+                species.getDesEspecie(),
+                species.getCodStatus(),
+                species.getDtCadastro(),
+                species.getDtManutencao(),
+                UserSimpleMapper.toDto(species.getIdUsuarioCadastro()),
+                UserSimpleMapper.toDto(species.getIdUsuarioManutencao()));
         return ResponseEntity.ok(dto);
     }
 
@@ -93,16 +95,15 @@ public class SpeciesController {
     public ResponseEntity<PageResponse<SpeciesResponseDTO>> findAllSpecies(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
-        Page<SpeciesResponseDTO> dtoPage = speciesManagementUseCase.findAllSpecies(codStatus, pageable)
-            .map(species -> new SpeciesResponseDTO(
-                species.getCodEspecie(),
-                species.getDesEspecie(),
-                species.getCodStatus(),
-                species.getDtCadastro(),
-                species.getDtManutencao(),
-                UserSimpleMapper.toDto(species.getIdUsuarioCadastro()),
-                UserSimpleMapper.toDto(species.getIdUsuarioManutencao())
-            ));
+        Page<SpeciesResponseDTO> dtoPage = speciesManagementUseCase.findAll(codStatus, pageable)
+                .map(species -> new SpeciesResponseDTO(
+                        species.getCodEspecie(),
+                        species.getDesEspecie(),
+                        species.getCodStatus(),
+                        species.getDtCadastro(),
+                        species.getDtManutencao(),
+                        UserSimpleMapper.toDto(species.getIdUsuarioCadastro()),
+                        UserSimpleMapper.toDto(species.getIdUsuarioManutencao())));
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
@@ -110,7 +111,7 @@ public class SpeciesController {
     @Operation(summary = "Ativa uma espécie")
     public ResponseEntity<Void> activateSpecies(
             @PathVariable String codEspecie) {
-        speciesManagementUseCase.activateSpecies(codEspecie, userResolverHelper.getCurrentUserId());
+        speciesManagementUseCase.activate(codEspecie, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -118,18 +119,21 @@ public class SpeciesController {
     @Operation(summary = "Inativa uma espécie")
     public ResponseEntity<Void> inactivateSpecies(
             @PathVariable String codEspecie) {
-        speciesManagementUseCase.inactivateSpecies(codEspecie, userResolverHelper.getCurrentUserId());
+        speciesManagementUseCase.inactivate(codEspecie, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{codEspecie}")
     @Operation(summary = "Remove uma espécie")
     public ResponseEntity<Void> deleteSpecies(@PathVariable String codEspecie) {
-        speciesManagementUseCase.deleteSpecies(codEspecie);
+        speciesManagementUseCase.delete(codEspecie);
         return ResponseEntity.noContent().build();
     }
 
     // ── Request DTOs ──────────────────────────────────────────────────────────
-    public record CreateSpeciesRequest(String codEspecie, String desEspecie) {}
-    public record UpdateSpeciesRequest(String desEspecie) {}
+    public record CreateSpeciesRequest(String codEspecie, String desEspecie) {
+    }
+
+    public record UpdateSpeciesRequest(String desEspecie) {
+    }
 }

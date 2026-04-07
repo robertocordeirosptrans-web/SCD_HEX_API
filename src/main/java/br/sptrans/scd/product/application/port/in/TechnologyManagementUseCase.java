@@ -2,30 +2,19 @@ package br.sptrans.scd.product.application.port.in;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
+import java.util.Optional;
 import br.sptrans.scd.product.domain.Technology;
 
-/**
- * Porta de entrada para gestão de Tecnologias de produto.
- */
 public interface TechnologyManagementUseCase {
-
-    Technology createTechnology(CreateTechnologyCommand command);
-
-    Technology updateTechnology(String codTecnologia, UpdateTechnologyCommand command);
-
-    Technology findByTechnology(String codTecnologia);
-
-    Page<Technology> findAllTechnologies(String codStatus, Pageable pageable);
-
-    void activateTechnology(String codTecnologia, Long idUsuario);
-
-    void inactivateTechnology(String codTecnologia, Long idUsuario);
-
-    void deleteTechnology(String codTecnologia);
+    Technology create(CreateTechnologyCommand command);
+    Technology update(String codTecnologia, UpdateTechnologyCommand command);
+    void activate(String codTecnologia, Long idUsuario);
+    void inactivate(String codTecnologia, Long idUsuario);
+    void delete(String codTecnologia);
+    Optional <Technology> findById(String codTecnologia);
+    Page<Technology> findAll(String codStatus, Pageable pageable);
 
     // ── Commands ──────────────────────────────────────────────────────────────
-
     record CreateTechnologyCommand(
             String codTecnologia,
             String desTecnologia,

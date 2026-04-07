@@ -22,6 +22,8 @@ import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase.CreateProductsTypeCommand;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase.UpdateProductsTypeCommand;
 import br.sptrans.scd.product.domain.ProductType;
+import br.sptrans.scd.product.domain.enums.ProductErrorType;
+import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -52,7 +54,7 @@ public class ProductsTypeController {
     public ResponseEntity<ProductType> createProductsType(
             @RequestBody CreateProductsTypeRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-        ProductType productType = productsTypeManagementUseCase.createProductsType(
+        ProductType productType = productsTypeManagementUseCase.create(
                 new CreateProductsTypeCommand(request.codTipoProduto(), request.desTipoProduto(), idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(productType);
     }
@@ -67,7 +69,7 @@ public class ProductsTypeController {
             @PathVariable String codTipoProduto,
             @RequestBody UpdateProductsTypeRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-        ProductType productType = productsTypeManagementUseCase.updateProductsType(codTipoProduto,
+        ProductType productType = productsTypeManagementUseCase.update(codTipoProduto,
                 new UpdateProductsTypeCommand(request.desTipoProduto(), idUsuario));
         return ResponseEntity.ok(productType);
     }
@@ -75,7 +77,8 @@ public class ProductsTypeController {
     @GetMapping("/{codTipoProduto}")
     @Operation(summary = "Busca tipo de produto por código")
     public ResponseEntity<ProductsTypeResponseDTO> findByProductsType(@PathVariable String codTipoProduto) {
-        ProductType productType = productsTypeManagementUseCase.findByProductsType(codTipoProduto);
+        ProductType productType = productsTypeManagementUseCase.findById(codTipoProduto)
+                .orElseThrow(() -> new ProductException(ProductErrorType.PRODUCT_TYPE_NOT_FOUND));
         ProductsTypeResponseDTO dto = new ProductsTypeResponseDTO(
             productType.getCodTipoProduto(),
             productType.getDesTipoProduto(),
@@ -93,7 +96,7 @@ public class ProductsTypeController {
     public ResponseEntity<PageResponse<ProductsTypeResponseDTO>> findAllProductsTypes(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
-        Page<ProductsTypeResponseDTO> dtoPage = productsTypeManagementUseCase.findAllProductsTypes(codStatus, pageable)
+        Page<ProductsTypeResponseDTO> dtoPage = productsTypeManagementUseCase.findAll(codStatus, pageable)
             .map(productType -> new ProductsTypeResponseDTO(
                 productType.getCodTipoProduto(),
                 productType.getDesTipoProduto(),
@@ -110,7 +113,7 @@ public class ProductsTypeController {
     @Operation(summary = "Ativa um tipo de produto")
     public ResponseEntity<Void> activateProductsType(
             @PathVariable String codTipoProduto) {
-        productsTypeManagementUseCase.activateProductsType(codTipoProduto, userResolverHelper.getCurrentUserId());
+        productsTypeManagementUseCase.activate(codTipoProduto, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -118,14 +121,14 @@ public class ProductsTypeController {
     @Operation(summary = "Inativa um tipo de produto")
     public ResponseEntity<Void> inactivateProductsType(
             @PathVariable String codTipoProduto) {
-        productsTypeManagementUseCase.inactivateProductsType(codTipoProduto, userResolverHelper.getCurrentUserId());
+        productsTypeManagementUseCase.inactivate(codTipoProduto, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{codTipoProduto}")
     @Operation(summary = "Remove um tipo de produto")
     public ResponseEntity<Void> deleteProductsType(@PathVariable String codTipoProduto) {
-        productsTypeManagementUseCase.deleteProductsType(codTipoProduto);
+        productsTypeManagementUseCase.delete(codTipoProduto);
         return ResponseEntity.noContent().build();
     }
 

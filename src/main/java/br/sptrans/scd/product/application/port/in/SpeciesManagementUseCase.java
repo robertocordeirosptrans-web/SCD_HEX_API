@@ -1,31 +1,22 @@
 package br.sptrans.scd.product.application.port.in;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.product.domain.Species;
 
-/**
- * Porta de entrada para gestão de Espécies de produto.
- */
 public interface SpeciesManagementUseCase {
-
-    Species createSpecies(CreateSpeciesCommand command);
-
-    Species updateSpecies(String codEspecie, UpdateSpeciesCommand command);
-
-    Species findBySpecies(String codEspecie);
-
-    Page<Species> findAllSpecies(String codStatus, Pageable pageable);
-
-    void activateSpecies(String codEspecie, Long idUsuario);
-
-    void inactivateSpecies(String codEspecie, Long idUsuario);
-
-    void deleteSpecies(String codEspecie);
+    Species create(CreateSpeciesCommand command);
+    Species update(String codEspecie, UpdateSpeciesCommand command);
+    void activate(String codEspecie, Long idUsuario);
+    void inactivate(String codEspecie, Long idUsuario);
+    void delete(String codEspecie);
+    Optional <Species> findById(String codEspecie);
+    Page<Species> findAll(String codStatus, Pageable pageable);
 
     // ── Commands ──────────────────────────────────────────────────────────────
-
     record CreateSpeciesCommand(
             String codEspecie,
             String desEspecie,

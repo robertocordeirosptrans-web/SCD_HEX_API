@@ -22,6 +22,8 @@ import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase.CreateFamilyCommand;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase.UpdateFamilyCommand;
 import br.sptrans.scd.product.domain.Family;
+import br.sptrans.scd.product.domain.enums.ProductErrorType;
+import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -52,7 +54,7 @@ public class FamilyController {
     public ResponseEntity<Family> createFamily(
             @RequestBody CreateFamilyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-        Family family = familyManagementUseCase.createFamily(
+        Family family = familyManagementUseCase.create(
                 new CreateFamilyCommand(request.codFamilia(), request.desFamilia(), idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(family);
     }
@@ -67,7 +69,7 @@ public class FamilyController {
             @PathVariable String codFamilia,
             @RequestBody UpdateFamilyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-        Family family = familyManagementUseCase.updateFamily(codFamilia,
+        Family family = familyManagementUseCase.update(codFamilia,
                 new UpdateFamilyCommand(request.desFamilia(), idUsuario));
         return ResponseEntity.ok(family);
     }
@@ -75,7 +77,8 @@ public class FamilyController {
     @GetMapping("/{codFamilia}")
     @Operation(summary = "Busca família por código")
     public ResponseEntity<FamilyResponseDTO> findByFamily(@PathVariable String codFamilia) {
-        Family family = familyManagementUseCase.findByFamily(codFamilia);
+        Family family = familyManagementUseCase.findById(codFamilia)
+                .orElseThrow(() -> new ProductException(ProductErrorType.FAMILY_NOT_FOUND));
         FamilyResponseDTO dto = new FamilyResponseDTO(
             family.getCodFamilia(),
             family.getDesFamilia(),
@@ -93,7 +96,7 @@ public class FamilyController {
     public ResponseEntity<PageResponse<FamilyResponseDTO>> findAllFamilies(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
-        Page<FamilyResponseDTO> dtoPage = familyManagementUseCase.findAllFamilies(codStatus, pageable)
+        Page<FamilyResponseDTO> dtoPage = familyManagementUseCase.findAll(codStatus, pageable)
             .map(family -> new FamilyResponseDTO(
                 family.getCodFamilia(),
                 family.getDesFamilia(),
@@ -110,7 +113,7 @@ public class FamilyController {
     @Operation(summary = "Ativa uma família")
     public ResponseEntity<Void> activateFamily(
             @PathVariable String codFamilia) {
-        familyManagementUseCase.activateFamily(codFamilia, userResolverHelper.getCurrentUserId());
+        familyManagementUseCase.activate(codFamilia, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -118,14 +121,14 @@ public class FamilyController {
     @Operation(summary = "Inativa uma família")
     public ResponseEntity<Void> inactivateFamily(
             @PathVariable String codFamilia) {
-        familyManagementUseCase.inactivateFamily(codFamilia, userResolverHelper.getCurrentUserId());
+        familyManagementUseCase.inactivate(codFamilia, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{codFamilia}")
     @Operation(summary = "Remove uma família")
     public ResponseEntity<Void> deleteFamily(@PathVariable String codFamilia) {
-        familyManagementUseCase.deleteFamily(codFamilia);
+        familyManagementUseCase.delete(codFamilia);
         return ResponseEntity.noContent().build();
     }
 

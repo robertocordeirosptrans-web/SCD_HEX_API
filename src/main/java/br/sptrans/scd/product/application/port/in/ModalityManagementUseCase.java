@@ -1,31 +1,22 @@
 package br.sptrans.scd.product.application.port.in;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.product.domain.Modality;
 
-/**
- * Porta de entrada para gestão de Modalidades de produto.
- */
 public interface ModalityManagementUseCase {
-
-    Modality createModality(CreateModalityCommand command);
-
-    Modality updateModality(String codModalidade, UpdateModalityCommand command);
-
-    Modality findByModality(String codModalidade);
-
-    Page<Modality> findAllModalities(String codStatus, Pageable pageable);
-
-    void activateModality(String codModalidade, Long idUsuario);
-
-    void inactivateModality(String codModalidade, Long idUsuario);
-
-    void deleteModality(String codModalidade);
+    Modality create(CreateModalityCommand command);
+    Modality update(String codModalidade, UpdateModalityCommand command);
+    void activate(String codModalidade, Long idUsuario);
+    void inactivate(String codModalidade, Long idUsuario);
+    void delete(String codModalidade);
+    Optional<Modality> findById(String codModalidade);
+    Page<Modality> findAll(String codStatus, Pageable pageable);
 
     // ── Commands ──────────────────────────────────────────────────────────────
-
     record CreateModalityCommand(
             String codModalidade,
             String desModalidade,

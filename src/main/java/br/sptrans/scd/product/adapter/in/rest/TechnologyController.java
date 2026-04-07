@@ -22,6 +22,8 @@ import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.CreateTechnologyCommand;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.UpdateTechnologyCommand;
 import br.sptrans.scd.product.domain.Technology;
+import br.sptrans.scd.product.domain.enums.ProductErrorType;
+import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -52,7 +54,7 @@ public class TechnologyController {
     public ResponseEntity<Technology> createTechnology(
             @RequestBody CreateTechnologyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-        Technology technology = technologyManagementUseCase.createTechnology(
+        Technology technology = technologyManagementUseCase.create(
                 new CreateTechnologyCommand(request.codTecnologia(), request.desTecnologia(), idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(technology);
     }
@@ -67,7 +69,7 @@ public class TechnologyController {
             @PathVariable String codTecnologia,
             @RequestBody UpdateTechnologyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-        Technology technology = technologyManagementUseCase.updateTechnology(codTecnologia,
+        Technology technology = technologyManagementUseCase.update(codTecnologia,
                 new UpdateTechnologyCommand(request.desTecnologia(), idUsuario));
         return ResponseEntity.ok(technology);
     }
@@ -75,7 +77,8 @@ public class TechnologyController {
     @GetMapping("/{codTecnologia}")
     @Operation(summary = "Busca tecnologia por código")
     public ResponseEntity<TechnologyResponseDTO> findByTechnology(@PathVariable String codTecnologia) {
-        Technology technology = technologyManagementUseCase.findByTechnology(codTecnologia);
+        Technology technology = technologyManagementUseCase.findById(codTecnologia)
+                .orElseThrow(() -> new ProductException(ProductErrorType.TECHNOLOGY_NOT_FOUND));
         TechnologyResponseDTO dto = new TechnologyResponseDTO(
             technology.getCodTecnologia(),
             technology.getDesTecnologia(),
@@ -93,7 +96,7 @@ public class TechnologyController {
     public ResponseEntity<PageResponse<TechnologyResponseDTO>> findAllTechnologies(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
-        Page<TechnologyResponseDTO> dtoPage = technologyManagementUseCase.findAllTechnologies(codStatus, pageable)
+        Page<TechnologyResponseDTO> dtoPage = technologyManagementUseCase.findAll(codStatus, pageable)
             .map(technology -> new TechnologyResponseDTO(
                 technology.getCodTecnologia(),
                 technology.getDesTecnologia(),
@@ -110,7 +113,7 @@ public class TechnologyController {
     @Operation(summary = "Ativa uma tecnologia")
     public ResponseEntity<Void> activateTechnology(
             @PathVariable String codTecnologia) {
-        technologyManagementUseCase.activateTechnology(codTecnologia, userResolverHelper.getCurrentUserId());
+        technologyManagementUseCase.activate(codTecnologia, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -118,14 +121,14 @@ public class TechnologyController {
     @Operation(summary = "Inativa uma tecnologia")
     public ResponseEntity<Void> inactivateTechnology(
             @PathVariable String codTecnologia) {
-        technologyManagementUseCase.inactivateTechnology(codTecnologia, userResolverHelper.getCurrentUserId());
+        technologyManagementUseCase.inactivate(codTecnologia, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{codTecnologia}")
     @Operation(summary = "Remove uma tecnologia")
     public ResponseEntity<Void> deleteTechnology(@PathVariable String codTecnologia) {
-        technologyManagementUseCase.deleteTechnology(codTecnologia);
+        technologyManagementUseCase.delete(codTecnologia);
         return ResponseEntity.noContent().build();
     }
 

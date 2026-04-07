@@ -1,31 +1,22 @@
 package br.sptrans.scd.product.application.port.in;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.product.domain.ProductType;
 
-/**
- * Porta de entrada para gestão de Tipos de Produto.
- */
 public interface ProductsTypeManagementUseCase {
-
-    ProductType createProductsType(CreateProductsTypeCommand command);
-
-    ProductType updateProductsType(String codTipoProduto, UpdateProductsTypeCommand command);
-
-    ProductType findByProductsType(String codTipoProduto);
-
-    Page<ProductType> findAllProductsTypes(String codStatus, Pageable pageable);
-
-    void activateProductsType(String codTipoProduto, Long idUsuario);
-
-    void inactivateProductsType(String codTipoProduto, Long idUsuario);
-
-    void deleteProductsType(String codTipoProduto);
+    ProductType create(CreateProductsTypeCommand command);
+    ProductType update(String codTipoProduto, UpdateProductsTypeCommand command);
+    void activate(String codTipoProduto, Long idUsuario);
+    void inactivate(String codTipoProduto, Long idUsuario);
+    void delete(String codTipoProduto);
+    Optional<ProductType> findById(String codTipoProduto);
+    Page<ProductType> findAll(String codStatus, Pageable pageable);
 
     // ── Commands ──────────────────────────────────────────────────────────────
-
     record CreateProductsTypeCommand(
             String codTipoProduto,
             String desTipoProduto,
