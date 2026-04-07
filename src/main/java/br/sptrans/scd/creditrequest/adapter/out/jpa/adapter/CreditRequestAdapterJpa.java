@@ -12,7 +12,8 @@ import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpa;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpaKey;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.CreditRequestJpaRepository;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
+
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class CreditRequestAdapterJpa implements CreditRequestRepository {
+public class CreditRequestAdapterJpa implements CreditRequestPort {
 
     private final CreditRequestJpaRepository jpaRepository;
 

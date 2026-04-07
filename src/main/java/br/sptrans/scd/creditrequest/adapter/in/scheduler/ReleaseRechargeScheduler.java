@@ -9,8 +9,7 @@ import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.application.port.in.ReleaseRechargeUseCase;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsRepository;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ReleaseRechargeScheduler {
 
-    private final CreditRequestRepository creditRequestRepository;
-    private final CreditRequestItemsRepository itemRepository;
+    private final CreditRequestItemsPort itemRepository;
     private final ReleaseRechargeUseCase releaseRechargeUseCase;
 
     @Value("${scheduler.liberar-recarga.enabled:true}")

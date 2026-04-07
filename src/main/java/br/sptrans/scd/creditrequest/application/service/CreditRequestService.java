@@ -26,8 +26,8 @@ import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit.
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemProcessado;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemRejeitado;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsRepository;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
@@ -60,8 +60,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     private final CreditRequestValidationService validationService;
     private final RechargeLogService rechargeLogService;
-    private final CreditRequestRepository creditRequestRepository;
-    private final CreditRequestItemsRepository itemRepository;
+    private final CreditRequestPort creditRequestRepository;
+    private final CreditRequestItemsPort itemRepository;
     private final CreditRequestMapper creditRequestMapper;
     private final HistCreditRequestService historyService;
     private final TransitionSituationValidator transitionValidator;

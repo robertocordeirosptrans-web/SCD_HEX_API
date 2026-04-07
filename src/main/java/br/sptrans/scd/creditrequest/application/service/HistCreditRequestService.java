@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.creditrequest.application.port.in.HistCreditRequestManagementUseCase;
-import br.sptrans.scd.creditrequest.application.port.out.repository.HistCreditRequestItemsRepository;
-import br.sptrans.scd.creditrequest.application.port.out.repository.HistCreditRequestRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.HistCreditRequestItemsPort;
+import br.sptrans.scd.creditrequest.application.port.out.repository.HistCreditRequestPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequest;
@@ -28,8 +28,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class HistCreditRequestService implements HistCreditRequestManagementUseCase {
 
-    private final HistCreditRequestItemsRepository itemHistoryRepository;
-    private final HistCreditRequestRepository requestHistoryRepository;
+    private final HistCreditRequestItemsPort itemHistoryRepository;
+    private final HistCreditRequestPort requestHistoryRepository;
     private final UserPersistencePort userRepository;
     private static final Logger log = LoggerFactory.getLogger(HistCreditRequestService.class);
 

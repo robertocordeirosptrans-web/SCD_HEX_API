@@ -6,8 +6,7 @@ import java.util.Optional;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestItemsKey;
 
-public interface HistCreditRequestItemsRepository {
-
+public interface HistCreditRequestItemsPort {
     /**
      * Persiste ou atualiza um histórico de item de solicitação de crédito.
      */

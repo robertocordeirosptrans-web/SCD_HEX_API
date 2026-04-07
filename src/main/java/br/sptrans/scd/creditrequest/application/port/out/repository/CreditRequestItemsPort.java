@@ -8,9 +8,8 @@ import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJp
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 
-public interface CreditRequestItemsRepository {
-
-    /**
+public interface CreditRequestItemsPort {
+        /**
      * Busca o primeiro item de recarga com situação e data de pagamento econômica no intervalo informado.
      */
     List<CreditRequestItemsEJpa> findFirstBySituacaoAndDtPagtoEconomicaBetween(String codSituacao,Timestamp dtInicio,Timestamp dtFim, Integer limit);

@@ -5,8 +5,7 @@ import java.util.Optional;
 
 import br.sptrans.scd.creditrequest.domain.PaymentMethod;
 
-public interface PaymentMethodRepository {
-
+public interface PaymentMethodPort {
     /**
      * Retorna todas as formas de pagamento cadastradas.
      */

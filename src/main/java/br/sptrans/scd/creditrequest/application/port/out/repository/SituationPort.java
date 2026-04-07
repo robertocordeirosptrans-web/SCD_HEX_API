@@ -5,8 +5,7 @@ import java.util.Optional;
 
 import br.sptrans.scd.creditrequest.domain.Situation;
 
-public interface SituationRepository {
-
+public interface SituationPort {
     /**
      * Retorna todas as situações cadastradas.
      */

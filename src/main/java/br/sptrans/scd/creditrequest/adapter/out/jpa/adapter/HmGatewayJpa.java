@@ -8,19 +8,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.creditrequest.application.port.out.HmGateway;
+import br.sptrans.scd.creditrequest.application.port.out.repository.HmPort;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 /**
- * Implementação do {@link HmGateway} que acessa as tabelas
+ * Implementação do {@link HmPort} que acessa as tabelas
  * {@code LNK_HM_TB_AUTORIZACAORECARGA} e {@code LNK_HM_TB_REDE} via DBLink Oracle.
  *
  * <p>Segue o mesmo padrão de acesso via {@link EntityManager} + native query
  * utilizado em {@link LiminarGatewayJpa}.</p>
  */
 @Repository
-public class HmGatewayJpa implements HmGateway {
+public class HmGatewayJpa implements HmPort {
 
     private static final Logger log = LoggerFactory.getLogger(HmGatewayJpa.class);
 

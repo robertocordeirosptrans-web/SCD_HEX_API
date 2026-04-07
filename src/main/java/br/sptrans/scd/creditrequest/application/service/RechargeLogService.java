@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.creditrequest.application.port.in.LogRechargeUseCase;
-import br.sptrans.scd.creditrequest.application.port.out.repository.RechargeLogRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.RechargeLogPort;
 import br.sptrans.scd.creditrequest.domain.RechargeLog;
 import lombok.RequiredArgsConstructor;
 
@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RechargeLogService implements LogRechargeUseCase {
 
-    private final RechargeLogRepository rechargeLogRepository;
+    private final RechargeLogPort rechargeLogRepository;
 
 
     @Override

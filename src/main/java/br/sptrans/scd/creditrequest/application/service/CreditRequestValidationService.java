@@ -20,9 +20,8 @@ import br.sptrans.scd.channel.domain.ProductChannelKey;
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
 import br.sptrans.scd.channel.domain.SalesChannel;
-
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemRejeitado;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
 import br.sptrans.scd.product.application.port.out.repository.ProductVersionPort;
 import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.shared.exception.ValidationException;
@@ -49,7 +48,7 @@ public class CreditRequestValidationService {
         return canal;
     }
 
-    public void validarNumLote(String numLote, String codCanal, CreditRequestRepository creditRequestRepository) {
+    public void validarNumLote(String numLote, String codCanal, CreditRequestPort creditRequestRepository) {
         if (creditRequestRepository.existsByNumLoteAndCodCanal(numLote, codCanal)) {
             throw new IllegalStateException(
                     "Número de lote já utilizado para este canal: " + numLote);

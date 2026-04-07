@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.creditrequest.application.port.in.ConfirmedRechargeUseCase;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ConfirmedRechargeScheduler {
 
-    private final CreditRequestRepository solDistribuicoesRepository;
+    private final CreditRequestPort solDistribuicoesRepository;
     private final ConfirmedRechargeUseCase confirmarRecargaUseCase;
 
     @Value("${scheduler.confirmar-recarga.enabled:true}")

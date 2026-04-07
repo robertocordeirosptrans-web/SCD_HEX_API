@@ -1,4 +1,4 @@
-package br.sptrans.scd.creditrequest.application.port.out;
+package br.sptrans.scd.creditrequest.application.port.out.repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * {@code LNK_HM_TB_REDE} mantidas via DBLink Oracle, conforme a fase 4 do plano
  * de migração.</p>
  */
-public interface HmGateway {
+public interface HmPort {
 
     /**
      * Verifica se um item foi confirmado pelo HM (NI_STATUSHM = 3 e

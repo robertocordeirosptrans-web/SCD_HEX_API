@@ -7,12 +7,7 @@ import java.util.Optional;
 
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 
-/**
- * Porta de saída (output port) para persistência de CreditRequest.
- * Implementada pelo adapter JPA (CreditRequestAdapterJpa).
- */
-public interface CreditRequestRepository {
-
+public interface CreditRequestPort {
     CreditRequest save(CreditRequest cdr);
 
     Optional<CreditRequest> findByNumSolicitacaoAndCodCanal(Long numSolicitacao, String codCanal);
@@ -23,7 +18,8 @@ public interface CreditRequestRepository {
 
     boolean existsByNumLoteAndCodCanal(String numLote, String codCanal);
 
-    List<CreditRequest> findElegiveisParaLiberacao(String codSituacao, LocalDateTime dtInicio, LocalDateTime dtFim, int limit);
+    List<CreditRequest> findElegiveisParaLiberacao(String codSituacao, LocalDateTime dtInicio, LocalDateTime dtFim,
+            int limit);
 
     CreditRequest findElegiveisParaProcessamento(String codSituacao);
 

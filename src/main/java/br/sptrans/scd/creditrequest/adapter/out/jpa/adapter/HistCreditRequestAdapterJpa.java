@@ -10,7 +10,7 @@ import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestEJpa
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestKeyEJpa;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.HistCreditRequestMapper;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.HistCreditJpaRepository;
-import br.sptrans.scd.creditrequest.application.port.out.repository.HistCreditRequestRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.HistCreditRequestPort;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequest;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestKey;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class HistCreditRequestAdapterJpa implements HistCreditRequestRepository {
+public class HistCreditRequestAdapterJpa implements HistCreditRequestPort {
 
     private final HistCreditJpaRepository jpaRepository;
     private final HistCreditRequestMapper mapper;

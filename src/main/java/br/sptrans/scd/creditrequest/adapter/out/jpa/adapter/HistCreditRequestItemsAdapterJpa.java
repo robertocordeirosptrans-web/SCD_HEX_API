@@ -8,14 +8,14 @@ import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.HistCreditItensMapper;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.HistCreditItemJpaRepository;
-import br.sptrans.scd.creditrequest.application.port.out.repository.HistCreditRequestItemsRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.HistCreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestItemsKey;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class HistCreditRequestItemsAdapterJpa implements HistCreditRequestItemsRepository {
+public class HistCreditRequestItemsAdapterJpa implements HistCreditRequestItemsPort {
 
 
     private final HistCreditItemJpaRepository repository;

@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import br.sptrans.scd.creditrequest.domain.DocumentsType;
 
-public interface DocumentsTypeRepository {
-
+public interface DocumentsTypePort {
+    
     /**
      * Retorna todos os tipos de documento cadastrados.
      */

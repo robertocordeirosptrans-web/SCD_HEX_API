@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.creditrequest.application.port.in.ProcessRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.ProcessRechargeUseCase.ProcessRechargeCommand;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ProcessRechargeSheduler {
 
-    private final CreditRequestRepository creditRequestRepository;
+    private final CreditRequestPort creditRequestRepository;
     private final ProcessRechargeUseCase processRechargeUseCase;
 
     @Value("${scheduler.processar-recarga.enabled:true}")

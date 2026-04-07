@@ -10,14 +10,14 @@ import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJp
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpaKey;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.CreditRequestItemJpaRepository;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class CreditRequestItensAdapter implements CreditRequestItemsRepository {
+public class CreditRequestItensAdapter implements CreditRequestItemsPort {
 
     private final CreditRequestItemJpaRepository itemJpaRepository;
     private final CreditRequestMapper creditRequestMapper;

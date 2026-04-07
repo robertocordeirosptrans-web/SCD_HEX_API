@@ -7,13 +7,13 @@ import org.springframework.stereotype.Repository;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.RechargeLogEJpa;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.RechargeLogMapper;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.RechargeLogJpaRepository;
-import br.sptrans.scd.creditrequest.application.port.out.repository.RechargeLogRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.RechargeLogPort;
 import br.sptrans.scd.creditrequest.domain.RechargeLog;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class  RechargeLogAdapterJpa implements  RechargeLogRepository {
+public class  RechargeLogAdapterJpa implements  RechargeLogPort {
     private final RechargeLogJpaRepository rechargeLogJpaRepository;
 
     @Override

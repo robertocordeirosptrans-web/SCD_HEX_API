@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.application.port.in.ReleaseRechargeUseCase;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsRepository;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
@@ -36,8 +36,8 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
     private static final Logger log = LoggerFactory.getLogger(ReleaseRechargeService.class);
     private static final String ORIGEM_TRANSICAO = "liberar_recarga_scd";
 
-    private final CreditRequestRepository creditRequestRepository;
-    private final CreditRequestItemsRepository itemRepository;
+    private final CreditRequestPort creditRequestRepository;
+    private final CreditRequestItemsPort itemRepository;
     private final HistCreditRequestService historyService;
     private final SituationAscertainedService situationAscertainedService;
 

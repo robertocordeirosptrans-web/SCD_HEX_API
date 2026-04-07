@@ -4,8 +4,7 @@ import java.util.Optional;
 
 import br.sptrans.scd.creditrequest.domain.RechargeLog;
 
-public interface RechargeLogRepository {
-
+public interface RechargeLogPort {
     /**
      * Persiste ou atualiza um log de recarga.
      */
@@ -21,6 +20,5 @@ public interface RechargeLogRepository {
      */
     Optional<RechargeLog> findByNumLogicoCartao(String numLogicoCartao);
 
-    Optional<Integer>findMaxSeqRecarga();
-
+    Optional<Integer> findMaxSeqRecarga();
 }
