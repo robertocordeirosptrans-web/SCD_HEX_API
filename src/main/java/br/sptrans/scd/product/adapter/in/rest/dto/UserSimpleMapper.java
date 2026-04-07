@@ -1,7 +1,7 @@
 package br.sptrans.scd.product.adapter.in.rest.dto;
 
 import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.channel.adapter.port.in.rest.dto.UserSimpleDTO;
+import br.sptrans.scd.channel.adapter.in.rest.dto.UserSimpleDTO;
 
 
 public class UserSimpleMapper {

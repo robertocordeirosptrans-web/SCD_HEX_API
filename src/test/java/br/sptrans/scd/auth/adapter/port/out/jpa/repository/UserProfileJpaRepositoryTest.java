@@ -10,7 +10,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import br.sptrans.scd.auth.adapter.port.out.persistence.entity.UserProfileJpa;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.UserProfileJpaRepository;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserProfileJpa;
 
 
 

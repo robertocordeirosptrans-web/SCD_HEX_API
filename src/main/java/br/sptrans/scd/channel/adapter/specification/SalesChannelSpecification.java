@@ -12,7 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import br.sptrans.scd.channel.adapter.port.in.rest.dto.SalesChannelFilterRequest;
+import br.sptrans.scd.channel.adapter.in.rest.dto.SalesChannelFilterRequest;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;

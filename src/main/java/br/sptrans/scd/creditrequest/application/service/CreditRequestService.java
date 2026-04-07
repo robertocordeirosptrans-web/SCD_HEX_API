@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.channel.domain.SalesChannel;
-import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.port.out.jpa.mapper.CreditRequestMapper;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit.ItemRequest;

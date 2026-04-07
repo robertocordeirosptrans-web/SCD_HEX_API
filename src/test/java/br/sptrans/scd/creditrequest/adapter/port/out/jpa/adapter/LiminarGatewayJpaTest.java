@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import br.sptrans.scd.creditrequest.adapter.out.jpa.adapter.LiminarGatewayJpa;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.StoredProcedureQuery;
 

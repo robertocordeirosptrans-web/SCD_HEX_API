@@ -8,7 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpa;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpaKey;
 import br.sptrans.scd.creditrequest.application.port.in.ConfirmedRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
@@ -106,7 +107,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
         // Se já tiver um mapper, use-o. Caso contrário, converta manualmente.
         CreditRequestItemsEJpa entity = new CreditRequestItemsEJpa();
         CreditRequestItemsKey key = item.getId();
-        entity.setId(new br.sptrans.scd.creditrequest.adapter.port.out.jpa.entity.CreditRequestItemsEJpaKey(
+        entity.setId(new CreditRequestItemsEJpaKey(
                 key.getNumSolicitacao(), key.getNumSolicitacaoItem(), key.getCodCanal()
         ));
         entity.setCodCanal(item.getCodCanal());

@@ -2,7 +2,7 @@ package br.sptrans.scd.product.adapter.in.rest.dto;
 
 import java.time.LocalDateTime;
 
-import br.sptrans.scd.channel.adapter.port.in.rest.dto.UserSimpleDTO;
+import br.sptrans.scd.channel.adapter.in.rest.dto.UserSimpleDTO;
 
 public record FamilyResponseDTO(
     String codFamilia,
