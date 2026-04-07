@@ -36,6 +36,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -53,64 +54,63 @@ public class ProductChannelController {
     private final UserResolverHelper userResolverHelper;
     private final ProductChannelMapper productChannelMapper;
 
-
     @PostMapping
     @Operation(summary = "Cadastra um novo canal de produto")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Canal de produto cadastrado com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+            @ApiResponse(responseCode = "200", description = "Canal de produto cadastrado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
-        public ResponseEntity<ProductChannel> createProductChannel(
-            @RequestBody CreateProductChannelRequest request) {
+    public ResponseEntity<ProductChannel> createProductChannel(
+            @Valid @RequestBody CreateProductChannelRequest request) {
         log.info("REST POST /product-channels — Canal: {}, Produto: {}", request.codCanal(), request.codProduto());
         User usuario = userResolverHelper.getCurrentUser();
         ProductChannel result = productChannelUseCase.createProductChannel(
-            new CreateProductChannelCommand(
-                request.codCanal(),
-                request.codProduto(),
-                request.qtdLimiteComercializacao(),
-                request.qtdMinimaEstoque(),
-                request.qtdMaximaEstoque(),
-                request.qtdMinimaRessuprimento(),
-                request.qtdMaximaRessuprimento(),
-                request.codOrgaoEmissor(),
-                request.vlFace(),
-                request.codStatus(),
-                request.codConvenio(),
-                request.codTipoOperHM(),
-                request.flgCarac(),
-                usuario));
+                new CreateProductChannelCommand(
+                        request.codCanal(),
+                        request.codProduto(),
+                        request.qtdLimiteComercializacao(),
+                        request.qtdMinimaEstoque(),
+                        request.qtdMaximaEstoque(),
+                        request.qtdMinimaRessuprimento(),
+                        request.qtdMaximaRessuprimento(),
+                        request.codOrgaoEmissor(),
+                        request.vlFace(),
+                        request.codStatus(),
+                        request.codConvenio(),
+                        request.codTipoOperHM(),
+                        request.flgCarac(),
+                        usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
-        }
+    }
 
     @PutMapping("/{codCanal}/{codProduto}")
     @Operation(summary = "Atualiza um canal de produto")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Canal de produto atualizado com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+            @ApiResponse(responseCode = "200", description = "Canal de produto atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
-        public ResponseEntity<ProductChannel> updateProductChannel(
+    public ResponseEntity<ProductChannel> updateProductChannel(
             @PathVariable String codCanal,
             @PathVariable String codProduto,
-            @RequestBody UpdateProductChannelRequest request) {
+            @Valid @RequestBody UpdateProductChannelRequest request) {
         log.info("REST PUT /product-channels/{}/{} — Atualizando", codCanal, codProduto);
         User usuario = userResolverHelper.getCurrentUser();
         ProductChannel result = productChannelUseCase.updateProductChannel(codCanal, codProduto,
-            new UpdateProductChannelCommand(
-                request.qtdLimiteComercializacao(),
-                request.qtdMinimaEstoque(),
-                request.qtdMaximaEstoque(),
-                request.qtdMinimaRessuprimento(),
-                request.qtdMaximaRessuprimento(),
-                request.codOrgaoEmissor(),
-                request.vlFace(),
-                request.codStatus(),
-                request.codConvenio(),
-                request.codTipoOperHM(),
-                request.flgCarac(),
-                usuario));
+                new UpdateProductChannelCommand(
+                        request.qtdLimiteComercializacao(),
+                        request.qtdMinimaEstoque(),
+                        request.qtdMaximaEstoque(),
+                        request.qtdMinimaRessuprimento(),
+                        request.qtdMaximaRessuprimento(),
+                        request.codOrgaoEmissor(),
+                        request.vlFace(),
+                        request.codStatus(),
+                        request.codConvenio(),
+                        request.codTipoOperHM(),
+                        request.flgCarac(),
+                        usuario));
         return ResponseEntity.ok(result);
-        }
+    }
 
     @GetMapping("/{codCanal}/{codProduto}")
     @Operation(summary = "Busca canal de produto por canal e produto")
@@ -121,24 +121,23 @@ public class ProductChannelController {
         Page<ProductChannel> pageResult = productChannelUseCase.findAllProductChannels(pageable);
 
         Page<ProductChDTO> dtoPage = pageResult.map(channel -> new ProductChDTO(
-            channel.getQtdLimiteComercializacao(),
-            channel.getQtdMinimaEstoque(),
-            channel.getQtdMaximaEstoque(),
-            channel.getQtdMinimaRessuprimento(),
-            channel.getQtdMaximaRessuprimento(),
-            channel.getCodOrgaoEmissor(),
-            channel.getVlFace(),
-            channel.getCodStatus(),
-            channel.getDtCadastro() != null ? channel.getDtCadastro().toString() : null,
-            channel.getDtManutencao() != null ? channel.getDtManutencao().toString() : null,
-            channel.getCodConvenio(),
-            channel.getCodTipoOperHM(),
-            channel.getFlgCarac(),
-            channel.getId() != null ? channel.getId().getCodProduto() : null,
-            channel.getId() != null ? channel.getId().getCodCanal() : null,
-            UserSimpleMapper.toDto(channel.getIdUsuarioCadastro()),
-            UserSimpleMapper.toDto(channel.getIdUsuarioManutencao())
-        ));
+                channel.getQtdLimiteComercializacao(),
+                channel.getQtdMinimaEstoque(),
+                channel.getQtdMaximaEstoque(),
+                channel.getQtdMinimaRessuprimento(),
+                channel.getQtdMaximaRessuprimento(),
+                channel.getCodOrgaoEmissor(),
+                channel.getVlFace(),
+                channel.getCodStatus(),
+                channel.getDtCadastro() != null ? channel.getDtCadastro().toString() : null,
+                channel.getDtManutencao() != null ? channel.getDtManutencao().toString() : null,
+                channel.getCodConvenio(),
+                channel.getCodTipoOperHM(),
+                channel.getFlgCarac(),
+                channel.getId() != null ? channel.getId().getCodProduto() : null,
+                channel.getId() != null ? channel.getId().getCodCanal() : null,
+                UserSimpleMapper.toDto(channel.getIdUsuarioCadastro()),
+                UserSimpleMapper.toDto(channel.getIdUsuarioManutencao())));
 
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
@@ -163,6 +162,5 @@ public class ProductChannelController {
         productChannelUseCase.deleteProductChannel(codCanal, codProduto);
         return ResponseEntity.noContent().build();
     }
-
 
 }

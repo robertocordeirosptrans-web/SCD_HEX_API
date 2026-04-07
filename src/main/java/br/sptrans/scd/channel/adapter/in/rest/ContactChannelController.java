@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -56,8 +57,8 @@ public class ContactChannelController {
             @ApiResponse(responseCode = "200", description = "Contato do canal cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<ContactChannelResponseDTO> createContactChannel(
-            @RequestBody CreateContactChannelRequest request) {
+        public ResponseEntity<ContactChannelResponseDTO> createContactChannel(
+            @Valid @RequestBody CreateContactChannelRequest request) {
         log.info("REST POST /contact-channels — Criando contato: {}", request.codContato());
         User usuario = userResolverHelper.getCurrentUser();
         ContactChannel result = contactChannelUseCase.createContactChannel(new CreateContactChannelCommand(
@@ -86,9 +87,9 @@ public class ContactChannelController {
             @ApiResponse(responseCode = "200", description = "Contato do canal atualizado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
-    public ResponseEntity<ContactChannelResponseDTO> updateContactChannel(
+        public ResponseEntity<ContactChannelResponseDTO> updateContactChannel(
             @PathVariable String codContato,
-            @RequestBody UpdateContactChannelRequest request) {
+            @Valid @RequestBody UpdateContactChannelRequest request) {
         log.info("REST PUT /contact-channels/{} — Atualizando contato", codContato);
         Long idUsuario = userResolverHelper.getCurrentUserId();
         ContactChannel result = contactChannelUseCase.updateContactChannel(codContato, new UpdateContactChannelCommand(

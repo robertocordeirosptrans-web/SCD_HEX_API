@@ -30,9 +30,6 @@ public class Fee {
 
     private Product produto;
 
-      // Relacionamento com CanaisProdutos
-
-    //   Será implementado posteriormente
 
      // Relacionamento 1:1 com TaxasAdm
     private AdministrativeFee taxaAdministrativa;

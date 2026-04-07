@@ -8,12 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
 import br.sptrans.scd.product.adapter.out.jpa.mapper.FamilyMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.FamilyJpaRepository;
 import br.sptrans.scd.product.adapter.out.persistence.entity.FamilyEntityJpa;
 import br.sptrans.scd.product.application.port.out.repository.FamilyPort;
-
 import br.sptrans.scd.product.domain.Family;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +27,9 @@ public class FamilyAdapterJpa implements FamilyPort {
 
     @Override
 
-
     public Optional<Family> findById(String codFamilia) {
         return repository.findById(codFamilia)
-            .map(entity -> FamilyMapper.toDomain(entity, userRepository));
+                .map(entity -> FamilyMapper.toDomain(entity, userRepository));
     }
 
     @Override
@@ -46,14 +43,14 @@ public class FamilyAdapterJpa implements FamilyPort {
     public List<Family> findAll(String codStatus) {
         if (codStatus != null && !codStatus.isBlank()) {
             return repository.findByCodStatusOrderByCodFamilia(codStatus)
+                    .stream()
+                    .map(entity -> FamilyMapper.toDomain(entity, userRepository))
+                    .toList();
+        }
+        return repository.findAllByOrderByCodFamilia()
                 .stream()
                 .map(entity -> FamilyMapper.toDomain(entity, userRepository))
                 .toList();
-        }
-        return repository.findAllByOrderByCodFamilia()
-            .stream()
-            .map(entity -> FamilyMapper.toDomain(entity, userRepository))
-            .toList();
     }
 
     @Override

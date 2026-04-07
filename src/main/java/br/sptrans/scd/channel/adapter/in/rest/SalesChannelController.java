@@ -36,6 +36,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -54,40 +55,40 @@ public class SalesChannelController {
     private final SalesChannelMapper salesChannelMapper;
 
     @PostMapping
-        @Operation(summary = "Cadastra um novo canal de venda")
-        @ApiResponses(value = {
+    @Operation(summary = "Cadastra um novo canal de venda")
+    @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Canal de venda cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
+    })
     public ResponseEntity<SalesChannelResponseDTO> createSalesChannel(
-            @RequestBody CreateSalesChannelRequest request) {
+            @Valid @RequestBody CreateSalesChannelRequest request) {
         log.info("REST POST /sales-channels — Criando canal: {}", request.codCanal());
         var usuario = userResolverHelper.getCurrentUser();
         SalesChannel result = salesChannelUseCase.createSalesChannel(new CreateSalesChannelCommand(
-            request.codCanal(),
-            request.codDocumento(),
-            request.codCanalSuperior(),
-            request.desCanal(),
-            request.codTipoDocumento(),
-            request.desRazaoSocial(),
-            request.desNomeFantasia(),
-            request.vlCaucao(),
-            request.dtInicioCaucao() != null ? request.dtInicioCaucao().toLocalDate() : null,
-            request.dtFimCaucao() != null ? request.dtFimCaucao().toLocalDate() : null,
-            request.seqNivel(),
-            request.flgCriticaNumlote(),
-            request.flgLimiteDias(),
-            request.flgProcessamentoAutomatico(),
-            request.flgProcessamentoParcial(),
-            request.flgSaldoDevedor(),
-            request.numMinutoIniLibRecarga(),
-            request.numMinutoFimLibRecarga(),
-            request.flgEmiteReciboPedido(),
-            request.flgSupercanal(),
-            request.flgPagtoFuturo(),
-            request.codClassificacaoPessoa(),
-            request.codAtividade(),
-            usuario));
+                request.codCanal(),
+                request.codDocumento(),
+                request.codCanalSuperior(),
+                request.desCanal(),
+                request.codTipoDocumento(),
+                request.desRazaoSocial(),
+                request.desNomeFantasia(),
+                request.vlCaucao(),
+                request.dtInicioCaucao() != null ? request.dtInicioCaucao().toLocalDate() : null,
+                request.dtFimCaucao() != null ? request.dtFimCaucao().toLocalDate() : null,
+                request.seqNivel(),
+                request.flgCriticaNumlote(),
+                request.flgLimiteDias(),
+                request.flgProcessamentoAutomatico(),
+                request.flgProcessamentoParcial(),
+                request.flgSaldoDevedor(),
+                request.numMinutoIniLibRecarga(),
+                request.numMinutoFimLibRecarga(),
+                request.flgEmiteReciboPedido(),
+                request.flgSupercanal(),
+                request.flgPagtoFuturo(),
+                request.codClassificacaoPessoa(),
+                request.codAtividade(),
+                usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(salesChannelMapper.toResponseDTO(result));
     }
 
@@ -95,31 +96,31 @@ public class SalesChannelController {
     @Operation(summary = "Atualiza dados de um canal de venda")
     public ResponseEntity<SalesChannelResponseDTO> updateSalesChannel(
             @PathVariable String codCanal,
-            @RequestBody UpdateSalesChannelRequest request) {
+            @Valid @RequestBody UpdateSalesChannelRequest request) {
         log.info("REST PUT /sales-channels/{} — Atualizando canal", codCanal);
         var usuario = userResolverHelper.getCurrentUser();
         SalesChannel result = salesChannelUseCase.updateSalesChannel(codCanal, new UpdateSalesChannelCommand(
-            request.codCanalSuperior(),
-            request.desCanal(),
-            request.desRazaoSocial(),
-            request.desNomeFantasia(),
-            request.vlCaucao(),
-            request.dtInicioCaucao() != null ? request.dtInicioCaucao().toLocalDate() : null,
-            request.dtFimCaucao() != null ? request.dtFimCaucao().toLocalDate() : null,
-            request.seqNivel(),
-            request.flgCriticaNumlote(),
-            request.flgLimiteDias(),
-            request.flgProcessamentoAutomatico(),
-            request.flgProcessamentoParcial(),
-            request.flgSaldoDevedor(),
-            request.numMinutoIniLibRecarga(),
-            request.numMinutoFimLibRecarga(),
-            request.flgEmiteReciboPedido(),
-            request.flgSupercanal(),
-            request.flgPagtoFuturo(),
-            request.codClassificacaoPessoa(),
-            request.codAtividade(),
-            usuario));
+                request.codCanalSuperior(),
+                request.desCanal(),
+                request.desRazaoSocial(),
+                request.desNomeFantasia(),
+                request.vlCaucao(),
+                request.dtInicioCaucao() != null ? request.dtInicioCaucao().toLocalDate() : null,
+                request.dtFimCaucao() != null ? request.dtFimCaucao().toLocalDate() : null,
+                request.seqNivel(),
+                request.flgCriticaNumlote(),
+                request.flgLimiteDias(),
+                request.flgProcessamentoAutomatico(),
+                request.flgProcessamentoParcial(),
+                request.flgSaldoDevedor(),
+                request.numMinutoIniLibRecarga(),
+                request.numMinutoFimLibRecarga(),
+                request.flgEmiteReciboPedido(),
+                request.flgSupercanal(),
+                request.flgPagtoFuturo(),
+                request.codClassificacaoPessoa(),
+                request.codAtividade(),
+                usuario));
         return ResponseEntity.ok(salesChannelMapper.toResponseDTO(result));
     }
 
@@ -148,7 +149,6 @@ public class SalesChannelController {
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
-
     @PatchMapping("/{codCanal}/activate")
     @Operation(summary = "Ativa um canal de venda")
     public ResponseEntity<Void> activateSalesChannel(
@@ -175,6 +175,4 @@ public class SalesChannelController {
         return ResponseEntity.noContent().build();
     }
 
-
- 
 }

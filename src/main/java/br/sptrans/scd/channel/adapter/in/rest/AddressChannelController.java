@@ -34,6 +34,7 @@ import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -52,8 +53,8 @@ public class AddressChannelController {
 
     @PostMapping
     @Operation(summary = "Cadastra um novo endereço do canal")
-    public ResponseEntity<AddressChannelResponseDTO> createAddressChannel(
-            @RequestBody CreateAddressChannelRequest request) {
+        public ResponseEntity<AddressChannelResponseDTO> createAddressChannel(
+            @Valid @RequestBody CreateAddressChannelRequest request) {
         log.info("REST POST /address-channels — Criando endereço: {}", request.codEndereco());
         User usuario = userResolverHelper.getCurrentUser();
         AddressChannel result = addressChannelUseCase.createAddressChannel(new CreateAddressChannelCommand(
@@ -79,9 +80,9 @@ public class AddressChannelController {
 
     @PutMapping("/{codEndereco}")
     @Operation(summary = "Atualiza dados de um endereço do canal")
-    public ResponseEntity<AddressChannelResponseDTO> updateAddressChannel(
+        public ResponseEntity<AddressChannelResponseDTO> updateAddressChannel(
             @PathVariable String codEndereco,
-            @RequestBody UpdateAddressChannelRequest request) {
+            @Valid @RequestBody UpdateAddressChannelRequest request) {
         log.info("REST PUT /address-channels/{} — Atualizando endereço", codEndereco);
         Long idUsuario = userResolverHelper.getCurrentUserId();
         AddressChannel result = addressChannelUseCase.updateAddressChannel(codEndereco, new UpdateAddressChannelCommand(
