@@ -40,4 +40,10 @@ public class Species {
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
+
+    public void update(String desEspecie, User usuario) {
+        this.desEspecie = desEspecie;
+        this.idUsuarioManutencao = usuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
 }

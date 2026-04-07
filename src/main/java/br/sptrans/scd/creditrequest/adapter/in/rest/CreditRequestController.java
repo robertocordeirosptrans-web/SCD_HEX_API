@@ -52,7 +52,7 @@ public class CreditRequestController {
         private final CreditRequestManagementUseCase creditRequestManagementUseCase;
         private final CreditRequestMapper creditRequestMapper;
         private final UserPersistencePort userRepository;
-        private static final Logger log = LoggerFactory.getLogger(CreditRequestController.class);
+
 
         // Idempotency store (in-memory, para produção use uma implementação persistente)
         private static final IdempotencyStore<ResponseEntity<?>> idempotencyStore = new InMemoryIdempotencyStore<>();

@@ -40,4 +40,10 @@ public class Family {
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
+
+    public void update(String desFamilia, User usuario) {
+        this.desFamilia = desFamilia;
+        this.idUsuarioManutencao = usuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
 }

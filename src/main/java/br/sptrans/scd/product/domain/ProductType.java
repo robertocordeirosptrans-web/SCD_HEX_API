@@ -42,4 +42,10 @@ public class ProductType {
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
+
+    public void update(String desTipoProduto, User usuario) {
+        this.desTipoProduto = desTipoProduto;
+        this.idUsuarioManutencao = usuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
 }

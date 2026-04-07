@@ -42,4 +42,10 @@ public class Technology {
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
+
+    public void update(String desTecnologia, User usuario) {
+        this.desTecnologia = desTecnologia;
+        this.idUsuarioManutencao = usuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
 }

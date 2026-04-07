@@ -42,4 +42,10 @@ public class Modality {
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
+
+    public void update(String desModalidade, User usuario) {
+        this.desModalidade = desModalidade;
+        this.idUsuarioManutencao = usuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
 }

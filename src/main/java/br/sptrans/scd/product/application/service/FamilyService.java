@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase;
-import br.sptrans.scd.product.application.port.out.repository.FamilyRepository;
+import br.sptrans.scd.product.application.port.out.repository.FamilyPort;
+
 import br.sptrans.scd.product.domain.Family;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FamilyService implements FamilyManagementUseCase {
 
-    private final FamilyRepository familyRepository;
+    private final FamilyPort familyRepository;
     private final UserResolverHelper userResolverHelper;
 
     @Override
@@ -53,17 +54,8 @@ public class FamilyService implements FamilyManagementUseCase {
 
         User usuario = userResolverHelper.resolve(command.idUsuario());
 
-        Family updated = new Family(
-                existing.getCodFamilia(),
-                command.desFamilia(),
-                existing.getCodStatus(),
-                existing.getDtCadastro(),
-                LocalDateTime.now(),
-                existing.getIdUsuarioCadastro(),
-                usuario
-        );
-
-        return familyRepository.save(updated);
+        existing.update(command.desFamilia(), usuario);
+        return familyRepository.save(existing);
     }
 
     @Override
@@ -86,7 +78,9 @@ public class FamilyService implements FamilyManagementUseCase {
             throw new ProductException(ProductErrorType.FAMILY_ALREADY_ACTIVE);
         }
 
-        familyRepository.updateStatus(codFamilia, ProductDomainStatus.ACTIVE.getCode(), idUsuario);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        family.activate(usuario);
+        familyRepository.save(family);
     }
 
     @Override
@@ -98,7 +92,9 @@ public class FamilyService implements FamilyManagementUseCase {
             throw new ProductException(ProductErrorType.FAMILY_ALREADY_INACTIVE);
         }
 
-        familyRepository.updateStatus(codFamilia, ProductDomainStatus.INACTIVE.getCode(), idUsuario);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        family.deactivate(usuario);
+        familyRepository.save(family);
     }
 
     @Override

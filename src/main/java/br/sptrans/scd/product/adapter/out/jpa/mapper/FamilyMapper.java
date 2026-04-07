@@ -38,7 +38,12 @@ public interface FamilyMapper {
         entity.setCodStatus(family.getCodStatus());
         entity.setDtCadastro(family.getDtCadastro());
         entity.setDtManutencao(family.getDtManutencao());
-        // idUsuarioCadastro, idUsuarioManutencao: implementar se necessário
+        if (family.getIdUsuarioCadastro() != null) {
+            entity.setIdUsuarioCadastro(family.getIdUsuarioCadastro().getIdUsuario());
+        }
+        if (family.getIdUsuarioManutencao() != null) {
+            entity.setIdUsuarioManutencao(family.getIdUsuarioManutencao().getIdUsuario());
+        }
         return entity;
     }
 }

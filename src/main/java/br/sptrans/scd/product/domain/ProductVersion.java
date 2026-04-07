@@ -96,4 +96,10 @@ public class ProductVersion {
         this.dtManutencao = LocalDateTime.now();
     }
 
+    public void block(User idUsuario) {
+        this.codStatus = ProductVersionStatus.BLOCKED.getCode();
+        this.idUsuarioManutencao = idUsuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
 }

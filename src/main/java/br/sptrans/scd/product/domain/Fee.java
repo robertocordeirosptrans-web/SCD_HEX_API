@@ -43,5 +43,9 @@ public class Fee {
     // Relacionamento 1:1 com TaxasDes (se necessário)
     private DestinyFee taxaDes;
 
-    
+    public void update(String desTaxa, LocalDateTime dtFinal) {
+        this.desTaxa = desTaxa;
+        this.dtFinal = dtFinal;
+    }
+
 }

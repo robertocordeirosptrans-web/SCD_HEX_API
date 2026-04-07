@@ -59,4 +59,10 @@ public class Fare {
         this.dtManutencao = LocalDateTime.now();
     }
 
+    public void extendValidity(LocalDateTime dtFim, User usuario) {
+        this.dtVigenciaFim = dtFim;
+        this.idUsuarioManutencao = usuario;
+        this.dtManutencao = LocalDateTime.now();
+    }
+
 }

@@ -1,7 +1,6 @@
 package br.sptrans.scd.product.application.service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -12,8 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.FeeFareManagementUseCase;
 import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
+import br.sptrans.scd.product.application.port.out.repository.FarePort;
 
-import br.sptrans.scd.product.application.port.out.repository.FareRepository;
+
 import br.sptrans.scd.product.application.port.out.repository.FeePersistencePort;
 import br.sptrans.scd.product.application.port.out.repository.ProductPort;
 import br.sptrans.scd.product.domain.AdministrativeFee;
@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FeeFareService implements FeeFareManagementUseCase {
 
-    private final FareRepository fareRepository;
+    private final FarePort fareRepository;
     private final FeePersistencePort feeRepository;
     private final ProductPort productRepository;
     private final UserResolverHelper userResolverHelper;
@@ -71,21 +71,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
 
         BigDecimal base = valorTotal != null ? valorTotal : BigDecimal.ZERO;
 
-        BigDecimal valorTaxaAdm = (taxaAdm.getValFixo() != null ? taxaAdm.getValFixo() : BigDecimal.ZERO)
-                .add((taxaAdm.getValPercentual() != null ? taxaAdm.getValPercentual() : BigDecimal.ZERO)
-                        .multiply(base)
-                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
-
-        BigDecimal valorTaxaServ = (taxaServ.getValFixo() != null ? taxaServ.getValFixo() : BigDecimal.ZERO)
-                .add((taxaServ.getValPercentual() != null ? taxaServ.getValPercentual() : BigDecimal.ZERO)
-                        .multiply(base)
-                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
-
-        // Aplica mínimo de taxa de serviço
-        if (taxaServ.getValMinimo() != null
-                && taxaServ.getValMinimo().compareTo(valorTaxaServ) > 0) {
-            valorTaxaServ = taxaServ.getValMinimo();
-        }
+        BigDecimal valorTaxaAdm = taxaAdm.calculateValue(base);
+        BigDecimal valorTaxaServ = taxaServ.calculateValue(base);
 
         return new TaxaCalculada(valorTaxaAdm, valorTaxaServ);
     }
@@ -151,13 +138,12 @@ public class FeeFareService implements FeeFareManagementUseCase {
 
     @Override
     public Fare updateFare(String codTarifa, UpdateFareCommand command) {
-        fareRepository.findById(codTarifa)
+        Fare fare = fareRepository.findById(codTarifa)
                 .orElseThrow(() -> new ProductException(ProductErrorType.FARE_NOT_FOUND));
 
-        fareRepository.extendsValidity(codTarifa, command.dtFim(), command.idUsuario());
-
-        return fareRepository.findById(codTarifa)
-                .orElseThrow(() -> new ProductException(ProductErrorType.FARE_NOT_FOUND));
+        User usuario = userResolverHelper.resolve(command.idUsuario());
+        fare.extendValidity(command.dtFim(), usuario);
+        return fareRepository.save(fare);
     }
 
     @Override
@@ -223,20 +209,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
         Fee existing = feeRepository.findByIdFee(codTaxa)
                 .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
 
-        Fee updated = new Fee(
-                existing.getCodTaxa(),
-                existing.getDtInicio(),
-                command.desTaxa(),
-                command.dtFim(),
-                existing.getCodCanal(),
-                existing.getCodProduto(),
-                existing.getCanal(),
-                existing.getProduto(),
-                null,
-                null,
-                existing.getTaxaDes());
-
-        Fee savedFee = feeRepository.save(updated);
+        existing.update(command.desTaxa(), command.dtFim());
+        Fee savedFee = feeRepository.save(existing);
 
         if (existing.getTaxaAdministrativa() != null) {
             AdministrativeFee taxaAdm = new AdministrativeFee(

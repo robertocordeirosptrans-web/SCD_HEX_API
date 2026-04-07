@@ -54,17 +54,8 @@ public class ModalityService implements ModalityManagementUseCase {
 
         User usuario = userResolverHelper.resolve(command.idUsuario());
 
-        Modality updated = new Modality(
-                existing.getCodModalidade(),
-                command.desModalidade(),
-                existing.getCodStatus(),
-                existing.getDtCadastro(),
-                LocalDateTime.now(),
-                existing.getIdUsuarioCadastro(),
-                usuario
-        );
-
-        return modalityRepository.save(updated);
+        existing.update(command.desModalidade(), usuario);
+        return modalityRepository.save(existing);
     }
 
     @Override
@@ -87,7 +78,9 @@ public class ModalityService implements ModalityManagementUseCase {
             throw new ProductException(ProductErrorType.MODALITY_ALREADY_ACTIVE);
         }
 
-        modalityRepository.updateStatus(codModalidade, ProductDomainStatus.ACTIVE.getCode(), idUsuario);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        modality.activate(usuario);
+        modalityRepository.save(modality);
     }
 
     @Override
@@ -99,7 +92,9 @@ public class ModalityService implements ModalityManagementUseCase {
             throw new ProductException(ProductErrorType.MODALITY_ALREADY_INACTIVE);
         }
 
-        modalityRepository.updateStatus(codModalidade, ProductDomainStatus.INACTIVE.getCode(), idUsuario);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        modality.deactivate(usuario);
+        modalityRepository.save(modality);
     }
 
     @Override

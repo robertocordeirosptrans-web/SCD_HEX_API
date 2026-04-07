@@ -23,6 +23,7 @@ import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.StatusChang
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.UpdateUserCommand;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,6 +39,7 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserManagementUseCase userManagementUseCase;
+    private final UserResolverHelper userResolverHelper;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")

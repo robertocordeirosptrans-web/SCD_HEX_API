@@ -104,7 +104,8 @@ public class ProductService implements ProductUseCase {
             throw new ProductException(ProductErrorType.PRODUCT_WITHOUT_VERSION);
         }
 
-        productRepository.updateStatus(productCode, ProductStatus.ACTIVE.getCode(), idUsuario);
+        product.activate(idUsuario);
+        productRepository.save(product);
     }
 
     @Override
@@ -116,7 +117,8 @@ public class ProductService implements ProductUseCase {
             throw new ProductException(ProductErrorType.PRODUCT_ALREADY_INACTIVE);
         }
 
-        productRepository.updateStatus(productCode, ProductStatus.INACTIVE.getCode(), idUsuario);
+        product.deactivate(idUsuario);
+        productRepository.save(product);
     }
 
     @Override

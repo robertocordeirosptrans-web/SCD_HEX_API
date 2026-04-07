@@ -54,17 +54,8 @@ public class ProductsTypeService implements ProductsTypeManagementUseCase {
 
         User usuario = userResolverHelper.resolve(command.idUsuario());
 
-        ProductType updated = new ProductType(
-                existing.getCodTipoProduto(),
-                command.desTipoProduto(),
-                existing.getCodStatus(),
-                existing.getDtCadastro(),
-                LocalDateTime.now(),
-                existing.getIdUsuarioCadastro(),
-                usuario
-        );
-
-        return productsTypeRepository.save(updated);
+        existing.update(command.desTipoProduto(), usuario);
+        return productsTypeRepository.save(existing);
     }
 
     @Override
@@ -87,7 +78,9 @@ public class ProductsTypeService implements ProductsTypeManagementUseCase {
             throw new ProductException(ProductErrorType.PRODUCTS_TYPE_ALREADY_ACTIVE);
         }
 
-        productsTypeRepository.updateStatus(codTipoProduto, ProductDomainStatus.ACTIVE.getCode(), idUsuario);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        productType.activate(usuario);
+        productsTypeRepository.save(productType);
     }
 
     @Override
@@ -99,7 +92,9 @@ public class ProductsTypeService implements ProductsTypeManagementUseCase {
             throw new ProductException(ProductErrorType.PRODUCTS_TYPE_ALREADY_INACTIVE);
         }
 
-        productsTypeRepository.updateStatus(codTipoProduto, ProductDomainStatus.INACTIVE.getCode(), idUsuario);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        productType.deactivate(usuario);
+        productsTypeRepository.save(productType);
     }
 
     @Override

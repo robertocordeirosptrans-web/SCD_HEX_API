@@ -54,17 +54,8 @@ public class SpeciesService implements SpeciesManagementUseCase {
 
         User usuario = userResolverHelper.resolve(command.idUsuario());
 
-        Species updated = new Species(
-                existing.getCodEspecie(),
-                command.desEspecie(),
-                existing.getCodStatus(),
-                existing.getDtCadastro(),
-                LocalDateTime.now(),
-                existing.getIdUsuarioCadastro(),
-                usuario
-        );
-
-        return speciesRepository.save(updated);
+        existing.update(command.desEspecie(), usuario);
+        return speciesRepository.save(existing);
     }
 
     @Override
@@ -87,7 +78,9 @@ public class SpeciesService implements SpeciesManagementUseCase {
             throw new ProductException(ProductErrorType.SPECIES_ALREADY_ACTIVE);
         }
 
-        speciesRepository.updateStatus(codEspecie, ProductDomainStatus.ACTIVE.getCode(), idUsuario);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        species.activate(usuario);
+        speciesRepository.save(species);
     }
 
     @Override
@@ -99,7 +92,9 @@ public class SpeciesService implements SpeciesManagementUseCase {
             throw new ProductException(ProductErrorType.SPECIES_ALREADY_INACTIVE);
         }
 
-        speciesRepository.updateStatus(codEspecie, ProductDomainStatus.INACTIVE.getCode(), idUsuario);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        species.deactivate(usuario);
+        speciesRepository.save(species);
     }
 
     @Override

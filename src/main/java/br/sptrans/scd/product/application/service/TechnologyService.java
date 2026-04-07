@@ -54,17 +54,8 @@ public class TechnologyService implements TechnologyManagementUseCase {
 
         User usuario = userResolverHelper.resolve(command.idUsuario());
 
-        Technology updated = new Technology(
-                existing.getCodTecnologia(),
-                command.desTecnologia(),
-                existing.getCodStatus(),
-                existing.getDtCadastro(),
-                LocalDateTime.now(),
-                existing.getIdUsuarioCadastro(),
-                usuario
-        );
-
-        return technologyRepository.save(updated);
+        existing.update(command.desTecnologia(), usuario);
+        return technologyRepository.save(existing);
     }
 
     @Override
@@ -87,7 +78,9 @@ public class TechnologyService implements TechnologyManagementUseCase {
             throw new ProductException(ProductErrorType.TECHNOLOGY_ALREADY_ACTIVE);
         }
 
-        technologyRepository.updateStatus(codTecnologia, ProductDomainStatus.ACTIVE.getCode(), idUsuario);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        technology.activate(usuario);
+        technologyRepository.save(technology);
     }
 
     @Override
@@ -99,7 +92,9 @@ public class TechnologyService implements TechnologyManagementUseCase {
             throw new ProductException(ProductErrorType.TECHNOLOGY_ALREADY_INACTIVE);
         }
 
-        technologyRepository.updateStatus(codTecnologia, ProductDomainStatus.INACTIVE.getCode(), idUsuario);
+        User usuario = userResolverHelper.resolve(idUsuario);
+        technology.deactivate(usuario);
+        technologyRepository.save(technology);
     }
 
     @Override
