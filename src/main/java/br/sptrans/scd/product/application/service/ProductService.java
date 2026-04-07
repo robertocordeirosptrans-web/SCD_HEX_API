@@ -9,8 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ProductUseCase;
-import br.sptrans.scd.product.application.port.out.repository.ProductRepository;
-import br.sptrans.scd.product.application.port.out.repository.ProductVersionRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductPort;
+import br.sptrans.scd.product.application.port.out.repository.ProductVersionPort;
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -25,8 +25,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductService implements ProductUseCase {
 
-    private final ProductRepository productRepository;
-    private final ProductVersionRepository productVersionRepository;
+    private final ProductPort productRepository;
+    private final ProductVersionPort productVersionRepository;
     private final UserResolverHelper userResolverHelper;
 
     // =========================================================================

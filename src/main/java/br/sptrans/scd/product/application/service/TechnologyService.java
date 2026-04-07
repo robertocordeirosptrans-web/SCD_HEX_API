@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase;
-import br.sptrans.scd.product.application.port.out.repository.TechnologyRepository;
+import br.sptrans.scd.product.application.port.out.repository.TechnologyPort;
+
 import br.sptrans.scd.product.domain.Technology;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TechnologyService implements TechnologyManagementUseCase {
 
-    private final TechnologyRepository technologyRepository;
+    private final TechnologyPort technologyRepository;
     private final UserResolverHelper userResolverHelper;
 
     @Override

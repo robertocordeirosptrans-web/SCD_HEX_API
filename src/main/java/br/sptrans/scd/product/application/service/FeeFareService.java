@@ -12,12 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.FeeFareManagementUseCase;
 import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
-import br.sptrans.scd.product.application.port.out.repository.AdministrativeFeeRepository;
-import br.sptrans.scd.product.application.port.out.repository.DestinyFeeRepository;
+
 import br.sptrans.scd.product.application.port.out.repository.FareRepository;
-import br.sptrans.scd.product.application.port.out.repository.FeeRepository;
-import br.sptrans.scd.product.application.port.out.repository.ProductRepository;
-import br.sptrans.scd.product.application.port.out.repository.ServiceFeeRepository;
+import br.sptrans.scd.product.application.port.out.repository.FeePersistencePort;
+import br.sptrans.scd.product.application.port.out.repository.ProductPort;
 import br.sptrans.scd.product.domain.AdministrativeFee;
 import br.sptrans.scd.product.domain.DestinyFee;
 import br.sptrans.scd.product.domain.Fare;
@@ -36,20 +34,19 @@ import lombok.RequiredArgsConstructor;
 public class FeeFareService implements FeeFareManagementUseCase {
 
     private final FareRepository fareRepository;
-    private final FeeRepository feeRepository;
-    private final AdministrativeFeeRepository administrativeFeeRepository;
-    private final ServiceFeeRepository serviceFeeRepository;
-    private final DestinyFeeRepository destinyFeeRepository;
-    private final ProductRepository productRepository;
+    private final FeePersistencePort feeRepository;
+    private final ProductPort productRepository;
     private final UserResolverHelper userResolverHelper;
     private final LiminarGateway liminarGateway;
+
     /**
-     * Calcula as taxas administrativas e de serviço para um pedido, aplicando isenção por liminar judicial quando aplicável.
+     * Calcula as taxas administrativas e de serviço para um pedido, aplicando
+     * isenção por liminar judicial quando aplicável.
      *
-     * @param valorTotal valor base para cálculo das taxas
-     * @param codigoCanal código do canal
+     * @param valorTotal   valor base para cálculo das taxas
+     * @param codigoCanal  código do canal
      * @param numeroPedido número do pedido (para verificação de liminar)
-     * @param idTaxa identificador da taxa vigente para canal/produto
+     * @param idTaxa       identificador da taxa vigente para canal/produto
      * @return objeto com valores calculados das taxas
      */
     @Transactional(readOnly = true)
@@ -58,35 +55,35 @@ public class FeeFareService implements FeeFareManagementUseCase {
         final int CANAL_LOJA_VIRTUAL = 152;
         try {
             if (Integer.parseInt(codigoCanal) == CANAL_LOJA_VIRTUAL
-                && liminarGateway.empresaPossuiIsencaoTaxa(numeroPedido)) {
-            // Tem liminar → zera tudo
-            return TaxaCalculada.isenta();
+                    && liminarGateway.empresaPossuiIsencaoTaxa(numeroPedido)) {
+                // Tem liminar → zera tudo
+                return TaxaCalculada.isenta();
             }
         } catch (NumberFormatException e) {
             // Canal não numérico → não aplica regra de liminar
         }
 
         // Sem liminar → busca taxas normais no banco
-        AdministrativeFee taxaAdm = administrativeFeeRepository.findAdmById(idTaxa)
-            .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
-        ServiceFee taxaServ = serviceFeeRepository.findSrvById(idTaxa)
-            .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
+        AdministrativeFee taxaAdm = feeRepository.findAdmById(idTaxa)
+                .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
+        ServiceFee taxaServ = feeRepository.findSrvById(idTaxa)
+                .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
 
         BigDecimal base = valorTotal != null ? valorTotal : BigDecimal.ZERO;
 
         BigDecimal valorTaxaAdm = (taxaAdm.getValFixo() != null ? taxaAdm.getValFixo() : BigDecimal.ZERO)
-            .add((taxaAdm.getValPercentual() != null ? taxaAdm.getValPercentual() : BigDecimal.ZERO)
-                .multiply(base)
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+                .add((taxaAdm.getValPercentual() != null ? taxaAdm.getValPercentual() : BigDecimal.ZERO)
+                        .multiply(base)
+                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
 
         BigDecimal valorTaxaServ = (taxaServ.getValFixo() != null ? taxaServ.getValFixo() : BigDecimal.ZERO)
-            .add((taxaServ.getValPercentual() != null ? taxaServ.getValPercentual() : BigDecimal.ZERO)
-                .multiply(base)
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+                .add((taxaServ.getValPercentual() != null ? taxaServ.getValPercentual() : BigDecimal.ZERO)
+                        .multiply(base)
+                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
 
         // Aplica mínimo de taxa de serviço
         if (taxaServ.getValMinimo() != null
-            && taxaServ.getValMinimo().compareTo(valorTaxaServ) > 0) {
+                && taxaServ.getValMinimo().compareTo(valorTaxaServ) > 0) {
             valorTaxaServ = taxaServ.getValMinimo();
         }
 
@@ -147,8 +144,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
                 command.valTarifa() != null ? command.valTarifa().intValue() : null,
                 usuario,
                 null,
-                produto
-        );
+                produto);
 
         return fareRepository.save(fare);
     }
@@ -168,7 +164,6 @@ public class FeeFareService implements FeeFareManagementUseCase {
     public List<Fare> listFares(String codProduto, String codCanal) {
         return fareRepository.listByProductChannel(codProduto, codCanal);
     }
-    
 
     // =========================================================================
     // Gestão de Taxas (Fee)
@@ -192,8 +187,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
                 null,
                 null,
                 null,
-                null
-        );
+                null);
 
         Fee savedFee = feeRepository.save(fee);
 
@@ -203,9 +197,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
                 command.taxaAdministrativa().recFinal().byteValue(),
                 command.taxaAdministrativa().valFixo(),
                 command.taxaAdministrativa().valPercentual(),
-                savedFee
-        );
-        administrativeFeeRepository.save(taxaAdm);
+                savedFee);
+        feeRepository.save(taxaAdm);
 
         ServiceFee taxaSrv = new ServiceFee(
                 null,
@@ -214,19 +207,16 @@ public class FeeFareService implements FeeFareManagementUseCase {
                 command.taxaServico().valFixo(),
                 command.taxaServico().valPercentual(),
                 command.taxaServico().valMinimo(),
-                savedFee
-        );
-        serviceFeeRepository.save(taxaSrv);
+                savedFee);
+        feeRepository.save(taxaSrv);
 
         if (command.taxaDestino() != null) {
             DestinyFee taxaDes = new DestinyFee(null, command.taxaDestino().codCanalDestino());
-            destinyFeeRepository.save(taxaDes);
+            feeRepository.save(taxaDes);
         }
 
         return feeRepository.findByIdFee(savedFee.getCodTaxa()).orElse(savedFee);
     }
-
-
 
     @Override
     public Fee updateFee(Long codTaxa, UpdateFeeCommand command) {
@@ -244,8 +234,7 @@ public class FeeFareService implements FeeFareManagementUseCase {
                 existing.getProduto(),
                 null,
                 null,
-                existing.getTaxaDes()
-        );
+                existing.getTaxaDes());
 
         Fee savedFee = feeRepository.save(updated);
 
@@ -256,9 +245,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
                     command.taxaAdministrativa().recFinal().byteValue(),
                     command.taxaAdministrativa().valFixo(),
                     command.taxaAdministrativa().valPercentual(),
-                    savedFee
-            );
-            administrativeFeeRepository.save(taxaAdm);
+                    savedFee);
+            feeRepository.save(taxaAdm);
         }
 
         if (existing.getTaxaServico() != null) {
@@ -269,9 +257,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
                     command.taxaServico().valFixo(),
                     command.taxaServico().valPercentual(),
                     command.taxaServico().valMinimo(),
-                    savedFee
-            );
-            serviceFeeRepository.save(taxaSrv);
+                    savedFee);
+            feeRepository.save(taxaSrv);
         }
 
         return feeRepository.findByIdFee(codTaxa).orElse(savedFee);

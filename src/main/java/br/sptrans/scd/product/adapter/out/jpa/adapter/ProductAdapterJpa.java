@@ -9,13 +9,13 @@ import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductJpaRepository;
-import br.sptrans.scd.product.application.port.out.repository.ProductRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductPort;
 import br.sptrans.scd.product.domain.Product;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class ProductAdapterJpa implements ProductRepository {
+public class ProductAdapterJpa implements ProductPort {
 
     private final ProductJpaRepository repository;
 

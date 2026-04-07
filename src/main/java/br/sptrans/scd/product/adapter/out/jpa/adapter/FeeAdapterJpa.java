@@ -21,11 +21,9 @@ import br.sptrans.scd.product.adapter.out.persistence.entity.ChannelFeeKeyEntity
 import br.sptrans.scd.product.adapter.out.persistence.entity.DestinyFeeEntityJpa;
 import br.sptrans.scd.product.adapter.out.persistence.entity.FeeEntityJpa;
 import br.sptrans.scd.product.adapter.out.persistence.entity.ServiceFeeEntityJpa;
-import br.sptrans.scd.product.application.port.out.repository.AdministrativeFeeRepository;
-import br.sptrans.scd.product.application.port.out.repository.ChannelFeeRepository;
-import br.sptrans.scd.product.application.port.out.repository.DestinyFeeRepository;
-import br.sptrans.scd.product.application.port.out.repository.FeeRepository;
-import br.sptrans.scd.product.application.port.out.repository.ServiceFeeRepository;
+
+import br.sptrans.scd.product.application.port.out.repository.FeePersistencePort;
+
 import br.sptrans.scd.product.domain.AdministrativeFee;
 import br.sptrans.scd.product.domain.ChannelFee;
 import br.sptrans.scd.product.domain.ChannelFeeKey;
@@ -39,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 @Repository
 @RequiredArgsConstructor
 @Transactional
-public class FeeAdapterJpa implements AdministrativeFeeRepository, FeeRepository, ChannelFeeRepository, DestinyFeeRepository, ServiceFeeRepository {
+public class FeeAdapterJpa implements FeePersistencePort {
 
     private final FeeJpaRepository feeRepository;
     private final AdministrativeFeeJpaRepository administrativeFeeRepository;

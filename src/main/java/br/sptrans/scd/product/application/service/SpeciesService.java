@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase;
-import br.sptrans.scd.product.application.port.out.repository.SpeciesRepository;
+import br.sptrans.scd.product.application.port.out.repository.SpeciesPort;
+
 import br.sptrans.scd.product.domain.Species;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SpeciesService implements SpeciesManagementUseCase {
 
-    private final SpeciesRepository speciesRepository;
+    private final SpeciesPort speciesRepository;
     private final UserResolverHelper userResolverHelper;
 
     @Override

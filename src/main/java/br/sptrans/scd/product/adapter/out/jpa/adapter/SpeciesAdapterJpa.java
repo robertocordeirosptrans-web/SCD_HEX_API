@@ -11,13 +11,13 @@ import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 
 import br.sptrans.scd.product.adapter.out.jpa.mapper.SpeciesMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.SpeciesJpaRepository;
-import br.sptrans.scd.product.application.port.out.repository.SpeciesRepository;
+import br.sptrans.scd.product.application.port.out.repository.SpeciesPort;
 import br.sptrans.scd.product.domain.Species;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class SpeciesAdapterJpa implements SpeciesRepository {
+public class SpeciesAdapterJpa implements SpeciesPort {
 
     private final SpeciesJpaRepository repository;
     private final UserPersistencePort userRepository;

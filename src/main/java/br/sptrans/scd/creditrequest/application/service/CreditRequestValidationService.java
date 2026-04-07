@@ -20,10 +20,10 @@ import br.sptrans.scd.channel.domain.ProductChannelKey;
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
 import br.sptrans.scd.channel.domain.SalesChannel;
-import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
+
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemRejeitado;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRepository;
-import br.sptrans.scd.product.application.port.out.repository.ProductVersionRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductVersionPort;
 import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.shared.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,7 @@ public class CreditRequestValidationService {
     private final ProductChannelPersistencePort productChannelRepository;
     private final RechargeLimitPersistencePort rechargeLimitRepository;
     private final SalesChannelPersistencePort salesChannelRepository;
-    private final ProductVersionRepository productVersionRepository;
+    private final ProductVersionPort productVersionRepository;
 
     public SalesChannel validarCanal(String codCanal) {
         SalesChannel canal = salesChannelRepository.findById(codCanal)

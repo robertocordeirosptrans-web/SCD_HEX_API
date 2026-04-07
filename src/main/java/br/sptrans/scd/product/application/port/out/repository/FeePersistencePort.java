@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import br.sptrans.scd.product.domain.Fee;
 
-public interface FeeRepository {
-
+public interface FeePersistencePort
+        extends AdministrativeFeePort, ChannelFeePort, DestinyFeePort, ServiceFeePort {
     /**
      * Salva ou atualiza uma Taxa.
      *
@@ -42,7 +42,7 @@ public interface FeeRepository {
     /**
      * Busca todas as Taxas de um canal-produto.
      *
-     * @param codCanal código do canal
+     * @param codCanal   código do canal
      * @param codProduto código do produto
      * @return lista de Taxas agrupadas por canal-produto
      */
@@ -51,7 +51,7 @@ public interface FeeRepository {
     /**
      * Busca Taxa ativa para um canal-produto numa data.
      *
-     * @param codCanal código do canal
+     * @param codCanal   código do canal
      * @param codProduto código do produto
      * @return Optional com a entidade ativa se encontrada
      */
@@ -61,14 +61,13 @@ public interface FeeRepository {
      * Busca Taxa ativa para um canal e produto (alias para
      * findAtivaByCanalProduto).
      *
-     * @param codCanal código do canal
+     * @param codCanal   código do canal
      * @param codProduto código do produto
      * @return Optional com a entidade ativa se encontrada
      */
     default Optional<Fee> findActiveByCanalAndProduto(String codCanal, String codProduto) {
         return findAtivaByCanalProduto(codCanal, codProduto);
     }
-
 
     /**
      * Verifica se uma Taxa existe.

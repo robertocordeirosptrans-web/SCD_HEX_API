@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase;
-import br.sptrans.scd.product.application.port.out.repository.ProductsTypeRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductsTypePort;
+
 import br.sptrans.scd.product.domain.ProductType;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProductsTypeService implements ProductsTypeManagementUseCase {
 
-    private final ProductsTypeRepository productsTypeRepository;
+    private final ProductsTypePort productsTypeRepository;
     private final UserResolverHelper userResolverHelper;
 
     @Override

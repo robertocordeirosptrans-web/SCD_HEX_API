@@ -12,13 +12,13 @@ import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductsTypeMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductsTypeJpaRepository;
 import br.sptrans.scd.product.adapter.out.persistence.entity.ProductTypesEntityJpa;
-import br.sptrans.scd.product.application.port.out.repository.ProductsTypeRepository;
+import br.sptrans.scd.product.application.port.out.repository.ProductsTypePort;
 import br.sptrans.scd.product.domain.ProductType;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class ProductsTypeAdapterJpa implements ProductsTypeRepository {
+public class ProductsTypeAdapterJpa implements ProductsTypePort {
 
     private final ProductsTypeJpaRepository repository;
     private final UserPersistencePort userRepository;

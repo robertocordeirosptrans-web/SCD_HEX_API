@@ -12,13 +12,13 @@ import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ModalityMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ModalityJpaRepository;
-import br.sptrans.scd.product.application.port.out.repository.ModalityRepository;
+import br.sptrans.scd.product.application.port.out.repository.ModalityPort;
 import br.sptrans.scd.product.domain.Modality;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-public class ModalityAdapterJpa implements ModalityRepository {
+public class ModalityAdapterJpa implements ModalityPort {
 
     private final ModalityJpaRepository repository;
     private final UserPersistencePort userRepository;

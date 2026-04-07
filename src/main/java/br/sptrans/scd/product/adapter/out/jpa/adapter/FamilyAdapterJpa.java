@@ -12,7 +12,8 @@ import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.FamilyMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.FamilyJpaRepository;
 import br.sptrans.scd.product.adapter.out.persistence.entity.FamilyEntityJpa;
-import br.sptrans.scd.product.application.port.out.repository.FamilyRepository;
+import br.sptrans.scd.product.application.port.out.repository.FamilyPort;
+
 import br.sptrans.scd.product.domain.Family;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 
-public class FamilyAdapterJpa implements FamilyRepository {
+public class FamilyAdapterJpa implements FamilyPort {
 
     private final FamilyJpaRepository repository;
     private final UserPersistencePort userRepository;

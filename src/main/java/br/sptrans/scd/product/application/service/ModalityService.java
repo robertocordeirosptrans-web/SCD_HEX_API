@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ModalityManagementUseCase;
-import br.sptrans.scd.product.application.port.out.repository.ModalityRepository;
+import br.sptrans.scd.product.application.port.out.repository.ModalityPort;
+
 import br.sptrans.scd.product.domain.Modality;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ModalityService implements ModalityManagementUseCase {
 
-    private final ModalityRepository modalityRepository;
+    private final ModalityPort modalityRepository;
     private final UserResolverHelper userResolverHelper;
 
     @Override
