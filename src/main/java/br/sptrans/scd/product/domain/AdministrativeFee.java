@@ -6,8 +6,10 @@ import java.math.RoundingMode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdministrativeFee {
@@ -28,7 +30,10 @@ public class AdministrativeFee {
         BigDecimal fixo = valFixo != null ? valFixo : BigDecimal.ZERO;
         BigDecimal percentual = valPercentual != null ? valPercentual : BigDecimal.ZERO;
         BigDecimal baseCalculo = base != null ? base : BigDecimal.ZERO;
-        return fixo.add(percentual.multiply(baseCalculo)
+        System.out.println("[DEBUG][AdministrativeFee] codTaxaAdm=" + codTaxaAdm + ", recInicial=" + recInicial + ", recFinal=" + recFinal + ", valFixo=" + fixo + ", valPercentual=" + percentual + ", base=" + baseCalculo);
+        BigDecimal calculado = fixo.add(percentual.multiply(baseCalculo)
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+        System.out.println("[DEBUG][AdministrativeFee] calculado=" + calculado);
+        return calculado;
     }
 }

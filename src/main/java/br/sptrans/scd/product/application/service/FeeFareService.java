@@ -68,9 +68,12 @@ public class FeeFareService implements FeeFareManagementUseCase {
 
         // Sem liminar → busca taxas normais no banco
         AdministrativeFee taxaAdm = feeRepository.findAdmById(idTaxa)
-                .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
+            .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
         ServiceFee taxaServ = feeRepository.findSrvById(idTaxa)
-                .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
+            .orElseThrow(() -> new ProductException(ProductErrorType.FEE_NOT_FOUND));
+
+        System.out.println("[DEBUG][FeeFareService] taxaAdm=" + taxaAdm.getRecInicial() + "-" + taxaAdm.getRecFinal() + ", valFixo=" + taxaAdm.getValFixo() + ", valPercentual=" + taxaAdm.getValPercentual());
+        System.out.println("[DEBUG][FeeFareService] taxaServ=" + taxaServ.getRecInicial() + "-" + taxaServ.getRecFinal() + ", valFixo=" + taxaServ.getValFixo() + ", valPercentual=" + taxaServ.getValPercentual());
 
         BigDecimal base = valorTotal != null ? valorTotal : BigDecimal.ZERO;
 
@@ -79,8 +82,6 @@ public class FeeFareService implements FeeFareManagementUseCase {
 
         return new TaxaCalculada(valorTaxaAdm, valorTaxaServ);
     }
-
-
 
     // =========================================================================
     // Gestão de Tarifas (Fare)
@@ -113,7 +114,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
                 null,
                 produto.getCodProduto());
 
-        auditLogger.info("[AUDIT] Usuário {} criou Tarifa {} para Produto {}", usuario.getCodLogin(), fare.getCodTarifa(), produto.getCodProduto());
+        auditLogger.info("[AUDIT] Usuário {} criou Tarifa {} para Produto {}", usuario.getCodLogin(),
+                fare.getCodTarifa(), produto.getCodProduto());
 
         return fareRepository.save(fare);
     }

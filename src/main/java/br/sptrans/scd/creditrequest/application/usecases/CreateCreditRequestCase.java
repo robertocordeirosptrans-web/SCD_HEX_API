@@ -170,12 +170,15 @@ public class CreateCreditRequestCase {
                         ItemValidationContext ctx,
                         CreateRequestCredit.CreditRequest pedido,
                         ItemRequest item,
-                        CreateRequestCredit request,
-                        List<ItemRejeitado> rejeitados) {
-                // produtoCanal, limite, taxaVigente já carregados
+                        CreateRequestCredit request) {
+                // Lista LOCAL — isolada por item, nunca compartilhada entre iterações
+                List<ItemRejeitado> rejeitadosLocal = new ArrayList<>();
+
+                // produtoCanal, limite, taxaVigente já carregados no contexto
                 if (ctx.produtoCanal() == null) {
                         throw new ValidationException("Produto não comercializado ou inativo no canal");
                 }
+
                 if (ctx.limite() != null) {
                         String erroLimite = validationService.validarLimites(
                                 request.codCanal(),
@@ -185,6 +188,7 @@ public class CreateCreditRequestCase {
                                 throw new ValidationException(erroLimite);
                         }
                 }
+
                 validationService.validarVigenciadoCanal(
                         pedido.numSolicitacao(),
                         item.numLogicoCartao(),
@@ -192,15 +196,17 @@ public class CreateCreditRequestCase {
                         request.codCanal(),
                         pedido.canaisDistribuicao(),
                         item.codProduto(),
-                        rejeitados);
-                if (!rejeitados.isEmpty()) {
-                        throw new ValidationException(rejeitados.get(0).motivoRejeicao());
+                        rejeitadosLocal);
+                if (!rejeitadosLocal.isEmpty()) {
+                        throw new ValidationException(rejeitadosLocal.get(0).motivoRejeicao());
                 }
+
                 // Validação de Taxas
                 Fee taxa = ctx.taxaVigente();
                 if (taxa == null) {
                         throw new ValidationException("Taxa não encontrada para canal/produto vigente");
                 }
+
                 TaxaCalculada taxas = feeFareService.calcularTaxas(
                         item.valorTotal(),
                         request.codCanal(),
@@ -208,14 +214,18 @@ public class CreateCreditRequestCase {
                         taxa.getCodTaxa());
 
                 // Normaliza escala para 2 casas decimais (padrão financeiro)
-                BigDecimal valorTaxaAdmCalc = taxas.getValorTaxaAdm() != null ? taxas.getValorTaxaAdm().setScale(2, java.math.RoundingMode.HALF_UP) : BigDecimal.ZERO.setScale(2);
-                BigDecimal valorTaxaServCalc = taxas.getValorTaxaServ() != null ? taxas.getValorTaxaServ().setScale(2, java.math.RoundingMode.HALF_UP) : BigDecimal.ZERO.setScale(2);
+                BigDecimal valorTaxaAdmCalc = taxas.getValorTaxaAdm() != null
+                        ? taxas.getValorTaxaAdm().setScale(2, java.math.RoundingMode.HALF_UP)
+                        : BigDecimal.ZERO.setScale(2);
+                BigDecimal valorTaxaServCalc = taxas.getValorTaxaServ() != null
+                        ? taxas.getValorTaxaServ().setScale(2, java.math.RoundingMode.HALF_UP)
+                        : BigDecimal.ZERO.setScale(2);
                 BigDecimal vlTxadmInformado = item.vlTxadm().setScale(2, java.math.RoundingMode.HALF_UP);
                 BigDecimal vlTxservInformado = item.vlTxserv().setScale(2, java.math.RoundingMode.HALF_UP);
 
-                // Log detalhado para auditoria
-                auditLog.info("[TAXAS] Pedido={}, Produto={}, TaxaAdmCalc={}, TaxaAdmInf={}, TaxaServCalc={}, TaxaServInf={}",
-                        pedido.numSolicitacao(), item.codProduto(), valorTaxaAdmCalc, vlTxadmInformado, valorTaxaServCalc, vlTxservInformado);
+                auditLog.warn("[TAXAS] Pedido={}, Produto={}, TaxaAdmCalc={}, TaxaAdmInf={}, TaxaServCalc={}, TaxaServInf={}",
+                        pedido.numSolicitacao(), item.codProduto(),
+                        valorTaxaAdmCalc, vlTxadmInformado, valorTaxaServCalc, vlTxservInformado);
 
                 if (valorTaxaAdmCalc.compareTo(vlTxadmInformado) != 0) {
                         throw new ValidationException("303 - Taxa administrativa incorreta");
@@ -223,6 +233,7 @@ public class CreateCreditRequestCase {
                 if (valorTaxaServCalc.compareTo(vlTxservInformado) != 0) {
                         throw new ValidationException("304 - Taxa de serviço incorreta");
                 }
+
                 // Validar vigência da versão do produto
                 validationService.validarVigenciaVersaoProduto(
                         pedido.numSolicitacao(),
@@ -231,7 +242,10 @@ public class CreateCreditRequestCase {
                         request.codCanal(),
                         item.codVersao(),
                         request.dataLiberacaoCredito(),
-                        rejeitados);
+                        rejeitadosLocal);
+                if (!rejeitadosLocal.isEmpty()) {
+                        throw new ValidationException(rejeitadosLocal.get(0).motivoRejeicao());
+                }
         }
 
         // Nova versão: processar item usando contexto
@@ -250,7 +264,8 @@ public class CreateCreditRequestCase {
 
                 try {
                         // Validações do item antes de qualquer persistência
-                        validarItemComContexto(ctx, pedido, item, request, rejeitados);
+                        // Usa lista LOCAL interna — não contamina o acumulador externo
+                        validarItemComContexto(ctx, pedido, item, request);
 
                         // CreditRequest é persistido uma única vez por pedido; reutilizado nos demais
                         // itens
