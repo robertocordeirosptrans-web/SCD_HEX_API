@@ -13,7 +13,7 @@ public interface HistCreditRequestManagementUseCase {
 
     List<HistCreditRequest> findRequestStatusHistory(Long numSolicitacao, String codCanal);
 
-    void saveItemStatusHistory(CreditRequestItems item, String origemTransicao);
+    void saveItemStatusHistoryBatch(List<CreditRequestItems> itens, String origemTransicao);
 
     void saveRequestStatusHistory(CreditRequest request, Long numSolicitacao, String codCanal, String origemTransicao);
 }

@@ -1,17 +1,16 @@
+
 package br.sptrans.scd.creditrequest.application.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.creditrequest.application.port.in.HistCreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.HistCreditRequestItemsPort;
@@ -22,19 +21,23 @@ import br.sptrans.scd.creditrequest.domain.HistCreditRequest;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestItemsKey;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestKey;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+
 public class HistCreditRequestService implements HistCreditRequestManagementUseCase {
 
     private final HistCreditRequestItemsPort itemHistoryRepository;
     private final HistCreditRequestPort requestHistoryRepository;
-    private final UserPersistencePort userRepository;
+    private final UserResolverHelper userResolverHelper;
+
     private static final Logger log = LoggerFactory.getLogger(HistCreditRequestService.class);
 
     @Override
-    public List<HistCreditRequestItems> findItemStatusHistory(Long numSolicitacao, Long numSolicitacaoItem, String codCanal) {
+    public List<HistCreditRequestItems> findItemStatusHistory(Long numSolicitacao, Long numSolicitacaoItem,
+            String codCanal) {
         return itemHistoryRepository.findLatestByItem(numSolicitacao, numSolicitacaoItem, codCanal);
     }
 
@@ -45,82 +48,87 @@ public class HistCreditRequestService implements HistCreditRequestManagementUseC
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveItemStatusHistory(CreditRequestItems item, String origemTransicao) {
-        try {
-            List<HistCreditRequestItems> latestHistory = itemHistoryRepository.findLatestByItem(
-                    item.getId().getNumSolicitacao(),
-                    item.getId().getNumSolicitacaoItem(),
-                    item.getId().getCodCanal());
-
-            if (!latestHistory.isEmpty()) {
-                HistCreditRequestItems latest = latestHistory.get(0);
-                if (item.getCodSituacao().equals(latest.getCodSituacao())) {
-                    log.info("Status already exists in history - Solicitação: {}, Item: {}, Status: {} - Skipping duplicate",
-                            item.getId().getNumSolicitacao(),
-                            item.getId().getNumSolicitacaoItem(),
-                            item.getCodSituacao());
-                    return;
-                }
-            }
-
-            Long nextSeq = itemHistoryRepository.findMaxSeqHistSdis(
-                    item.getId().getNumSolicitacao(),
-                    item.getId().getNumSolicitacaoItem(),
-                    item.getId().getCodCanal()) + 1;
-
-            HistCreditRequestItemsKey historyId = new HistCreditRequestItemsKey();
-            historyId.setNumSolicitacao(item.getId().getNumSolicitacao());
-            historyId.setNumSolicitacaoItem(item.getId().getNumSolicitacaoItem());
-            historyId.setCodCanal(item.getId().getCodCanal());
-            historyId.setSeqHistSdis(nextSeq);
-
-            HistCreditRequestItems history = new HistCreditRequestItems();
-            history.setId(historyId);
-            history.setCodTipoDocumento(item.getCodTipoDocumento());
-            history.setCodSituacao(item.getCodSituacao());
-            history.setDtTransicao(LocalDateTime.now());
-            history.setIdOrigemTransicao(origemTransicao);
-            history.setDtCadastro(item.getDtCadastro());
-            history.setDtManutencao(LocalDateTime.now());
-            history.setDtPgtoEconomica(item.getDtPagtoEconomica());
-            history.setSqPID(item.getSqPid());
-            history.setDtInicProcesso(item.getDtInicProcesso());
-
-            User currentUser = getCurrentUser();
-            if (currentUser != null) {
-                history.setIdUsuarioTransicao(currentUser);
-            }
-
-            itemHistoryRepository.save(history);
-
-            log.info("Successfully saved item status history - Solicitação: {}, Item: {}, New Status: {}, Seq: {}",
-                    item.getId().getNumSolicitacao(),
-                    item.getId().getNumSolicitacaoItem(),
-                    item.getCodSituacao(),
-                    nextSeq);
-        } catch (Exception e) {
-            log.error("CRITICAL ERROR: Failed to save item status history for Solicitação: {}, Item: {}, Status: {}",
-                    item.getId().getNumSolicitacao(),
-                    item.getId().getNumSolicitacaoItem(),
-                    item.getCodSituacao(), e);
+    public void saveItemStatusHistoryBatch(List<CreditRequestItems> itens, String origemTransicao) {
+        List<HistCreditRequestItems> registros = itens.stream()
+                .map(item -> montarHistoricoSeNecessario(item, origemTransicao))
+                .filter(Objects::nonNull)
+                .toList();
+        if (!registros.isEmpty()) {
+            itemHistoryRepository.saveAll(registros);
+            log.info("Batch de históricos de itens salvo: {} registros", registros.size());
+        } else {
+            log.info("Nenhum histórico novo a salvar no batch (todos já existentes)");
         }
+    }
+
+    /**
+     * Monta o histórico do item se necessário (se não for duplicado). Retorna null
+     * se já existir status igual.
+     */
+    private HistCreditRequestItems montarHistoricoSeNecessario(CreditRequestItems item, String origemTransicao) {
+        List<HistCreditRequestItems> latestHistory = itemHistoryRepository.findLatestByItem(
+                item.getId().getNumSolicitacao(),
+                item.getId().getNumSolicitacaoItem(),
+                item.getId().getCodCanal());
+        if (!latestHistory.isEmpty()) {
+            HistCreditRequestItems latest = latestHistory.get(0);
+            if (item.getCodSituacao().getCode().equals(latest.getCodSituacao())) {
+                log.info(
+                        "[BATCH] Já existe no histórico - Solicitação: {}, Item: {}, Status: {} - Ignorando duplicado",
+                        item.getId().getNumSolicitacao(),
+                        item.getId().getNumSolicitacaoItem(),
+                        item.getCodSituacao().getCode());
+                return null;
+            }
+        }
+
+        Long nextSeq = itemHistoryRepository.findMaxSeqHistSdis(
+                item.getId().getNumSolicitacao(),
+                item.getId().getNumSolicitacaoItem(),
+                item.getId().getCodCanal()) + 1;
+
+        HistCreditRequestItemsKey historyId = new HistCreditRequestItemsKey();
+        historyId.setNumSolicitacao(item.getId().getNumSolicitacao());
+        historyId.setNumSolicitacaoItem(item.getId().getNumSolicitacaoItem());
+        historyId.setCodCanal(item.getId().getCodCanal());
+        historyId.setSeqHistSdis(nextSeq);
+
+        HistCreditRequestItems history = new HistCreditRequestItems();
+        history.setId(historyId);
+        history.setCodTipoDocumento(item.getCodTipoDocumento());
+        history.setCodSituacao(item.getCodSituacao().getCode());
+        history.setDtTransicao(LocalDateTime.now());
+        history.setIdOrigemTransicao(origemTransicao);
+        history.setDtCadastro(item.getDtCadastro());
+        history.setDtManutencao(LocalDateTime.now());
+        history.setDtPgtoEconomica(item.getDtPagtoEconomica());
+        history.setSqPID(item.getSqPid());
+        history.setDtInicProcesso(item.getDtInicProcesso());
+
+        User currentUser = userResolverHelper.getCurrentUser();
+        if (currentUser != null) {
+            history.setIdUsuarioTransicao(currentUser);
+        }
+        return history;
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveRequestStatusHistory(CreditRequest request, Long numSolicitacao, String codCanal, String origemTransicao) {
+    public void saveRequestStatusHistory(CreditRequest request, Long numSolicitacao, String codCanal,
+            String origemTransicao) {
         try {
             List<HistCreditRequest> latestHistory = requestHistoryRepository.findLatestBySolicitacao(
                     numSolicitacao, codCanal);
 
             if (!latestHistory.isEmpty()) {
                 HistCreditRequest latest = latestHistory.get(0);
-                if (request.getCodSituacao().equals(latest.getCodSituacao())) {
-                    log.info("Status already exists in history - Solicitação: {}, Status: {} - Skipping duplicate",
+                if (request.getCodSituacao().getCode().equals(latest.getCodSituacao())) {
+                    log.info("Já existe no histórico - Solicitação: {}, Status: {} - Ignorando duplicado",
                             numSolicitacao,
-                            request.getCodSituacao());
+                            request.getCodSituacao().getCode());
                     return;
                 }
+
             }
 
             Long nextSeq = requestHistoryRepository.findMaxSeqHistSdis(
@@ -134,43 +142,29 @@ public class HistCreditRequestService implements HistCreditRequestManagementUseC
             HistCreditRequest history = new HistCreditRequest();
             history.setId(historyId);
             history.setCodTipoDocumento(request.getCodTipoDocumento());
-            history.setCodSituacao(request.getCodSituacao());
+            history.setCodSituacao(request.getCodSituacao().getCode());
             history.setDtTransicao(LocalDateTime.now());
             history.setIdOrigemTransicao(origemTransicao);
             history.setDtCadastro(request.getDtCadastro());
             history.setDtManutencao(LocalDateTime.now());
-            log.info("[HISTORICO] Gravando dtPagtoEconomica no histórico: {} para solicitação {}", request.getDtPagtoEconomica(), numSolicitacao);
             history.setDtPgtoEconomica(request.getDtPagtoEconomica());
             history.setSqPID(request.getSqPid());
             history.setDtInicProcesso(request.getDtInicProcesso());
 
-            User currentUser = getCurrentUser();
+            User currentUser = userResolverHelper.getCurrentUser();
             if (currentUser != null) {
                 history.setIdUsuarioTransicao(currentUser);
             }
 
             requestHistoryRepository.save(history);
 
-            log.info("Successfully saved solicitation status history - Solicitação: {}, New Status: {}, Seq: {}",
-                    numSolicitacao,
-                    request.getCodSituacao(),
-                    nextSeq);
+            log.info("Histórico de solicitação salvo com sucesso - Solicitação: {}, Novo Status: {}, Seq: {}",
+                    numSolicitacao, request.getCodSituacao().getCode(), nextSeq);
         } catch (Exception e) {
-            log.error("CRITICAL ERROR: Failed to save solicitation status history for Solicitação: {}, Status: {}",
+            log.error("ERRO CRÍTICO: Falha ao salvar histórico de solicitação - Solicitação: {}, Status: {}",
                     numSolicitacao,
-                    request.getCodSituacao(), e);
+                    request.getCodSituacao().getCode(), e);
         }
     }
 
-    private User getCurrentUser() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.getPrincipal() instanceof String codLogin) {
-                return userRepository.findByCodLogin(codLogin).orElse(null);
-            }
-        } catch (Exception e) {
-            log.debug("Could not get current user from security context", e);
-        }
-        return null;
-    }
 }

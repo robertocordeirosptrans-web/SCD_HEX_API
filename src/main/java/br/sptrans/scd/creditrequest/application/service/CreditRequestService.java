@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -56,7 +57,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     private final HistCreditRequestService historyService;
     private final TransitionSituationValidator transitionValidator;
     private final SituationAscertainedService situationAscertainedService;
- 
 
     private final CreateCreditRequestCase createCreditRequestCase;
 
@@ -126,7 +126,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         return createCreditRequestCase.execute(request, idempotencyKey, userId);
     }
 
-
     // ── Consultas ────────────────────────────────────────────────────
     @Override
     public CreditRequest findById(String codTipoDocumento, Long idUsuarioCadastro) {
@@ -138,7 +137,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     @Override
     public CursorPage<CreditRequest> findAll(SearchCommand comando) {
         SearchMode mode = comando.searchMode() != null
-                ? comando.searchMode() : SearchMode.OPERATIONAL;
+                ? comando.searchMode()
+                : SearchMode.OPERATIONAL;
 
         int limit = mode.getMaxPageSize() + 1;
 
@@ -165,14 +165,16 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
         boolean hasNext = results.size() > mode.getMaxPageSize();
         List<CreditRequest> content = hasNext
-                ? results.subList(0, mode.getMaxPageSize()) : results;
+                ? results.subList(0, mode.getMaxPageSize())
+                : results;
 
         String nextCursorNumSol = null;
         String nextCursorCodCanal = null;
         if (hasNext && !content.isEmpty()) {
             CreditRequest last = content.get(content.size() - 1);
             nextCursorNumSol = last.getNumSolicitacao() != null
-                    ? last.getNumSolicitacao().toString() : null;
+                    ? last.getNumSolicitacao().toString()
+                    : null;
             nextCursorCodCanal = last.getCodCanal();
         }
 
@@ -218,15 +220,15 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                     }
 
                     CreditRequestItems item = itemOpt.get();
-                    String statusAnterior = item.getCodSituacao();
+                    SituationCreditRequestItems statusAnterior = item.getCodSituacao();
 
                     if (acao == ActionStatus.DESBLOQUEAR) {
-                        item.setCodSituacao(SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode());
+                        item.setCodSituacao(SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO);
                         itemRepository.save(item);
-                        historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
+                        historyService.saveItemStatusHistoryBatch(List.of(item), ORIGEM_TRANSICAO);
                         itensParaRestaurar.add(creditRequestMapper.toEntityItem(item));
                     } else {
-                        String novoStatus = determinarNovoStatus(acao);
+                        SituationCreditRequestItems novoStatus = determinarNovoStatus(acao);
                         item.setCodSituacao(novoStatus);
 
                         if (acao == ActionStatus.PAGO) {
@@ -236,7 +238,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                         }
 
                         itemRepository.save(item);
-                        historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
+                        historyService.saveItemStatusHistoryBatch(List.of(item), ORIGEM_TRANSICAO);
 
                         log.info("Item atualizado - Solicitação={}, Item={}, StatusAnterior={}, NovoStatus={}",
                                 numSolicitacao, numSolicitacaoItem, statusAnterior, novoStatus);
@@ -255,12 +257,13 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         int solicitacoesAtualizadas = 0;
         for (String key : solicitacoesParaConsolidar) {
             String[] parts = key.split(":");
-            Long numSolicitacao = Long.parseLong(parts[0]);
+            Long numSolicitacao = Long.valueOf(parts[0]);
             String codCanal = parts[1];
             try {
                 // Atualizar campos do pedido durante o pagamento
                 if (acao == ActionStatus.PAGO) {
-                    Optional<CreditRequest> pedidoOpt = creditRequestRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
+                    Optional<CreditRequest> pedidoOpt = creditRequestRepository
+                            .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
                     if (pedidoOpt.isPresent()) {
                         CreditRequest pedido = pedidoOpt.get();
                         // Atualiza os campos
@@ -320,14 +323,14 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             String codFormaPagto, BigDecimal vlPago,
             LocalDateTime dtConfirmaPagto, LocalDateTime dtAceite) {
 
-
         // Buscar todos os itens de uma vez só, evitando N+1 queries e gaps
         List<CreditRequestItems> itensDomain = itemRepository.findAllBySolicitacao(numSolicitacao, codCanal);
         if (itensDomain.isEmpty()) {
             log.warn("Nenhum item encontrado para a solicitação {} e canal {}", numSolicitacao, codCanal);
             return;
         }
-        // Se necessário, converte para entidade JPA (mantendo compatibilidade com o restante do método)
+        // Se necessário, converte para entidade JPA (mantendo compatibilidade com o
+        // restante do método)
         List<CreditRequestItemsEJpa> itens = itensDomain.stream()
                 .map(creditRequestMapper::toEntityItem)
                 .toList();
@@ -340,16 +343,16 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         }
 
         CreditRequest solicitacao = solicitacaoOpt.get();
-        String statusAnterior = solicitacao.getCodSituacao();
+        SituationCreditRequest statusAnterior = solicitacao.getCodSituacao();
 
         List<String> statusItens = itens.stream()
                 .map(CreditRequestItemsEJpa::getCodSituacao)
                 .filter(Objects::nonNull)
                 .toList();
 
-        String novoStatusSolicitacao = aplicarRegrasConsolidacao(statusItens);
+        String novoStatusSolicitacao = situationAscertainedService.apurarSituacaoPedido(statusItens);
 
-        if (novoStatusSolicitacao != null && !novoStatusSolicitacao.equals(solicitacao.getCodSituacao())) {
+        if (novoStatusSolicitacao != null && !novoStatusSolicitacao.equals(solicitacao.getCodSituacao().getCode())) {
 
             // Update flags based on action
             if (acao == ActionStatus.BLOQUEAR) {
@@ -367,7 +370,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 return;
             } else if (acao == ActionStatus.PAGO || acao == ActionStatus.ACEITO_PENDENTE_LIQUIDACAO) {
                 // Apply transition-specific fields
-                solicitacao.setCodSituacao(novoStatusSolicitacao);
+                solicitacao.setCodSituacao(SituationCreditRequest.fromCode(novoStatusSolicitacao));
                 if (acao == ActionStatus.PAGO) {
                     solicitacao.setCodFormaPagto(codFormaPagto);
                     solicitacao.setDtConfirmaPagto(LocalDateTime.now());
@@ -385,20 +388,20 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
             // Handle DESBLOQUEIO_SOLICITADO specially
             if (SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode().equals(novoStatusSolicitacao)) {
-                solicitacao.setCodSituacao(novoStatusSolicitacao);
+                solicitacao.setCodSituacao(SituationCreditRequest.fromCode(novoStatusSolicitacao));
                 creditRequestRepository.update(numSolicitacao, codCanal, solicitacao);
                 historyService.saveRequestStatusHistory(solicitacao, numSolicitacao, codCanal, ORIGEM_TRANSICAO);
 
                 String statusAntesBloqueio = findSolicitacaoStatusBeforeBloqueio(numSolicitacao, codCanal);
                 if (statusAntesBloqueio != null) {
-                    solicitacao.setCodSituacao(statusAntesBloqueio);
+                    solicitacao.setCodSituacao(SituationCreditRequest.fromCode(statusAntesBloqueio));
                     creditRequestRepository.update(numSolicitacao, codCanal, solicitacao);
                     log.info("Solicitação {} desbloqueada - Status restaurado={}", numSolicitacao, statusAntesBloqueio);
                 } else {
                     log.warn("Status anterior ao bloqueio não encontrado para solicitação {}", numSolicitacao);
                 }
             } else {
-                solicitacao.setCodSituacao(novoStatusSolicitacao);
+                solicitacao.setCodSituacao(SituationCreditRequest.fromCode(novoStatusSolicitacao));
                 creditRequestRepository.update(numSolicitacao, codCanal, solicitacao);
                 historyService.saveRequestStatusHistory(solicitacao, numSolicitacao, codCanal, ORIGEM_TRANSICAO);
             }
@@ -413,67 +416,49 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         }
     }
 
-    private String aplicarRegrasConsolidacao(List<String> statusItens) {
-        if (statusItens.isEmpty()) {
-            log.warn("Lista de status de itens vazia para consolidação");
-            return null;
-        }
-
-        String resultado = situationAscertainedService.apurarSituacaoPedido(statusItens);
-
-        if (resultado == null) {
-            // Legacy: todos DESBLOQUEIO_SOLICITADO
-            boolean todosDesbloqueioSolicitado = statusItens.stream()
-                    .allMatch(s -> SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode().equals(s));
-            if (todosDesbloqueioSolicitado) {
-                return SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode();
-            }
-
-            // Legacy: todos REJEITADO
-            boolean todosRejeitado = statusItens.stream()
-                    .allMatch(s -> SituationCreditRequestItems.REJEITADO.getCode().equals(s));
-            if (todosRejeitado) {
-                return SituationCreditRequest.REJEITADO.getCode();
-            }
-
-            // Legacy: mistura com sucesso → ATENDIDO_PARCIALMENTE
-            boolean temSucesso = statusItens.stream().anyMatch(s
-                    -> SituationCreditRequestItems.RECARREGADO.getCode().equals(s)
-                    || SituationCreditRequestItems.PAGO.getCode().equals(s)
-                    || SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode().equals(s));
-            long statusUnicos = statusItens.stream().distinct().count();
-            if (temSucesso && statusUnicos > 1) {
-                return SituationCreditRequest.ATENDIDO_PARCIALMENTE.getCode();
-            }
-        }
-
-        if (resultado == null) {
-            log.debug("Nenhuma regra de consolidação se aplica aos status: {}", statusItens);
-        }
-        return resultado;
-    }
-
-    // ── Validações de Transações ───────────────────────────────────────────────────
+    // ── Validações de Transações
+    // ───────────────────────────────────────────────────
     private void validarTransicoes(ActionStatus acao, OrderItemEntry entry) {
-        for (Long numSolicitacaoItem : entry.numSolicitacaoItems()) {
+        // 1. Buscar todos os itens de uma única vez
+        List<CreditRequestItemsKey> itemIds = entry.numSolicitacaoItems().stream()
+                .map(numSolicitacaoItem -> {
+                    CreditRequestItemsKey itemId = new CreditRequestItemsKey();
+                    itemId.setNumSolicitacao(entry.numSolicitacao());
+                    itemId.setNumSolicitacaoItem(numSolicitacaoItem);
+                    itemId.setCodCanal(entry.codCanal());
+                    return itemId;
+                })
+                .collect(Collectors.toList());
 
+        // 2. Query única para buscar todos os itens (IN clause)
+        List<CreditRequestItems> itens = itemRepository.findAllById(itemIds);
+
+        // 3. Criar mapa para acesso O(1) por ID
+        Map<CreditRequestItemsKey, CreditRequestItems> itensMap = itens.stream()
+                .collect(Collectors.toMap(
+                        CreditRequestItems::getId,
+                        Function.identity()));
+
+        // 4. Validar apenas os itens que existem
+        for (Long numSolicitacaoItem : entry.numSolicitacaoItems()) {
             CreditRequestItemsKey itemId = new CreditRequestItemsKey();
             itemId.setNumSolicitacao(entry.numSolicitacao());
             itemId.setNumSolicitacaoItem(numSolicitacaoItem);
             itemId.setCodCanal(entry.codCanal());
 
-            Optional<CreditRequestItems> itemOpt = itemRepository.findById(itemId);
-            if (itemOpt.isEmpty()) {
-                continue;
+            CreditRequestItems item = itensMap.get(itemId);
+            if (item != null) {
+                transitionValidator.validarTransicaoItem(acao, item.getCodSituacao().getCode());
             }
-            transitionValidator.validarTransicaoItem(acao, itemOpt.get().getCodSituacao());
         }
 
+        // 5. Buscar solicitação (mantém-se uma query)
         Optional<CreditRequest> solicitacaoOpt = creditRequestRepository
                 .findByNumSolicitacaoAndCodCanal(entry.numSolicitacao(), entry.codCanal());
         if (solicitacaoOpt.isPresent()) {
-            transitionValidator.validarTransicaoSolicitacao(acao, solicitacaoOpt.get().getCodSituacao());
+            transitionValidator.validarTransicaoSolicitacao(acao, solicitacaoOpt.get().getCodSituacao().getCode());
         }
+
     }
 
     private void validarAcaoPago(PayCommand comando) {
@@ -486,26 +471,51 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 throw new IllegalArgumentException("Valor de Pagamento Inválido - VL_PAGO não pode ser zero");
             }
 
+            // 1. Coletar TODAS as chaves de uma vez
+            List<CreditRequestItemsKey> todasChaves = comando.itens().stream()
+                    .map(payItem -> {
+                        CreditRequestItemsKey key = new CreditRequestItemsKey();
+                        key.setNumSolicitacao(payItem.numSolicitacao());
+                        key.setNumSolicitacaoItem(payItem.numSolicitacaoItem());
+                        key.setCodCanal(payItem.codCanal());
+                        return key;
+                    })
+                    .collect(Collectors.toList());
+
+            // 2. Buscar TODOS os itens em UMA query
+            Map<CreditRequestItemsKey, CreditRequestItems> itensMap = itemRepository.findAllById(todasChaves)
+                    .stream()
+                    .collect(Collectors.toMap(
+                            CreditRequestItems::getId,
+                            Function.identity()));
+
+            // 3. Agrupar por solicitação/canal para validação
             Map<String, List<PayItemEntry>> grouped = comando.itens().stream()
                     .collect(Collectors.groupingBy(
                             i -> i.numSolicitacao() + ":" + i.codCanal()));
 
             for (Map.Entry<String, List<PayItemEntry>> entry : grouped.entrySet()) {
                 String[] parts = entry.getKey().split(":");
-                Long numSolicitacao = Long.parseLong(parts[0]);
+                Long numSolicitacao = Long.valueOf(parts[0]);
                 String codCanal = parts[1];
 
-                List<CreditRequestItemsEJpa> itens = new ArrayList<>();
-                for (PayItemEntry payItem : entry.getValue()) {
-                    CreditRequestItemsKey key = new CreditRequestItemsKey();
-                    key.setNumSolicitacao(numSolicitacao);
-                    key.setNumSolicitacaoItem(payItem.numSolicitacaoItem());
-                    key.setCodCanal(codCanal);
-                    Optional<CreditRequestItems> opt = itemRepository.findById(key);
-                    opt.ifPresent(domainItem -> itens.add(creditRequestMapper.toEntityItem(domainItem)));
-                }
+                // 4. Filtrar itens existentes deste grupo
+                List<CreditRequestItems> domainItens = entry.getValue().stream()
+                        .map(payItem -> {
+                            CreditRequestItemsKey key = new CreditRequestItemsKey();
+                            key.setNumSolicitacao(numSolicitacao);
+                            key.setNumSolicitacaoItem(payItem.numSolicitacaoItem());
+                            key.setCodCanal(codCanal);
+                            return itensMap.get(key);
+                        })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
 
-                if (!itens.isEmpty()) {
+                if (!domainItens.isEmpty()) {
+                    List<CreditRequestItemsEJpa> itens = domainItens.stream()
+                            .map(creditRequestMapper::toEntityItem)
+                            .collect(Collectors.toList());
+
                     BigDecimal totalCalculado = itens.stream()
                             .map(item -> {
                                 BigDecimal vlItem = item.getVlItem() != null ? item.getVlItem() : BigDecimal.ZERO;
@@ -520,7 +530,8 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
                     if (vlPagoNorm.compareTo(totalCalculado) < 0) {
                         throw new IllegalArgumentException(
-                                String.format("Valor de Pagamento Inválido - VL_PAGO (%s) menor que o total calculado (%s)",
+                                String.format(
+                                        "Valor de Pagamento Inválido - VL_PAGO (%s) menor que o total calculado (%s)",
                                         vlPagoNorm, totalCalculado));
                     }
                 }
@@ -529,27 +540,21 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     // ── Helpers de status ────────────────────────────────────────────
-    private String determinarNovoStatus(ActionStatus acao) {
+    private SituationCreditRequestItems determinarNovoStatus(ActionStatus acao) {
         return switch (acao) {
-            case BLOQUEAR ->
-                SituationCreditRequestItems.BLOQUEADO.getCode();
-            case DESBLOQUEAR ->
-                SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode();
-            case CANCELAR ->
-                SituationCreditRequestItems.CANCELADO.getCode();
-            case PAGO ->
-                SituationCreditRequestItems.PAGO.getCode();
-            case ACEITO_PENDENTE_LIQUIDACAO ->
-                SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO.getCode();
-            case LIBERAR_RECARGA ->
-                SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode();
+            case BLOQUEAR -> SituationCreditRequestItems.BLOQUEADO;
+            case DESBLOQUEAR -> SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO;
+            case CANCELAR -> SituationCreditRequestItems.CANCELADO;
+            case PAGO -> SituationCreditRequestItems.PAGO;
+            case ACEITO_PENDENTE_LIQUIDACAO -> SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO;
+            case LIBERAR_RECARGA -> SituationCreditRequestItems.LIBERADO_PARA_RECARGA;
         };
     }
 
     private String findStatusBeforeBloqueio(Long numSolicitacao, Long numSolicitacaoItem, String codCanal) {
         try {
-            List<HistCreditRequestItems> history
-                    = historyService.findItemStatusHistory(numSolicitacao, numSolicitacaoItem, codCanal);
+            List<HistCreditRequestItems> history = historyService.findItemStatusHistory(numSolicitacao,
+                    numSolicitacaoItem, codCanal);
 
             for (HistCreditRequestItems record : history) {
                 String status = record.getCodSituacao();
@@ -568,8 +573,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
 
     private String findSolicitacaoStatusBeforeBloqueio(Long numSolicitacao, String codCanal) {
         try {
-            List<HistCreditRequest> history
-                    = historyService.findRequestStatusHistory(numSolicitacao, codCanal);
+            List<HistCreditRequest> history = historyService.findRequestStatusHistory(numSolicitacao, codCanal);
 
             for (HistCreditRequest record : history) {
                 String status = record.getCodSituacao();
@@ -596,11 +600,9 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         return grouped.entrySet().stream()
                 .map(e -> {
                     String[] parts = e.getKey().split(":");
-                    return new OrderItemEntry(Long.parseLong(parts[0]), parts[1], e.getValue());
+                    return new OrderItemEntry(Long.valueOf(parts[0]), parts[1], e.getValue());
                 })
                 .toList();
     }
-
-
 
 }

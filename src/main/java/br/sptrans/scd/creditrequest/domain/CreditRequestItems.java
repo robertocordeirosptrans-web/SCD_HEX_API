@@ -36,7 +36,7 @@ public class CreditRequestItems {
 
     private String codTipoDocumento;
 
-    private String codSituacao;
+    private SituationCreditRequestItems codSituacao;
 
     private Integer qtdItem;
 
@@ -125,23 +125,23 @@ public class CreditRequestItems {
     // --- Métodos de consulta de estado ---
 
     public boolean isRecarregado() {
-        return SituationCreditRequestItems.RECARREGADO.getCode().equals(codSituacao);
+        return SituationCreditRequestItems.RECARREGADO.equals(codSituacao);
     }
 
     public boolean isCancelado() {
-        return SituationCreditRequestItems.CANCELADO.getCode().equals(codSituacao);
+        return SituationCreditRequestItems.CANCELADO.equals(codSituacao);
     }
 
     public boolean isBloqueado() {
-        return SituationCreditRequestItems.BLOQUEADO.getCode().equals(codSituacao);
+        return SituationCreditRequestItems.BLOQUEADO.equals(codSituacao);
     }
 
     public boolean isPendenteLiquidacao() {
-        return SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO.getCode().equals(codSituacao);
+        return SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO.equals(codSituacao);
     }
 
     public boolean isLiberadoParaRecarga() {
-        return SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode().equals(codSituacao);
+        return SituationCreditRequestItems.LIBERADO_PARA_RECARGA.equals(codSituacao);
     }
 
     public boolean isTerminal() {
@@ -156,7 +156,7 @@ public class CreditRequestItems {
      */
     public void validarTransicao(String novoStatus) {
         // Exemplo simples: não permite voltar para CRIADO se já avançou
-        if (SituationCreditRequestItems.CRIADO.getCode().equals(codSituacao) && !SituationCreditRequestItems.CRIADO.getCode().equals(novoStatus)) {
+        if (SituationCreditRequestItems.CRIADO.equals(codSituacao) && !SituationCreditRequestItems.CRIADO.getCode().equals(novoStatus)) {
             // ok
         } else if (isTerminal()) {
             throw new IllegalStateException("Não é possível transitar de um estado terminal");
@@ -176,7 +176,7 @@ public class CreditRequestItems {
         histId.setSeqHistSdis(seqHistSdis);
         hist.setId(histId);
         hist.setCodTipoDocumento(this.codTipoDocumento);
-        hist.setCodSituacao(this.codSituacao);
+        hist.setCodSituacao(this.codSituacao.getCode());
         hist.setDtTransicao(LocalDateTime.now());
         hist.setIdOrigemTransicao(origemTransicao);
         hist.setDtCadastro(this.dtCadastro);
@@ -198,7 +198,7 @@ public class CreditRequestItems {
         if (isRecarregado()) {
             throw new IllegalStateException("Não é possível cancelar um item já recarregado");
         }
-        this.codSituacao = SituationCreditRequestItems.CANCELAMENTO_SOLICITADO.getCode();
+        this.codSituacao = SituationCreditRequestItems.CANCELAMENTO_SOLICITADO;
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
@@ -211,7 +211,7 @@ public class CreditRequestItems {
         if (isCancelado()) {
             throw new IllegalStateException("Não é possível bloquear um item cancelado");
         }
-        this.codSituacao = SituationCreditRequestItems.BLOQUEIO_SOLICITADO.getCode();
+        this.codSituacao = SituationCreditRequestItems.BLOQUEIO_SOLICITADO;
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
@@ -220,7 +220,7 @@ public class CreditRequestItems {
      * Solicita o desbloqueio do item de recarga.
      */
     public void desbloquear(Long idUsuario) {
-        this.codSituacao = SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode();
+        this.codSituacao = SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO;
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }

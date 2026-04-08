@@ -31,7 +31,7 @@ public class CreditRequest {
 
     private String codTipoDocumento;
 
-    private String codSituacao;
+    private SituationCreditRequest codSituacao;
 
     private String codFormaPagto;
 
@@ -91,30 +91,30 @@ public class CreditRequest {
 
     public boolean isCancelado() {
         return "S".equalsIgnoreCase(flgCanc)
-                || SituationCreditRequest.CANCELADO.getCode().equals(codSituacao);
+                || SituationCreditRequest.CANCELADO.equals(codSituacao);
     }
 
     public boolean isBloqueado() {
         return "S".equalsIgnoreCase(flgBloq)
-                || SituationCreditRequest.BLOQUEADO.getCode().equals(codSituacao);
+                || SituationCreditRequest.BLOQUEADO.equals(codSituacao);
     }
 
     public boolean isAtendido() {
-        return SituationCreditRequest.ATENDIDO_TOTALMENTE.getCode().equals(codSituacao)
-                || SituationCreditRequest.ATENDIDO_PARCIALMENTE.getCode().equals(codSituacao);
+        return SituationCreditRequest.ATENDIDO_TOTALMENTE.equals(codSituacao)
+                || SituationCreditRequest.ATENDIDO_PARCIALMENTE.equals(codSituacao);
     }
 
     public boolean isPendenteLiquidacao() {
-        return SituationCreditRequest.ACEITO_PENDENTE_LIQUIDACAO.getCode().equals(codSituacao);
+        return SituationCreditRequest.ACEITO_PENDENTE_LIQUIDACAO.equals(codSituacao);
     }
 
     public boolean isLiberadoParaRecarga() {
-        return SituationCreditRequest.LIBERADO_PARA_RECARGA.getCode().equals(codSituacao);
+        return SituationCreditRequest.LIBERADO_PARA_RECARGA.equals(codSituacao);
     }
 
     public boolean isTerminal() {
-        return SituationCreditRequest.ATENDIDO_TOTALMENTE.getCode().equals(codSituacao)
-                || SituationCreditRequest.CANCELADO.getCode().equals(codSituacao);
+        return SituationCreditRequest.ATENDIDO_TOTALMENTE.equals(codSituacao)
+                || SituationCreditRequest.CANCELADO.equals(codSituacao);
     }
 
     public BigDecimal calcularVlTotal() {
@@ -151,7 +151,7 @@ public class CreditRequest {
         histId.setSeqHistSdis(seqHistSdis);
         hist.setId(histId);
         hist.setCodTipoDocumento(this.codTipoDocumento);
-        hist.setCodSituacao(this.codSituacao);
+        hist.setCodSituacao(this.codSituacao.getCode());
         hist.setDtTransicao(LocalDateTime.now());
         hist.setIdOrigemTransicao(origemTransicao);
         hist.setDtCadastro(this.dtCadastro);
@@ -180,7 +180,7 @@ public class CreditRequest {
                     "Não é possível cancelar uma solicitação já atendida");
         }
         this.flgCanc = "S";
-        this.codSituacao = SituationCreditRequest.CANCELAMENTO_SOLICITADO.getCode();
+        this.codSituacao = SituationCreditRequest.CANCELAMENTO_SOLICITADO;
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
@@ -200,7 +200,7 @@ public class CreditRequest {
                     "Não é possível bloquear uma solicitação cancelada");
         }
         this.flgBloq = "S";
-        this.codSituacao = SituationCreditRequest.BLOQUEIO_SOLICITADO.getCode();
+        this.codSituacao = SituationCreditRequest.BLOQUEIO_SOLICITADO;
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }
@@ -212,7 +212,7 @@ public class CreditRequest {
      */
     public void desbloquear(Long idUsuario) {
         this.flgBloq = "N";
-        this.codSituacao = SituationCreditRequest.DESBLOQUEIO_SOLICITADO.getCode();
+        this.codSituacao = SituationCreditRequest.DESBLOQUEIO_SOLICITADO;
         this.idUsuarioManutencao = idUsuario;
         this.dtManutencao = LocalDateTime.now();
     }

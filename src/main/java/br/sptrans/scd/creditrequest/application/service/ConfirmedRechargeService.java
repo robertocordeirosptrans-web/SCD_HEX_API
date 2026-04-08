@@ -16,6 +16,7 @@ import br.sptrans.scd.creditrequest.application.port.out.repository.CreditReques
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
+import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -67,6 +68,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
 
         int confirmados = 0;
         List<CreditRequestItemsEJpa> itens = new ArrayList<>();
+        List<CreditRequestItems> itensDominio = new ArrayList<>();
         for (Long numSolicitacaoItem : numSolicitacaoItens) {
             CreditRequestItemsKey key = new CreditRequestItemsKey();
             key.setNumSolicitacao(numSolicitacao);
@@ -75,18 +77,18 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
             var optItem = itemRepository.findById(key);
             if (optItem.isEmpty()) continue;
             CreditRequestItems item = optItem.get();
-            if (!SituationCreditRequestItems.EM_PROCESSO_DE_RECARGA.getCode().equals(item.getCodSituacao())) {
+            if (!SituationCreditRequestItems.EM_PROCESSO_DE_RECARGA.equals(item.getCodSituacao())) {
                 continue;
             }
             if (item.getDtRetornoHm() == null) {
                 continue;
             }
-            String statusAnterior = item.getCodSituacao();
-            item.setCodSituacao(SituationCreditRequestItems.RECARREGADO.getCode());
+            String statusAnterior = item.getCodSituacao().getCode();
+            item.setCodSituacao(SituationCreditRequestItems.RECARREGADO);
             item.setDtManutencao(java.time.LocalDateTime.now());
             itemRepository.save(item);
-            historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
             confirmados++;
+            itensDominio.add(item);
             // Adiciona para consolidação
             itens.add(toEntity(item));
             log.info("Item confirmado - Solicitação={}, Item={}, StatusAnterior={}, NovoStatus={}", numSolicitacao,
@@ -95,6 +97,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
         }
 
         if (confirmados > 0) {
+            historyService.saveItemStatusHistoryBatch(itensDominio, ORIGEM_TRANSICAO);
             consolidarStatusSolicitacao(numSolicitacao, codCanal, itens);
         }
 
@@ -116,7 +119,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
         entity.setNumLogicoCartao(item.getNumLogicoCartao());
         entity.setCodProduto(item.getCodProduto());
         entity.setCodTipoDocumento(item.getCodTipoDocumento());
-        entity.setCodSituacao(item.getCodSituacao());
+        entity.setCodSituacao(item.getCodSituacao().getCode());
         entity.setQtdItem(item.getQtdItem());
         entity.setVlUnitario(item.getVlUnitario());
         entity.setVlItem(item.getVlItem());
@@ -171,9 +174,9 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
 
         String novoStatus = situationAscertainedService.apurarSituacaoPedido(statusItens);
 
-        if (novoStatus != null && !novoStatus.equals(solicitacao.getCodSituacao())) {
-            String statusAnterior = solicitacao.getCodSituacao();
-            solicitacao.setCodSituacao(novoStatus);
+        if (novoStatus != null && !novoStatus.equals(solicitacao.getCodSituacao().getCode())) {
+            String statusAnterior = solicitacao.getCodSituacao().getCode();
+            solicitacao.setCodSituacao(SituationCreditRequest.fromCode(novoStatus));
             creditRequestRepository.update(numSolicitacao, codCanal, solicitacao);
             historyService.saveRequestStatusHistory(solicitacao, numSolicitacao, codCanal, ORIGEM_TRANSICAO);
 

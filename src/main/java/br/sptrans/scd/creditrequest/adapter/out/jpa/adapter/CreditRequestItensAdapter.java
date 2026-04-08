@@ -29,8 +29,8 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
     }
 
     @Override
-    public List<CreditRequestItemsEJpa> findFirstBySituacaoAndDtPagtoEconomicaBetween(String codSituacao, Timestamp dtInicio, Timestamp dtFim, Integer limit) {
-        return itemJpaRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim, limit);
+    public List<CreditRequestItemsEJpa> findFirstBySituacaoAndDtPagtoEconomicaBetween(String codSituacao, Timestamp dtInicio, Timestamp dtFim) {
+        return itemJpaRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim);
     }
 
     @Override
@@ -57,6 +57,19 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
     @Override
     public List<CreditRequestItems> findAllBySolicitacao(Long numSolicitacao, String codCanal) {
         return itemJpaRepository.findAllBySolicitacao(numSolicitacao, codCanal).stream()
+                .map(creditRequestMapper::toDomainItem)
+                .toList();
+    }
+
+    @Override
+    public List<CreditRequestItems> findAllById(List<CreditRequestItemsKey> ids) {
+        List<CreditRequestItemsEJpaKey> entityKeys = ids.stream()
+                .map(id -> new CreditRequestItemsEJpaKey(
+                        id.getNumSolicitacao(),
+                        id.getNumSolicitacaoItem(),
+                        id.getCodCanal()))
+                .toList();
+        return itemJpaRepository.findAllById(entityKeys).stream()
                 .map(creditRequestMapper::toDomainItem)
                 .toList();
     }

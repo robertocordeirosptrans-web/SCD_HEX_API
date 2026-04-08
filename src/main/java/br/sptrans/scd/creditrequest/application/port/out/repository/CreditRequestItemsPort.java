@@ -10,13 +10,15 @@ import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 
 public interface CreditRequestItemsPort {
         /**
-     * Busca o primeiro item de recarga com situação e data de pagamento econômica no intervalo informado.
+     * Busca os primeiros 100 itens de recarga com situação e data de pagamento econômica no intervalo informado.
      */
-    List<CreditRequestItemsEJpa> findFirstBySituacaoAndDtPagtoEconomicaBetween(String codSituacao,Timestamp dtInicio,Timestamp dtFim, Integer limit);
+    List<CreditRequestItemsEJpa> findFirstBySituacaoAndDtPagtoEconomicaBetween(String codSituacao, Timestamp dtInicio, Timestamp dtFim);
 
     CreditRequestItems save(CreditRequestItems items);
 
     Optional<CreditRequestItems> findById(CreditRequestItemsKey id);
+
+    List<CreditRequestItems> findAllById(List<CreditRequestItemsKey> ids);
 
     List<CreditRequestItems> findAllBySolicitacao(Long numSolicitacao, String codCanal);
 

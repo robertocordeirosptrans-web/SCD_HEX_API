@@ -10,13 +10,11 @@ import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpa;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpaKey;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.CreditRequestJpaRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
-
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
-import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
-import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -24,60 +22,27 @@ import lombok.RequiredArgsConstructor;
 public class CreditRequestAdapterJpa implements CreditRequestPort {
 
     private final CreditRequestJpaRepository jpaRepository;
+    private final CreditRequestMapper mapper;
 
     // ── Consultas existentes ─────────────────────────────────────────
 
     
     @Override
     public CreditRequest save(CreditRequest cdr) {
-        // Conversão do domínio para entidade JPA
-        CreditRequestEJpa entity = toEntity(cdr);
+        CreditRequestEJpa entity = mapper.toJpaEntity(cdr);
         CreditRequestEJpa saved = jpaRepository.save(entity);
-        return toDomain(saved);
-    }
-
-    // Conversão do domínio para entidade JPA
-    private CreditRequestEJpa toEntity(CreditRequest cdr) {
-        if (cdr == null) return null;
-        CreditRequestEJpa entity = new CreditRequestEJpa();
-        CreditRequestEJpaKey key = new CreditRequestEJpaKey();
-        key.setNumSolicitacao(cdr.getNumSolicitacao());
-        key.setCodCanal(cdr.getCodCanal());
-        entity.setId(key);
-        entity.setIdUsuarioCadastro(cdr.getIdUsuarioCadastro());
-        entity.setCodTipoDocumento(cdr.getCodTipoDocumento());
-        entity.setCodSituacao(cdr.getCodSituacao());
-        entity.setCodFormaPagto(cdr.getCodFormaPagto());
-        entity.setDtSolicitacao(cdr.getDtSolicitacao());
-        entity.setDtPrevLiberacao(cdr.getDtPrevLiberacao());
-        entity.setDtAceite(cdr.getDtAceite());
-        entity.setDtConfirmaPagto(cdr.getDtConfirmaPagto());
-        entity.setDtPagtoEconomica(cdr.getDtPagtoEconomica());
-        entity.setCodUsuarioPortador(cdr.getCodUsuarioPortador());
-        entity.setDtLiberacaoEfetiva(cdr.getDtLiberacaoEfetiva());
-        entity.setCodEnderecoEntrega(cdr.getCodEnderecoEntrega());
-        entity.setNumLote(cdr.getNumLote());
-        entity.setDtFinanceira(cdr.getDtFinanceira());
-        entity.setVlTotal(cdr.getVlTotal());
-        entity.setDtCadastro(cdr.getDtCadastro());
-        entity.setFlgCanc(cdr.getFlgCanc());
-        entity.setDtManutencao(cdr.getDtManutencao());
-        entity.setDtEnvioHm(cdr.getDtEnvioHm());
-        entity.setIdUsuarioManutencao(cdr.getIdUsuarioManutencao());
-        entity.setFlgBloq(cdr.getFlgBloq());
-        // Adicione outros campos conforme necessário
-        return entity;
+        return mapper.toDomain(saved);
     }
 
     @Override
     public Optional<CreditRequest> findByNumSolicitacaoAndCodCanal(Long numSolicitacao, String codCanal) {
         return jpaRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal)
-                .map(this::toDomain);
+                .map(mapper::toDomain);
     }
 
     @Override
     public List<CreditRequest> findByCanalAndSituacao(String codCanal, String codSituacao) {
-        return jpaRepository.findByCanalAndSituacao(codCanal, codSituacao).stream().map(this::toDomain).toList();
+        return jpaRepository.findByCanalAndSituacao(codCanal, codSituacao).stream().map(mapper::toDomain).toList();
     }
 
     @Override
@@ -92,31 +57,31 @@ public class CreditRequestAdapterJpa implements CreditRequestPort {
 
     @Override
     public List<CreditRequest> findElegiveisParaLiberacao(String codSituacao, LocalDateTime dtInicio, LocalDateTime dtFim, int limit) {
-        return jpaRepository.findElegiveisParaLiberacao(codSituacao, dtInicio, dtFim, limit).stream().map(this::toDomain).toList();
+        return jpaRepository.findElegiveisParaLiberacao(codSituacao, dtInicio, dtFim, limit).stream().map(mapper::toDomain).toList();
     }
 
     @Override
     public CreditRequest findElegiveisParaProcessamento(String codSituacao) {
-        return jpaRepository.findElegiveisParaProcessamento(codSituacao).stream().findFirst().map(this::toDomain).orElse(null);
+        return jpaRepository.findElegiveisParaProcessamento(codSituacao).stream().findFirst().map(mapper::toDomain).orElse(null);
     }
 
     @Override
     public List<CreditRequest> findElegiveisParaConfirmacao(String codSituacao, int limit) {
-        return jpaRepository.findElegiveisParaConfirmacao(codSituacao, limit).stream().map(this::toDomain).toList();
+        return jpaRepository.findElegiveisParaConfirmacao(codSituacao, limit).stream().map(mapper::toDomain).toList();
     }
 
     // ── Buscas específicas ─────────────────────────────────────────
 
     @Override
     public List<CreditRequest> findByNumSolicitacaoSpecific(Long numSolicitacao, String codCanal) {
-        return jpaRepository.findByNumSolicitacaoSpecific(numSolicitacao, codCanal).stream().map(this::toDomain).toList();
+        return jpaRepository.findByNumSolicitacaoSpecific(numSolicitacao, codCanal).stream().map(mapper::toDomain).toList();
     }
 
     @Override
     public List<CreditRequest> findByCodProduto(
             String codProduto, String codCanal,
             LocalDateTime dtInicio, LocalDateTime dtFim, int limit) {
-        return jpaRepository.findByCodProduto(codProduto, codCanal, dtInicio, dtFim, limit).stream().map(this::toDomain).toList();
+        return jpaRepository.findByCodProduto(codProduto, codCanal, dtInicio, dtFim, limit).stream().map(mapper::toDomain).toList();
     }
 
     // ── Busca paginada por cursor ────────────────────────────────────
@@ -169,10 +134,10 @@ public class CreditRequestAdapterJpa implements CreditRequestPort {
             if (vlTotalMin != null) predicates.add(cb.greaterThanOrEqualTo(root.get("vlTotal"), vlTotalMin));
             if (vlTotalMax != null) predicates.add(cb.lessThanOrEqualTo(root.get("vlTotal"), vlTotalMax));
             query.orderBy(cb.desc(root.get("id").get("numSolicitacao")), cb.asc(root.get("id").get("codCanal")));
-            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+            return cb.and(predicates.toArray(Predicate[]::new));
         };
         var page = org.springframework.data.domain.PageRequest.of(0, limit);
-        return jpaRepository.findAll(spec, page).stream().map(this::toDomain).toList();
+        return jpaRepository.findAll(spec, page).stream().map(mapper::toDomain).toList();
     }
 
     // ── Atualizações ─────────────────────────────────────────────────
@@ -186,7 +151,7 @@ public class CreditRequestAdapterJpa implements CreditRequestPort {
         if (entityOpt.isPresent()) {
             CreditRequestEJpa entity = entityOpt.get();
             // Atualize os campos necessários
-            entity.setCodSituacao(cr.getCodSituacao());
+            entity.setCodSituacao(cr.getCodSituacao().getCode());
             entity.setCodFormaPagto(cr.getCodFormaPagto());
             entity.setDtAceite(cr.getDtAceite());
             entity.setDtConfirmaPagto(cr.getDtConfirmaPagto());
@@ -205,88 +170,7 @@ public class CreditRequestAdapterJpa implements CreditRequestPort {
         public Optional<CreditRequest> findByCodTipoDocumentoAndIdUsuarioCadastro(
             String codTipoDocumento, Long idUsuarioCadastro) {
         return jpaRepository.findByCodTipoDocumentoAndIdUsuarioCadastro(codTipoDocumento, idUsuarioCadastro)
-            .map(this::toDomain);
+            .map(mapper::toDomain);
         }
-
-    // ── Helpers ──────────────────────────────────────────────────────
-
-    private CreditRequest toDomain(CreditRequestEJpa entity) {
-        if (entity == null) return null;
-        var cr = new CreditRequest();
-        cr.setNumSolicitacao(entity.getId().getNumSolicitacao());
-        cr.setCodCanal(entity.getId().getCodCanal());
-        cr.setIdUsuarioCadastro(entity.getIdUsuarioCadastro());
-        cr.setCodTipoDocumento(entity.getCodTipoDocumento());
-        cr.setCodSituacao(entity.getCodSituacao());
-        cr.setCodFormaPagto(entity.getCodFormaPagto());
-        cr.setDtSolicitacao(entity.getDtSolicitacao());
-        cr.setDtPrevLiberacao(entity.getDtPrevLiberacao());
-        cr.setDtAceite(entity.getDtAceite());
-        cr.setDtConfirmaPagto(entity.getDtConfirmaPagto());
-        cr.setDtPagtoEconomica(entity.getDtPagtoEconomica());
-        cr.setCodUsuarioPortador(entity.getCodUsuarioPortador());
-        cr.setDtLiberacaoEfetiva(entity.getDtLiberacaoEfetiva());
-        cr.setCodEnderecoEntrega(entity.getCodEnderecoEntrega());
-        cr.setNumLote(entity.getNumLote());
-        cr.setDtFinanceira(entity.getDtFinanceira());
-        cr.setVlTotal(entity.getVlTotal());
-        cr.setDtCadastro(entity.getDtCadastro());
-        cr.setFlgCanc(entity.getFlgCanc());
-        cr.setDtManutencao(entity.getDtManutencao());
-        cr.setDtEnvioHm(entity.getDtEnvioHm());
-        cr.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
-        cr.setFlgBloq(entity.getFlgBloq());
-        // cr.setVlPago(entity.getVlPago()); // Adicione se existir na entidade
-
-        // Popular os itens do pedido
-        if (entity.getItens() != null) {
-            List<CreditRequestItems> itensDomain = entity.getItens().stream()
-                .map(e -> toDomainCreditRequestItem(e))
-                .toList();
-            cr.setItens(itensDomain);
-        }
-        return cr;
-
-    }
-
-    // Conversão auxiliar para itens
-    private CreditRequestItems toDomainCreditRequestItem(CreditRequestItemsEJpa e) {
-        if (e == null) return null;
-        CreditRequestItems item = new CreditRequestItems();
-        CreditRequestItemsKey key = new CreditRequestItemsKey();
-        key.setNumSolicitacao(e.getId().getNumSolicitacao());
-        key.setNumSolicitacaoItem(e.getId().getNumSolicitacaoItem());
-        key.setCodCanal(e.getId().getCodCanal());
-        item.setId(key);
-        item.setCodCanal(e.getCodCanal());
-        item.setIdUsuarioCadastro(e.getIdUsuarioCadastro());
-        item.setCodVersao(e.getCodVersao());
-        item.setNumLogicoCartao(e.getNumLogicoCartao());
-        item.setCodProduto(e.getCodProduto());
-        item.setCodTipoDocumento(e.getCodTipoDocumento());
-        item.setCodSituacao(e.getCodSituacao());
-        item.setQtdItem(e.getQtdItem());
-        item.setVlUnitario(e.getVlUnitario());
-        item.setVlItem(e.getVlItem());
-        item.setDtRecarga(e.getDtRecarga());
-        item.setVlCarregado(e.getVlCarregado());
-        item.setVlAjuste(e.getVlAjuste());
-        item.setFlgAjuste(e.getFlgAjuste());
-        item.setIdFuncionario(e.getIdFuncionario());
-        // item.setCodAssinaturaHsm(e.getCodAssinaturaHsm());
-        item.setDtCadastro(e.getDtCadastro());
-        item.setDtManutencao(e.getDtManutencao());
-        item.setSeqRecarga(e.getSeqRecarga());
-        item.setDtEnvioHm(e.getDtEnvioHm());
-        item.setDtRetornoHm(e.getDtRetornoHm());
-        item.setIdUsuarioManutencao(e.getIdUsuarioManutencao());
-        item.setDtAssinatura(e.getDtAssinatura());
-        item.setDtPagtoEconomica(e.getDtPagtoEconomica());
-        item.setSqPid(e.getSqPid());
-        item.setDtInicProcesso(e.getDtInicProcesso());
-        item.setIdUsuarioCartao(e.getIdUsuarioCartao());
-        // Adicione outros campos conforme necessário
-        return item;
-    }
 
 }

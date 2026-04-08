@@ -17,8 +17,9 @@ public interface CreditRequestItemJpaRepository
                 JpaSpecificationExecutor<CreditRequestItemsEJpa> {
 
         /**
-         * Busca os primeiros 100 itens de recarga com situação '04' e data de
+         * Busca os primeiros 100 itens de recarga com situação informada e data de
          * pagamento econômica no intervalo informado.
+         * Nota: Oracle não suporta bind variable em FETCH FIRST, por isso o limite é fixo.
          */
         @Query(value = """
                         SELECT i.*
@@ -26,13 +27,12 @@ public interface CreditRequestItemJpaRepository
                         WHERE i.COD_SITUACAO = :codSituacao
                           AND i.DT_PAGTO_ECONOMICA >= :dtInicio
                           AND i.DT_PAGTO_ECONOMICA <= :dtFim
-                        FETCH FIRST :limit ROWS ONLY
+                        FETCH FIRST 100 ROWS ONLY
                         """, nativeQuery = true)
         List<CreditRequestItemsEJpa> findFirstBySituacaoAndDtPagtoEconomicaBetween(
                         @Param("codSituacao") String codSituacao,
                         @Param("dtInicio") Timestamp dtInicio,
-                        @Param("dtFim") Timestamp dtFim,
-                        @Param("limit") int limit);
+                        @Param("dtFim") Timestamp dtFim);
 
         @Query("SELECT i FROM CreditRequestItemsEJpa i WHERE i.id.numSolicitacao = :num AND i.id.codCanal = :canal")
         List<CreditRequestItemsEJpa> findAllBySolicitacao(@Param("num") Long num, @Param("canal") String canal);

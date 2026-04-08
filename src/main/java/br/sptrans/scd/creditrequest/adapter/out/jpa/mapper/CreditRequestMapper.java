@@ -10,6 +10,7 @@ import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpa;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpaKey;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpaKey;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
@@ -18,11 +19,44 @@ import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestItemsDT
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
+import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CreditRequestMapper {
     // Conversão de domínio para entidade JPA
+    default CreditRequestEJpa toJpaEntity(CreditRequest cdr) {
+        if (cdr == null) return null;
+        CreditRequestEJpa entity = new CreditRequestEJpa();
+        CreditRequestEJpaKey key = new CreditRequestEJpaKey();
+        key.setNumSolicitacao(cdr.getNumSolicitacao());
+        key.setCodCanal(cdr.getCodCanal());
+        entity.setId(key);
+        entity.setIdUsuarioCadastro(cdr.getIdUsuarioCadastro());
+        entity.setCodTipoDocumento(cdr.getCodTipoDocumento());
+        entity.setCodSituacao(cdr.getCodSituacao().getCode());
+        entity.setCodFormaPagto(cdr.getCodFormaPagto());
+        entity.setDtSolicitacao(cdr.getDtSolicitacao());
+        entity.setDtPrevLiberacao(cdr.getDtPrevLiberacao());
+        entity.setDtAceite(cdr.getDtAceite());
+        entity.setDtConfirmaPagto(cdr.getDtConfirmaPagto());
+        entity.setDtPagtoEconomica(cdr.getDtPagtoEconomica());
+        entity.setCodUsuarioPortador(cdr.getCodUsuarioPortador());
+        entity.setDtLiberacaoEfetiva(cdr.getDtLiberacaoEfetiva());
+        entity.setCodEnderecoEntrega(cdr.getCodEnderecoEntrega());
+        entity.setNumLote(cdr.getNumLote());
+        entity.setDtFinanceira(cdr.getDtFinanceira());
+        entity.setVlTotal(cdr.getVlTotal());
+        entity.setDtCadastro(cdr.getDtCadastro());
+        entity.setFlgCanc(cdr.getFlgCanc());
+        entity.setDtManutencao(cdr.getDtManutencao());
+        entity.setDtEnvioHm(cdr.getDtEnvioHm());
+        entity.setIdUsuarioManutencao(cdr.getIdUsuarioManutencao());
+        entity.setFlgBloq(cdr.getFlgBloq());
+        return entity;
+    }
+
+    // Conversão de domínio para entidade JPA (itens)
     default CreditRequestItemsEJpa toEntityItem(CreditRequestItems items) {
         if (items == null) {
             return null;
@@ -34,7 +68,7 @@ public interface CreditRequestMapper {
         key.setCodCanal(items.getId().getCodCanal());
         entity.setId(key);
         entity.setCodProduto(items.getCodProduto());
-        entity.setCodSituacao(items.getCodSituacao());
+        entity.setCodSituacao(items.getCodSituacao().getCode());
         entity.setVlItem(items.getVlItem());
         entity.setDtRecarga(items.getDtRecarga());
         entity.setVlCarregado(items.getVlCarregado());
@@ -115,7 +149,7 @@ public interface CreditRequestMapper {
         cr.setCodCanal(entity.getId().getCodCanal());
         cr.setIdUsuarioCadastro(entity.getIdUsuarioCadastro());
         cr.setCodTipoDocumento(entity.getCodTipoDocumento());
-        cr.setCodSituacao(entity.getCodSituacao());
+        cr.setCodSituacao(SituationCreditRequest.fromCode(entity.getCodSituacao()));
         cr.setCodFormaPagto(entity.getCodFormaPagto());
         cr.setDtSolicitacao(entity.getDtSolicitacao());
         cr.setDtPrevLiberacao(entity.getDtPrevLiberacao());
@@ -159,7 +193,7 @@ public interface CreditRequestMapper {
         key.setCodCanal(itemJpa.getId().getCodCanal());
         item.setId(key);
         item.setCodProduto(itemJpa.getCodProduto());
-        item.setCodSituacao(itemJpa.getCodSituacao());
+        item.setCodSituacao(SituationCreditRequestItems.fromCode(itemJpa.getCodSituacao()));
         item.setVlItem(itemJpa.getVlItem());
         item.setDtRecarga(itemJpa.getDtRecarga());
         item.setVlCarregado(itemJpa.getVlCarregado());
@@ -218,8 +252,8 @@ public interface CreditRequestMapper {
                 .dtSolicitacao(request.dataGeracao())
                 .dtPrevLiberacao(request.dataLiberacaoCredito())
                 .codSituacao(
-                        SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO
-                                .getCode())
+                        SituationCreditRequest.ACEITO_PENDENTE_LIQUIDACAO
+                                )
                 .vlTotal(item.valorTotal())
                 .codTipoDocumento("1")
                 .idUsuarioCadastro(userId)
@@ -255,7 +289,7 @@ public interface CreditRequestMapper {
                 .codVersao(item.codVersao())
                 .codSituacao(
                         SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO
-                                .getCode())
+                                )
                 .qtdItem(0)
                 .vlUnitario(item.vlUnitario())
                 .vlItem(item.valorTotal())

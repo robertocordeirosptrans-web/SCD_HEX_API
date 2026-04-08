@@ -294,7 +294,7 @@ public class CreateCreditRequestCase {
                         creditRequestItem.setSeqRecarga(seqRecarga);
 
                         itemRepository.save(creditRequestItem);
-                        historyService.saveItemStatusHistory(creditRequestItem, ORIGEM_TRANSICAO);
+                        historyService.saveItemStatusHistoryBatch(List.of(creditRequestItem), ORIGEM_TRANSICAO);
 
                         auditLog.info("[AUDIT] Item criado - numSolicitacao={}, numItem={}, codProduto={}, userId={}",
 
