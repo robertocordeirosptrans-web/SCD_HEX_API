@@ -8,10 +8,10 @@ import java.util.Objects;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 @Getter
@@ -82,7 +82,7 @@ public class CreditRequest {
     private String flgEvento;
 
     private BigDecimal vlEvento;
-
+    @Builder.Default
     private List<CreditRequestItems> itens = new ArrayList<>();
 
     // -------------------------------------------------------------------------

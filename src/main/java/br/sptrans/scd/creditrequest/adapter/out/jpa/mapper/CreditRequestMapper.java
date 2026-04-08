@@ -254,7 +254,7 @@ public interface CreditRequestMapper {
                 .codProduto(item.codProduto())
                 .codVersao(item.codVersao())
                 .codSituacao(
-                       SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO
+                        SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO
                                 .getCode())
                 .qtdItem(0)
                 .vlUnitario(item.vlUnitario())
@@ -265,6 +265,7 @@ public interface CreditRequestMapper {
                 .vlTxserv(item.vlTxserv())
                 .vlTxtotal(item.vlTxadm().add(item.vlTxserv()))
                 .seqRecarga(1)
+                .sqRecarga(0)
                 .codTipoDocumento("2")
                 .build();
     }

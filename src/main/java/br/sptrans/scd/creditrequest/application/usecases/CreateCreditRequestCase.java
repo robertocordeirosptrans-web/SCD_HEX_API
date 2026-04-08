@@ -86,7 +86,7 @@ public class CreateCreditRequestCase {
                         validationService.validarSubordinadosSupercanal(request.codCanal());
                 }
 
-                boolean processamentoParcialPermitido = canal.isProcessamentoAutomaticoHabilitado();
+                boolean processamentoParcialPermitido = canal.isProcessamentoParcialHabilitado();
                 
 
                 List<ItemProcessado> processados = new ArrayList<>();
