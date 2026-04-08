@@ -69,10 +69,10 @@ public interface CreditRequestManagementUseCase {
             String codCanal,
             String codProduto,
             String codSituacao,
-            Double vlItem,
-            Double vlTxadm,
-            Double vlTxserv
-            ) {
+            BigDecimal vlItem,
+            BigDecimal vlTxadm,
+            BigDecimal vlTxserv
+    ) {
 
     }
 

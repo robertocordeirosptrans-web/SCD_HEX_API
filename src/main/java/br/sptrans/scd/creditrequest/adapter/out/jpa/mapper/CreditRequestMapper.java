@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.creditrequest.adapter.out.jpa.mapper;
 
 import java.time.LocalDateTime;
@@ -11,11 +12,13 @@ import org.mapstruct.ReportingPolicy;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpa;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpaKey;
+import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestItemsDTO;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
+import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CreditRequestMapper {
@@ -71,7 +74,6 @@ public interface CreditRequestMapper {
         return entity;
     }
 
-
     @Mapping(target = "itens", source = "itens", qualifiedByName = "mapItens")
     CreditRequestDTO toDTO(CreditRequest entity);
 
@@ -93,8 +95,8 @@ public interface CreditRequestMapper {
             return List.of();
         }
         return itens.stream()
-            .map(this::itemToDTO)
-            .toList();
+                .map(this::itemToDTO)
+                .toList();
     }
 
     @Mapping(target = "numSolicitacaoItem", source = "id.numSolicitacaoItem")
@@ -194,8 +196,77 @@ public interface CreditRequestMapper {
         item.setCodProdutoHm(itemJpa.getCodProdutoHm());
         item.setQtdDiasUtilizados(itemJpa.getQtdDiasUtilizados());
         item.setCodTipoDocumento(itemJpa.getCodTipoDocumento());
- 
+
         return item;
+    }
+
+    /**
+     * Mapeia dados do pedido, item, request e usuário para CreditRequest (domínio).
+     */
+    default CreditRequest fromRequest(
+            CreateRequestCredit.CreditRequest pedido,
+            CreateRequestCredit.ItemRequest item,
+            CreateRequestCredit request,
+            Long userId) {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        return CreditRequest.builder()
+                .numSolicitacao(pedido.numSolicitacao())
+                .codCanal(request.codCanal())
+                .numLote(pedido.numLote())
+                .dtCadastro(now)
+                .dtManutencao(now)
+                .dtSolicitacao(request.dataGeracao())
+                .dtPrevLiberacao(request.dataLiberacaoCredito())
+                .codSituacao(
+                        SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO
+                                .getCode())
+                .vlTotal(item.valorTotal())
+                .codTipoDocumento("1")
+                .idUsuarioCadastro(userId)
+                .idUsuarioManutencao(userId)
+                .build();
+    }
+
+    /**
+     * Mapeia dados do pedido, item, request, creditRequest e usuário para
+     * CreditRequestItems (domínio).
+     */
+    default CreditRequestItems fromRequestItem(
+            CreateRequestCredit.CreditRequest pedido,
+            CreateRequestCredit.ItemRequest item,
+            CreateRequestCredit request,
+            CreditRequest creditRequest,
+            Long userId,
+            long numSolicitacaoItemSeq) {
+        LocalDateTime now = LocalDateTime.now();
+        CreditRequestItemsKey key = new CreditRequestItemsKey();
+        key.setNumSolicitacao(pedido.numSolicitacao());
+        key.setNumSolicitacaoItem(numSolicitacaoItemSeq);
+        key.setCodCanal(request.codCanal());
+        return CreditRequestItems.builder()
+                .id(key)
+                .solicitacao(creditRequest)
+                .codCanal(request.codCanal())
+                .idUsuarioCadastro(userId)
+                .idUsuarioManutencao(userId)
+                .idUsuarioCartao(item.idUsuarioCartao())
+                .numLogicoCartao(item.numLogicoCartao())
+                .codProduto(item.codProduto())
+                .codVersao(item.codVersao())
+                .codSituacao(
+                       SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO
+                                .getCode())
+                .qtdItem(0)
+                .vlUnitario(item.vlUnitario())
+                .vlItem(item.valorTotal())
+                .dtCadastro(now)
+                .dtManutencao(now)
+                .vlTxadm(item.vlTxadm())
+                .vlTxserv(item.vlTxserv())
+                .vlTxtotal(item.vlTxadm().add(item.vlTxserv()))
+                .seqRecarga(1)
+                .codTipoDocumento("2")
+                .build();
     }
 
 }

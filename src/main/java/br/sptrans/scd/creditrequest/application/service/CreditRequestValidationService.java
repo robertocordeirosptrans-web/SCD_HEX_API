@@ -1,4 +1,3 @@
-
 package br.sptrans.scd.creditrequest.application.service;
 
 import java.math.BigDecimal;
@@ -41,8 +40,7 @@ public class CreditRequestValidationService {
 
     public SalesChannel validarCanal(String codCanal) {
         SalesChannel canal = salesChannelRepository.findById(codCanal)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Canal não encontrado: " + codCanal));
+                .orElseThrow(() -> new IllegalStateException("Canal não encontrado: " + codCanal));
         if (!canal.isAtivo()) {
             throw new IllegalStateException("Canal inativo: " + codCanal);
         }
@@ -51,8 +49,7 @@ public class CreditRequestValidationService {
 
     public void validarNumLote(String numLote, String codCanal) {
         if (creditRequestRepository.existsByNumLoteAndCodCanal(numLote, codCanal)) {
-            throw new IllegalStateException(
-                    "Número de lote já utilizado para este canal: " + numLote);
+            throw new IllegalStateException("Número de lote já utilizado para este canal: " + numLote);
         }
     }
 
@@ -60,101 +57,103 @@ public class CreditRequestValidationService {
         if (dataLiberacao == null) {
             throw new IllegalStateException("Data de liberação de crédito é obrigatória");
         }
-        LocalDateTime hoje = LocalDateTime.now();
-        if (dataLiberacao.isBefore(hoje)) {
-            throw new IllegalStateException(
-                    "Data de liberação inválida: " + dataLiberacao
-                    + " é anterior à data atual " + hoje);
+        if (dataLiberacao.isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("Data de liberação inválida: " + dataLiberacao + " é anterior à data atual");
         }
     }
 
     public void validarSubordinadosSupercanal(String codCanal) {
         List<SalesChannel> subordinados = salesChannelRepository.findByCodCanalSuperior(codCanal);
-        boolean temSubordinadoAtivo = subordinados.stream()
-                .anyMatch(SalesChannel::isAtivo);
+        boolean temSubordinadoAtivo = subordinados.stream().anyMatch(SalesChannel::isAtivo);
         if (!temSubordinadoAtivo) {
-            throw new IllegalStateException(
-                    "Supercanal " + codCanal + " não possui subordinados ativos");
+            throw new IllegalStateException("Supercanal " + codCanal + " não possui subordinados ativos");
         }
     }
 
-        /**
-         * Valida a vigência da versão do produto para um item do pedido de crédito.
-         * Se a vigência estiver expirada, adiciona motivo à lista de rejeitados.
-         */
-        public void validarVigenciaVersaoProduto(Long numSolicitacao, String cartao, String codProduto,
-                String codCanal, String codVersao, LocalDateTime dataSolicitacao,
-                List<ItemRejeitado> rejeitados) {
-            // Busca a versão do produto
-            Optional<ProductVersion> versaoOpt = productVersionRepository.findById(codProduto);
-            if (versaoOpt.isEmpty()) {
-                rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, codProduto,
+    /**
+     * Valida a vigência da versão do produto para um item do pedido de crédito.
+     * Se a vigência estiver expirada, adiciona motivo à lista de rejeitados.
+     */
+    public void validarVigenciaVersaoProduto(Long numSolicitacao, String cartao, String codProduto,
+            String codCanal, String codVersao, LocalDateTime dataSolicitacao,
+            List<ItemRejeitado> rejeitados) {
+        Optional<ProductVersion> versaoOpt = productVersionRepository.findById(codProduto);
+        if (versaoOpt.isEmpty()) {
+            rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, codProduto,
                     "Versão do produto não encontrada para o produto " + codProduto));
-                return;
-            }
-            ProductVersion versao = versaoOpt.get();
-            LocalDateTime validade = versao.getDtValidade();
-            LocalDateTime data = dataSolicitacao != null ? dataSolicitacao : LocalDateTime.now();
-            if (validade != null && data.isAfter(validade)) {
-                rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, codProduto,
-                    "Versão do produto " + codVersao + " expirada para o produto " + codProduto));
-            }
+            return;
         }
+        ProductVersion versao = versaoOpt.get();
+        LocalDateTime validade = versao.getDtValidade();
+        LocalDateTime data = dataSolicitacao != null ? dataSolicitacao : LocalDateTime.now();
+        if (validade != null && data.isBefore(validade) && !versao.isActive()) {
+            rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, codProduto,
+                    "Versão do produto " + codVersao + " não está ativa para o produto " + codProduto));
+        }
+        if (validade != null && data.isAfter(validade)) {
+            rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, codProduto,
+                    "Versão do produto " + codVersao + " expirada para o produto " + codProduto));
+        }
+    }
 
-    public void validarVigenciadoCanal(Long numSolicitacao, String cartao, String produto,
+        public void validarVigenciadoCanal(Long numSolicitacao, String cartao, String produto,
             String codCanal, String codCanalDistrib, String codProduto,
             List<ItemRejeitado> rejeitados) {
-
         boolean isAssocied = mdChannelRepository
-                .findActiveByCanalDistrib(codCanal, codCanalDistrib)
-                .isPresent();
+            .findActiveByCanalDistrib(codCanal, codCanalDistrib)
+            .isPresent();
         if (!isAssocied) {
             rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, produto,
-                    "Canal de distribuição " + codCanalDistrib
+                "Canal de distribuição " + codCanalDistrib
                     + " não associado ao canal de comercialização " + codCanal));
         }
 
-
-        // Convênio vigente para o canal de distribuição
         AgreementValidityKey key = new AgreementValidityKey(codCanal, codProduto);
-
         Optional<AgreementValidity> convOpt = agreeValidRepository.findById(key);
-        if (convOpt.isEmpty() || convOpt.get().getDtInicioValidade().isBefore(LocalDateTime.now())) {
+        if (convOpt.isEmpty()) {
             rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, produto,
-                    "Convênio não vigente para canal de distribuição " + codCanal
+                "Convênio não vigente para canal de distribuição " + codCanal
+                    + " e produto " + codProduto));
+            return;
+        }
+        AgreementValidity conv = convOpt.get();
+        if (!conv.isVigente()) {
+            rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, produto,
+                "Convênio não vigente para canal de distribuição " + codCanal
                     + " e produto " + codProduto));
         }
-    }
+        }
 
-        public ProductChannel validarProdutoNoCanal(Long numSolicitacao, String cartao, String produto,
+    public ProductChannel validarProdutoNoCanal(Long numSolicitacao, String cartao, String produto,
             String codCanal, String codProduto,
             List<ItemRejeitado> rejeitados) {
         ProductChannelKey key = new ProductChannelKey(codCanal, codProduto);
-        Optional<ProductChannel> cpOpt = productChannelRepository
-            .findById(key);
+        Optional<ProductChannel> cpOpt = productChannelRepository.findById(key);
         if (cpOpt.isEmpty()) {
             rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, produto,
-                "Produto " + codProduto + " não comercializado pelo canal " + codCanal));
+                    "Produto " + codProduto + " não comercializado pelo canal " + codCanal));
             return null;
         }
         ProductChannel cp = cpOpt.get();
         if (!cp.isAtivo()) {
             rejeitados.add(new ItemRejeitado(numSolicitacao, cartao, produto,
-                "Produto " + codProduto + " inativo no canal " + codCanal));
+                    "Produto " + codProduto + " inativo no canal " + codCanal));
             return null;
         }
         return cp;
-        }
+    }
 
     public String validarLimites(String codCanal, String codProduto, BigDecimal valorTotal) {
         RechargeLimitKey key = new RechargeLimitKey(codCanal, codProduto);
-        Optional<RechargeLimit> limiteOpt = rechargeLimitRepository.findById(key);
-        if (limiteOpt.isEmpty()) {
-            throw new ValidationException(
-                    "Não há limites configurados para o canal " + codCanal + " e produto " + codProduto);
-        }
-        RechargeLimit limite = limiteOpt.get();
+        RechargeLimit limite = rechargeLimitRepository.findById(key)
+                .orElseThrow(() -> new ValidationException("Não há limites configurados para o canal " + codCanal + " e produto " + codProduto));
         limite.validarLimites(valorTotal);
         return null;
+    }
+
+    // Helper para obter RechargeLimit sem exception
+    public RechargeLimit getRechargeLimit(String codCanal, String codProduto) {
+        RechargeLimitKey key = new RechargeLimitKey(codCanal, codProduto);
+        return rechargeLimitRepository.findById(key).orElse(null);
     }
 }

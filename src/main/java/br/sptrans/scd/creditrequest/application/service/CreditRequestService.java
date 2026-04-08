@@ -17,17 +17,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
-import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit.ItemRequest;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse;
-import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemProcessado;
-import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemRejeitado;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
+import br.sptrans.scd.creditrequest.application.usecases.CreateCreditRequestCase;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
@@ -37,12 +34,7 @@ import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
-import br.sptrans.scd.product.application.service.FeeFareService;
-import br.sptrans.scd.product.domain.Fee;
-import br.sptrans.scd.product.domain.vo.TaxaCalculada;
 import br.sptrans.scd.shared.cache.InvalidateOrderCache;
-import br.sptrans.scd.shared.exception.ValidationException;
-import br.sptrans.scd.shared.idempotency.IdempotencyStore;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -58,16 +50,18 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
      */
     static final String ORIGEM_TRANSICAO = "pedido_credito_scd";
 
-    private final CreditRequestValidationService validationService;
-    private final RechargeLogService rechargeLogService;
+    // private final CreditRequestValidationService validationService;
+    // private final RechargeLogService rechargeLogService;
     private final CreditRequestPort creditRequestRepository;
     private final CreditRequestItemsPort itemRepository;
     private final CreditRequestMapper creditRequestMapper;
     private final HistCreditRequestService historyService;
     private final TransitionSituationValidator transitionValidator;
     private final SituationAscertainedService situationAscertainedService;
-    private final IdempotencyStore idempotencyStore;
-    private final FeeFareService feeFareService;
+    // private final IdempotencyStore idempotencyStore;
+    // private final FeeFareService feeFareService;
+
+    private final CreateCreditRequestCase createCreditRequestCase;
 
     // ── Ações de mudança de status ───────────────────────────────────
     @Override
@@ -131,264 +125,267 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     @Override
     @Transactional
     @InvalidateOrderCache
-    public CreateRequestResponse createCreditRequest(
-            CreateRequestCredit request,
-            String idempotencyKey,
-            Long userId) {
-
-        log.info("[createCreditRequest] INICIADO - idempotencyKey={}, request={}", idempotencyKey, request);
-
-        // 1. Idempotência
-        Optional<CreateRequestResponse> cached = idempotencyStore.get(idempotencyKey);
-        if (cached.isPresent()) {
-            log.info("[createCreditRequest] Idempotência: retornando resultado em cache para chave '{}'", idempotencyKey);
-            return cached.get();
-        }
-
-        // 2. Validações prévias (do segundo método)
-        log.info("[createCreditRequest] Validando canal, lote e data de liberação...");
-        SalesChannel canal = validationService.validarCanal(request.codCanal());
-        validationService.validarDataLiberacao(request.dataLiberacaoCredito());
-
-        if ("S".equalsIgnoreCase(canal.getFlgSupercanal())) {
-            log.info("[createCreditRequest] Canal é supercanal, validando subordinados...");
-            validationService.validarSubordinadosSupercanal(request.codCanal());
-        }
-
-        // 3. Configurações de processamento
-        boolean processamentoParcialPermitido = "S".equalsIgnoreCase(canal.getFlgProcessamentoParcial());
-        log.info("[createCreditRequest] Processamento parcial permitido? {}", processamentoParcialPermitido);
-
-        List<CreateRequestResponse.ItemProcessado> processados = new ArrayList<>();
-        List<CreateRequestResponse.ItemRejeitado> rejeitados = new ArrayList<>();
-
-        int totalItens = request.pedidos().stream().mapToInt(p -> p.itens().size()).sum();
-        log.info("[createCreditRequest] Total de itens a processar: {}", totalItens);
-
-        for (CreateRequestCredit.CreditRequest pedido : request.pedidos()) {
-            //Validar o numero de lote para cada pedido
-            validationService.validarNumLote(pedido.numLote(), request.codCanal());
-
-            // Verificar se já existe a solicitação na base (SOL_DISTRIBUICOES)
-            boolean solicitacaoExiste = creditRequestRepository.findByNumSolicitacaoAndCodCanal(pedido.numSolicitacao(), request.codCanal()).isPresent();
-            if (solicitacaoExiste) {
-                log.warn("[createCreditRequest] Solicitação {} já existe para o canal {}. Não será criado novo pedido.", pedido.numSolicitacao(), request.codCanal());
-                throw new IllegalStateException("Já existe solicitação para este canal: " + pedido.numSolicitacao());
-            }
-
-            long numSolicitacaoItemSeq = 1L;
-            for (ItemRequest item : pedido.itens()) {
-                log.info("[createCreditRequest] Processando pedido={}, item={}, numSolicitacaoItem={}", pedido, item, numSolicitacaoItemSeq);
-                processarItemComTryCatchSequencial(canal, pedido, item, request,
-                        processados, rejeitados, 0, userId, numSolicitacaoItemSeq);
-                numSolicitacaoItemSeq++;
-                log.info("[createCreditRequest] Parcial: processados={}, rejeitados={}", processados.size(), rejeitados.size());
-            }
-        }
-
-        // 5. Validação pós-processamento (do segundo método)
-        if (processados.isEmpty() && !rejeitados.isEmpty() && !processamentoParcialPermitido) {
-            String motivos = rejeitados.stream()
-                    .map(r -> r.numSolicitacao() + ": " + r.motivoRejeicao())
-                    .reduce((a, b) -> a + "; " + b)
-                    .orElse("Motivo desconhecido");
-            log.warn("[createCreditRequest] Todos os pedidos rejeitados: {}", motivos);
-            throw new IllegalStateException("Todos os pedidos foram rejeitados: " + motivos);
-        }
-
-        // 6. Cache e resposta
-        CreateRequestResponse response = new CreateRequestResponse(
-                totalItens,
-                processados.size(),
-                rejeitados.size(),
-                processados,
-                rejeitados
-        );
-
-        log.info("[createCreditRequest] FINALIZADO - processados={}, rejeitados={}, response={}", processados.size(), rejeitados.size(), response);
-        return response;
+    public CreateRequestResponse createCreditRequest(CreateRequestCredit request, String idempotencyKey, Long userId) {
+        return createCreditRequestCase.execute(request, idempotencyKey, userId);
     }
+    // public CreateRequestResponse createCreditRequest(
+    //         CreateRequestCredit request,
+    //         String idempotencyKey,
+    //         Long userId) {
+
+    //     log.info("[createCreditRequest] INICIADO - idempotencyKey={}, request={}", idempotencyKey, request);
+
+    //     // 1. Idempotência
+    //     Optional<CreateRequestResponse> cached = idempotencyStore.get(idempotencyKey);
+    //     if (cached.isPresent()) {
+    //         log.info("[createCreditRequest] Idempotência: retornando resultado em cache para chave '{}'", idempotencyKey);
+    //         return cached.get();
+    //     }
+
+    //     // 2. Validações prévias (do segundo método)
+    //     log.info("[createCreditRequest] Validando canal, lote e data de liberação...");
+    //     SalesChannel canal = validationService.validarCanal(request.codCanal());
+    //     validationService.validarDataLiberacao(request.dataLiberacaoCredito());
+
+    //     if ("S".equalsIgnoreCase(canal.getFlgSupercanal())) {
+    //         log.info("[createCreditRequest] Canal é supercanal, validando subordinados...");
+    //         validationService.validarSubordinadosSupercanal(request.codCanal());
+    //     }
+
+    //     // 3. Configurações de processamento
+    //     boolean processamentoParcialPermitido = "S".equalsIgnoreCase(canal.getFlgProcessamentoParcial());
+    //     log.info("[createCreditRequest] Processamento parcial permitido? {}", processamentoParcialPermitido);
+
+    //     List<CreateRequestResponse.ItemProcessado> processados = new ArrayList<>();
+    //     List<CreateRequestResponse.ItemRejeitado> rejeitados = new ArrayList<>();
+
+    //     int totalItens = request.pedidos().stream().mapToInt(p -> p.itens().size()).sum();
+    //     log.info("[createCreditRequest] Total de itens a processar: {}", totalItens);
+
+    //     for (CreateRequestCredit.CreditRequest pedido : request.pedidos()) {
+    //         //Validar o numero de lote para cada pedido
+    //         validationService.validarNumLote(pedido.numLote(), request.codCanal());
+
+    //         // Verificar se já existe a solicitação na base (SOL_DISTRIBUICOES)
+    //         boolean solicitacaoExiste = creditRequestRepository.findByNumSolicitacaoAndCodCanal(pedido.numSolicitacao(), request.codCanal()).isPresent();
+    //         if (solicitacaoExiste) {
+    //             log.warn("[createCreditRequest] Solicitação {} já existe para o canal {}. Não será criado novo pedido.", pedido.numSolicitacao(), request.codCanal());
+    //             throw new IllegalStateException("Já existe solicitação para este canal: " + pedido.numSolicitacao());
+    //         }
+
+    //         long numSolicitacaoItemSeq = 1L;
+    //         for (ItemRequest item : pedido.itens()) {
+    //             log.info("[createCreditRequest] Processando pedido={}, item={}, numSolicitacaoItem={}", pedido, item, numSolicitacaoItemSeq);
+    //             processarItemComTryCatchSequencial(canal, pedido, item, request,
+    //                     processados, rejeitados, 0, userId, numSolicitacaoItemSeq);
+    //             numSolicitacaoItemSeq++;
+    //             log.info("[createCreditRequest] Parcial: processados={}, rejeitados={}", processados.size(), rejeitados.size());
+    //         }
+    //     }
+
+    //     // 5. Validação pós-processamento (do segundo método)
+    //     if (processados.isEmpty() && !rejeitados.isEmpty() && !processamentoParcialPermitido) {
+    //         String motivos = rejeitados.stream()
+    //                 .map(r -> r.numSolicitacao() + ": " + r.motivoRejeicao())
+    //                 .reduce((a, b) -> a + "; " + b)
+    //                 .orElse("Motivo desconhecido");
+    //         log.warn("[createCreditRequest] Todos os pedidos rejeitados: {}", motivos);
+    //         throw new IllegalStateException("Todos os pedidos foram rejeitados: " + motivos);
+    //     }
+
+    //     // 6. Cache e resposta
+    //     CreateRequestResponse response = new CreateRequestResponse(
+    //             totalItens,
+    //             processados.size(),
+    //             rejeitados.size(),
+    //             processados,
+    //             rejeitados
+    //     );
+
+    //     log.info("[createCreditRequest] FINALIZADO - processados={}, rejeitados={}, response={}", processados.size(), rejeitados.size(), response);
+    //     return response;
+    // }
 
     // Novo método para processar item com numSolicitacaoItem sequencial
-    private void processarItemComTryCatchSequencial(
-            SalesChannel canal,
-            CreateRequestCredit.CreditRequest pedido,
-            ItemRequest item,
-            CreateRequestCredit request,
-            List<ItemProcessado> processados,
-            List<ItemRejeitado> rejeitados,
-            int index,
-            Long userId,
-            long numSolicitacaoItemSeq) {
+    // private void processarItemComTryCatchSequencial(
+    //         SalesChannel canal,
+    //         CreateRequestCredit.CreditRequest pedido,
+    //         ItemRequest item,
+    //         CreateRequestCredit request,
+    //         List<ItemProcessado> processados,
+    //         List<ItemRejeitado> rejeitados,
+    //         int index,
+    //         Long userId,
+    //         long numSolicitacaoItemSeq) {
 
-        Long numSolicitacao = pedido != null ? pedido.numSolicitacao() : null;
-        String numLogicoCartao = item != null ? item.numLogicoCartao() : null;
-        String codProduto = item != null ? item.codProduto() : null;
+    //     Long numSolicitacao = pedido != null ? pedido.numSolicitacao() : null;
+    //     String numLogicoCartao = item != null ? item.numLogicoCartao() : null;
+    //     String codProduto = item != null ? item.codProduto() : null;
 
-        try {
-            // Validações por item (melhor que apenas null check)
-            if (pedido == null) {
-                rejeitados.add(new ItemRejeitado(
-                        null, numLogicoCartao, codProduto,
-                        "Pedido não encontrado para o índice " + index));
-                return;
-            }
+    //     try {
+    //         // Validações por item (melhor que apenas null check)
+    //         if (pedido == null) {
+    //             rejeitados.add(new ItemRejeitado(
+    //                     null, numLogicoCartao, codProduto,
+    //                     "Pedido não encontrado para o índice " + index));
+    //             return;
+    //         }
 
-            if (item == null) {
-                rejeitados.add(new ItemRejeitado(
-                        numSolicitacao, null, null,
-                        "Item não encontrado para o pedido " + numSolicitacao));
-                return;
-            }
+    //         if (item == null) {
+    //             rejeitados.add(new ItemRejeitado(
+    //                     numSolicitacao, null, null,
+    //                     "Item não encontrado para o pedido " + numSolicitacao));
+    //             return;
+    //         }
 
-            // Nova validação de item
-            validarItem(canal, pedido, item, request);
+    //         // Nova validação de item
+    //         validarItem(canal, pedido, item, request);
 
-            // Persistência dentro da transação (atomicidade por item)
-            // 1. Salvar pedido principal se ainda não existir
-            Optional<CreditRequest> existingRequest = creditRequestRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, request.codCanal());
-            CreditRequest creditRequest;
+    //         // Persistência dentro da transação (atomicidade por item)
+    //         // 1. Salvar pedido principal se ainda não existir
+    //         Optional<CreditRequest> existingRequest = creditRequestRepository.findByNumSolicitacaoAndCodCanal(numSolicitacao, request.codCanal());
+    //         CreditRequest creditRequest;
 
-            if (existingRequest.isEmpty()) {
-                creditRequest = mapToCreditRequest(pedido, item, request, userId);
-                creditRequestRepository.save(creditRequest);
-                historyService.saveRequestStatusHistory(creditRequest, pedido.numSolicitacao(), request.codCanal(), ORIGEM_TRANSICAO);
-            } else {
-                creditRequest = existingRequest.get();
-            }
+    //         if (existingRequest.isEmpty()) {
+    //             creditRequest = mapToCreditRequest(pedido, item, request, userId);
+    //             creditRequestRepository.save(creditRequest);
+    //             historyService.saveRequestStatusHistory(creditRequest, pedido.numSolicitacao(), request.codCanal(), ORIGEM_TRANSICAO);
+    //         } else {
+    //             creditRequest = existingRequest.get();
+    //         }
 
-            // 2. Salvar item com numSolicitacaoItem sequencial
-            CreditRequestItems creditRequestItem = mapToCreditRequestItemSequencial(pedido, item, request, creditRequest, userId, numSolicitacaoItemSeq);
-            log.info("[DEBUG] Antes de salvar item: numSolicitacao={}, idUsuarioCartao={}, numLogicoCartao={}, codProduto={}, creditRequestItem.numLogicoCartao={}, numSolicitacaoItem={}",
-                    numSolicitacao,
-                    item.idUsuarioCartao(),
-                    item.numLogicoCartao(),
-                    item.codProduto(),
-                    creditRequestItem.getNumLogicoCartao(),
-                    numSolicitacaoItemSeq
-            );
+    //         // 2. Salvar item com numSolicitacaoItem sequencial
+    //         CreditRequestItems creditRequestItem = mapToCreditRequestItemSequencial(pedido, item, request, creditRequest, userId, numSolicitacaoItemSeq);
+    //         log.info("[DEBUG] Antes de salvar item: numSolicitacao={}, idUsuarioCartao={}, numLogicoCartao={}, codProduto={}, creditRequestItem.numLogicoCartao={}, numSolicitacaoItem={}",
+    //                 numSolicitacao,
+    //                 item.idUsuarioCartao(),
+    //                 item.numLogicoCartao(),
+    //                 item.codProduto(),
+    //                 creditRequestItem.getNumLogicoCartao(),
+    //                 numSolicitacaoItemSeq
+    //         );
 
-             log.info("[DEBUG] Antes de salvar item:  idUsuarioCartao={}, numLogicoCartao={}",
+    //          log.info("[DEBUG] Antes de salvar item:  idUsuarioCartao={}, numLogicoCartao={}",
         
-                    item.idUsuarioCartao(),
-                    item.numLogicoCartao());
-            int seqRecarga = rechargeLogService.upsertLogRecarga(
-                    item.numLogicoCartao(),
-                    userId,
-                    LocalDateTime.now(),
-                    LocalDateTime.now(),
-                    LocalDateTime.now(),
-                    userId);
-            creditRequestItem.setSeqRecarga(seqRecarga);
-            itemRepository.save(creditRequestItem);
-            historyService.saveItemStatusHistory(creditRequestItem, ORIGEM_TRANSICAO);
+    //                 item.idUsuarioCartao(),
+    //                 item.numLogicoCartao());
+    //         int seqRecarga = rechargeLogService.upsertLogRecarga(
+    //                 item.numLogicoCartao(),
+    //                 userId,
+    //                 LocalDateTime.now(),
+    //                 LocalDateTime.now(),
+    //                 LocalDateTime.now(),
+    //                 userId);
+    //         creditRequestItem.setSeqRecarga(seqRecarga);
+    //         itemRepository.save(creditRequestItem);
+    //         historyService.saveItemStatusHistory(creditRequestItem, ORIGEM_TRANSICAO);
 
-            processados.add(new ItemProcessado(
-                    numSolicitacao,
-                    numLogicoCartao,
-                    codProduto,
-                    "03"));
+    //         processados.add(new ItemProcessado(
+    //                 numSolicitacao,
+    //                 numLogicoCartao,
+    //                 codProduto,
+    //                 "03"));
 
-        } catch (ValidationException e) {
-            // Erros de validação específicos
-            rejeitados.add(new ItemRejeitado(
-                    numSolicitacao, numLogicoCartao, codProduto,
-                    "Validação: " + e.getMessage()));
+    //     } catch (ValidationException e) {
+    //         // Erros de validação específicos
+    //         rejeitados.add(new ItemRejeitado(
+    //                 numSolicitacao, numLogicoCartao, codProduto,
+    //                 "Validação: " + e.getMessage()));
 
-        } catch (Exception e) {
-            // Erros inesperados
-            log.error("Erro ao processar pedido {}: {}", numSolicitacao, e.getMessage(), e);
-            rejeitados.add(new ItemRejeitado(
-                    numSolicitacao, numLogicoCartao, codProduto,
-                    "Erro interno: " + e.getMessage()));
-        }
-    }
+    //     } catch (Exception e) {
+    //         // Erros inesperados
+    //         log.error("Erro ao processar pedido {}: {}", numSolicitacao, e.getMessage(), e);
+    //         rejeitados.add(new ItemRejeitado(
+    //                 numSolicitacao, numLogicoCartao, codProduto,
+    //                 "Erro interno: " + e.getMessage()));
+    //     }
+    // }
 
     /**
      * Valida um item de pedido de crédito usando o validationService. Lança
      * ValidationException em caso de erro de validação.
      */
-    private void validarItem(
-            SalesChannel canal,
-            CreateRequestCredit.CreditRequest pedido,
-            ItemRequest item,
-            CreateRequestCredit request) {
-        // Validar Comercialização de Produto com o Canal
-        List<CreateRequestResponse.ItemRejeitado> rejeitados = new ArrayList<>();
-        var produtoCanal = validationService.validarProdutoNoCanal(
-            pedido.numSolicitacao(),
-            item.numLogicoCartao(),
-            item.codProduto(),
-            request.codCanal(),
-            item.codProduto(),
-            rejeitados);
-        if (produtoCanal == null) {
-            throw new ValidationException("Produto não comercializado ou inativo no canal");
-        }
+    // private void validarItem(
+    //         SalesChannel canal,
+    //         CreateRequestCredit.CreditRequest pedido,
+    //         ItemRequest item,
+    //         CreateRequestCredit request) {
+    //     // Validar Comercialização de Produto com o Canal
+    //     List<CreateRequestResponse.ItemRejeitado> rejeitados = new ArrayList<>();
+    //     var produtoCanal = validationService.validarProdutoNoCanal(
+    //         pedido.numSolicitacao(),
+    //         item.numLogicoCartao(),
+    //         item.codProduto(),
+    //         request.codCanal(),
+    //         item.codProduto(),
+    //         rejeitados);
+    //     if (produtoCanal == null) {
+    //         throw new ValidationException("Produto não comercializado ou inativo no canal");
+    //     }
 
-        // Validar vigência da versão do produto
-        // validationService.validarVigenciaVersaoProduto(
-        //     pedido.numSolicitacao(),
-        //     item.numLogicoCartao(),
-        //     item.codProduto(),
-        //     request.codCanal(),
-        //     item.codVersao(),
-        //     request.dataLiberacaoCredito(),
-        //     rejeitados);
+    //     // Validar vigência da versão do produto
+    //     // validationService.validarVigenciaVersaoProduto(
+    //     //     pedido.numSolicitacao(),
+    //     //     item.numLogicoCartao(),
+    //     //     item.codProduto(),
+    //     //     request.codCanal(),
+    //     //     item.codVersao(),
+    //     //     request.dataLiberacaoCredito(),
+    //     //     rejeitados);
 
-        // Validar limites de recarga
-        String erroLimite = validationService.validarLimites(
-            request.codCanal(),
-            item.codProduto(),
-            item.valorTotal());
-        if (erroLimite != null) {
-            throw new ValidationException(erroLimite);
-        }
+    //     // Validar limites de recarga
+    //     String erroLimite = validationService.validarLimites(
+    //         request.codCanal(),
+    //         item.codProduto(),
+    //         item.valorTotal());
+    //     if (erroLimite != null) {
+    //         throw new ValidationException(erroLimite);
+    //     }
 
-        // Validar vigência do convênio do canal
-        validationService.validarVigenciadoCanal(
-                pedido.numSolicitacao(),
-                item.numLogicoCartao(),
-                item.codProduto(),
-                request.codCanal(),
-                pedido.canaisDistribuicao(),
-                item.codProduto(),
-                rejeitados);
-        if (!rejeitados.isEmpty()) {
-            // Lança a primeira mensagem de rejeição encontrada
-            throw new ValidationException(rejeitados.get(0).motivoRejeicao());
-        }
+    //     // Validar vigência do convênio do canal
+    //     validationService.validarVigenciadoCanal(
+    //             pedido.numSolicitacao(),
+    //             item.numLogicoCartao(),
+    //             item.codProduto(),
+    //             request.codCanal(),
+    //             pedido.canaisDistribuicao(),
+    //             item.codProduto(),
+    //             rejeitados);
+    //     if (!rejeitados.isEmpty()) {
+    //         // Lança a primeira mensagem de rejeição encontrada
+    //         throw new ValidationException(rejeitados.get(0).motivoRejeicao());
+    //     }
 
-        // ===== Validação de Taxas conforme plano =====
-        // Buscar taxa vigente para canal/produto e data atual
-        Optional<Fee> taxaOpt = feeFareService.findByCanalProduto(request.codCanal(), item.codProduto())
-            .stream()
-            .filter(f -> f.getDtFinal() == null || f.getDtFinal().isAfter(LocalDateTime.now()))
-            .findFirst();
-        if (taxaOpt.isEmpty()) {
-            throw new ValidationException("Taxa não encontrada para canal/produto vigente");
-        }
-        Fee taxa = taxaOpt.get();
-        // Calcular taxas
-        TaxaCalculada taxas = feeFareService.calcularTaxas(
-            item.valorTotal(),
-            request.codCanal(),
-            pedido.numSolicitacao() != null ? pedido.numSolicitacao().toString() : null,
-            taxa.getCodTaxa()
-        );
-        // Log dos valores calculados
-        log.info("[TAXAS] Pedido: {}, Cartao: {}, Produto: {}, TaxaAdm Calculada: {}, TaxaServ Calculada: {}", 
-            pedido.numSolicitacao(), item.numLogicoCartao(), item.codProduto(), taxas.getValorTaxaAdm(), taxas.getValorTaxaServ());
-        // Comparar com valores informados
-        BigDecimal vlTxadmInformado = item.vlTxadm() != null ? item.vlTxadm() : BigDecimal.ZERO;
-        BigDecimal vlTxservInformado = item.vlTxserv() != null ? item.vlTxserv() : BigDecimal.ZERO;
-        if (taxas.getValorTaxaAdm().compareTo(vlTxadmInformado) != 0) {
-            throw new ValidationException("303 - Taxa administrativa incorreta");
-        }
-        if (taxas.getValorTaxaServ().compareTo(vlTxservInformado) != 0) {
-            throw new ValidationException("304 - Taxa de serviço incorreta");
-        }
-    }
+    //     // ===== Validação de Taxas conforme plano =====
+    //     // Buscar taxa vigente para canal/produto e data atual
+    //     Optional<Fee> taxaOpt = feeFareService.findByCanalProduto(request.codCanal(), item.codProduto())
+    //         .stream()
+    //         .filter(f -> f.getDtFinal() == null || f.getDtFinal().isAfter(LocalDateTime.now()))
+    //         .findFirst();
+    //     if (taxaOpt.isEmpty()) {
+    //         throw new ValidationException("Taxa não encontrada para canal/produto vigente");
+    //     }
+    //     Fee taxa = taxaOpt.get();
+    //     // Calcular taxas
+    //     TaxaCalculada taxas = feeFareService.calcularTaxas(
+    //         item.valorTotal(),
+    //         request.codCanal(),
+    //         pedido.numSolicitacao() != null ? pedido.numSolicitacao().toString() : null,
+    //         taxa.getCodTaxa()
+    //     );
+    //     // Log dos valores calculados
+    //     log.info("[TAXAS] Pedido: {}, Cartao: {}, Produto: {}, TaxaAdm Calculada: {}, TaxaServ Calculada: {}", 
+    //         pedido.numSolicitacao(), item.numLogicoCartao(), item.codProduto(), taxas.getValorTaxaAdm(), taxas.getValorTaxaServ());
+    //     // Comparar com valores informados
+    //     BigDecimal vlTxadmInformado = item.vlTxadm() != null ? item.vlTxadm() : BigDecimal.ZERO;
+    //     BigDecimal vlTxservInformado = item.vlTxserv() != null ? item.vlTxserv() : BigDecimal.ZERO;
+    //     if (taxas.getValorTaxaAdm().compareTo(vlTxadmInformado) != 0) {
+    //         throw new ValidationException("303 - Taxa administrativa incorreta");
+    //     }
+    //     if (taxas.getValorTaxaServ().compareTo(vlTxservInformado) != 0) {
+    //         throw new ValidationException("304 - Taxa de serviço incorreta");
+    //     }
+    // }
     
 
     // ── Consultas ────────────────────────────────────────────────────
@@ -584,27 +581,17 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
             String codFormaPagto, BigDecimal vlPago,
             LocalDateTime dtConfirmaPagto, LocalDateTime dtAceite) {
 
-        // Buscar itens individualmente usando findById
-        List<CreditRequestItemsEJpa> itens = new ArrayList<>();
 
-        for (long numSolicitacaoItem = 1;; numSolicitacaoItem++) {
-            CreditRequestItemsKey key = new CreditRequestItemsKey();
-            key.setNumSolicitacao(numSolicitacao);
-            key.setNumSolicitacaoItem(numSolicitacaoItem);
-            key.setCodCanal(codCanal);
-            Optional<CreditRequestItems> opt = itemRepository.findById(key);
-            if (opt.isPresent()) {
-                // Se necessário converter para EJpa:
-                itens.add(creditRequestMapper.toEntityItem(opt.get()));
-                // Ou se quiser trabalhar só com domínio, adapte o restante do método
-            } else {
-                break; // Sai do loop quando não encontrar mais itens
-            }
-        }
-        if (itens.isEmpty()) {
+        // Buscar todos os itens de uma vez só, evitando N+1 queries e gaps
+        List<CreditRequestItems> itensDomain = itemRepository.findAllBySolicitacao(numSolicitacao, codCanal);
+        if (itensDomain.isEmpty()) {
             log.warn("Nenhum item encontrado para a solicitação {} e canal {}", numSolicitacao, codCanal);
             return;
         }
+        // Se necessário, converte para entidade JPA (mantendo compatibilidade com o restante do método)
+        List<CreditRequestItemsEJpa> itens = itensDomain.stream()
+                .map(creditRequestMapper::toEntityItem)
+                .toList();
 
         Optional<CreditRequest> solicitacaoOpt = creditRequestRepository
                 .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
@@ -876,58 +863,85 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     }
 
     /**
-     * Mapeia os dados do pedido e item do request para a entidade de domínio
-     * CreditRequest.
+     * Mapeia os dados do pedido e item do request para a entidade de domínio CreditRequest.
+     * Utiliza métodos auxiliares para maior clareza e manutenção.
      */
-    private CreditRequest mapToCreditRequest(CreateRequestCredit.CreditRequest pedido, ItemRequest item, CreateRequestCredit request, Long userId) {
-        CreditRequest cr = new CreditRequest();
-        cr.setNumSolicitacao(pedido.numSolicitacao());
-        cr.setCodCanal(request.codCanal());
-        cr.setNumLote(pedido.numLote());
-        cr.setDtCadastro(LocalDateTime.now());
-        cr.setDtManutencao(LocalDateTime.now());
-        cr.setDtSolicitacao(request.dataGeracao());
-        cr.setDtPrevLiberacao(request.dataLiberacaoCredito());
-        cr.setCodSituacao("03");
-        cr.setVlTotal(item.valorTotal());
-        cr.setCodTipoDocumento("1");
-        cr.setIdUsuarioCadastro(userId);
-        cr.setIdUsuarioManutencao(userId);
-        return cr;
-    }
+    // private CreditRequest mapToCreditRequest(CreateRequestCredit.CreditRequest pedido, ItemRequest item, CreateRequestCredit request, Long userId) {
+    //     CreditRequest cr = new CreditRequest();
+    //     cr.setNumSolicitacao(pedido.numSolicitacao());
+    //     cr.setCodCanal(request.codCanal());
+    //     cr.setNumLote(pedido.numLote());
+    //     setAuditFields(cr, userId);
+    //     cr.setDtSolicitacao(request.dataGeracao());
+    //     cr.setDtPrevLiberacao(request.dataLiberacaoCredito());
+    //     cr.setCodSituacao("03"); // TODO: Parametrizar conforme regra de negócio
+    //     cr.setVlTotal(item.valorTotal());
+    //     cr.setCodTipoDocumento("1");
+    //     return cr;
+    // }
 
     /**
-     * Mapeia os dados do pedido e item do request para a entidade de domínio
-     * CreditRequestItems.
+     * Mapeia os dados do pedido e item do request para a entidade de domínio CreditRequestItems.
+     * Utiliza métodos auxiliares para maior clareza e manutenção.
      */
-    // Novo método para mapear item com numSolicitacaoItem sequencial
-    private CreditRequestItems mapToCreditRequestItemSequencial(CreateRequestCredit.CreditRequest pedido, ItemRequest item, CreateRequestCredit request, CreditRequest creditRequest, Long userId, long numSolicitacaoItemSeq) {
-        CreditRequestItems cri = new CreditRequestItems();
-        CreditRequestItemsKey key = new CreditRequestItemsKey();
-        key.setNumSolicitacao(pedido.numSolicitacao());
-        key.setNumSolicitacaoItem(numSolicitacaoItemSeq);
-        key.setCodCanal(request.codCanal());
-        cri.setId(key);
-        cri.setSolicitacao(creditRequest);
-        cri.setCodCanal(request.codCanal());
-        cri.setIdUsuarioCadastro(userId);
-        cri.setIdUsuarioManutencao(userId);
-        cri.setIdUsuarioCartao(item.idUsuarioCartao());
-        cri.setNumLogicoCartao(item.numLogicoCartao());
-        cri.setCodProduto(item.codProduto());
-        cri.setCodVersao(item.codVersao());
-        cri.setCodSituacao("03"); // Situação inicial, ajustar conforme regra
-        cri.setQtdItem(0); // Ajuste se necessário
-        cri.setVlUnitario(item.vlUnitario());
-        cri.setVlItem(item.valorTotal());
-        cri.setDtCadastro(LocalDateTime.now());
-        cri.setDtManutencao(LocalDateTime.now());
-        cri.setVlTxadm(item.vlTxadm());
-        cri.setVlTxserv(item.vlTxserv());
-        cri.setVlTxtotal(item.vlTxadm().add(item.vlTxserv()));
-        cri.setSeqRecarga(1);
-        cri.setCodTipoDocumento("2");
-        return cri;
-    }
+    // private CreditRequestItems mapToCreditRequestItemSequencial(
+    //         CreateRequestCredit.CreditRequest pedido,
+    //         ItemRequest item,
+    //         CreateRequestCredit request,
+    //         CreditRequest creditRequest,
+    //         Long userId,
+    //         long numSolicitacaoItemSeq) {
+    //     CreditRequestItems cri = new CreditRequestItems();
+    //     cri.setId(buildCreditRequestItemsKey(pedido, request, numSolicitacaoItemSeq));
+    //     cri.setSolicitacao(creditRequest);
+    //     cri.setCodCanal(request.codCanal());
+    //     setAuditFields(cri, userId);
+    //     cri.setIdUsuarioCartao(item.idUsuarioCartao());
+    //     cri.setNumLogicoCartao(item.numLogicoCartao());
+    //     cri.setCodProduto(item.codProduto());
+    //     cri.setCodVersao(item.codVersao());
+    //     cri.setCodSituacao("03"); // TODO: Parametrizar conforme regra de negócio
+    //     cri.setQtdItem(0); // TODO: Ajustar se necessário
+    //     cri.setVlUnitario(item.vlUnitario());
+    //     cri.setVlItem(item.valorTotal());
+    //     cri.setVlTxadm(item.vlTxadm());
+    //     cri.setVlTxserv(item.vlTxserv());
+    //     cri.setVlTxtotal(item.vlTxadm().add(item.vlTxserv()));
+    //     cri.setSeqRecarga(1); // TODO: Parametrizar se necessário
+    //     cri.setCodTipoDocumento("2");
+    //     return cri;
+    // }
+
+    /**
+     * Define campos de auditoria comuns (datas e usuários).
+     */
+    // private void setAuditFields(Object entity, Long userId) {
+    //     LocalDateTime now = LocalDateTime.now();
+    //     if (entity instanceof CreditRequest cr) {
+    //         cr.setDtCadastro(now);
+    //         cr.setDtManutencao(now);
+    //         cr.setIdUsuarioCadastro(userId);
+    //         cr.setIdUsuarioManutencao(userId);
+    //     } else if (entity instanceof CreditRequestItems cri) {
+    //         cri.setDtCadastro(now);
+    //         cri.setDtManutencao(now);
+    //         cri.setIdUsuarioCadastro(userId);
+    //         cri.setIdUsuarioManutencao(userId);
+    //     }
+    // }
+
+    /**
+     * Cria a chave composta para CreditRequestItems.
+     */
+    // private CreditRequestItemsKey buildCreditRequestItemsKey(
+    //         CreateRequestCredit.CreditRequest pedido,
+    //         CreateRequestCredit request,
+    //         long numSolicitacaoItemSeq) {
+    //     CreditRequestItemsKey key = new CreditRequestItemsKey();
+    //     key.setNumSolicitacao(pedido.numSolicitacao());
+    //     key.setNumSolicitacaoItem(numSolicitacaoItemSeq);
+    //     key.setCodCanal(request.codCanal());
+    //     return key;
+    // }
 
 }

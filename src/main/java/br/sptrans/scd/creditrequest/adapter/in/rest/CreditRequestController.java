@@ -1,11 +1,9 @@
 package br.sptrans.scd.creditrequest.adapter.in.rest;
 
-import java.math.BigDecimal;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
-
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.BlockCommand;
@@ -161,7 +158,7 @@ public class CreditRequestController {
 
     private static Long parseLongOrNull(String value) {
         try {
-            return value != null ? Long.parseLong(value) : null;
+            return value != null ? Long.valueOf(value) : null;
         } catch (NumberFormatException e) {
             return null;
         }
@@ -235,7 +232,7 @@ public class CreditRequestController {
                                         .collect(Collectors.toList()),
                                 null,
                                 request.getCodFormaPagto(),
-                                request.getVlPago() != null ? BigDecimal.valueOf(request.getVlPago()) : null,
+                                request.getVlPago(),
                                 null
                         )
                 );

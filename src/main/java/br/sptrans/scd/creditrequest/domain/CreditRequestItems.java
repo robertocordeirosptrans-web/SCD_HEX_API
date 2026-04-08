@@ -5,12 +5,20 @@ import java.time.LocalDateTime;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class CreditRequestItems {
+
+
 
     private CreditRequestItemsKey id;
 

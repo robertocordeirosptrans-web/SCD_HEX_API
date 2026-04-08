@@ -1,5 +1,6 @@
 package br.sptrans.scd.creditrequest.application.port.in.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
@@ -27,8 +28,8 @@ public class UpdateRequestCredit {
     private String observacao;
 
     // Campos específicos para ação PAGO
-    private String codFormaPagto;  // Obrigatório apenas para PAGO
-    private Double vlPago;  // Opcional - se informado, será validado
+    private String codFormaPagto; // Obrigatório apenas para PAGO
+    private BigDecimal vlPago; // Opcional - se informado, será validado
 
     @Data
     @NoArgsConstructor
@@ -55,9 +56,9 @@ public class UpdateRequestCredit {
         private String codSituacao;
         private String numLogicoCartao;
         private Long numSolicitacaoItem;
-        private Double vlItem;
-        private Double vlTxadm;
-        private Double vlTxserv;
+        private BigDecimal vlItem;
+        private BigDecimal vlTxadm;
+        private BigDecimal vlTxserv;
         private Double vlUnitario;
     }
 

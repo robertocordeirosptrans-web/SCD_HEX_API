@@ -18,6 +18,8 @@ public interface CreditRequestItemsPort {
 
     Optional<CreditRequestItems> findById(CreditRequestItemsKey id);
 
+    List<CreditRequestItems> findAllBySolicitacao(Long numSolicitacao, String codCanal);
+
     /**
      * Busca todos os números de solicitação de item para uma solicitação, canal e lote.
      */

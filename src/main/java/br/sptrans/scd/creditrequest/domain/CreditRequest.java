@@ -8,12 +8,20 @@ import java.util.Objects;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class CreditRequest {
+
+
 
     private Long numSolicitacao;
 

@@ -54,4 +54,11 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
         return itemJpaRepository.findProcessRechargeService(numSolicitacao, codCanal, numLote);
     }
 
+    @Override
+    public List<CreditRequestItems> findAllBySolicitacao(Long numSolicitacao, String codCanal) {
+        return itemJpaRepository.findAllBySolicitacao(numSolicitacao, codCanal).stream()
+                .map(creditRequestMapper::toDomainItem)
+                .toList();
+    }
+
 }
