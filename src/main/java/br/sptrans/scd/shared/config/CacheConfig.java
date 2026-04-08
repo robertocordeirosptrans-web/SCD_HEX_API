@@ -13,12 +13,12 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-
         return new ConcurrentMapCacheManager(
                 "usuarios",
                 "canais",
                 "produtos",
                 "pedidos",
+                "order-list",
                 "productPeriodReport",
                 "permissoes"
         );
