@@ -81,8 +81,7 @@ public class ReleaseRechargeScheduler {
         List<CreditRequestItemsEJpa> itensElegiveis = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(
                 codSituacao,
                 Timestamp.valueOf(dtInicio),
-                Timestamp.valueOf(dtFim),
-                tamanhoLote
+                Timestamp.valueOf(dtFim)
         );
 
         int totalEncontradas = itensElegiveis != null ? itensElegiveis.size() : 0;
@@ -122,7 +121,7 @@ public class ReleaseRechargeScheduler {
         String codSituacao = "04";
         Timestamp dtInicio = Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
         Timestamp dtFim = Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
-        List<CreditRequestItemsEJpa> itens = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim,tamanhoLote);
+        List<CreditRequestItemsEJpa> itens = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim);
         return itens != null && !itens.isEmpty();
     }
 }

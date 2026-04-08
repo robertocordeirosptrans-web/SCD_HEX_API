@@ -19,6 +19,7 @@ import br.sptrans.scd.creditrequest.application.port.out.repository.CreditReques
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
+import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import br.sptrans.scd.shared.cache.InvalidateOrderCache;
 import lombok.RequiredArgsConstructor;
@@ -78,6 +79,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
         int processados = 0;
         List<CreditRequestItemsEJpa> itensProcessados = new java.util.ArrayList<>();
+        List<CreditRequestItems> itensDominio = new java.util.ArrayList<>();
         for (Long numSolicitacaoItem : numSolicitacaoItens) {
             CreditRequestItemsKey key = new CreditRequestItemsKey();
             key.setNumSolicitacao(numSolicitacao);
@@ -88,7 +90,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
                 continue;
             }
             CreditRequestItems item = optItem.get();
-            if (!SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode().equals(item.getCodSituacao())) {
+            if (!SituationCreditRequestItems.LIBERADO_PARA_RECARGA.equals(item.getCodSituacao())) {
                 continue;
             }
 
@@ -98,11 +100,11 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
             if (valorEfetivo.compareTo(BigDecimal.ZERO) <= 0) {
                 // Item com valor zero → marca diretamente como RECARREGADO
-                item.setCodSituacao(SituationCreditRequestItems.RECARREGADO.getCode());
+                item.setCodSituacao(SituationCreditRequestItems.RECARREGADO);
                 item.setVlCarregado(BigDecimal.ZERO);
                 item.setDtRetornoHm(LocalDateTime.now());
             } else {
-                item.setCodSituacao(SituationCreditRequestItems.EM_PROCESSO_DE_RECARGA.getCode());
+                item.setCodSituacao(SituationCreditRequestItems.EM_PROCESSO_DE_RECARGA);
                 item.setDtEnvioHm(LocalDateTime.now());
             }
 
@@ -113,8 +115,8 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
             item.setDtManutencao(LocalDateTime.now());
             itemRepository.save(item);
-            historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
             processados++;
+            itensDominio.add(item);
             // Adiciona para consolidação
             itensProcessados.add(creditRequestMapper.toEntityItem(item));
             log.info("Item processado - Solicitação={}, Item={}, NovoStatus={}",
@@ -122,6 +124,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
         }
 
         if (processados > 0) {
+            historyService.saveItemStatusHistoryBatch(itensDominio, ORIGEM_TRANSICAO);
             consolidarStatusSolicitacao(numSolicitacao, codCanal, itensProcessados);
         }
 
@@ -132,6 +135,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
     @Transactional
     @InvalidateOrderCache
+    @Override
     public void processarItemRecarga(ProcessItemCommand comando) {
         CreditRequest solicitacao = creditRequestRepository
                 .findByCodTipoDocumentoAndIdUsuarioCadastro(
@@ -167,14 +171,13 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
         CreditRequestItems item = itemOpt.get();
 
-        if (!SituationCreditRequestItems.EM_PROCESSO_DE_RECARGA.getCode()
-                .equals(item.getCodSituacao())) {
+        if (!SituationCreditRequestItems.EM_PROCESSO_DE_RECARGA.equals(item.getCodSituacao())) {
             log.warn("Item {}/{}/{} não está em EM_PROCESSO_DE_RECARGA, status atual={}",
                     numSolicitacao, numSolicitacaoItem, codCanal, item.getCodSituacao());
             return;
         }
 
-        item.setCodSituacao(SituationCreditRequestItems.RECARREGADO.getCode());
+        item.setCodSituacao(SituationCreditRequestItems.RECARREGADO);
         if (comando.vlCarregado() != null) {
             item.setVlCarregado(comando.vlCarregado());
         }
@@ -185,7 +188,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
         item.setDtManutencao(LocalDateTime.now());
 
         itemRepository.save(item);
-        historyService.saveItemStatusHistory(item, ORIGEM_TRANSICAO);
+        historyService.saveItemStatusHistoryBatch(List.of(item), ORIGEM_TRANSICAO);
 
         log.info("Item recarga processado - Solicitação={}, Item={}, NovoStatus=RECARREGADO",
                 numSolicitacao, numSolicitacaoItem);
@@ -226,9 +229,9 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
         String novoStatus = situationAscertainedService.apurarSituacaoPedido(statusItens);
 
-        if (novoStatus != null && !novoStatus.equals(solicitacao.getCodSituacao())) {
-            String statusAnterior = solicitacao.getCodSituacao();
-            solicitacao.setCodSituacao(novoStatus);
+        if (novoStatus != null && !novoStatus.equals(solicitacao.getCodSituacao().getCode())) {
+            String statusAnterior = solicitacao.getCodSituacao().getCode();
+            solicitacao.setCodSituacao(SituationCreditRequest.fromCode(novoStatus));
             creditRequestRepository.update(numSolicitacao, codCanal, solicitacao);
             historyService.saveRequestStatusHistory(solicitacao, numSolicitacao, codCanal, ORIGEM_TRANSICAO);
 

@@ -1,6 +1,8 @@
 package br.sptrans.scd.creditrequest.application.service;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -93,6 +95,7 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
     }
 
     @Transactional
+    @Override
     public void liberarRecargaPorSolicitacao(Long numSolicitacao, String codCanal, String numLote, String origemTransicao) {
         log.debug("Liberando recarga para solicitação {}/{} (novo método SQL)", numSolicitacao, codCanal);
 
@@ -105,15 +108,21 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
             log.warn("Solicitação ou data de pagamento econômica não encontrada para {}/{}", numSolicitacao, codCanal);
             return;
         }
-        java.sql.Timestamp dtInicio = java.sql.Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
-        java.sql.Timestamp dtFim = java.sql.Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
-        List<CreditRequestItemsEJpa> itens = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim,100);
-        if (itens == null || itens.isEmpty()) {
-            log.warn("Nenhum item elegível encontrado para solicitação {}/{} na data {}", numSolicitacao, codCanal, solicitacao.getDtPagtoEconomica());
-            return;
-        }
+            // Range de 30 minutos após o pagamento
+            LocalDateTime dtInicioLdt = solicitacao.getDtPagtoEconomica();
+            LocalDateTime dtFimLdt = dtInicioLdt.plusMinutes(60);
+            Timestamp dtInicio = Timestamp.valueOf(dtInicioLdt);
+            Timestamp dtFim = Timestamp.valueOf(dtFimLdt);
+            log.info("[DEBUG LIBERAR RECARGA] Parâmetros consulta: codSituacao={}, dtInicio={}, dtFim={}, numSolicitacao={}, codCanal={}, numLote={}", codSituacao, dtInicio, dtFim, numSolicitacao, codCanal, numLote);
+            List<CreditRequestItemsEJpa> itens = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim);
+       
+            if (itens.isEmpty()) {
+                log.warn("Nenhum item elegível encontrado para solicitação {}/{} no intervalo {} até {} [codSituacao={}]", numSolicitacao, codCanal, dtInicio, dtFim, codSituacao);
+                return;
+            }
 
         int liberados = 0;
+        List<CreditRequestItems> itensDominio = new ArrayList<>();
         for (CreditRequestItemsEJpa itemEJpa : itens) {
             CreditRequestItemsKey key = new CreditRequestItemsKey();
             key.setNumSolicitacao(itemEJpa.getId().getNumSolicitacao());
@@ -125,14 +134,14 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
                 continue;
             }
             CreditRequestItems item = optItem.get();
-            if (!SituationCreditRequestItems.PAGO.getCode().equals(item.getCodSituacao())) {
+            if (!SituationCreditRequestItems.PAGO.equals(item.getCodSituacao())) {
                 continue;
             }
-            item.setCodSituacao(SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode());
+            item.setCodSituacao(SituationCreditRequestItems.LIBERADO_PARA_RECARGA);
             item.setDtManutencao(LocalDateTime.now());
             itemRepository.save(item);
-            historyService.saveItemStatusHistory(item, origemTransicao);
             liberados++;
+            itensDominio.add(item);
             log.info("Item liberado - Solicitação={}, Item={}, NovoStatus={}",
                     numSolicitacao,
                     item.getId().getNumSolicitacaoItem(),
@@ -140,6 +149,7 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
         }
 
         if (liberados > 0) {
+            historyService.saveItemStatusHistoryBatch(itensDominio, origemTransicao);
             consolidarStatusSolicitacao(numSolicitacao, codCanal, itens, origemTransicao);
         }
 
@@ -166,9 +176,9 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
 
         String novoStatus = situationAscertainedService.apurarSituacaoPedido(statusItens);
 
-        if (novoStatus != null && !novoStatus.equals(solicitacao.getCodSituacao())) {
-            String statusAnterior = solicitacao.getCodSituacao();
-            solicitacao.setCodSituacao(novoStatus);
+        if (novoStatus != null && !novoStatus.equals(solicitacao.getCodSituacao().getCode())) {
+            SituationCreditRequest statusAnterior = solicitacao.getCodSituacao();
+            solicitacao.setCodSituacao(SituationCreditRequest.fromCode(novoStatus));
             creditRequestRepository.update(numSolicitacao, codCanal, solicitacao);
             historyService.saveRequestStatusHistory(solicitacao, numSolicitacao, codCanal, origemTransicao);
 
