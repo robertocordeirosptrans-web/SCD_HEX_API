@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpaKey;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.ConfirmedRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
@@ -41,6 +41,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
 
     private final CreditRequestPort creditRequestRepository;
     private final CreditRequestItemsPort itemRepository;
+    private final CreditRequestMapper mapperItens;
     private final HistCreditRequestService historyService;
     private final SituationAscertainedService situationAscertainedService;
 
@@ -90,7 +91,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
             confirmados++;
             itensDominio.add(item);
             // Adiciona para consolidação
-            itens.add(toEntity(item));
+            itens.add(mapperItens.toEntityItem(item));
             log.info("Item confirmado - Solicitação={}, Item={}, StatusAnterior={}, NovoStatus={}", numSolicitacao,
                     item.getId().getNumSolicitacaoItem(), statusAnterior,
                     SituationCreditRequestItems.RECARREGADO.getCode());
@@ -105,55 +106,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
                 numSolicitacao, codCanal, confirmados);
     }
 
-    // Helper para converter domínio para EJpa (ajuste conforme seu projeto)
-    private CreditRequestItemsEJpa toEntity(CreditRequestItems item) {
-        // Se já tiver um mapper, use-o. Caso contrário, converta manualmente.
-        CreditRequestItemsEJpa entity = new CreditRequestItemsEJpa();
-        CreditRequestItemsKey key = item.getId();
-        entity.setId(new CreditRequestItemsEJpaKey(
-                key.getNumSolicitacao(), key.getNumSolicitacaoItem(), key.getCodCanal()
-        ));
-        entity.setCodCanal(item.getCodCanal());
-        entity.setIdUsuarioCadastro(item.getIdUsuarioCadastro());
-        entity.setCodVersao(item.getCodVersao());
-        entity.setNumLogicoCartao(item.getNumLogicoCartao());
-        entity.setCodProduto(item.getCodProduto());
-        entity.setCodTipoDocumento(item.getCodTipoDocumento());
-        entity.setCodSituacao(item.getCodSituacao().getCode());
-        entity.setQtdItem(item.getQtdItem());
-        entity.setVlUnitario(item.getVlUnitario());
-        entity.setVlItem(item.getVlItem());
-        entity.setDtRecarga(item.getDtRecarga());
-        entity.setVlCarregado(item.getVlCarregado());
-        entity.setVlAjuste(item.getVlAjuste());
-        entity.setFlgAjuste(item.getFlgAjuste());
-        entity.setIdFuncionario(item.getIdFuncionario());
-        // entity.setCodAssinaturaHsm(item.getCodAssinaturaHsm());
-        entity.setDtCadastro(item.getDtCadastro());
-        entity.setDtManutencao(item.getDtManutencao());
-        entity.setSeqRecarga(item.getSeqRecarga());
-        entity.setDtEnvioHm(item.getDtEnvioHm());
-        entity.setDtRetornoHm(item.getDtRetornoHm());
-        entity.setIdUsuarioManutencao(item.getIdUsuarioManutencao());
-        entity.setDtAssinatura(item.getDtAssinatura());
-        entity.setDtPagtoEconomica(item.getDtPagtoEconomica());
-        entity.setSqPid(item.getSqPid());
-        entity.setDtInicProcesso(item.getDtInicProcesso());
-        entity.setIdUsuarioCartao(item.getIdUsuarioCartao());
-        entity.setSqRecarga(item.getSqRecarga());
-        entity.setVlTxadm(item.getVlTxadm());
-        entity.setVlTxserv(item.getVlTxserv());
-        entity.setVlTxtotal(item.getVlTxtotal());
-        entity.setFlgEvento(item.getFlgEvento());
-        entity.setVlEvento(item.getVlEvento());
-        entity.setFlgOutrasVias(item.getFlgOutrasVias());
-        // entity.setCodAssdigRecarga(item.getCodAssdigRecarga());
-        entity.setVlAutorizacaoHm(item.getVlAutorizacaoHm());
-        entity.setFlgLiminarLoja(item.getFlgLiminarLoja());
-        entity.setCodProdutoHm(item.getCodProdutoHm());
-        entity.setQtdDiasUtilizados(item.getQtdDiasUtilizados());
-        return entity;
-    }
+ 
 
     private void consolidarStatusSolicitacao(Long numSolicitacao, String codCanal,
             List<CreditRequestItemsEJpa> itens) {
