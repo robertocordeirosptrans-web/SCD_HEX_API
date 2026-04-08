@@ -118,6 +118,31 @@ public class SituationAscertainedService {
             return SituationCreditRequest.ATENDIDO_PARCIALMENTE.getCode();
         }
 
+        // --- Regras legadas migradas do CreditRequestService ---
+        // Todos DESBLOQUEIO_SOLICITADO
+        boolean todosDesbloqueioSolicitado = codigosSituacaoItens.stream()
+                .allMatch(s -> SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode().equals(s));
+        if (todosDesbloqueioSolicitado) {
+            return SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode();
+        }
+
+        // Todos REJEITADO
+        boolean todosRejeitado = codigosSituacaoItens.stream()
+                .allMatch(s -> SituationCreditRequestItems.REJEITADO.getCode().equals(s));
+        if (todosRejeitado) {
+            return SituationCreditRequest.REJEITADO.getCode();
+        }
+
+        // Mistura com sucesso → ATENDIDO_PARCIALMENTE
+        boolean temSucesso = codigosSituacaoItens.stream().anyMatch(s
+                -> SituationCreditRequestItems.RECARREGADO.getCode().equals(s)
+                || SituationCreditRequestItems.PAGO.getCode().equals(s)
+                || SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode().equals(s));
+        long statusUnicos = codigosSituacaoItens.stream().distinct().count();
+        if (temSucesso && statusUnicos > 1) {
+            return SituationCreditRequest.ATENDIDO_PARCIALMENTE.getCode();
+        }
+
         return null;
     }
 }
