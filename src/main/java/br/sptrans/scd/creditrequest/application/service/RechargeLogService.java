@@ -27,10 +27,6 @@ public class RechargeLogService implements LogRechargeUseCase {
             LocalDateTime dtManutencao,
             Long idUsuarioManutencao) {
 
-        // Gera sempre um novo SEQ único — independente de INSERT ou UPDATE
-        // int novoSeq = rechargeLogRepository.findMaxSeqRecarga()
-        //         .map(maxSeq -> maxSeq + 1)
-        //         .orElse(1);
 
         int baseSeq = rechargeLogRepository.findMaxSeqRecarga().orElse(1);
         AtomicInteger seqCounter = new AtomicInteger(baseSeq);

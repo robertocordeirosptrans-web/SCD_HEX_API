@@ -36,6 +36,7 @@ import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import br.sptrans.scd.shared.cache.InvalidateOrderCache;
+import br.sptrans.scd.shared.helper.StatusConsolidationHelper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -57,6 +58,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     private final HistCreditRequestService historyService;
     private final TransitionSituationValidator transitionValidator;
     private final SituationAscertainedService situationAscertainedService;
+    private final StatusConsolidationHelper statusConsolidationHelper;
 
     private final CreateCreditRequestCase createCreditRequestCase;
 
@@ -350,7 +352,7 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
                 .filter(Objects::nonNull)
                 .toList();
 
-        String novoStatusSolicitacao = situationAscertainedService.apurarSituacaoPedido(statusItens);
+        String novoStatusSolicitacao = statusConsolidationHelper.apurarNovoStatus(itens, solicitacao.getCodSituacao().getCode());
 
         if (novoStatusSolicitacao != null && !novoStatusSolicitacao.equals(solicitacao.getCodSituacao().getCode())) {
 

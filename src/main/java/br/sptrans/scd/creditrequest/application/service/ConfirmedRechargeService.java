@@ -2,7 +2,6 @@ package br.sptrans.scd.creditrequest.application.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +15,8 @@ import br.sptrans.scd.creditrequest.application.port.out.repository.CreditReques
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
-import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
+import br.sptrans.scd.shared.helper.StatusConsolidationHelper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -43,7 +42,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
     private final CreditRequestItemsPort itemRepository;
     private final CreditRequestMapper mapperItens;
     private final HistCreditRequestService historyService;
-    private final SituationAscertainedService situationAscertainedService;
+    private final StatusConsolidationHelper statusConsolidationHelper;
 
 
 
@@ -62,7 +61,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
         }
         String numLote = solicitacao.getNumLote();
         List<Long> numSolicitacaoItens = itemRepository.findNumSolicitacaoItemsBySolicitacaoCanalLote(numSolicitacao, codCanal, numLote);
-        if (numSolicitacaoItens == null || numSolicitacaoItens.isEmpty()) {
+        if (numSolicitacaoItens.isEmpty()) {
             log.warn("Nenhum item encontrado para solicitação {}/{} e lote {}", numSolicitacao, codCanal, numLote);
             return;
         }
@@ -97,9 +96,10 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
                     SituationCreditRequestItems.RECARREGADO.getCode());
         }
 
+
         if (confirmados > 0) {
             historyService.saveItemStatusHistoryBatch(itensDominio, ORIGEM_TRANSICAO);
-            consolidarStatusSolicitacao(numSolicitacao, codCanal, itens);
+            statusConsolidationHelper.consolidarStatusSolicitacao(numSolicitacao, codCanal, itens, ORIGEM_TRANSICAO);
         }
 
         log.debug("Confirmação de recarga concluída para solicitação {}/{} - {} itens confirmados",
@@ -108,33 +108,4 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
 
  
 
-    private void consolidarStatusSolicitacao(Long numSolicitacao, String codCanal,
-            List<CreditRequestItemsEJpa> itens) {
-
-        CreditRequest solicitacao = creditRequestRepository
-                .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal)
-                .orElse(null);
-
-        if (solicitacao == null) {
-            log.warn("Solicitação {}/{} não encontrada para consolidação", numSolicitacao, codCanal);
-            return;
-        }
-
-        List<String> statusItens = itens.stream()
-                .map(CreditRequestItemsEJpa::getCodSituacao)
-                .filter(Objects::nonNull)
-                .toList();
-
-        String novoStatus = situationAscertainedService.apurarSituacaoPedido(statusItens);
-
-        if (novoStatus != null && !novoStatus.equals(solicitacao.getCodSituacao().getCode())) {
-            String statusAnterior = solicitacao.getCodSituacao().getCode();
-            solicitacao.setCodSituacao(SituationCreditRequest.fromCode(novoStatus));
-            creditRequestRepository.update(numSolicitacao, codCanal, solicitacao);
-            historyService.saveRequestStatusHistory(solicitacao, numSolicitacao, codCanal, ORIGEM_TRANSICAO);
-
-            log.info("Status da solicitação {}/{} consolidado - StatusAnterior={}, NovoStatus={}",
-                    numSolicitacao, codCanal, statusAnterior, novoStatus);
-        }
-    }
 }

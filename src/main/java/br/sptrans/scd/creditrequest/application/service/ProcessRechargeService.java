@@ -3,7 +3,6 @@ package br.sptrans.scd.creditrequest.application.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -19,9 +18,9 @@ import br.sptrans.scd.creditrequest.application.port.out.repository.CreditReques
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
-import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import br.sptrans.scd.shared.cache.InvalidateOrderCache;
+import br.sptrans.scd.shared.helper.StatusConsolidationHelper;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -47,7 +46,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
     private final CreditRequestPort creditRequestRepository;
     private final CreditRequestItemsPort itemRepository;
     private final HistCreditRequestService historyService;
-    private final SituationAscertainedService situationAscertainedService;
+    private final StatusConsolidationHelper statusConsolidationHelper;
     private final CreditRequestMapper creditRequestMapper;
 
     @Override
@@ -125,7 +124,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
         if (processados > 0) {
             historyService.saveItemStatusHistoryBatch(itensDominio, ORIGEM_TRANSICAO);
-            consolidarStatusSolicitacao(numSolicitacao, codCanal, itensProcessados);
+            statusConsolidationHelper.consolidarStatusSolicitacao(numSolicitacao, codCanal, itensProcessados, ORIGEM_TRANSICAO);
         }
 
         log.debug("Processamento de recarga concluído para solicitação {}/{} - {} itens processados",
@@ -207,37 +206,9 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
                 itensProcessados.add(creditRequestMapper.toEntityItem(optItem.get()));
             }
         }
-        consolidarStatusSolicitacao(numSolicitacao, codCanal, itensProcessados);
+        statusConsolidationHelper.consolidarStatusSolicitacao(numSolicitacao, codCanal, itensProcessados, ORIGEM_TRANSICAO);
     }
 
-    private void consolidarStatusSolicitacao(Long numSolicitacao, String codCanal,
-            List<CreditRequestItemsEJpa> itens) {
 
-        CreditRequest solicitacao = creditRequestRepository
-                .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal)
-                .orElse(null);
-
-        if (solicitacao == null) {
-            log.warn("Solicitação {}/{} não encontrada para consolidação", numSolicitacao, codCanal);
-            return;
-        }
-
-        List<String> statusItens = itens.stream()
-                .map(CreditRequestItemsEJpa::getCodSituacao)
-                .filter(Objects::nonNull)
-                .toList();
-
-        String novoStatus = situationAscertainedService.apurarSituacaoPedido(statusItens);
-
-        if (novoStatus != null && !novoStatus.equals(solicitacao.getCodSituacao().getCode())) {
-            String statusAnterior = solicitacao.getCodSituacao().getCode();
-            solicitacao.setCodSituacao(SituationCreditRequest.fromCode(novoStatus));
-            creditRequestRepository.update(numSolicitacao, codCanal, solicitacao);
-            historyService.saveRequestStatusHistory(solicitacao, numSolicitacao, codCanal, ORIGEM_TRANSICAO);
-
-            log.info("Status da solicitação {}/{} consolidado - StatusAnterior={}, NovoStatus={}",
-                    numSolicitacao, codCanal, statusAnterior, novoStatus);
-        }
-    }
 
 }
