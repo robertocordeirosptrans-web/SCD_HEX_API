@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.creditrequest.application.usecases;
 
 import java.math.BigDecimal;
@@ -10,6 +11,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.channel.domain.ProductChannel;
@@ -96,43 +98,45 @@ public class CreateCreditRequestCase {
                 auditLog.info("[createCreditRequest] Pedidos={}, itens={}", request.pedidos().size(), totalItens);
 
                 for (CreateRequestCredit.CreditRequest pedido : request.pedidos()) {
-                        // Validar número de lote (uma query por pedido)
-                        validationService.validarNumLote(pedido.numLote(), request.codCanal());
+                    // Validar número de lote (uma query por pedido)
+                    validationService.validarNumLote(pedido.numLote(), request.codCanal());
 
-                        // Verificar duplicata — uma única query por pedido antes do loop de itens
-                        if (creditRequestRepository
-                                        .findByNumSolicitacaoAndCodCanal(pedido.numSolicitacao(), request.codCanal())
-                                        .isPresent()) {
-                                auditLog.warn("[createCreditRequest] Duplicata bloqueada - numSolicitacao={}, codCanal={}",
+                    // Verificar duplicata — uma única query por pedido antes do loop de itens
+                    if (creditRequestRepository
+                            .findByNumSolicitacaoAndCodCanal(pedido.numSolicitacao(), request.codCanal())
+                            .isPresent()) {
+                        auditLog.warn("[createCreditRequest] Duplicata bloqueada - numSolicitacao={}, codCanal={}",
+                                pedido.numSolicitacao(), request.codCanal());
+                        throw new IllegalStateException(
+                                "Já existe solicitação para este canal: " + pedido.numSolicitacao());
+                    }
 
-                                                pedido.numSolicitacao(), request.codCanal());
-                                throw new IllegalStateException(
-                                                "Já existe solicitação para este canal: " + pedido.numSolicitacao());
+                    // Pré-carregar contextos de validação por canal/produto
+                    Map<String, ItemValidationContext> contextos = new HashMap<>();
+                    CreditRequest creditRequestDomain = null;
+                    long numSolicitacaoItemSeq = 1L;
+                    for (ItemRequest item : pedido.itens()) {
+                        auditLog.debug("[createCreditRequest] Processando item - numSolicitacao={}, numItem={}",
+                                pedido.numSolicitacao(), numSolicitacaoItemSeq);
+                        // Chave canal+produto
+                        String chave = request.codCanal() + ":" + item.codProduto();
+                        ItemValidationContext ctx = contextos.computeIfAbsent(
+                                chave, k -> prepararContextoValidacao(request.codCanal(), item.codProduto()));
+                        ItemResult result = processarItemComContextoResult(
+                                pedido, item, request,
+                                userId, numSolicitacaoItemSeq,
+                                creditRequestDomain, ctx);
+                        if (result instanceof ItemResult.Valid valid) {
+                            creditRequestDomain = valid.creditRequestDomain();
+                            processados.add(valid.itemProcessado());
+                        } else if (result instanceof ItemResult.Invalid invalid) {
+                            rejeitados.add(invalid.itemRejeitado());
                         }
+                        numSolicitacaoItemSeq++;
+                    }
 
-                        // Pré-carregar contextos de validação por canal/produto
-                        Map<String, ItemValidationContext> contextos = new HashMap<>();
-                        CreditRequest creditRequestDomain = null;
-                        long numSolicitacaoItemSeq = 1L;
-                        for (ItemRequest item : pedido.itens()) {
-                                auditLog.debug("[createCreditRequest] Processando item - numSolicitacao={}, numItem={}",
-
-                                                pedido.numSolicitacao(), numSolicitacaoItemSeq);
-                                // Chave canal+produto
-                                String chave = request.codCanal() + ":" + item.codProduto();
-                                ItemValidationContext ctx = contextos.computeIfAbsent(
-                                        chave, k -> prepararContextoValidacao(request.codCanal(), item.codProduto()));
-                                creditRequestDomain = processarItemComContexto(
-                                        pedido, item, request,
-                                        processados, rejeitados,
-                                        userId, numSolicitacaoItemSeq,
-                                        creditRequestDomain, ctx);
-                                numSolicitacaoItemSeq++;
-                        }
-
-                        auditLog.info("[createCreditRequest] Pedido concluído - numSolicitacao={}, processados={}, rejeitados={}",
-
-                                        pedido.numSolicitacao(), processados.size(), rejeitados.size());
+                    auditLog.info("[createCreditRequest] Pedido concluído - numSolicitacao={}, processados={}, rejeitados={}",
+                            pedido.numSolicitacao(), processados.size(), rejeitados.size());
                 }
 
                 // Validação pós-processamento
@@ -249,81 +253,81 @@ public class CreateCreditRequestCase {
         }
 
         // Nova versão: processar item usando contexto
-        private CreditRequest processarItemComContexto(
+
+        /**
+         * Refatorado para seguir Result Pattern: retorna ItemResult (Valid ou Invalid) ao invés de lançar exceção e acumular em listas externas.
+         */
+        private ItemResult processarItemComContextoResult(
                 CreateRequestCredit.CreditRequest pedido,
                 ItemRequest item,
                 CreateRequestCredit request,
-                List<ItemProcessado> processados,
-                List<ItemRejeitado> rejeitados,
                 Long userId,
                 long numSolicitacaoItemSeq,
                 CreditRequest creditRequestDomain,
                 ItemValidationContext ctx) {
 
-                String codProduto = item.codProduto();
+            String codProduto = item.codProduto();
+            try {
+                // Validações do item antes de qualquer persistência
+                validarItemComContexto(ctx, pedido, item, request);
 
-                try {
-                        // Validações do item antes de qualquer persistência
-                        // Usa lista LOCAL interna — não contamina o acumulador externo
-                        validarItemComContexto(ctx, pedido, item, request);
-
-                        // CreditRequest é persistido uma única vez por pedido; reutilizado nos demais
-                        // itens
-                        if (creditRequestDomain == null) {
-                            CreditRequest novaRequest = creditRequestMapper.fromRequest(
-                                    pedido, item, request, userId);
-                            creditRequestRepository.save(novaRequest);
-                            creditRequestDomain = novaRequest;
-                            historyService.saveRequestStatusHistory(creditRequestDomain, pedido.numSolicitacao(),
-                                    request.codCanal(), ORIGEM_TRANSICAO);
-                            auditLog.info("[AUDIT] Solicitação criada - numSolicitacao={}, codCanal={}, userId={}",
-                                    pedido.numSolicitacao(), request.codCanal(), userId);
-                        }
-
-                        CreditRequestItems creditRequestItem = creditRequestMapper.fromRequestItem(
-                                pedido, item, request, creditRequestDomain, userId, numSolicitacaoItemSeq);
-                        creditRequestDomain.addItem(creditRequestItem);
-
-                        int seqRecarga = rechargeLogService.upsertLogRecarga(
-                                        item.numLogicoCartao(),
-                                        userId,
-                                        LocalDateTime.now(),
-                                        LocalDateTime.now(),
-                                        LocalDateTime.now(),
-                                        userId);
-                        creditRequestItem.setSeqRecarga(seqRecarga);
-
-                        itemRepository.save(creditRequestItem);
-                        historyService.saveItemStatusHistoryBatch(List.of(creditRequestItem), ORIGEM_TRANSICAO);
-
-                        auditLog.info("[AUDIT] Item criado - numSolicitacao={}, numItem={}, codProduto={}, userId={}",
-
-                                        pedido.numSolicitacao(), numSolicitacaoItemSeq, codProduto, userId);
-
-                        processados.add(new ItemProcessado(
-                                        pedido.numSolicitacao(),
-                                        item.numLogicoCartao(),
-                                        codProduto,
-                                        SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO.getCode()));
-
-                } catch (ValidationException e) {
-                        auditLog.warn("[createCreditRequest] Validação falhou - numSolicitacao={}, numItem={}, motivo={}",
-
-                                        pedido.numSolicitacao(), numSolicitacaoItemSeq, e.getMessage());
-                        rejeitados.add(new ItemRejeitado(
-                                        pedido.numSolicitacao(), item.numLogicoCartao(), codProduto,
-                                        "Validação: " + e.getMessage()));
-
-                } catch (Exception e) {
-                        auditLog.error("[createCreditRequest] Erro inesperado - numSolicitacao={}, numItem={}",
-
-                                        pedido.numSolicitacao(), numSolicitacaoItemSeq, e);
-                        rejeitados.add(new ItemRejeitado(
-                                        pedido.numSolicitacao(), item.numLogicoCartao(), codProduto,
-                                        "Erro interno: " + e.getMessage()));
+                // CreditRequest é persistido uma única vez por pedido; reutilizado nos demais itens
+                CreditRequest domain = creditRequestDomain;
+                if (domain == null) {
+                    CreditRequest novaRequest = creditRequestMapper.fromRequest(
+                            pedido, item, request, userId);
+                    creditRequestRepository.save(novaRequest);
+                    domain = novaRequest;
+                    historyService.saveRequestStatusHistory(domain, pedido.numSolicitacao(),
+                            request.codCanal(), ORIGEM_TRANSICAO);
+                    auditLog.info("[AUDIT] Solicitação criada - numSolicitacao={}, codCanal={}, userId={}",
+                            pedido.numSolicitacao(), request.codCanal(), userId);
                 }
 
-                return creditRequestDomain;
+                CreditRequestItems creditRequestItem = creditRequestMapper.fromRequestItem(
+                        pedido, item, request, domain, userId, numSolicitacaoItemSeq);
+                domain.addItem(creditRequestItem);
+
+                int seqRecarga = rechargeLogService.upsertLogRecarga(
+                        item.numLogicoCartao(),
+                        userId,
+                        LocalDateTime.now(),
+                        LocalDateTime.now(),
+                        LocalDateTime.now(),
+                        userId);
+                creditRequestItem.setSeqRecarga(seqRecarga);
+
+                itemRepository.save(creditRequestItem);
+                historyService.saveItemStatusHistoryBatch(List.of(creditRequestItem), ORIGEM_TRANSICAO);
+
+                auditLog.info("[AUDIT] Item criado - numSolicitacao={}, numItem={}, codProduto={}, userId={}",
+                        pedido.numSolicitacao(), numSolicitacaoItemSeq, codProduto, userId);
+
+                ItemProcessado itemProcessado = new ItemProcessado(
+                        pedido.numSolicitacao(),
+                        item.numLogicoCartao(),
+                        codProduto,
+                        SituationCreditRequestItems.ACEITO_PENDENTE_LIQUIDACAO.getCode());
+                return new ItemResult.Valid(domain, itemProcessado);
+
+            } catch (ValidationException e) {
+                auditLog.warn("[createCreditRequest] Validação falhou - numSolicitacao={}, numItem={}, motivo={}",
+                        pedido.numSolicitacao(), numSolicitacaoItemSeq, e.getMessage());
+                ItemRejeitado rejeitado = new ItemRejeitado(
+                        pedido.numSolicitacao(), item.numLogicoCartao(), codProduto,
+                        "Validação: " + e.getMessage());
+                return new ItemResult.Invalid(rejeitado);
+            } catch (DataAccessException e) {
+                // Propaga erro de infraestrutura para rollback
+                throw e;
+            } catch (Exception e) {
+                auditLog.error("[createCreditRequest] Erro inesperado - numSolicitacao={}, numItem={}",
+                        pedido.numSolicitacao(), numSolicitacaoItemSeq, e);
+                ItemRejeitado rejeitado = new ItemRejeitado(
+                        pedido.numSolicitacao(), item.numLogicoCartao(), codProduto,
+                        "Erro interno: " + e.getMessage());
+                return new ItemResult.Invalid(rejeitado);
+            }
         }
 
 
@@ -346,5 +350,14 @@ public class CreateCreditRequestCase {
                         .findFirst()
                         .orElse(null);
                 return new ItemValidationContext(produtoCanal, limite, taxaVigente);
+        }
+
+        
+        /**
+         * Representa o resultado de uma validação/processamento de item, seguindo o Result Pattern.
+         */
+        public sealed interface ItemResult permits ItemResult.Valid, ItemResult.Invalid {
+                record Valid(CreditRequest creditRequestDomain, ItemProcessado itemProcessado) implements ItemResult {}
+                record Invalid(ItemRejeitado itemRejeitado) implements ItemResult {}
         }
 }

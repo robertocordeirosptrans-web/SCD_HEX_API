@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.ProcessRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
@@ -47,7 +45,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
     private final CreditRequestItemsPort itemRepository;
     private final HistCreditRequestService historyService;
     private final StatusConsolidationHelper statusConsolidationHelper;
-    private final CreditRequestMapper creditRequestMapper;
+    // private final CreditRequestMapper creditRequestMapper;
 
     @Override
     @Transactional
@@ -77,8 +75,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
         }
 
         int processados = 0;
-        List<CreditRequestItemsEJpa> itensProcessados = new java.util.ArrayList<>();
-        List<CreditRequestItems> itensDominio = new java.util.ArrayList<>();
+        List<CreditRequestItems> itensProcessados = new java.util.ArrayList<>();
         for (Long numSolicitacaoItem : numSolicitacaoItens) {
             CreditRequestItemsKey key = new CreditRequestItemsKey();
             key.setNumSolicitacao(numSolicitacao);
@@ -115,15 +112,13 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
             item.setDtManutencao(LocalDateTime.now());
             itemRepository.save(item);
             processados++;
-            itensDominio.add(item);
-            // Adiciona para consolidação
-            itensProcessados.add(creditRequestMapper.toEntityItem(item));
+            itensProcessados.add(item);
             log.info("Item processado - Solicitação={}, Item={}, NovoStatus={}",
                     numSolicitacao, item.getId().getNumSolicitacaoItem(), item.getCodSituacao());
         }
 
         if (processados > 0) {
-            historyService.saveItemStatusHistoryBatch(itensDominio, ORIGEM_TRANSICAO);
+            historyService.saveItemStatusHistoryBatch(itensProcessados, ORIGEM_TRANSICAO);
             statusConsolidationHelper.consolidarStatusSolicitacao(numSolicitacao, codCanal, itensProcessados, ORIGEM_TRANSICAO);
         }
 
@@ -195,16 +190,14 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
         // Buscar todos os itens da solicitação/canal/lote para consolidação
         String numLote = solicitacao.getNumLote();
         List<Long> allNumSolicitacaoItens = itemRepository.findNumSolicitacaoItemsBySolicitacaoCanalLote(numSolicitacao, codCanal, numLote);
-        List<CreditRequestItemsEJpa> itensProcessados = new java.util.ArrayList<>();
+        List<CreditRequestItems> itensProcessados = new java.util.ArrayList<>();
         for (Long itemIdForConsolidation : allNumSolicitacaoItens) {
             CreditRequestItemsKey keyForConsolidation = new CreditRequestItemsKey();
             keyForConsolidation.setNumSolicitacao(numSolicitacao);
             keyForConsolidation.setNumSolicitacaoItem(itemIdForConsolidation);
             keyForConsolidation.setCodCanal(codCanal);
             var optItem = itemRepository.findById(keyForConsolidation);
-            if (optItem.isPresent()) {
-                itensProcessados.add(creditRequestMapper.toEntityItem(optItem.get()));
-            }
+            optItem.ifPresent(itensProcessados::add);
         }
         statusConsolidationHelper.consolidarStatusSolicitacao(numSolicitacao, codCanal, itensProcessados, ORIGEM_TRANSICAO);
     }

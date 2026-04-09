@@ -2,6 +2,8 @@ package br.sptrans.scd.shared.exception;
 
 import org.springframework.http.HttpStatus;
 
+
+
 /**
  * Exceção base para erros de negócio usando Sealed Classes (Java 17+)
  * Sealed classes garantem que apenas subclasses conhecidas podem estender esta classe

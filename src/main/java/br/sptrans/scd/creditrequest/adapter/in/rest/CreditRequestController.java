@@ -216,19 +216,18 @@ public class CreditRequestController {
                 creditRequestManagementUseCase.pay(
                         new PayCommand(
                                 request.getPedidosPermitidos().stream()
-                                        .map(item -> {
-                                            var detail = item.getItens() != null && !item.getItens().isEmpty() ? item.getItens().get(0) : null;
-                                            return new PayItemEntry(
-                                                    item.getNumSolicitacao(),
-                                                    detail != null ? detail.getNumSolicitacaoItem() : null,
-                                                    request.getCodCanal(),
-                                                    detail != null ? detail.getCodProduto() : null,
-                                                    detail != null ? detail.getCodSituacao() : null,
-                                                    detail != null ? detail.getVlItem() : null,
-                                                    detail != null ? detail.getVlTxadm() : null,
-                                                    detail != null ? detail.getVlTxserv() : null
-                                            );
-                                        })
+                                        .flatMap(item -> item.getItens().stream()
+                                                .map(detail -> new PayItemEntry(
+                                                        item.getNumSolicitacao(),
+                                                        detail.getNumSolicitacaoItem(),
+                                                        request.getCodCanal(),
+                                                        detail.getCodProduto(),
+                                                        detail.getCodSituacao(),
+                                                        detail.getVlItem(),
+                                                        detail.getVlTxadm(),
+                                                        detail.getVlTxserv()
+                                                ))
+                                        )
                                         .collect(Collectors.toList()),
                                 null,
                                 request.getCodFormaPagto(),

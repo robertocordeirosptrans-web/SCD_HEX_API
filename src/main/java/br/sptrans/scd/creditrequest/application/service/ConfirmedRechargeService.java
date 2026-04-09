@@ -8,8 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.ConfirmedRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
@@ -41,7 +39,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
 
     private final CreditRequestPort creditRequestRepository;
     private final CreditRequestItemsPort itemRepository;
-    private final CreditRequestMapper mapperItens;
+    // private final CreditRequestMapper mapperItens;
     private final HistCreditRequestService historyService;
     private final StatusConsolidationHelper statusConsolidationHelper;
 
@@ -68,7 +66,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
         }
 
         int confirmados = 0;
-        List<CreditRequestItemsEJpa> itens = new ArrayList<>();
+
         List<CreditRequestItems> itensDominio = new ArrayList<>();
         for (Long numSolicitacaoItem : numSolicitacaoItens) {
             CreditRequestItemsKey key = new CreditRequestItemsKey();
@@ -90,17 +88,14 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
             itemRepository.save(item);
             confirmados++;
             itensDominio.add(item);
-            // Adiciona para consolidação
-            itens.add(mapperItens.toEntityItem(item));
             log.info("Item confirmado - Solicitação={}, Item={}, StatusAnterior={}, NovoStatus={}", numSolicitacao,
                     item.getId().getNumSolicitacaoItem(), statusAnterior,
                     SituationCreditRequestItems.RECARREGADO.getCode());
         }
 
-
         if (confirmados > 0) {
             historyService.saveItemStatusHistoryBatch(itensDominio, ORIGEM_TRANSICAO);
-            statusConsolidationHelper.consolidarStatusSolicitacao(numSolicitacao, codCanal, itens, ORIGEM_TRANSICAO);
+            statusConsolidationHelper.consolidarStatusSolicitacao(numSolicitacao, codCanal, itensDominio, ORIGEM_TRANSICAO);
         }
 
         log.debug("Confirmação de recarga concluída para solicitação {}/{} - {} itens confirmados",

@@ -1,5 +1,4 @@
 package br.sptrans.scd.creditrequest.adapter.in.scheduler;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -7,10 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.application.port.in.ReleaseRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
-import br.sptrans.scd.creditrequest.domain.CreditRequest;
+import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,23 +75,21 @@ public class ReleaseRechargeScheduler {
         log.debug("Iniciando job LiberarRecarga. Janela: [{} - {}]", dtInicio, dtFim);
 
         // Busca diretamente os itens elegíveis conforme a nova query
-        String codSituacao = "04";
-        List<CreditRequestItemsEJpa> itensElegiveis = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(
-                codSituacao,
-                Timestamp.valueOf(dtInicio),
-                Timestamp.valueOf(dtFim)
+        String codSituacao = SituationCreditRequestItems.PAGO.getCode();
+        List<CreditRequestItems> itensElegiveis = itemRepository.searchForItensUnlocked(
+                codSituacao
         );
 
-        int totalEncontradas = itensElegiveis != null ? itensElegiveis.size() : 0;
+        int totalEncontradas = itensElegiveis.size() ;
         int processadas = 0;
         int ignoradas = 0;
 
-        if (itensElegiveis == null || itensElegiveis.isEmpty()) {
+        if (totalEncontradas == 0) {
             log.info("Nenhum item elegível encontrado para liberação de recarga na janela informada.");
             return;
         }
 
-        for (CreditRequestItemsEJpa item : itensElegiveis) {
+        for (CreditRequestItems item : itensElegiveis) {
             Long numSolicitacao = item.getId().getNumSolicitacao();
             String codCanal = item.getId().getCodCanal();
             String numLote = null; // Ajuste se necessário para obter o lote
@@ -112,16 +108,5 @@ public class ReleaseRechargeScheduler {
                 totalEncontradas, processadas, ignoradas);
     }
 
-    /**
-     * Verifica se a solicitação possui ao menos um item em
-     * {@link SituationCreditRequestItems#PAGO}.
-     */
-    boolean possuiItensElegiveis(CreditRequest solicitacao) {
-        // Busca o primeiro item com situação '04' e data de pagamento econômica no intervalo
-        String codSituacao = "04";
-        Timestamp dtInicio = Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
-        Timestamp dtFim = Timestamp.valueOf(solicitacao.getDtPagtoEconomica());
-        List<CreditRequestItemsEJpa> itens = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim);
-        return itens != null && !itens.isEmpty();
-    }
+
 }

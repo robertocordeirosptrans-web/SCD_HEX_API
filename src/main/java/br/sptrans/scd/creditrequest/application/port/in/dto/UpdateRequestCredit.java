@@ -59,7 +59,6 @@ public class UpdateRequestCredit {
         private BigDecimal vlItem;
         private BigDecimal vlTxadm;
         private BigDecimal vlTxserv;
-        private Double vlUnitario;
     }
 
 }

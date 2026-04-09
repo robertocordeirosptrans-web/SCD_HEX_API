@@ -1,6 +1,5 @@
 package br.sptrans.scd.creditrequest.adapter.out.jpa.adapter;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,8 +28,11 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
     }
 
     @Override
-    public List<CreditRequestItemsEJpa> findFirstBySituacaoAndDtPagtoEconomicaBetween(String codSituacao, Timestamp dtInicio, Timestamp dtFim) {
-        return itemJpaRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim);
+    public List<CreditRequestItems> searchForItensUnlocked(String codSituacao) {
+        return itemJpaRepository.searchForItensUnlocked(codSituacao)
+                .stream()
+                .map(creditRequestMapper::toDomainItem)
+                .toList();
     }
 
     @Override
@@ -49,9 +51,11 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
     }
 
     @Override
-    public List<CreditRequestItemsEJpa> findProcessRechargeService(Long numSolicitacao, String codCanal,
-            String numLote) {
-        return itemJpaRepository.findProcessRechargeService(numSolicitacao, codCanal, numLote);
+    public List<CreditRequestItems> findProcessRechargeService(Long numSolicitacao, String codCanal, String numLote) {
+        return itemJpaRepository.findProcessRechargeService(numSolicitacao, codCanal, numLote)
+                .stream()
+                .map(creditRequestMapper::toDomainItem)
+                .toList();
     }
 
     @Override

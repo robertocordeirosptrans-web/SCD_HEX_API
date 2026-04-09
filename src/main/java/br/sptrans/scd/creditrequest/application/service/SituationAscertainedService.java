@@ -30,13 +30,13 @@ public class SituationAscertainedService {
      * @return código da situação apurada do pedido, ou {@code null} se nenhuma
      * regra se aplicar
      */
-    public String apurarSituacaoPedido(List<String> codigosSituacaoItens) {
+    public String apurarSituacaoPedido(List<SituationCreditRequestItems> codigosSituacaoItens) {
         if (codigosSituacaoItens == null || codigosSituacaoItens.isEmpty()) {
             return null;
         }
 
         Map<String, Long> contadores = codigosSituacaoItens.stream()
-                .collect(Collectors.groupingBy(s -> s, Collectors.counting()));
+                .collect(Collectors.groupingBy(SituationCreditRequestItems::getCode, Collectors.counting()));
 
         long total = codigosSituacaoItens.size();
 
@@ -121,24 +121,24 @@ public class SituationAscertainedService {
         // --- Regras legadas migradas do CreditRequestService ---
         // Todos DESBLOQUEIO_SOLICITADO
         boolean todosDesbloqueioSolicitado = codigosSituacaoItens.stream()
-                .allMatch(s -> SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode().equals(s));
+                .allMatch(s -> SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode().equals(s.getCode()));
         if (todosDesbloqueioSolicitado) {
             return SituationCreditRequestItems.DESBLOQUEIO_SOLICITADO.getCode();
         }
 
         // Todos REJEITADO
         boolean todosRejeitado = codigosSituacaoItens.stream()
-                .allMatch(s -> SituationCreditRequestItems.REJEITADO.getCode().equals(s));
+                .allMatch(s -> SituationCreditRequestItems.REJEITADO.getCode().equals(s.getCode()));
         if (todosRejeitado) {
             return SituationCreditRequest.REJEITADO.getCode();
         }
 
         // Mistura com sucesso → ATENDIDO_PARCIALMENTE
         boolean temSucesso = codigosSituacaoItens.stream().anyMatch(s
-                -> SituationCreditRequestItems.RECARREGADO.getCode().equals(s)
-                || SituationCreditRequestItems.PAGO.getCode().equals(s)
-                || SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode().equals(s));
-        long statusUnicos = codigosSituacaoItens.stream().distinct().count();
+                -> SituationCreditRequestItems.RECARREGADO.getCode().equals(s.getCode())
+                || SituationCreditRequestItems.PAGO.getCode().equals(s.getCode())
+                || SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode().equals(s.getCode()));
+        long statusUnicos = codigosSituacaoItens.stream().map(SituationCreditRequestItems::getCode).distinct().count();
         if (temSucesso && statusUnicos > 1) {
             return SituationCreditRequest.ATENDIDO_PARCIALMENTE.getCode();
         }

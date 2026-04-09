@@ -7,12 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
 import br.sptrans.scd.creditrequest.application.service.HistCreditRequestService;
 import br.sptrans.scd.creditrequest.application.service.SituationAscertainedService;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
+import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
+import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 
 @Component
 public class StatusConsolidationHelper {
@@ -39,7 +40,7 @@ public class StatusConsolidationHelper {
      * @param itens Lista de itens (EJpa)
      * @param origemTransicao Origem da transição para histórico
      */
-    public void consolidarStatusSolicitacao(Long numSolicitacao, String codCanal, List<CreditRequestItemsEJpa> itens, String origemTransicao) {
+    public void consolidarStatusSolicitacao(Long numSolicitacao, String codCanal, List<CreditRequestItems> itens, String origemTransicao) {
         CreditRequest solicitacao = creditRequestRepository
                 .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal)
                 .orElse(null);
@@ -49,8 +50,8 @@ public class StatusConsolidationHelper {
             return;
         }
 
-        List<String> statusItens = itens.stream()
-                .map(CreditRequestItemsEJpa::getCodSituacao)
+        List<SituationCreditRequestItems> statusItens = itens.stream()
+                .map(CreditRequestItems::getCodSituacao)
                 .filter(Objects::nonNull)
                 .toList();
 
@@ -72,9 +73,9 @@ public class StatusConsolidationHelper {
      * @param statusAtualSolicitacao Status atual da solicitação
      * @return Novo status ou null se não houver mudança
      */
-    public String apurarNovoStatus(List<CreditRequestItemsEJpa> itens, String statusAtualSolicitacao) {
-        List<String> statusItens = itens.stream()
-                .map(CreditRequestItemsEJpa::getCodSituacao)
+    public String apurarNovoStatus(List<CreditRequestItems> itens, String statusAtualSolicitacao) {
+        List<SituationCreditRequestItems> statusItens = itens.stream()
+                .map(CreditRequestItems::getCodSituacao)
                 .filter(Objects::nonNull)
                 .toList();
         String novoStatus = situationAscertainedService.apurarSituacaoPedido(statusItens);

@@ -1,6 +1,5 @@
 package br.sptrans.scd.creditrequest.adapter.out.jpa.repository;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,22 +16,17 @@ public interface CreditRequestItemJpaRepository
                 JpaSpecificationExecutor<CreditRequestItemsEJpa> {
 
         /**
-         * Busca os primeiros 100 itens de recarga com situação informada e data de
-         * pagamento econômica no intervalo informado.
+         * Busca os primeiros 100 itens de recarga com situação informada.
          * Nota: Oracle não suporta bind variable em FETCH FIRST, por isso o limite é fixo.
          */
         @Query(value = """
                         SELECT i.*
                         FROM SPTRANSDBA.SOL_DISTRIB_ITENS i
                         WHERE i.COD_SITUACAO = :codSituacao
-                          AND i.DT_PAGTO_ECONOMICA >= :dtInicio
-                          AND i.DT_PAGTO_ECONOMICA <= :dtFim
                         FETCH FIRST 100 ROWS ONLY
                         """, nativeQuery = true)
-        List<CreditRequestItemsEJpa> findFirstBySituacaoAndDtPagtoEconomicaBetween(
-                        @Param("codSituacao") String codSituacao,
-                        @Param("dtInicio") Timestamp dtInicio,
-                        @Param("dtFim") Timestamp dtFim);
+        List<CreditRequestItemsEJpa> searchForItensUnlocked(
+                        @Param("codSituacao") String codSituacao);
 
         @Query("SELECT i FROM CreditRequestItemsEJpa i WHERE i.id.numSolicitacao = :num AND i.id.codCanal = :canal")
         List<CreditRequestItemsEJpa> findAllBySolicitacao(@Param("num") Long num, @Param("canal") String canal);

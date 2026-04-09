@@ -2,7 +2,6 @@ package br.sptrans.scd.creditrequest.application.service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -10,13 +9,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
 import br.sptrans.scd.creditrequest.application.port.in.ReleaseRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
-import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import br.sptrans.scd.shared.cache.InvalidateOrderCache;
@@ -42,7 +39,6 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
     private final CreditRequestPort creditRequestRepository;
     private final CreditRequestItemsPort itemRepository;
     private final HistCreditRequestService historyService;
-    // private final SituationAscertainedService situationAscertainedService;
     private final StatusConsolidationHelper statusConsolidationHelper;
 
 
@@ -115,50 +111,39 @@ public class ReleaseRechargeService implements ReleaseRechargeUseCase {
             Timestamp dtInicio = Timestamp.valueOf(dtInicioLdt);
             Timestamp dtFim = Timestamp.valueOf(dtFimLdt);
             log.info("[DEBUG LIBERAR RECARGA] Parâmetros consulta: codSituacao={}, dtInicio={}, dtFim={}, numSolicitacao={}, codCanal={}, numLote={}", codSituacao, dtInicio, dtFim, numSolicitacao, codCanal, numLote);
-            List<CreditRequestItemsEJpa> itens = itemRepository.findFirstBySituacaoAndDtPagtoEconomicaBetween(codSituacao, dtInicio, dtFim);
-       
+            List<CreditRequestItems> itens = itemRepository.searchForItensUnlocked(codSituacao);
+
             if (itens.isEmpty()) {
                 log.warn("Nenhum item elegível encontrado para solicitação {}/{} no intervalo {} até {} [codSituacao={}]", numSolicitacao, codCanal, dtInicio, dtFim, codSituacao);
                 return;
             }
 
-        int liberados = 0;
-        List<CreditRequestItems> itensDominio = new ArrayList<>();
-        for (CreditRequestItemsEJpa itemEJpa : itens) {
-            CreditRequestItemsKey key = new CreditRequestItemsKey();
-            key.setNumSolicitacao(itemEJpa.getId().getNumSolicitacao());
-            key.setNumSolicitacaoItem(itemEJpa.getId().getNumSolicitacaoItem());
-            key.setCodCanal(itemEJpa.getId().getCodCanal());
 
-            var optItem = itemRepository.findById(key);
-            if (optItem.isEmpty()) {
-                continue;
+            int liberados = 0;
+            for (CreditRequestItems item : itens) {
+                if (!SituationCreditRequestItems.PAGO.equals(item.getCodSituacao())) {
+                    continue;
+                }
+                item.setCodSituacao(SituationCreditRequestItems.LIBERADO_PARA_RECARGA);
+                item.setDtManutencao(LocalDateTime.now());
+                itemRepository.save(item);
+                liberados++;
+                log.info("Item liberado - Solicitação={}, Item={}, NovoStatus={}",
+                        numSolicitacao,
+                        item.getId().getNumSolicitacaoItem(),
+                        SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode());
             }
-            CreditRequestItems item = optItem.get();
-            if (!SituationCreditRequestItems.PAGO.equals(item.getCodSituacao())) {
-                continue;
-            }
-            item.setCodSituacao(SituationCreditRequestItems.LIBERADO_PARA_RECARGA);
-            item.setDtManutencao(LocalDateTime.now());
-            itemRepository.save(item);
-            liberados++;
-            itensDominio.add(item);
-            log.info("Item liberado - Solicitação={}, Item={}, NovoStatus={}",
-                    numSolicitacao,
-                    item.getId().getNumSolicitacaoItem(),
-                    SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode());
-        }
 
-        if (liberados > 0) {
-            historyService.saveItemStatusHistoryBatch(itensDominio, origemTransicao);
-            statusConsolidationHelper.consolidarStatusSolicitacao(numSolicitacao, codCanal, itens, origemTransicao);
-        }
+            if (liberados > 0) {
+                historyService.saveItemStatusHistoryBatch(itens, origemTransicao);
+                statusConsolidationHelper.consolidarStatusSolicitacao(numSolicitacao, codCanal, itens, origemTransicao);
+            }
 
         log.debug("Liberação de recarga concluída para solicitação {}/{} - {} itens liberados",
                 numSolicitacao, codCanal, liberados);
     }
 
-    // Método removido: consolidarStatusSolicitacao agora está centralizado no helper
+
 
 
 }

@@ -23,8 +23,15 @@ public class UserResolverHelperImpl implements UserResolverHelper {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", userId));
     }
 
+
     @Override
     public String getCurrentLogin() {
+        if (isSchedulerContext()) {
+            // Retorna login do usuário id 1 (ajuste conforme necessário)
+            User user = userPort.findById(1L)
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", 1L));
+            return user.getCodLogin();
+        }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AuthenticationFailedException("Usuário não autenticado");
@@ -34,9 +41,32 @@ public class UserResolverHelperImpl implements UserResolverHelper {
 
     @Override
     public User getCurrentUser() {
+        if (isSchedulerContext()) {
+            return userPort.findById(1L)
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", 1L));
+        }
         String login = getCurrentLogin();
         return userPort.findByCodLogin(login)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "login", login));
+    }
+
+    /**
+     * Detecta se o contexto de chamada é o Scheduler.
+     * Pode ser aprimorado conforme padrão de nomes de thread ou stacktrace.
+     */
+    private boolean isSchedulerContext() {
+        // Heurística: thread do scheduler geralmente contém "scheduler" no nome
+        String threadName = Thread.currentThread().getName().toLowerCase();
+        if (threadName.contains("scheduler")) {
+            return true;
+        }
+        // Alternativamente, verifica se há ReleaseRechargeScheduler na stacktrace
+        for (StackTraceElement el : Thread.currentThread().getStackTrace()) {
+            if (el.getClassName().contains("ReleaseRechargeScheduler")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
