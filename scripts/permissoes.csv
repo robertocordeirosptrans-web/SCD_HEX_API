@@ -51,3 +51,38 @@ SCD_WEB_API,product,family,Listar famílias
 SCD_WEB_API,product,family,Ativar família
 SCD_WEB_API,product,family,Inativar família
 SCD_WEB_API,product,family,Remover família
+
+SCD_WEB_API,product,fee_fare,Cadastrar tarifa
+SCD_WEB_API,product,fee_fare,Atualizar tarifa
+SCD_WEB_API,product,fee_fare,Buscar tarifas
+SCD_WEB_API,product,fee_fare,Remover tarifa
+SCD_WEB_API,product,fee_fare,Cadastrar taxa
+SCD_WEB_API,product,fee_fare,Atualizar taxa
+SCD_WEB_API,product,fee_fare,Buscar taxas
+SCD_WEB_API,product,fee_fare,Remover taxa
+
+SCD_WEB_API,product,family,Atualizar família
+SCD_WEB_API,product,family,Buscar família por código
+SCD_WEB_API,product,family,Listar famílias
+SCD_WEB_API,product,family,Ativar família
+SCD_WEB_API,product,family,Inativar família
+
+SCD_WEB_API,channel,types_activities,Cadastrar tipo de atividade
+SCD_WEB_API,channel,types_activities,Atualizar tipo de atividade
+SCD_WEB_API,channel,types_activities,Buscar tipo de atividade por código
+SCD_WEB_API,channel,types_activities,Listar tipos de atividade
+SCD_WEB_API,channel,types_activities,Ativar tipo de atividade
+SCD_WEB_API,channel,types_activities,Inativar tipo de atividade
+
+SCD_WEB_API,channel,sales_channels,Atualizar canal de venda
+SCD_WEB_API,channel,sales_channels,Buscar canal de venda por código
+SCD_WEB_API,channel,sales_channels,Listar canais de venda
+SCD_WEB_API,channel,sales_channels,Ativar canal de venda
+SCD_WEB_API,channel,sales_channels,Inativar canal de venda
+SCD_WEB_API,channel,sales_channels,Remover canal de venda
+
+SCD_WEB_API,product,product,Atualizar produto
+SCD_WEB_API,product,product,Buscar produto por código
+SCD_WEB_API,product,product,Listar produtos
+SCD_WEB_API,product,product,Ativar produto
+SCD_WEB_API,product,product,Inativar produto

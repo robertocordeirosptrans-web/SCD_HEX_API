@@ -2,7 +2,6 @@ package br.sptrans.scd.creditrequest.adapter.in.rest;
 
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +19,7 @@ import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.BlockCommand;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.CancelCommand;
+import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.OrderItemEntry;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.PayCommand;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.PayItemEntry;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.SearchCommand;
@@ -29,7 +29,6 @@ import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageResponse;
 import br.sptrans.scd.creditrequest.application.port.in.dto.UpdateRequestCredit;
-import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
 import br.sptrans.scd.shared.idempotency.IdempotencyStore;
 import br.sptrans.scd.shared.idempotency.InMemoryIdempotencyStore;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -168,76 +167,54 @@ public class CreditRequestController {
     @ResponseBody
     @Operation(summary = "Alterar status de pedidos de crédito", description = "Altera o status dos pedidos conforme ação informada.")
     public void alterarStatus(@RequestBody UpdateRequestCredit request) {
-        ActionStatus acao = request.getAcao();
-        switch (acao) {
+        switch (request.getAcao()) {
             case BLOQUEAR ->
                 creditRequestManagementUseCase.block(
-                        new BlockCommand(
-                                request.getPedidosPermitidos().stream()
-                                        .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
-                                        item.getNumSolicitacao(),
-                                        request.getCodCanal(),
-                                        item.getItens() != null ? item.getItens().stream().map(UpdateRequestCredit.ItemDetail::getNumSolicitacaoItem).collect(Collectors.toList()) : List.of()
-                                ))
-                                        .collect(Collectors.toList()),
-                                null,
-                                request.getObservacao()
-                        )
-                );
+                        new BlockCommand(toEntries(request), null, request.getObservacao()));
             case DESBLOQUEAR ->
                 creditRequestManagementUseCase.unblock(
-                        new UnblockCommand(
-                                request.getPedidosPermitidos().stream()
-                                        .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
-                                        item.getNumSolicitacao(),
-                                        request.getCodCanal(),
-                                        item.getItens() != null ? item.getItens().stream().map(UpdateRequestCredit.ItemDetail::getNumSolicitacaoItem).collect(Collectors.toList()) : List.of()
-                                ))
-                                        .collect(Collectors.toList()),
-                                null,
-                                request.getObservacao()
-                        )
-                );
+                        new UnblockCommand(toEntries(request), null, request.getObservacao()));
             case CANCELAR ->
                 creditRequestManagementUseCase.cancel(
-                        new CancelCommand(
-                                request.getPedidosPermitidos().stream()
-                                        .map(item -> new CreditRequestManagementUseCase.OrderItemEntry(
-                                        item.getNumSolicitacao(),
-                                        request.getCodCanal(),
-                                        item.getItens() != null ? item.getItens().stream().map(UpdateRequestCredit.ItemDetail::getNumSolicitacaoItem).collect(Collectors.toList()) : List.of()
-                                ))
-                                        .collect(Collectors.toList()),
-                                null,
-                                request.getObservacao()
-                        )
-                );
+                        new CancelCommand(toEntries(request), null, request.getObservacao()));
             case PAGO ->
-                creditRequestManagementUseCase.pay(
-                        new PayCommand(
-                                request.getPedidosPermitidos().stream()
-                                        .flatMap(item -> item.getItens().stream()
-                                                .map(detail -> new PayItemEntry(
-                                                        item.getNumSolicitacao(),
-                                                        detail.getNumSolicitacaoItem(),
-                                                        request.getCodCanal(),
-                                                        detail.getCodProduto(),
-                                                        detail.getCodSituacao(),
-                                                        detail.getVlItem(),
-                                                        detail.getVlTxadm(),
-                                                        detail.getVlTxserv()
-                                                ))
-                                        )
-                                        .collect(Collectors.toList()),
-                                null,
-                                request.getCodFormaPagto(),
-                                request.getVlPago(),
-                                null
-                        )
-                );
+                creditRequestManagementUseCase.pay(mapToPayCommand(request));
             default ->
-                throw new IllegalArgumentException("Ação não suportada: " + acao);
+                throw new IllegalArgumentException("Ação não suportada: " + request.getAcao());
         }
+    }
+
+    private List<OrderItemEntry> toEntries(UpdateRequestCredit req) {
+        return req.getPedidosPermitidos().stream()
+                .map(item -> new OrderItemEntry(
+                        item.getNumSolicitacao(),
+                        req.getCodCanal(),
+                        item.getItens() != null
+                                ? item.getItens().stream()
+                                        .map(UpdateRequestCredit.ItemDetail::getNumSolicitacaoItem)
+                                        .toList()
+                                : List.of()))
+                .toList();
+    }
+
+    private PayCommand mapToPayCommand(UpdateRequestCredit req) {
+        return new PayCommand(
+                req.getPedidosPermitidos().stream()
+                        .flatMap(item -> item.getItens().stream()
+                                .map(detail -> new PayItemEntry(
+                                        item.getNumSolicitacao(),
+                                        detail.getNumSolicitacaoItem(),
+                                        req.getCodCanal(),
+                                        detail.getCodProduto(),
+                                        detail.getCodSituacao(),
+                                        detail.getVlItem(),
+                                        detail.getVlTxadm(),
+                                        detail.getVlTxserv())))
+                        .toList(),
+                null,
+                req.getCodFormaPagto(),
+                req.getVlPago(),
+                null);
     }
 
     @PostMapping("create")

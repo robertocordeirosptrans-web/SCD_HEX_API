@@ -45,7 +45,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
     private final CreditRequestItemsPort itemRepository;
     private final HistCreditRequestService historyService;
     private final StatusConsolidationHelper statusConsolidationHelper;
-    // private final CreditRequestMapper creditRequestMapper;
+
 
     @Override
     @Transactional
