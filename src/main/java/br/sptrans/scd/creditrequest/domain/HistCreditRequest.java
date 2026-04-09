@@ -32,7 +32,7 @@ public class HistCreditRequest {
 
     private LocalDateTime dtFimProcesso;
 
-    private LocalDateTime desOcorrencia;
+    private String desOcorrencia;
 
     private User idUsuarioTransicao;
 

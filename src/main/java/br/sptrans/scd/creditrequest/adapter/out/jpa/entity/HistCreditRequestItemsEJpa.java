@@ -52,6 +52,9 @@ public class HistCreditRequestItemsEJpa {
     @Column(name = "DT_FIM_PROCESSO")
     private LocalDateTime dtFimProcesso;
 
+    @Column(name = "DES_OCORRENCIA", length = 200)
+    private String desOcorrencia;
+
     @Column(name = "ID_USUARIO_TRANSICAO")
     private Long idUsuarioTransicao;
 

@@ -26,4 +26,9 @@ public interface CreditRequestItemsPort {
     List<Long> findNumSolicitacaoItemsBySolicitacaoCanalLote(Long numSolicitacao, String codCanal, String numLote);
 
     List<CreditRequestItems> findProcessRechargeService(Long numSolicitacao, String codCanal, String numLote);
+
+    /**
+     * Busca itens elegíveis para processamento de recarga com a situação informada.
+     */
+    List<CreditRequestItems> searchItemsToBeProcessed(String codSituacao);
 }

@@ -21,6 +21,7 @@ public class HistCreditItensMapper {
         domain.setSqPID(entity.getSqPID());
         domain.setDtInicProcesso(entity.getDtInicProcesso());
         domain.setDtFimProcesso(entity.getDtFimProcesso());
+        domain.setDesOcorrencia(entity.getDesOcorrencia());
         if (entity.getIdUsuarioTransicao() != null) {
             User user = new User();
             user.setIdUsuario(entity.getIdUsuarioTransicao());
@@ -43,6 +44,7 @@ public class HistCreditItensMapper {
         entity.setSqPID(domain.getSqPID());
         entity.setDtInicProcesso(domain.getDtInicProcesso());
         entity.setDtFimProcesso(domain.getDtFimProcesso());
+        entity.setDesOcorrencia(domain.getDesOcorrencia());
         if (domain.getIdUsuarioTransicao() != null) {
             entity.setIdUsuarioTransicao(domain.getIdUsuarioTransicao().getIdUsuario());
         }

@@ -3,6 +3,7 @@ package br.sptrans.scd.creditrequest.application.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public class HistCreditRequestService implements HistCreditRequestManagementUseC
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveItemStatusHistoryBatch(List<CreditRequestItems> itens, String origemTransicao) {
         List<HistCreditRequestItems> registros = itens.stream()
-                .map(item -> montarHistoricoSeNecessario(item, origemTransicao))
+                .map(item -> montarHistoricoSeNecessario(item, origemTransicao, null))
                 .filter(Objects::nonNull)
                 .toList();
         if (!registros.isEmpty()) {
@@ -61,11 +62,33 @@ public class HistCreditRequestService implements HistCreditRequestManagementUseC
         }
     }
 
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveItemStatusHistoryBatch(List<CreditRequestItems> itens, String origemTransicao,
+            Map<Long, String> descricaoPorItem) {
+        List<HistCreditRequestItems> registros = itens.stream()
+                .map(item -> {
+                    String desc = descricaoPorItem != null
+                            ? descricaoPorItem.get(item.getId().getNumSolicitacaoItem())
+                            : null;
+                    return montarHistoricoSeNecessario(item, origemTransicao, desc);
+                })
+                .filter(Objects::nonNull)
+                .toList();
+        if (!registros.isEmpty()) {
+            itemHistoryRepository.saveAll(registros);
+            log.info("Batch de históricos de itens com descrição salvo: {} registros", registros.size());
+        } else {
+            log.info("Nenhum histórico novo a salvar no batch (todos já existentes)");
+        }
+    }
+
     /**
      * Monta o histórico do item se necessário (se não for duplicado). Retorna null
      * se já existir status igual.
      */
-    private HistCreditRequestItems montarHistoricoSeNecessario(CreditRequestItems item, String origemTransicao) {
+    private HistCreditRequestItems montarHistoricoSeNecessario(CreditRequestItems item, String origemTransicao,
+            String desOcorrencia) {
         List<HistCreditRequestItems> latestHistory = itemHistoryRepository.findLatestByItem(
                 item.getId().getNumSolicitacao(),
                 item.getId().getNumSolicitacaoItem(),
@@ -104,6 +127,7 @@ public class HistCreditRequestService implements HistCreditRequestManagementUseC
         history.setDtPgtoEconomica(item.getDtPagtoEconomica());
         history.setSqPID(item.getSqPid());
         history.setDtInicProcesso(item.getDtInicProcesso());
+        history.setDesOcorrencia(desOcorrencia);
 
         User currentUser = userResolverHelper.getCurrentUser();
         if (currentUser != null) {

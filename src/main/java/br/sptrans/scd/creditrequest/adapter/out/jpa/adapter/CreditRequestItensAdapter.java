@@ -66,6 +66,14 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
     }
 
     @Override
+    public List<CreditRequestItems> searchItemsToBeProcessed(String codSituacao) {
+        return itemJpaRepository.searchItemsToBeProcessed(codSituacao)
+                .stream()
+                .map(creditRequestMapper::toDomainItem)
+                .toList();
+    }
+
+    @Override
     public List<CreditRequestItems> findAllById(List<CreditRequestItemsKey> ids) {
         List<CreditRequestItemsEJpaKey> entityKeys = ids.stream()
                 .map(id -> new CreditRequestItemsEJpaKey(

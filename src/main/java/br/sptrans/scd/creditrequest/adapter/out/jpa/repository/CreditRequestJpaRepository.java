@@ -115,10 +115,14 @@ public interface CreditRequestJpaRepository extends JpaRepository<CreditRequestE
             Pageable pageable
     );
 
-
-    
-
+    @Query(value = """
+        SELECT r.COD_CANAL_DISTRIBUICAO
+          FROM SPTRANSDBA.SOL_DISTRIB_REDES r
+         WHERE r.NUM_SOLICITACAO = :numSolicitacao
+           AND r.COD_CANAL = :codCanal
+         FETCH FIRST 1 ROWS ONLY
+    """, nativeQuery = true)
+    Optional<String> findCodCanalDistribuicao(
+            @Param("numSolicitacao") Long numSolicitacao,
+            @Param("codCanal") String codCanal);
 }
-
-
-

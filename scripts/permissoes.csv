@@ -61,11 +61,6 @@ SCD_WEB_API,product,fee_fare,Atualizar taxa
 SCD_WEB_API,product,fee_fare,Buscar taxas
 SCD_WEB_API,product,fee_fare,Remover taxa
 
-SCD_WEB_API,product,family,Atualizar família
-SCD_WEB_API,product,family,Buscar família por código
-SCD_WEB_API,product,family,Listar famílias
-SCD_WEB_API,product,family,Ativar família
-SCD_WEB_API,product,family,Inativar família
 
 SCD_WEB_API,channel,types_activities,Cadastrar tipo de atividade
 SCD_WEB_API,channel,types_activities,Atualizar tipo de atividade

@@ -1,14 +1,19 @@
 package br.sptrans.scd.creditrequest.adapter.in.scheduler;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.creditrequest.application.port.in.ProcessRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.ProcessRechargeUseCase.ProcessRechargeCommand;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
-import br.sptrans.scd.creditrequest.domain.CreditRequest;
-import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
+import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
+import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,9 +24,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>O job:</p>
  * <ol>
- *   <li>Busca solicitações em {@code LIBERADO_PARA_RECARGA (05)}.</li>
- *   <li>Para cada solicitação, chama
- *       {@link ProcessRechargeUseCase#processarRecarga}.</li>
+ *   <li>Busca itens em {@code LIBERADO_PARA_RECARGA (05)} via
+ *       {@code searchItemsToBeProcessed}.</li>
+ *   <li>Deduplica por solicitação e chama
+ *       {@link ProcessRechargeUseCase#processarRecarga} para cada uma.</li>
  * </ol>
  *
  * <p>Executado a cada {@code scheduler.processar-recarga.intervalo-ms}
@@ -32,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ProcessRechargeScheduler {
 
-    private final CreditRequestPort creditRequestRepository;
+    private final CreditRequestItemsPort itemRepository;
     private final ProcessRechargeUseCase processRechargeUseCase;
 
     @Value("${scheduler.processar-recarga.enabled:true}")
@@ -49,6 +55,7 @@ public class ProcessRechargeScheduler {
      * configurável via {@code scheduler.processar-recarga.intervalo-ms}.
      */
     @Scheduled(fixedRateString = "${scheduler.processar-recarga.intervalo-ms:60000}")
+    @Transactional
     public void executar() {
         if (!enabled) {
             log.debug("Job ProcessarRecarga desativado (scheduler.processar-recarga.enabled=false)");
@@ -56,30 +63,41 @@ public class ProcessRechargeScheduler {
         }
         log.debug("Iniciando job ProcessarRecarga");
 
+        List<CreditRequestItems> itens = itemRepository.searchItemsToBeProcessed(
+                SituationCreditRequestItems.LIBERADO_PARA_RECARGA.getCode());
+
+        if (itens.isEmpty()) {
+            log.debug("Nenhum item elegível para processamento encontrado.");
+            return;
+        }
+
+
+        Map<String, CreditRequestItems> solicitacoesUnicas = new LinkedHashMap<>();
+        for (CreditRequestItems item : itens) {
+            String chave = item.getCodTipoDocumento() + "_" + item.getIdUsuarioCadastro();
+            solicitacoesUnicas.putIfAbsent(chave, item);
+            if (solicitacoesUnicas.size() >= tamanhoLote) {
+                break;
+            }
+        }
+
         int processadas = 0;
         int ignoradas = 0;
 
-        for (int i = 0; i < tamanhoLote; i++) {
-            CreditRequest solicitacao = creditRequestRepository.findElegiveisParaProcessamento(
-                    SituationCreditRequest.LIBERADO_PARA_RECARGA.getCode());
-
-            if (solicitacao == null) {
-                break;
-            }
-
+        for (CreditRequestItems item : solicitacoesUnicas.values()) {
             try {
                 ProcessRechargeCommand comando = new ProcessRechargeCommand(
-                        solicitacao.getCodTipoDocumento(),
-                        solicitacao.getIdUsuarioCadastro(),
-                        solicitacao.getSqPid());
+                        item.getCodTipoDocumento(),
+                        item.getIdUsuarioCadastro(),
+                        item.getSqPid());
 
                 processRechargeUseCase.processarRecarga(comando);
                 processadas++;
-                log.info("Recarga processada para solicitação {}/{}.",
-                        solicitacao.getNumSolicitacao(), solicitacao.getCodCanal());
+                log.info("Recarga processada para codTipoDocumento={}, idUsuarioCadastro={}.",
+                        item.getCodTipoDocumento(), item.getIdUsuarioCadastro());
             } catch (Exception e) {
-                log.error("Erro ao processar recarga para solicitação {}/{}: {}",
-                        solicitacao.getNumSolicitacao(), solicitacao.getCodCanal(), e.getMessage(), e);
+                log.error("Erro ao processar recarga para codTipoDocumento={}, idUsuarioCadastro={}: {}",
+                        item.getCodTipoDocumento(), item.getIdUsuarioCadastro(), e.getMessage(), e);
                 ignoradas++;
             }
         }
@@ -88,3 +106,4 @@ public class ProcessRechargeScheduler {
                 processadas, ignoradas);
     }
 }
+

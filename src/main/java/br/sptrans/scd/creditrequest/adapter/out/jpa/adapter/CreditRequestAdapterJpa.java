@@ -173,4 +173,9 @@ public class CreditRequestAdapterJpa implements CreditRequestPort {
             .map(mapper::toDomain);
         }
 
+    @Override
+    public Optional<String> findCodCanalDistribuicao(Long numSolicitacao, String codCanal) {
+        return jpaRepository.findCodCanalDistribuicao(numSolicitacao, codCanal);
+    }
+
 }

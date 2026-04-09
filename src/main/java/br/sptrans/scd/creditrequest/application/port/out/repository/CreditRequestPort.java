@@ -67,4 +67,10 @@ public interface CreditRequestPort {
             BigDecimal vlTotalMin,
             BigDecimal vlTotalMax,
             int limit);
+
+    /**
+     * Retorna o código do canal de distribuição associado à solicitação/canal.
+     * Utilizado para integração com HM (registrarAutorizacaoRecarga).
+     */
+    Optional<String> findCodCanalDistribuicao(Long numSolicitacao, String codCanal);
 }

@@ -4,6 +4,7 @@ package br.sptrans.scd.creditrequest.adapter.out.jpa.mapper;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.hibernate.Hibernate;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -171,7 +172,12 @@ public interface CreditRequestMapper {
         cr.setCodFormaPagto(entity.getCodFormaPagto());
 
         // Adicione outros campos conforme necessário
-        cr.setItens(toDomainItens(entity.getItens()));
+        // Só acessa a coleção lazy se já estiver inicializada (sessão aberta)
+        if (Hibernate.isInitialized(entity.getItens())) {
+            cr.setItens(toDomainItens(entity.getItens()));
+        } else {
+            cr.setItens(List.of());
+        }
         return cr;
     }
 

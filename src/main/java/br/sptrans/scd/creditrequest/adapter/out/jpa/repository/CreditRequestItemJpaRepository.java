@@ -28,6 +28,18 @@ public interface CreditRequestItemJpaRepository
         List<CreditRequestItemsEJpa> searchForItensUnlocked(
                         @Param("codSituacao") String codSituacao);
 
+        @Query(value = """
+                        SELECT i.*\r
+                        FROM SPTRANSDBA.SOL_DISTRIB_ITENS i\r
+                        WHERE i.COD_SITUACAO = :codSituacao\r
+                        FETCH FIRST 100 ROWS ONLY""" 
+        , nativeQuery = true)
+        List<CreditRequestItemsEJpa> searchItemsToBeProcessed(@Param("codSituacao") String codSituacao);
+
+ 
+        
+
+
         @Query("SELECT i FROM CreditRequestItemsEJpa i WHERE i.id.numSolicitacao = :num AND i.id.codCanal = :canal")
         List<CreditRequestItemsEJpa> findAllBySolicitacao(@Param("num") Long num, @Param("canal") String canal);
 
