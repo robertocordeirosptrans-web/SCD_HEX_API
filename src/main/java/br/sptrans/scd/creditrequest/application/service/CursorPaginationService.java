@@ -6,14 +6,15 @@ import java.util.stream.Collectors;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorCodec;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageResponse;
+import br.sptrans.scd.creditrequest.application.port.out.mapper.CreditRequestDTOMapper;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
+import br.sptrans.scd.creditrequest.domain.service.SearchModeClassifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,24 +35,61 @@ import lombok.extern.slf4j.Slf4j;
 public class CursorPaginationService {
 
     private final CreditRequestPort repository;
-    private final CreditRequestMapper mapper;
-    private final SearchModeClassifier searchModeClassifier;
+    private final CreditRequestDTOMapper dtoMapper;
+    // Usa a versão pura do domínio
+    private final SearchModeClassifier searchModeClassifier = new SearchModeClassifier();
 
     /**
      * Busca registros usando paginação por cursor.
      * Performance otimizada para milhões de registros.
      */
-    @Cacheable(value = "pedidos", key = "#request.toString()")
+    // Chave de cache determinística e estável
+    @Cacheable(value = "pedidos", key = "T(br.sptrans.scd.creditrequest.application.service.CursorPaginationService).buildCacheKey(#request)")
+        /**
+         * Gera uma chave de cache determinística baseada nos principais filtros do request.
+         * Campos nulos são ignorados, ordem é fixa.
+         */
+        public static String buildCacheKey(CursorPageRequest request) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("numSolicitacao=").append(request.getNumSolicitacao()).append(";");
+            sb.append("codCanal=").append(request.getCodCanal()).append(";");
+            sb.append("codSituacao=").append(request.getCodSituacao()).append(";");
+            sb.append("numLote=").append(request.getNumLote()).append(";");
+            sb.append("codProduto=").append(request.getCodProduto()).append(";");
+            sb.append("codLogin=").append(request.getCodLogin()).append(";");
+            sb.append("dtInicio=").append(request.getDtInicio()).append(";");
+            sb.append("dtFim=").append(request.getDtFim()).append(";");
+            sb.append("limit=").append(request.getLimit()).append(";");
+            sb.append("cursor=").append(request.getCursor()).append(";");
+            // Adicione outros campos relevantes se necessário
+            return sb.toString();
+        }
     public CursorPageResponse<CreditRequestDTO> findWithCursor(CursorPageRequest request) {
         long startTime = System.currentTimeMillis();
 
-        // Classificar o modo de busca baseado nos filtros
-        SearchMode searchMode = searchModeClassifier.classify(request);
+        // Classificar o modo de busca baseado nos filtros (usando domínio puro)
+        SearchMode searchMode = searchModeClassifier.classify(
+            request.getNumSolicitacao(),
+            request.getCodCanal(),
+            request.getCodSituacao(),
+            request.getNumLote(),
+            request.getCodProduto(),
+            request.getCodLogin(),
+            request.getCodFormaPagto(),
+            request.getVlTotalMin(),
+            request.getVlTotalMax(),
+            request.getDtInicio(),
+            request.getDtFim(),
+            request.getDtLiberacaoEfetivaInicio(),
+            request.getDtLiberacaoEfetivaFim(),
+            request.getDtPagtoEconomicaInicio(),
+            request.getDtPagtoEconomicaFim(),
+            request.getDtFinanceiraInicio(),
+            request.getDtFinanceiraFim(),
+            request.getDtAlteracaoInicio(),
+            request.getDtAlteracaoFim()
+        );
 
-        // Validar filtros mínimos para o modo classificado
-        searchModeClassifier.validateMinimumFilters(request, searchMode);
-
-        // Validar e ajustar limite baseado no modo
         adjustLimitForSearchMode(request, searchMode);
 
         log.info("Executando busca: mode={}, filters={}, cursor={}, limit={}",
@@ -63,15 +101,9 @@ public class CursorPaginationService {
         // Executar busca baseado no modo
         CursorPageResponse<CreditRequestDTO> response;
         switch (searchMode) {
-            case SPECIFIC:
-                response = executeSpecificSearch(request, startTime, searchMode);
-                break;
-            case OPERATIONAL:
-            case ANALYTICAL:
-                response = executeOperationalOrAnalyticalSearch(request, startTime, searchMode);
-                break;
-            default:
-                throw new IllegalStateException("Modo de busca desconhecido: " + searchMode);
+            case SPECIFIC -> response = executeSpecificSearch(request, startTime, searchMode);
+            case OPERATIONAL, ANALYTICAL -> response = executeOperationalOrAnalyticalSearch(request, startTime, searchMode);
+            default -> throw new IllegalStateException("Modo de busca desconhecido: " + searchMode);
         }
 
         long executionTime = System.currentTimeMillis() - startTime;
@@ -96,8 +128,8 @@ public class CursorPaginationService {
                 request.getCodCanal());
 
         List<CreditRequestDTO> dtos = results.stream()
-                .map(mapper::toDTO)
-                .collect(Collectors.toList());
+            .map(dtoMapper::toDTO)
+            .collect(Collectors.toList());
 
         return CursorPageResponse.<CreditRequestDTO>builder()
                 .data(dtos)
@@ -177,8 +209,8 @@ public class CursorPaginationService {
         }
 
         List<CreditRequestDTO> dtos = results.stream()
-                .map(mapper::toDTO)
-                .collect(Collectors.toList());
+            .map(dtoMapper::toDTO)
+            .collect(Collectors.toList());
 
         return CursorPageResponse.<CreditRequestDTO>builder()
                 .data(dtos)

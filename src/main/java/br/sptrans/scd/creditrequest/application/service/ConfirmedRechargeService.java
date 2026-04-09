@@ -1,5 +1,6 @@
 package br.sptrans.scd.creditrequest.application.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,7 +86,7 @@ public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
             }
             String statusAnterior = item.getCodSituacao().getCode();
             item.setCodSituacao(SituationCreditRequestItems.RECARREGADO);
-            item.setDtManutencao(java.time.LocalDateTime.now());
+            item.setDtManutencao(LocalDateTime.now());
             itemRepository.save(item);
             confirmados++;
             itensDominio.add(item);
