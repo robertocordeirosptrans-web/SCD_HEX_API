@@ -10,10 +10,10 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.ReportingPolicy;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpaKey;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpaKey;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEntity;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEntityKey;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEntity;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEntityKey;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestItemsDTO;
@@ -26,10 +26,10 @@ import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CreditRequestMapper {
     // Conversão de domínio para entidade JPA
-    default CreditRequestEJpa toJpaEntity(CreditRequest cdr) {
+    default CreditRequestEntity toJpaEntity(CreditRequest cdr) {
         if (cdr == null) return null;
-        CreditRequestEJpa entity = new CreditRequestEJpa();
-        CreditRequestEJpaKey key = new CreditRequestEJpaKey();
+        CreditRequestEntity entity = new CreditRequestEntity();
+        CreditRequestEntityKey key = new CreditRequestEntityKey();
         key.setNumSolicitacao(cdr.getNumSolicitacao());
         key.setCodCanal(cdr.getCodCanal());
         entity.setId(key);
@@ -58,12 +58,12 @@ public interface CreditRequestMapper {
     }
 
     // Conversão de domínio para entidade JPA (itens)
-    default CreditRequestItemsEJpa toEntityItem(CreditRequestItems items) {
+    default CreditRequestItemsEntity toEntityItem(CreditRequestItems items) {
         if (items == null) {
             return null;
         }
-        CreditRequestItemsEJpa entity = new CreditRequestItemsEJpa();
-        CreditRequestItemsEJpaKey key = new CreditRequestItemsEJpaKey();
+        CreditRequestItemsEntity entity = new CreditRequestItemsEntity();
+        CreditRequestItemsEntityKey key = new CreditRequestItemsEntityKey();
         key.setNumSolicitacao(items.getId().getNumSolicitacao());
         key.setNumSolicitacaoItem(items.getId().getNumSolicitacaoItem());
         key.setCodCanal(items.getId().getCodCanal());
@@ -141,7 +141,7 @@ public interface CreditRequestMapper {
     CreditRequestItemsDTO itemToDTO(CreditRequestItems entity);
 
     // Conversão de entidade JPA para domínio
-    default CreditRequest toDomain(CreditRequestEJpa entity) {
+    default CreditRequest toDomain(CreditRequestEntity entity) {
         if (entity == null) {
             return null;
         }
@@ -181,14 +181,14 @@ public interface CreditRequestMapper {
         return cr;
     }
 
-    default List<CreditRequestItems> toDomainItens(List<CreditRequestItemsEJpa> itensJpa) {
+    default List<CreditRequestItems> toDomainItens(List<CreditRequestItemsEntity> itensJpa) {
         if (itensJpa == null) {
             return List.of();
         }
         return itensJpa.stream().map(this::toDomainItem).toList();
     }
 
-    default CreditRequestItems toDomainItem(CreditRequestItemsEJpa itemJpa) {
+    default CreditRequestItems toDomainItem(CreditRequestItemsEntity itemJpa) {
         if (itemJpa == null) {
             return null;
         }

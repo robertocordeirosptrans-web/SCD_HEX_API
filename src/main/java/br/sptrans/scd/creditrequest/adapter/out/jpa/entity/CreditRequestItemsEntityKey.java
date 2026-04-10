@@ -16,7 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class CreditRequestItemsEJpaKey implements Serializable {
+public class CreditRequestItemsEntityKey implements Serializable {
 
     @Column(name = "NUM_SOLICITACAO", nullable = false)
     private Long numSolicitacao;

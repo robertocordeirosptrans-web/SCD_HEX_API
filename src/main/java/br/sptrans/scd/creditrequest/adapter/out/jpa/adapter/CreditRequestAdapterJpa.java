@@ -8,8 +8,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpaKey;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEntity;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEntityKey;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.CreditRequestJpaRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
@@ -29,8 +29,8 @@ public class CreditRequestAdapterJpa implements CreditRequestPort {
     
     @Override
     public CreditRequest save(CreditRequest cdr) {
-        CreditRequestEJpa entity = mapper.toJpaEntity(cdr);
-        CreditRequestEJpa saved = jpaRepository.save(entity);
+        CreditRequestEntity entity = mapper.toJpaEntity(cdr);
+        CreditRequestEntity saved = jpaRepository.save(entity);
         return mapper.toDomain(saved);
     }
 
@@ -107,7 +107,7 @@ public class CreditRequestAdapterJpa implements CreditRequestPort {
             BigDecimal vlTotalMin,
             BigDecimal vlTotalMax,
             int limit) {
-        var spec = (Specification<CreditRequestEJpa>) (root, query, cb) -> {
+        var spec = (Specification<CreditRequestEntity>) (root, query, cb) -> {
             var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
             if (cursorNumSolicitacao != null) {
                 var p1 = cb.lessThan(root.get("id").get("numSolicitacao"), cursorNumSolicitacao);
@@ -144,12 +144,12 @@ public class CreditRequestAdapterJpa implements CreditRequestPort {
 
     @Override
     public void update(Long numSolicitacao, String codCanal, CreditRequest cr) {
-        CreditRequestEJpaKey key = new CreditRequestEJpaKey();
+        CreditRequestEntityKey key = new CreditRequestEntityKey();
         key.setNumSolicitacao(numSolicitacao);
         key.setCodCanal(codCanal);
-        Optional<CreditRequestEJpa> entityOpt = jpaRepository.findById(key);
+        Optional<CreditRequestEntity> entityOpt = jpaRepository.findById(key);
         if (entityOpt.isPresent()) {
-            CreditRequestEJpa entity = entityOpt.get();
+            CreditRequestEntity entity = entityOpt.get();
             // Atualize os campos necessários
             entity.setCodSituacao(cr.getCodSituacao().getCode());
             entity.setCodFormaPagto(cr.getCodFormaPagto());

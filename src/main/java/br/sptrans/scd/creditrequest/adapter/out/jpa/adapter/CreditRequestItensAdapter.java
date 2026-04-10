@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpaKey;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEntity;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEntityKey;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.CreditRequestItemJpaRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
@@ -23,7 +23,7 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
 
     @Override
     public CreditRequestItems save(CreditRequestItems items) {
-        CreditRequestItemsEJpa saved = itemJpaRepository.save(creditRequestMapper.toEntityItem(items));
+        CreditRequestItemsEntity saved = itemJpaRepository.save(creditRequestMapper.toEntityItem(items));
         return creditRequestMapper.toDomainItem(saved);
     }
 
@@ -40,7 +40,7 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
         if (id == null) {
             return Optional.empty();
         }
-        CreditRequestItemsEJpaKey entityKey = new CreditRequestItemsEJpaKey(id.getNumSolicitacao(), id.getNumSolicitacaoItem(), id.getCodCanal());
+        CreditRequestItemsEntityKey entityKey = new CreditRequestItemsEntityKey(id.getNumSolicitacao(), id.getNumSolicitacaoItem(), id.getCodCanal());
         return itemJpaRepository.findById(entityKey)
                 .map(creditRequestMapper::toDomainItem);
     }
@@ -75,8 +75,8 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
 
     @Override
     public List<CreditRequestItems> findAllById(List<CreditRequestItemsKey> ids) {
-        List<CreditRequestItemsEJpaKey> entityKeys = ids.stream()
-                .map(id -> new CreditRequestItemsEJpaKey(
+        List<CreditRequestItemsEntityKey> entityKeys = ids.stream()
+                .map(id -> new CreditRequestItemsEntityKey(
                         id.getNumSolicitacao(),
                         id.getNumSolicitacaoItem(),
                         id.getCodCanal()))

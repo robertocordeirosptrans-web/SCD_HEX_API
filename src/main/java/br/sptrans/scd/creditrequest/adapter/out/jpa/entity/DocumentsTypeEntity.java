@@ -17,7 +17,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentsTypeEJpa {
+public class DocumentsTypeEntity {
     @Id
     @Column(name = "COD_TIPO_DOCUMENTO", length = 20)
     private String codTipoDocumento;

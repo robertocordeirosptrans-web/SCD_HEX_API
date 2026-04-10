@@ -24,10 +24,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreditRequestEJpa {
+public class CreditRequestEntity {
 
     @EmbeddedId
-    private CreditRequestEJpaKey id;
+    private CreditRequestEntityKey id;
 
     @Column(name = "ID_USUARIO_CADASTRO")
     private Long idUsuarioCadastro;
@@ -93,5 +93,5 @@ public class CreditRequestEJpa {
     private String flgBloq;
 
     @OneToMany(mappedBy = "solicitacao", fetch = FetchType.LAZY)
-    private List<CreditRequestItemsEJpa> itens;
+    private List<CreditRequestItemsEntity> itens;
 }

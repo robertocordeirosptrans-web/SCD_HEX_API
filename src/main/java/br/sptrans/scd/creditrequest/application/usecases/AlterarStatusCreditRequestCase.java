@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEntity;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.OrderItemEntry;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.PayCommand;
@@ -74,7 +74,7 @@ public class AlterarStatusCreditRequestCase {
 
         int itensProcessados = 0;
         Set<String> solicitacoesParaConsolidar = new LinkedHashSet<>();
-        List<CreditRequestItemsEJpa> itensParaRestaurar = new ArrayList<>();
+        List<CreditRequestItemsEntity> itensParaRestaurar = new ArrayList<>();
 
         // Phase 2: Process each item using the already-loaded map (zero extra queries)
         for (OrderItemEntry entry : entries) {
@@ -158,7 +158,7 @@ public class AlterarStatusCreditRequestCase {
 
         // Phase 4: Restore DESBLOQUEAR items to their pre-block status
         if (acao == ActionStatus.DESBLOQUEAR) {
-            for (CreditRequestItemsEJpa item : itensParaRestaurar) {
+            for (CreditRequestItemsEntity item : itensParaRestaurar) {
                 try {
                     String statusAntesBloqueio = findStatusBeforeBloqueio(
                             item.getId().getNumSolicitacao(),
@@ -387,7 +387,7 @@ public class AlterarStatusCreditRequestCase {
                         .collect(Collectors.toList());
 
                 if (!domainItens.isEmpty()) {
-                    List<CreditRequestItemsEJpa> itens = domainItens.stream()
+                    List<CreditRequestItemsEntity> itens = domainItens.stream()
                             .map(creditRequestMapper::toEntityItem)
                             .collect(Collectors.toList());
 

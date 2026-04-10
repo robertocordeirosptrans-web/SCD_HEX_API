@@ -3,15 +3,15 @@ package br.sptrans.scd.creditrequest.adapter.out.jpa.mapper;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestKeyEJpa;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestEntity;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestEntityKey;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequest;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestKey;
 
 @Component
 public class HistCreditRequestMapperImpl implements HistCreditRequestMapper {
     @Override
-    public HistCreditRequest toDomain(HistCreditRequestEJpa entity) {
+    public HistCreditRequest toDomain(HistCreditRequestEntity entity) {
         if (entity == null) return null;
         var domain = new HistCreditRequest();
         domain.setId(toDomainKey(entity.getId()));
@@ -35,9 +35,9 @@ public class HistCreditRequestMapperImpl implements HistCreditRequestMapper {
     }
 
     @Override
-    public HistCreditRequestEJpa toEntity(HistCreditRequest domain) {
+    public HistCreditRequestEntity toEntity(HistCreditRequest domain) {
         if (domain == null) return null;
-        var entity = new HistCreditRequestEJpa();
+        var entity = new HistCreditRequestEntity();
         entity.setId(toEntityKey(domain.getId()));
         entity.setCodTipoDocumento(domain.getCodTipoDocumento());
         entity.setCodSituacao(domain.getCodSituacao());
@@ -56,9 +56,9 @@ public class HistCreditRequestMapperImpl implements HistCreditRequestMapper {
     }
 
     @Override
-    public HistCreditRequestKeyEJpa toEntityKey(HistCreditRequestKey key) {
+    public HistCreditRequestEntityKey toEntityKey(HistCreditRequestKey key) {
         if (key == null) return null;
-        var entityKey = new HistCreditRequestKeyEJpa();
+        var entityKey = new HistCreditRequestEntityKey();
         entityKey.setNumSolicitacao(key.getNumSolicitacao());
         entityKey.setCodCanal(key.getCodCanal());
         entityKey.setSeqHistSdis(key.getSeqHistSdis());
@@ -66,7 +66,7 @@ public class HistCreditRequestMapperImpl implements HistCreditRequestMapper {
     }
 
     @Override
-    public HistCreditRequestKey toDomainKey(HistCreditRequestKeyEJpa entityKey) {
+    public HistCreditRequestKey toDomainKey(HistCreditRequestEntityKey entityKey) {
         if (entityKey == null) return null;
         var key = new HistCreditRequestKey();
         key.setNumSolicitacao(entityKey.getNumSolicitacao());

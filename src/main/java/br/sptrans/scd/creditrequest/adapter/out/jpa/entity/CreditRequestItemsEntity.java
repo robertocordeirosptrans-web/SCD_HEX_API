@@ -25,10 +25,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreditRequestItemsEJpa {
+public class CreditRequestItemsEntity {
 
     @EmbeddedId
-    private CreditRequestItemsEJpaKey id;
+    private CreditRequestItemsEntityKey id;
 
     @Column(name = "COD_CANAL", length = 50, insertable = false, updatable = false)
     private String codCanal;
@@ -150,5 +150,5 @@ public class CreditRequestItemsEJpa {
         @JoinColumn(name = "NUM_SOLICITACAO", referencedColumnName = "NUM_SOLICITACAO", insertable = false, updatable = false),
         @JoinColumn(name = "COD_CANAL", referencedColumnName = "COD_CANAL", insertable = false, updatable = false)
     })
-    private CreditRequestEJpa solicitacao;
+    private CreditRequestEntity solicitacao;
 }

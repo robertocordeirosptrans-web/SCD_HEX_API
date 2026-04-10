@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Chave composta para HisSolSituacoesJpaEntity.
- * Representa a PK (NUM_SOLICITACAO, COD_CANAL, SEQ_HIST_SDS)
- * de HIS_SOL_SITUACOES.
+ * Chave composta para HisSolItemSituacoesJpaEntity. Representa a PK
+ * (NUM_SOLICITACAO, NUM_SOLICITACAO_ITEM, COD_CANAL, SEQ_HIST_SDIS) de
+ * HIS_SOL_ITEM_SITUACOES.
  */
 @Embeddable
 @Getter
@@ -21,14 +21,17 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class HistCreditRequestKeyEJpa implements Serializable {
+public class HistCreditRequestItemsEntityKey implements Serializable{
 
     @Column(name = "NUM_SOLICITACAO", nullable = false)
     private Long numSolicitacao;
 
+    @Column(name = "NUM_SOLICITACAO_ITEM", nullable = false)
+    private Long numSolicitacaoItem;
+
     @Column(name = "COD_CANAL", nullable = false, length = 20)
     private String codCanal;
 
-    @Column(name = "SEQ_HIST_SDS", nullable = false)
+    @Column(name = "SEQ_HIST_SDIS", nullable = false)
     private Long seqHistSdis;
 }

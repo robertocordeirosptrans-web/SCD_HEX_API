@@ -28,7 +28,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RechargeLogEJpa {
+public class RechargeLogEntity {
 
     @Id
     @Column(name = "SEQ_RECARGA", nullable = false, length = 6)

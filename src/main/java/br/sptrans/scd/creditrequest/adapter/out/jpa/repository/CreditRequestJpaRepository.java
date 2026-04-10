@@ -12,16 +12,18 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEJpaKey;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEntity;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestEntityKey;
 
-public interface CreditRequestJpaRepository extends JpaRepository<CreditRequestEJpa, CreditRequestEJpaKey>, JpaSpecificationExecutor<CreditRequestEJpa> {
+
+
+public interface CreditRequestJpaRepository extends JpaRepository<CreditRequestEntity, CreditRequestEntityKey>, JpaSpecificationExecutor<CreditRequestEntity> {
 
     @Query(value = "SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s WHERE s.NUM_SOLICITACAO = :numSolicitacao AND s.COD_CANAL = :codCanal", nativeQuery = true)
-    Optional<CreditRequestEJpa> findByNumSolicitacaoAndCodCanal(@Param("numSolicitacao") Long numSolicitacao, @Param("codCanal") String codCanal);
+    Optional<CreditRequestEntity> findByNumSolicitacaoAndCodCanal(@Param("numSolicitacao") Long numSolicitacao, @Param("codCanal") String codCanal);
 
     @Query(value = "SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s WHERE s.COD_CANAL = :codCanal AND s.COD_SITUACAO = :codSituacao", nativeQuery = true)
-    List<CreditRequestEJpa> findByCanalAndSituacao(@Param("codCanal") String codCanal, @Param("codSituacao") String codSituacao);
+    List<CreditRequestEntity> findByCanalAndSituacao(@Param("codCanal") String codCanal, @Param("codSituacao") String codSituacao);
 
     @Query(value = "SELECT COUNT(1) FROM SPTRANSDBA.SOL_DISTRIBUICOES WHERE NUM_SOLICITACAO = :numSolicitacao", nativeQuery = true)
     int countByNumSolicitacao(@Param("numSolicitacao") Long numSolicitacao);
@@ -30,22 +32,22 @@ public interface CreditRequestJpaRepository extends JpaRepository<CreditRequestE
     int countByNumLoteAndCodCanal(@Param("numLote") String numLote, @Param("codCanal") String codCanal);
 
     @Query(value = "SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s WHERE s.COD_SITUACAO = :codSituacao AND s.DT_SOLICITACAO >= :dtInicio AND s.DT_SOLICITACAO <= :dtFim FETCH FIRST :limit ROWS ONLY", nativeQuery = true)
-    List<CreditRequestEJpa> findElegiveisParaLiberacao(@Param("codSituacao") String codSituacao, @Param("dtInicio") LocalDateTime dtInicio, @Param("dtFim") LocalDateTime dtFim, @Param("limit") int limit);
+    List<CreditRequestEntity> findElegiveisParaLiberacao(@Param("codSituacao") String codSituacao, @Param("dtInicio") LocalDateTime dtInicio, @Param("dtFim") LocalDateTime dtFim, @Param("limit") int limit);
 
     @Query(value = "SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s WHERE s.COD_SITUACAO = :codSituacao", nativeQuery = true)
-    List<CreditRequestEJpa> findElegiveisParaProcessamento(@Param("codSituacao") String codSituacao);
+    List<CreditRequestEntity> findElegiveisParaProcessamento(@Param("codSituacao") String codSituacao);
 
     @Query(value = "SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s WHERE s.COD_SITUACAO = :codSituacao FETCH FIRST :limit ROWS ONLY", nativeQuery = true)
-    List<CreditRequestEJpa> findElegiveisParaConfirmacao(@Param("codSituacao") String codSituacao, @Param("limit") int limit);
+    List<CreditRequestEntity> findElegiveisParaConfirmacao(@Param("codSituacao") String codSituacao, @Param("limit") int limit);
 
     @Query(value = "SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s WHERE s.NUM_SOLICITACAO = :numSolicitacao AND (:codCanal IS NULL OR s.COD_CANAL = :codCanal)", nativeQuery = true)
-    List<CreditRequestEJpa> findByNumSolicitacaoSpecific(@Param("numSolicitacao") Long numSolicitacao, @Param("codCanal") String codCanal);
+    List<CreditRequestEntity> findByNumSolicitacaoSpecific(@Param("numSolicitacao") Long numSolicitacao, @Param("codCanal") String codCanal);
 
     @Query(value = "SELECT s.* FROM SPTRANSDBA.SOL_DISTRIBUICOES s INNER JOIN SPTRANSDBA.SOL_DISTRIBUICOES_ITENS i ON s.NUM_SOLICITACAO = i.NUM_SOLICITACAO AND s.COD_CANAL = i.COD_CANAL WHERE i.COD_PRODUTO = :codProduto AND (:codCanal IS NULL OR s.COD_CANAL = :codCanal) AND (:dtInicio IS NULL OR s.DT_SOLICITACAO >= :dtInicio) AND (:dtFim IS NULL OR s.DT_SOLICITACAO <= :dtFim) ORDER BY s.NUM_SOLICITACAO DESC, s.COD_CANAL ASC FETCH FIRST :limit ROWS ONLY", nativeQuery = true)
-    List<CreditRequestEJpa> findByCodProduto(@Param("codProduto") String codProduto, @Param("codCanal") String codCanal, @Param("dtInicio") LocalDateTime dtInicio, @Param("dtFim") LocalDateTime dtFim, @Param("limit") int limit);
+    List<CreditRequestEntity> findByCodProduto(@Param("codProduto") String codProduto, @Param("codCanal") String codCanal, @Param("dtInicio") LocalDateTime dtInicio, @Param("dtFim") LocalDateTime dtFim, @Param("limit") int limit);
 
     @Query(value = "SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s WHERE s.COD_TIPO_DOCUMENTO = :codTipoDocumento AND s.ID_USUARIO_CADASTRO = :idUsuarioCadastro ORDER BY s.DT_SOLICITACAO DESC FETCH FIRST 1 ROWS ONLY", nativeQuery = true)
-    Optional<CreditRequestEJpa> findByCodTipoDocumentoAndIdUsuarioCadastro(@Param("codTipoDocumento") String codTipoDocumento, @Param("idUsuarioCadastro") Long idUsuarioCadastro);
+    Optional<CreditRequestEntity> findByCodTipoDocumentoAndIdUsuarioCadastro(@Param("codTipoDocumento") String codTipoDocumento, @Param("idUsuarioCadastro") Long idUsuarioCadastro);
 
     @Query(value = """
     SELECT 
@@ -93,7 +95,7 @@ public interface CreditRequestJpaRepository extends JpaRepository<CreditRequestE
     AND (:vlTotalMax IS NULL OR s.VL_TOTAL <= :vlTotalMax)
     ORDER BY s.NUM_SOLICITACAO DESC, s.COD_CANAL ASC
 """, nativeQuery = true)
-    List<CreditRequestEJpa> findWithCursor(
+    List<CreditRequestEntity> findWithCursor(
             @Param("cursorNumSolicitacao") Long cursorNumSolicitacao,
             @Param("cursorCodCanal") String cursorCodCanal,
             @Param("codCanal") String codCanal,

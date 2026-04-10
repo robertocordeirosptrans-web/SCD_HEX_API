@@ -11,25 +11,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * JPA Entity para a tabela HIS_SOL_SITUACOES (histórico de situações da
- * solicitação).
- *
- * <p>
- * Separada da entidade de domínio
- * {@link com.example.auth.domain.pedidos.HisSolSituacoes} para manter o domínio
- * livre de dependências JPA (arquitetura hexagonal).</p>
- */
 @Entity
-@Table(name = "HIST_SOL_SITUACOES", schema = "SPTRANSDBA")
+@Table(name = "HIST_SOL_ITEM_SITUACOES", schema = "SPTRANSDBA")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class HistCreditRequestEJpa {
+public class HistCreditRequestItemsEntity {
 
     @EmbeddedId
-    private HistCreditRequestKeyEJpa id;
+    private HistCreditRequestItemsEntityKey id;
 
     @Column(name = "COD_TIPO_DOCUMENTO", length = 20)
     private String codTipoDocumento;
@@ -52,12 +43,6 @@ public class HistCreditRequestEJpa {
     @Column(name = "DT_PAGTO_ECONOMICA")
     private LocalDateTime dtPgtoEconomica;
 
-    @Column(name = "DT_LIBERACAO_EFETIVA")
-    private LocalDateTime dtLiberacaoEfetiva;
-
-    @Column(name = "DT_FINANCEIRA")
-    private LocalDateTime dtFinanceira;
-
     @Column(name = "SQ_PID")
     private Long sqPID;
 
@@ -67,6 +52,10 @@ public class HistCreditRequestEJpa {
     @Column(name = "DT_FIM_PROCESSO")
     private LocalDateTime dtFimProcesso;
 
+    @Column(name = "DES_OCORRENCIA", length = 200)
+    private String desOcorrencia;
+
     @Column(name = "ID_USUARIO_TRANSICAO")
     private Long idUsuarioTransicao;
+
 }

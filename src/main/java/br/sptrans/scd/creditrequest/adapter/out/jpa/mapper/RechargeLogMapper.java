@@ -1,12 +1,12 @@
 package br.sptrans.scd.creditrequest.adapter.out.jpa.mapper;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.RechargeLogEJpa;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.RechargeLogEntity;
 import br.sptrans.scd.creditrequest.domain.RechargeLog;
 
 public class RechargeLogMapper {
-    public static RechargeLogEJpa toEntity(RechargeLog domain) {
+    public static RechargeLogEntity toEntity(RechargeLog domain) {
         if (domain == null) return null;
-        RechargeLogEJpa entity = new RechargeLogEJpa();
+        RechargeLogEntity entity = new RechargeLogEntity();
         entity.setSeqRecarga(domain.getSeqRecarga());
         entity.setNumLogicoCartao(domain.getNumLogicoCartao());
         entity.setDtSolicRecarga(domain.getDtSolicRecarga());
@@ -17,7 +17,7 @@ public class RechargeLogMapper {
         return entity;
     }
 
-    public static RechargeLog toDomain(RechargeLogEJpa entity) {
+    public static RechargeLog toDomain(RechargeLogEntity entity) {
         if (entity == null) return null;
         RechargeLog domain = new RechargeLog();
         domain.setSeqRecarga(entity.getSeqRecarga());

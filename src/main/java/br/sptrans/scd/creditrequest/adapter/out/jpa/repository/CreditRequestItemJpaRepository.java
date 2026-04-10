@@ -7,13 +7,13 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEJpaKey;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEntity;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEntityKey;
 import br.sptrans.scd.creditrequest.application.port.out.projection.ProductPeriodReportProjection;
 
 public interface CreditRequestItemJpaRepository
-                extends JpaRepository<CreditRequestItemsEJpa, CreditRequestItemsEJpaKey>,
-                JpaSpecificationExecutor<CreditRequestItemsEJpa> {
+                extends JpaRepository<CreditRequestItemsEntity, CreditRequestItemsEntityKey>,
+                JpaSpecificationExecutor<CreditRequestItemsEntity> {
 
         /**
          * Busca os primeiros 100 itens de recarga com situação informada.
@@ -25,7 +25,7 @@ public interface CreditRequestItemJpaRepository
                         WHERE i.COD_SITUACAO = :codSituacao
                         FETCH FIRST 100 ROWS ONLY
                         """, nativeQuery = true)
-        List<CreditRequestItemsEJpa> searchForItensUnlocked(
+        List<CreditRequestItemsEntity> searchForItensUnlocked(
                         @Param("codSituacao") String codSituacao);
 
         @Query(value = """
@@ -34,14 +34,14 @@ public interface CreditRequestItemJpaRepository
                         WHERE i.COD_SITUACAO = :codSituacao\r
                         FETCH FIRST 100 ROWS ONLY""" 
         , nativeQuery = true)
-        List<CreditRequestItemsEJpa> searchItemsToBeProcessed(@Param("codSituacao") String codSituacao);
+        List<CreditRequestItemsEntity> searchItemsToBeProcessed(@Param("codSituacao") String codSituacao);
 
  
         
 
 
-        @Query("SELECT i FROM CreditRequestItemsEJpa i WHERE i.id.numSolicitacao = :num AND i.id.codCanal = :canal")
-        List<CreditRequestItemsEJpa> findAllBySolicitacao(@Param("num") Long num, @Param("canal") String canal);
+        @Query("SELECT i FROM CreditRequestItemsEntity i WHERE i.id.numSolicitacao = :num AND i.id.codCanal = :canal")
+        List<CreditRequestItemsEntity> findAllBySolicitacao(@Param("num") Long num, @Param("canal") String canal);
 
         @Query(value = """
                         SELECT
@@ -123,7 +123,7 @@ public interface CreditRequestItemJpaRepository
                                 AND s.NUM_LOTE = :numLote
                         ORDER BY i.NUM_SOLICITACAO_ITEM
                         """, nativeQuery = true)
-        List<CreditRequestItemsEJpa> findProcessRechargeService(
+        List<CreditRequestItemsEntity> findProcessRechargeService(
                         @Param("numSolicitacao") Long numSolicitacao,
                         @Param("codCanal") String codCanal,
                         @Param("numLote") String numLote);

@@ -25,7 +25,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentMethodEJpa {
+public class PaymentMethodEntity {
     
     @Id
     @Column(name = "COD_FORMA_PAGTO", length = 15, nullable = false)

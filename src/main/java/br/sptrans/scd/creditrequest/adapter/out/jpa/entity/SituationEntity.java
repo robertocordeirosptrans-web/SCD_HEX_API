@@ -24,7 +24,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SituationEJpa {
+public class SituationEntity {
 
     @Id
     @Column(name = "COD_SITUACAO", length = 20)

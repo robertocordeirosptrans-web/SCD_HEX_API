@@ -6,8 +6,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestKeyEJpa;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestEntity;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestEntityKey;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.HistCreditRequestMapper;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.HistCreditJpaRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.HistCreditRequestPort;
@@ -26,23 +26,23 @@ public class HistCreditRequestAdapterJpa implements HistCreditRequestPort {
 
     @Override
     public HistCreditRequest save(HistCreditRequest h) {
-        HistCreditRequestEJpa entity = mapper.toEntity(h);
-        HistCreditRequestEJpa saved = jpaRepository.save(entity);
+        HistCreditRequestEntity entity = mapper.toEntity(h);
+        HistCreditRequestEntity saved = jpaRepository.save(entity);
         return mapper.toDomain(saved);
     }
 
 
     @Override
     public List<HistCreditRequest> saveAll(List<HistCreditRequest> items) {
-        List<HistCreditRequestEJpa> entities = items.stream().map(mapper::toEntity).toList();
-        List<HistCreditRequestEJpa> saved = jpaRepository.saveAll(entities);
+        List<HistCreditRequestEntity> entities = items.stream().map(mapper::toEntity).toList();
+        List<HistCreditRequestEntity> saved = jpaRepository.saveAll(entities);
         return saved.stream().map(mapper::toDomain).toList();
     }
 
 
     @Override
     public Optional<HistCreditRequest> findById(HistCreditRequestKey id) {
-        HistCreditRequestKeyEJpa keyEntity = mapper.toEntityKey(id);
+        HistCreditRequestEntityKey keyEntity = mapper.toEntityKey(id);
         return jpaRepository.findById(keyEntity).map(mapper::toDomain);
     }
 
@@ -62,7 +62,7 @@ public class HistCreditRequestAdapterJpa implements HistCreditRequestPort {
 
     @Override
     public boolean existsById(HistCreditRequestKey id) {
-        HistCreditRequestKeyEJpa keyEntity = mapper.toEntityKey(id);
+        HistCreditRequestEntityKey keyEntity = mapper.toEntityKey(id);
         return jpaRepository.existsById(keyEntity);
     }
 

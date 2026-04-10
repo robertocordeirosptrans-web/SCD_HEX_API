@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.RechargeLogEJpa;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.RechargeLogEntity;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.RechargeLogMapper;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.RechargeLogJpaRepository;
 import br.sptrans.scd.creditrequest.application.port.out.repository.RechargeLogPort;
@@ -19,8 +19,8 @@ public class  RechargeLogAdapterJpa implements  RechargeLogPort {
     @Override
 
     public RechargeLog save(RechargeLog rechargeLog) {
-        RechargeLogEJpa entity = RechargeLogMapper.toEntity(rechargeLog);
-        RechargeLogEJpa saved = rechargeLogJpaRepository.save(entity);
+        RechargeLogEntity entity = RechargeLogMapper.toEntity(rechargeLog);
+        RechargeLogEntity saved = rechargeLogJpaRepository.save(entity);
         return RechargeLogMapper.toDomain(saved);
     }
 

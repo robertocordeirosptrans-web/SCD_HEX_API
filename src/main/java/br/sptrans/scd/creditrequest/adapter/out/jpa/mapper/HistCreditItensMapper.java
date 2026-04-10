@@ -1,13 +1,13 @@
 package br.sptrans.scd.creditrequest.adapter.out.jpa.mapper;
 
 import br.sptrans.scd.auth.domain.User;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestItemsEJpa;
-import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestItemsKeyEJpa;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestItemsEntity;
+import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.HistCreditRequestItemsEntityKey;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.HistCreditRequestItemsKey;
 
 public class HistCreditItensMapper {
-    public static HistCreditRequestItems toDomain(HistCreditRequestItemsEJpa entity) {
+    public static HistCreditRequestItems toDomain(HistCreditRequestItemsEntity entity) {
         if (entity == null) return null;
         HistCreditRequestItems domain = new HistCreditRequestItems();
         domain.setId(toDomainKey(entity.getId()));
@@ -30,9 +30,9 @@ public class HistCreditItensMapper {
         return domain;
     }
 
-    public static HistCreditRequestItemsEJpa toEntity(HistCreditRequestItems domain) {
+    public static HistCreditRequestItemsEntity toEntity(HistCreditRequestItems domain) {
         if (domain == null) return null;
-        HistCreditRequestItemsEJpa entity = new HistCreditRequestItemsEJpa();
+        HistCreditRequestItemsEntity entity = new HistCreditRequestItemsEntity();
         entity.setId(toEntityKey(domain.getId()));
         entity.setCodTipoDocumento(domain.getCodTipoDocumento());
         entity.setCodSituacao(domain.getCodSituacao());
@@ -51,7 +51,7 @@ public class HistCreditItensMapper {
         return entity;
     }
 
-    public static HistCreditRequestItemsKey toDomainKey(HistCreditRequestItemsKeyEJpa entityKey) {
+    public static HistCreditRequestItemsKey toDomainKey(HistCreditRequestItemsEntityKey entityKey) {
         if (entityKey == null) return null;
         HistCreditRequestItemsKey key = new HistCreditRequestItemsKey();
         key.setNumSolicitacao(entityKey.getNumSolicitacao());
@@ -61,9 +61,9 @@ public class HistCreditItensMapper {
         return key;
     }
 
-    public static HistCreditRequestItemsKeyEJpa toEntityKey(HistCreditRequestItemsKey domainKey) {
+    public static HistCreditRequestItemsEntityKey toEntityKey(HistCreditRequestItemsKey domainKey) {
         if (domainKey == null) return null;
-        HistCreditRequestItemsKeyEJpa key = new HistCreditRequestItemsKeyEJpa();
+        HistCreditRequestItemsEntityKey key = new HistCreditRequestItemsEntityKey();
         key.setNumSolicitacao(domainKey.getNumSolicitacao());
         key.setNumSolicitacaoItem(domainKey.getNumSolicitacaoItem());
         key.setCodCanal(domainKey.getCodCanal());
