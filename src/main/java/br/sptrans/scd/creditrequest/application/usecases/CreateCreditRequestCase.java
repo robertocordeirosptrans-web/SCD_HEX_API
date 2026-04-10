@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
+import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.SalesChannel;
@@ -25,11 +26,13 @@ import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestRespons
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse.ItemRejeitado;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRDPort;
 import br.sptrans.scd.creditrequest.application.service.CreditRequestValidationService;
 import br.sptrans.scd.creditrequest.application.service.HistCreditRequestService;
 import br.sptrans.scd.creditrequest.application.service.RechargeLogService;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
+import br.sptrans.scd.creditrequest.domain.CreditRequestRD;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import br.sptrans.scd.product.application.service.FeeFareService;
 import br.sptrans.scd.product.domain.Fee;
@@ -58,6 +61,8 @@ public class CreateCreditRequestCase {
         private final IdempotencyStore<CreateRequestResponse> idempotencyStore;
         private final FeeFareService feeFareService;
         private final CreditRequestMapper creditRequestMapper;
+        private final CreditRequestRDPort creditRequestRDPort;
+        private final SalesChannelPersistencePort salesChannelPersistencePort;
 
         public CreateRequestResponse execute(
                         CreateRequestCredit request,
@@ -278,6 +283,7 @@ public class CreateCreditRequestCase {
                             pedido, item, request, userId);
                     creditRequestRepository.save(novaRequest);
                     domain = novaRequest;
+                    salvarCanaisDistribuicao(pedido, request, userId);
                     historyService.saveRequestStatusHistory(domain, pedido.numSolicitacao(),
                             request.codCanal(), ORIGEM_TRANSICAO);
                     auditLog.info("[AUDIT] Solicitação criada - numSolicitacao={}, codCanal={}, userId={}",
@@ -330,7 +336,53 @@ public class CreateCreditRequestCase {
             }
         }
 
+        /**
+         * Expande o canal de distribuição informado no pedido (DD) e persiste os terminais reais
+         * em SOL_RD_DISTRIBUICOES.
+         *
+         * <ul>
+         *   <li>Se o canal for um <b>supercanal</b>, todos os seus subordinados ativos são gravados.</li>
+         *   <li>Se for um <b>canal simples</b>, apenas ele mesmo é gravado.</li>
+         * </ul>
+         */
+        private void salvarCanaisDistribuicao(
+                CreateRequestCredit.CreditRequest pedido,
+                CreateRequestCredit request,
+                Long userId) {
 
+            String codCanalDistribuicao = pedido.canaisDistribuicao();
+            SalesChannel canalDist = salesChannelPersistencePort.findById(codCanalDistribuicao).orElse(null);
+
+            List<String> terminaisReais;
+            if (canalDist != null && canalDist.isSupercanal()) {
+                terminaisReais = salesChannelPersistencePort.findByCodCanalSuperior(codCanalDistribuicao)
+                        .stream()
+                        .filter(SalesChannel::isAtivo)
+                        .map(SalesChannel::getCodCanal)
+                        .toList();
+            } else {
+                terminaisReais = List.of(codCanalDistribuicao);
+            }
+
+            LocalDateTime agora = LocalDateTime.now();
+            List<CreditRequestRD> distribuicoes = terminaisReais.stream()
+                    .map(terminal -> {
+                        CreditRequestRD rd = new CreditRequestRD();
+                        rd.setNumSolicitacao(pedido.numSolicitacao());
+                        rd.setCodCanal(request.codCanal());
+                        rd.setCodCanalDistribuicao(terminal);
+                        rd.setIdUsuarioCadastro(userId);
+                        rd.setIdUsuarioManutencao(userId);
+                        rd.setDtCadastro(agora);
+                        rd.setDtManutencao(agora);
+                        return rd;
+                    })
+                    .toList();
+
+            creditRequestRDPort.saveAll(distribuicoes);
+            auditLog.info("[createCreditRequest] SOL_RD_DISTRIBUICOES gravado - numSolicitacao={}, terminais={}",
+                    pedido.numSolicitacao(), terminaisReais.size());
+        }
 
         // Contexto de validação para evitar queries repetidas por canal/produto
         record ItemValidationContext(

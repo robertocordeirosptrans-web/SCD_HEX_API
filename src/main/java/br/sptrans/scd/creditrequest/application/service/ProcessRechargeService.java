@@ -17,9 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelPersistencePort;
 import br.sptrans.scd.creditrequest.application.port.in.ProcessRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestRDPort;
 import br.sptrans.scd.creditrequest.application.port.out.repository.EventoFinanceiroPort;
 import br.sptrans.scd.creditrequest.application.port.out.repository.HmPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
+import br.sptrans.scd.creditrequest.domain.CreditRequestRD;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
 import br.sptrans.scd.shared.cache.InvalidateOrderCache;
@@ -61,6 +63,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
     private final CreditRequestItemsPort itemRepository;
     private final MarketingDistribuitionChannelPersistencePort marketingDistribuitionChannelPersistencePort;
+    private final CreditRequestRDPort creditRequestRDPort;
     private final HistCreditRequestService historyService;
     private final StatusConsolidationHelper statusConsolidationHelper;
     private final LiminarGateway liminarGateway;
@@ -80,16 +83,13 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
         List<CreditRequestItems> processados = new ArrayList<>();
         for (CreditRequestItems item : itens) {
             try {
-                // Busca canal de distribuição ativo
                 String codCanal = item.getCodCanal();
-                var canalDistribuicao = marketingDistribuitionChannelPersistencePort.findByAssocied(codCanal)
-                        .orElse(null);
-                String canalParaRegistrar = canalDistribuicao != null
-                        ? canalDistribuicao.getId().getCodCanalDistribuicao()
-                        : codCanal;
-
-                // Registra a rede HM uma vez por item
                 Long numSolicitacao = item.getSolicitacao() != null ? item.getSolicitacao().getNumSolicitacao() : null;
+
+                // Busca os terminais reais do pedido em SOL_RD_DISTRIBUICOES.
+                // Se não houver registros (pedidos legados ou migração parcial), faz fallback
+                // para o MarketingDistribuitionChannel como era feito antes.
+                List<String> canaisParaRegistrar = resolverCanaisDistribuicao(numSolicitacao, codCanal);
 
                 BigDecimal wValorEventoItem = BigDecimal.ZERO;
                 BigDecimal wValorDescItem = BigDecimal.ZERO;
@@ -113,7 +113,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
 
                 if (valorEfetivo.compareTo(BigDecimal.ZERO) > 0) {
                     // ── CAMINHO A: envia ao HM ──────────────────────────────────────
-                    processarCaminhoA(item, temEvento, wValorDescItem, wOutrasVias, valorEfetivo, canalParaRegistrar);
+                    processarCaminhoA(item, temEvento, wValorDescItem, wOutrasVias, valorEfetivo, canaisParaRegistrar);
                 } else {
                     // ── CAMINHO B: vai direto para RECARREGADO ──────────────────────
                     processarCaminhoB(item, numSolicitacao, codCanal);
@@ -147,18 +147,49 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
     // ── helpers privados ────────────────────────────────────────────────────────
 
     /**
+     * Resolve a lista de terminais de distribuição para um pedido.
+     *
+     * <p>Consulta primeiro SOL_RD_DISTRIBUICOES. Se a tabela não tiver registros para o pedido
+     * (pedidos legados ou recarga anterior à implantação desta feature), faz fallback para
+     * {@code MarketingDistribuitionChannel}, garantindo compatibilidade retroativa.</p>
+     */
+    private List<String> resolverCanaisDistribuicao(Long numSolicitacao, String codCanal) {
+        if (numSolicitacao != null) {
+            List<CreditRequestRD> distribuicoes =
+                    creditRequestRDPort.findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal);
+            if (distribuicoes != null && !distribuicoes.isEmpty()) {
+                return distribuicoes.stream()
+                        .map(CreditRequestRD::getCodCanalDistribuicao)
+                        .toList();
+            }
+        }
+        // Fallback: comportamento anterior
+        var mktDist = marketingDistribuitionChannelPersistencePort.findByAssocied(codCanal).orElse(null);
+        String canalFallback = mktDist != null ? mktDist.getId().getCodCanalDistribuicao() : codCanal;
+        log.debug("resolverCanaisDistribuicao — sem registros em SOL_RD_DISTRIBUICOES para numSolicitacao={}, usando fallback={}",
+                numSolicitacao, canalFallback);
+        return List.of(canalFallback);
+    }
+
+    /**
      * Caminho A: valor efetivo &gt; 0 — item marcado como EM_PROCESSO_DE_RECARGA,
      * campos de evento preenchidos e autorização enviada ao HM.
+     *
+     * <p>Registra cada terminal da lista {@code canaisParaRegistrar} na TB_REDE do HM
+     * (idempotente — o HM ignora duplicatas).</p>
      */
     private void processarCaminhoA(CreditRequestItems item,
             boolean temEvento, BigDecimal wValorDescItem, String wOutrasVias,
-            BigDecimal valorEfetivo, String canalParaRegistrar) {
+            BigDecimal valorEfetivo, List<String> canaisParaRegistrar) {
 
         item.setCodSituacao(SituationCreditRequestItems.EM_PROCESSO_DE_RECARGA);
         item.setDtEnvioHm(LocalDateTime.now());
         item.setDtManutencao(LocalDateTime.now());
 
-        hmPort.registrarAutorizacaoRecarga(item.getId().getNumSolicitacao(), item.getId().getCodCanal(), canalParaRegistrar);
+        // Registra todos os terminais reais do pedido no HM (TB_REDE)
+        for (String terminal : canaisParaRegistrar) {
+            hmPort.registrarAutorizacaoRecarga(item.getId().getNumSolicitacao(), item.getId().getCodCanal(), terminal);
+        }
 
         if (temEvento) {
             item.setVlEvento(wValorDescItem);
