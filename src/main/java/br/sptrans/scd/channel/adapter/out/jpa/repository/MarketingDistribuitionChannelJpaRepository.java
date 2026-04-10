@@ -19,11 +19,8 @@ public interface MarketingDistribuitionChannelJpaRepository extends JpaRepositor
   @Query("SELECT c FROM MarketingDistribuitionChannelEntityJpa c")
   List<MarketingDistribuitionChannelEntityJpa> findAllChannels();
 
-  @Query("SELECT c FROM MarketingDistribuitionChannelEntityJpa c WHERE c.id.codCanalComercializacao = :codCanalComercializacao")
-  List<MarketingDistribuitionChannelEntityJpa> findByCodCanalComercializacao(@Param("codCanalComercializacao") String codCanalComercializacao);
-
-  @Query("SELECT c FROM MarketingDistribuitionChannelEntityJpa c WHERE c.id.codCanalDistribuicao = :codCanalDistribuicao")
-  List<MarketingDistribuitionChannelEntityJpa> findByCodCanalDistribuicao(@Param("codCanalDistribuicao") String codCanalDistribuicao);
+  @Query("SELECT c FROM MarketingDistribuitionChannelEntityJpa c WHERE c.id.codCanalComercializacao = :codCanalComercializacao AND c.codStatus = 'A'")
+  List<MarketingDistribuitionChannelEntityJpa> findByAssocied(@Param("codCanalComercializacao") String codCanalComercializacao);
 
   @Query("SELECT COUNT(c) > 0 FROM MarketingDistribuitionChannelEntityJpa c WHERE c.id.codCanalComercializacao = :codCanalComercializacao AND c.id.codCanalDistribuicao = :codCanalDistribuicao")
   boolean existsByCodCanalComercializacaoAndCodCanalDistribuicao(@Param("codCanalComercializacao") String codCanalComercializacao, @Param("codCanalDistribuicao") String codCanalDistribuicao);

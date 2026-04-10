@@ -21,6 +21,10 @@ public interface MarketingDistribuitionChannelPersistencePort {
      */
     Optional<MarketingDistribuitionChannel> findActiveByCanalDistrib(String codCanal, String codCanalDistrib);
 
+    Optional<MarketingDistribuitionChannel> findByAssocied(String codCanal);
+
+
+
     MarketingDistribuitionChannel save(MarketingDistribuitionChannel entity);
 
     void deleteById(MarketingDistribuitionChannelKey id);

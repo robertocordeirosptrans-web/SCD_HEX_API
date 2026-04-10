@@ -54,6 +54,6 @@ public interface HmPort {
     void enviarAutorizacaoRecarga(Long numSolicitacao, Long numSolicitacaoItem, String codCanal,
             String numLogicoCartao, String codAssinaturaHsm,
             LocalDateTime dtPagtoEconomica, Integer seqRecarga,
-            BigDecimal valor, boolean liminar);
+            BigDecimal valor, int liminar);
 
 }

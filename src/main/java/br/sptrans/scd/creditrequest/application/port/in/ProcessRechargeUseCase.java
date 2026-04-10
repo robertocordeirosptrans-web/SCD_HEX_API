@@ -1,5 +1,9 @@
 package br.sptrans.scd.creditrequest.application.port.in;
 
+import java.util.List;
+
+import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
+
 
 public interface ProcessRechargeUseCase {
 
@@ -12,12 +16,12 @@ public interface ProcessRechargeUseCase {
      * RECARREGADO(07) Pedido final: ATENDIDO_PARCIALMENTE(07) ou
      * ATENDIDO_TOTALMENTE(10)
      */
-    void processarRecarga(ProcessRechargeCommand comando);
+    void processarLoteRecarga(List<CreditRequestItems> itens);
 
     /**
      * Processa um item específico do pedido (granularidade fina).
      */
-    void processarItemRecarga(ProcessItemCommand comando);
+  
 
     record ProcessRechargeCommand(
             String codTipoDocumento,

@@ -9,9 +9,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.creditrequest.application.port.in.ProcessRechargeUseCase;
-import br.sptrans.scd.creditrequest.application.port.in.ProcessRechargeUseCase.ProcessRechargeCommand;
+import br.sptrans.scd.creditrequest.application.service.ProcessRechargeService;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
+import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelPersistencePort;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ProcessRechargeScheduler {
 
     private final CreditRequestItemsPort itemRepository;
-    private final ProcessRechargeUseCase processRechargeUseCase;
+    private final ProcessRechargeService processRechargeService;
+    private final MarketingDistribuitionChannelPersistencePort marketingDistribuitionChannelPersistencePort;
 
     @Value("${scheduler.processar-recarga.enabled:true}")
     private boolean enabled;
@@ -71,39 +72,15 @@ public class ProcessRechargeScheduler {
             return;
         }
 
+        // Limita o tamanho do lote
+        List<CreditRequestItems> lote = itens.size() > tamanhoLote ? itens.subList(0, tamanhoLote) : itens;
 
-        Map<String, CreditRequestItems> solicitacoesUnicas = new LinkedHashMap<>();
-        for (CreditRequestItems item : itens) {
-            String chave = item.getCodTipoDocumento() + "_" + item.getIdUsuarioCadastro();
-            solicitacoesUnicas.putIfAbsent(chave, item);
-            if (solicitacoesUnicas.size() >= tamanhoLote) {
-                break;
-            }
+        try {
+            processRechargeService.processarLoteRecarga(lote, marketingDistribuitionChannelPersistencePort);
+            log.info("Job ProcessarRecarga concluído. Processadas={}", lote.size());
+        } catch (Exception e) {
+            log.error("Erro ao processar lote de recarga: {}", e.getMessage(), e);
         }
-
-        int processadas = 0;
-        int ignoradas = 0;
-
-        for (CreditRequestItems item : solicitacoesUnicas.values()) {
-            try {
-                ProcessRechargeCommand comando = new ProcessRechargeCommand(
-                        item.getCodTipoDocumento(),
-                        item.getIdUsuarioCadastro(),
-                        item.getSqPid());
-
-                processRechargeUseCase.processarRecarga(comando);
-                processadas++;
-                log.info("Recarga processada para codTipoDocumento={}, idUsuarioCadastro={}.",
-                        item.getCodTipoDocumento(), item.getIdUsuarioCadastro());
-            } catch (Exception e) {
-                log.error("Erro ao processar recarga para codTipoDocumento={}, idUsuarioCadastro={}: {}",
-                        item.getCodTipoDocumento(), item.getIdUsuarioCadastro(), e.getMessage(), e);
-                ignoradas++;
-            }
-        }
-
-        log.info("Job ProcessarRecarga concluído. Processadas={}, Ignoradas={}",
-                processadas, ignoradas);
     }
 }
 
