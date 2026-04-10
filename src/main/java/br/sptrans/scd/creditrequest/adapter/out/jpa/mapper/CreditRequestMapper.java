@@ -198,6 +198,7 @@ public interface CreditRequestMapper {
         key.setNumSolicitacaoItem(itemJpa.getId().getNumSolicitacaoItem());
         key.setCodCanal(itemJpa.getId().getCodCanal());
         item.setId(key);
+        item.setCodCanal(itemJpa.getId().getCodCanal());
         item.setCodProduto(itemJpa.getCodProduto());
         item.setCodSituacao(SituationCreditRequestItems.fromCode(itemJpa.getCodSituacao()));
         item.setVlItem(itemJpa.getVlItem());

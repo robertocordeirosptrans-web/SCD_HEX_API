@@ -1,7 +1,6 @@
 package br.sptrans.scd.creditrequest.application.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -10,10 +9,8 @@ import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.creditrequest.application.port.in.ConfirmedRechargeUseCase;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
-import br.sptrans.scd.creditrequest.domain.CreditRequest;
+import br.sptrans.scd.creditrequest.application.port.out.repository.HmPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
-import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import br.sptrans.scd.shared.helper.StatusConsolidationHelper;
 import jakarta.transaction.Transactional;
@@ -35,71 +32,50 @@ import lombok.RequiredArgsConstructor;
 public class ConfirmedRechargeService implements ConfirmedRechargeUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(ConfirmedRechargeService.class);
-    private static final String ORIGEM_TRANSICAO = "confirmar_recarga_scd";
+    private static final String ORIGEM_TRANSICAO = "confirm_recarga_scd";
 
-    private final CreditRequestPort creditRequestRepository;
     private final CreditRequestItemsPort itemRepository;
-    // private final CreditRequestMapper mapperItens;
     private final HistCreditRequestService historyService;
     private final StatusConsolidationHelper statusConsolidationHelper;
+    private final HmPort hmGateway;
 
 
 
     @Override
     @Transactional
-    public void confirmarRecarga(Long numSolicitacao, String codCanal) {
-        log.debug("Confirmando recarga para solicitação {}/{}", numSolicitacao, codCanal);
+    public void confirmarRecarga(CreditRequestItems item) {
+        
+        Long numSolicitacao = item.getId().getNumSolicitacao();
+        String codCanal = item.getId().getCodCanal();
+        Long numSolicitacaoItem = item.getId().getNumSolicitacaoItem();
 
-        // Obtém o numLote da solicitação
-        CreditRequest solicitacao = creditRequestRepository
-                .findByNumSolicitacaoAndCodCanal(numSolicitacao, codCanal)
-                .orElse(null);
-        if (solicitacao == null) {
-            log.warn("Solicitação não encontrada para numSolicitacao={}, codCanal={}", numSolicitacao, codCanal);
-            return;
-        }
-        String numLote = solicitacao.getNumLote();
-        List<Long> numSolicitacaoItens = itemRepository.findNumSolicitacaoItemsBySolicitacaoCanalLote(numSolicitacao, codCanal, numLote);
-        if (numSolicitacaoItens.isEmpty()) {
-            log.warn("Nenhum item encontrado para solicitação {}/{} e lote {}", numSolicitacao, codCanal, numLote);
+
+        boolean hmConfirmou = hmGateway.itemConfirmadoPeloHm(numSolicitacao, codCanal, item.getNumLogicoCartao());
+        if (!hmConfirmou) {
+            log.debug("HM ainda não confirmou item: Solicitação={}, Item={}",
+                    numSolicitacao, numSolicitacaoItem);
             return;
         }
 
-        int confirmados = 0;
+        // HM confirmou → atualiza para RECARREGADO
+        String statusAnterior = item.getCodSituacao().getCode();
+        item.setCodSituacao(SituationCreditRequestItems.RECARREGADO);
+        item.setDtRetornoHm(LocalDateTime.now());
+        item.setDtManutencao(LocalDateTime.now());
+        itemRepository.save(item);
+        log.info("Item confirmado - Solicitação={}, Item={}, StatusAnterior={}, NovoStatus={}",
+                item.getId().getNumSolicitacao(),
+                item.getId().getNumSolicitacaoItem(),
+                statusAnterior,
+                SituationCreditRequestItems.RECARREGADO.getCode());
 
-        List<CreditRequestItems> itensDominio = new ArrayList<>();
-        for (Long numSolicitacaoItem : numSolicitacaoItens) {
-            CreditRequestItemsKey key = new CreditRequestItemsKey();
-            key.setNumSolicitacao(numSolicitacao);
-            key.setNumSolicitacaoItem(numSolicitacaoItem);
-            key.setCodCanal(codCanal);
-            var optItem = itemRepository.findById(key);
-            if (optItem.isEmpty()) continue;
-            CreditRequestItems item = optItem.get();
-            if (!SituationCreditRequestItems.EM_PROCESSO_DE_RECARGA.equals(item.getCodSituacao())) {
-                continue;
-            }
-            if (item.getDtRetornoHm() == null) {
-                continue;
-            }
-            String statusAnterior = item.getCodSituacao().getCode();
-            item.setCodSituacao(SituationCreditRequestItems.RECARREGADO);
-            item.setDtManutencao(LocalDateTime.now());
-            itemRepository.save(item);
-            confirmados++;
-            itensDominio.add(item);
-            log.info("Item confirmado - Solicitação={}, Item={}, StatusAnterior={}, NovoStatus={}", numSolicitacao,
-                    item.getId().getNumSolicitacaoItem(), statusAnterior,
-                    SituationCreditRequestItems.RECARREGADO.getCode());
-        }
+        // Registra histórico individual
+        historyService.saveItemStatusHistoryBatch(List.of(item), ORIGEM_TRANSICAO);
 
-        if (confirmados > 0) {
-            historyService.saveItemStatusHistoryBatch(itensDominio, ORIGEM_TRANSICAO);
-            statusConsolidationHelper.consolidarStatusSolicitacao(numSolicitacao, codCanal, itensDominio, ORIGEM_TRANSICAO);
-        }
+        // Atualiza status consolidado do pedido
+        statusConsolidationHelper.consolidarStatusSolicitacao(numSolicitacao, codCanal, List.of(item), ORIGEM_TRANSICAO);
 
-        log.debug("Confirmação de recarga concluída para solicitação {}/{} - {} itens confirmados",
-                numSolicitacao, codCanal, confirmados);
+        log.debug("Confirmação de recarga concluída para solicitação {}/{} item {}", numSolicitacao, codCanal, numSolicitacaoItem);
     }
 
  

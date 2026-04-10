@@ -12,7 +12,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelPersistencePort;
 import br.sptrans.scd.creditrequest.application.port.in.ProcessRechargeUseCase;
@@ -53,12 +52,11 @@ import lombok.RequiredArgsConstructor;
  * </p>
  */
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ProcessRechargeService implements ProcessRechargeUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(ProcessRechargeService.class);
-    private static final String ORIGEM_TRANSICAO = "processar_recarga_scd";
+    private static final String ORIGEM_TRANSICAO = "process_recarga_scd";
     private static final String DES_RECARREGADO_POR_EVENTO = "Indicado como recarregado devido a ocorrencia de eventos financeiros";
 
     private final CreditRequestItemsPort itemRepository;
@@ -70,7 +68,6 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
     private final EventoFinanceiroPort eventoFinanceiroPort;
     private final HmPort hmPort;
 
-    @Transactional
     @InvalidateOrderCache
     @Override
     public void processarLoteRecarga(List<CreditRequestItems> itens) {
@@ -165,9 +162,15 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
         }
         // Fallback: comportamento anterior
         var mktDist = marketingDistribuitionChannelPersistencePort.findByAssocied(codCanal).orElse(null);
-        String canalFallback = mktDist != null ? mktDist.getId().getCodCanalDistribuicao() : codCanal;
+        String canalFallback = (mktDist != null && mktDist.getId() != null && mktDist.getId().getCodCanalDistribuicao() != null)
+                ? mktDist.getId().getCodCanalDistribuicao()
+                : codCanal;
         log.debug("resolverCanaisDistribuicao — sem registros em SOL_RD_DISTRIBUICOES para numSolicitacao={}, usando fallback={}",
                 numSolicitacao, canalFallback);
+        if (canalFallback == null) {
+            log.warn("resolverCanaisDistribuicao — codCanal nulo para numSolicitacao={}, nenhum terminal a registrar", numSolicitacao);
+            return List.of();
+        }
         return List.of(canalFallback);
     }
 
@@ -200,7 +203,7 @@ public class ProcessRechargeService implements ProcessRechargeUseCase {
         itemRepository.save(item);
 
         // Envia autorização ao HM (detalhada)
-        int liminar = liminarGateway.verificarLiminarEmpresa(item.getId().getNumSolicitacao().toString());
+        int liminar = liminarGateway.verificarLiminarEmpresa(item.getId().getNumSolicitacao());
         hmPort.enviarAutorizacaoRecarga(
                 item.getId().getNumSolicitacao(),
                 item.getId().getNumSolicitacaoItem(),

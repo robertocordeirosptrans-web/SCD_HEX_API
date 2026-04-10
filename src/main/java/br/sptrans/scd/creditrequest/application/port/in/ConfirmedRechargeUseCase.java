@@ -1,5 +1,7 @@
 package br.sptrans.scd.creditrequest.application.port.in;
 
+import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
+
 /**
  * Porta de entrada (use case) para confirmar a recarga de um pedido,
  * consultando o retorno do Hardware Manager e atualizando os itens confirmados
@@ -27,5 +29,5 @@ public interface ConfirmedRechargeUseCase {
      * @param numSolicitacao número da solicitação
      * @param codCanal código do canal
      */
-    void confirmarRecarga(Long numSolicitacao, String codCanal);
+    void confirmarRecarga(CreditRequestItems item);
 }

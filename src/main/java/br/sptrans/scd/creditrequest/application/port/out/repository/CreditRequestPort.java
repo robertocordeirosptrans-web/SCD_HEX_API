@@ -18,12 +18,7 @@ public interface CreditRequestPort {
 
     boolean existsByNumLoteAndCodCanal(String numLote, String codCanal);
 
-    List<CreditRequest> findElegiveisParaLiberacao(String codSituacao, LocalDateTime dtInicio, LocalDateTime dtFim,
-            int limit);
 
-    CreditRequest findElegiveisParaProcessamento(String codSituacao);
-
-    List<CreditRequest> findElegiveisParaConfirmacao(String codSituacao, int limit);
 
     void update(Long numSolicitacao, String codCanal, CreditRequest creditRequest);
 

@@ -19,12 +19,22 @@ public interface MarketingDistribuitionChannelMapper {
 
     MarketingDistribuitionChannelMapper INSTANCE = Mappers.getMapper(MarketingDistribuitionChannelMapper.class);
 
-    @Mappings({
-        // @Mapping(target = "codCanal", ignore = true),
-        @Mapping(target = "idUsuarioCadastro", ignore = true),
-        @Mapping(target = "idUsuarioManutencao", ignore = true)
-    })
-    MarketingDistribuitionChannel toDomain(MarketingDistribuitionChannelEntityJpa entity);
+    /**
+     * Mapeamento manual necessário: {@code id} e {@code dtCadastro} são campos {@code final}
+     * sem setter em {@link MarketingDistribuitionChannel}, portanto o MapStruct gerado não
+     * consegue preenchê-los. O construtor completo ({@code @AllArgsConstructor}) é usado.
+     */
+    default MarketingDistribuitionChannel toDomain(MarketingDistribuitionChannelEntityJpa entity) {
+        if (entity == null) return null;
+        return new MarketingDistribuitionChannel(
+            toDomainKey(entity.getId()),
+            stringToChannelDomainStatus(entity.getCodStatus()),
+            entity.getDtCadastro(),
+            entity.getDtManutencao(),
+            null, // idUsuarioCadastro — ignorado
+            null  // idUsuarioManutencao — ignorado
+        );
+    }
 
     @Mappings({
         // @Mapping(target = "codCanal", ignore = true),
@@ -33,7 +43,17 @@ public interface MarketingDistribuitionChannelMapper {
     })
     MarketingDistribuitionChannelEntityJpa toEntity(MarketingDistribuitionChannel domain);
 
-    MarketingDistribuitionChannelKey toDomainKey(MarketingDistribuitionChannelKeyEntityJpa entityKey);
+    /**
+     * Mapeamento manual: {@link MarketingDistribuitionChannelKey} tem campos {@code final}
+     * sem setter — MapStruct não consegue populá-los via construtor sem args.
+     */
+    default MarketingDistribuitionChannelKey toDomainKey(MarketingDistribuitionChannelKeyEntityJpa entityKey) {
+        if (entityKey == null) return null;
+        return new MarketingDistribuitionChannelKey(
+            entityKey.getCodCanalComercializacao(),
+            entityKey.getCodCanalDistribuicao()
+        );
+    }
 
     MarketingDistribuitionChannelKeyEntityJpa toEntityKey(MarketingDistribuitionChannelKey domainKey);
 

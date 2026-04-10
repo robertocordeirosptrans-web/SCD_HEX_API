@@ -86,4 +86,12 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
                 .toList();
     }
 
+    @Override
+    public List<CreditRequestItems> searchItemsToBeConfirmed(String codSituacao, Integer limit) {
+        return itemJpaRepository.searchItemsToBeConfirmed(codSituacao, limit)
+                .stream()
+                .map(creditRequestMapper::toDomainItem)
+                .toList();
+    }
+
 }

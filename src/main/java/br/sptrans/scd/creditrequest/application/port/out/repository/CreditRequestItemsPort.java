@@ -31,4 +31,11 @@ public interface CreditRequestItemsPort {
      * Busca itens elegíveis para processamento de recarga com a situação informada.
      */
     List<CreditRequestItems> searchItemsToBeProcessed(String codSituacao);
+
+        /**
+     * Busca itens elegíveis para processamento de recarga com a situação informada.
+     */
+    List<CreditRequestItems> searchItemsToBeConfirmed(String codSituacao, Integer limit);
+
+
 }

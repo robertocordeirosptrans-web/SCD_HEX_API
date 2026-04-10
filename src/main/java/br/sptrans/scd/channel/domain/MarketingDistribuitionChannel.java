@@ -10,22 +10,22 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
 public class MarketingDistribuitionChannel {
 
     private final MarketingDistribuitionChannelKey id;
 
-    @Setter private ChannelDomainStatus codStatus;
+    private ChannelDomainStatus codStatus;
 
     private final LocalDateTime dtCadastro;
 
-    @Setter private LocalDateTime dtManutencao;
+    private LocalDateTime dtManutencao;
 
     private final User idUsuarioCadastro;
 
-    @Setter private User idUsuarioManutencao;
-
+    private User idUsuarioManutencao;
 
     // -------------------------------------------------------------------------
     // Consultas de status
