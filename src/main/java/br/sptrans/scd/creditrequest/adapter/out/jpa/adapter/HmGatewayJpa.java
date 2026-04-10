@@ -30,10 +30,10 @@ public class HmGatewayJpa implements HmPort {
     @Override
     public boolean itemConfirmadoPeloHm(Long numSolicitacao, String codCanal, String numLogicoCartao) {
         String sql = """
-                SELECT COUNT(1) FROM LNK_HM_TB_AUTORIZACAORECARGA@dblink_hm
-                 WHERE NU_SOLICITACAO  = :numSolicitacao
-                   AND CD_CANAL        = :codCanal
-                   AND NU_LOGICOCARTAO = :numLogicoCartao
+                SELECT COUNT(1) FROM TB_AUTORIZACAORECARGA@dblink_hm
+                 WHERE NI_IDPEDIDO     = :numSolicitacao
+                   AND NI_IDCANAL      = :codCanal
+                   AND NI_IDCARTAO     = :numLogicoCartao
                    AND NI_STATUSSCD    IN (3, 15)
                 """;
 
@@ -53,10 +53,10 @@ public class HmGatewayJpa implements HmPort {
     @Transactional
     public void registrarAutorizacaoRecarga(Long numSolicitacao, String codCanal, String codCanalDistribuicao) {
         String sqlCheck = """
-                SELECT COUNT(1) FROM LNK_HM_TB_REDE@dblink_hm
-                 WHERE NU_SOLICITACAO       = :numSolicitacao
-                   AND CD_CANAL             = :codCanal
-                   AND CD_CANALDISTRIBUICAO = :codCanalDistribuicao
+                SELECT COUNT(1) FROM TB_REDE@dblink_hm
+                 WHERE NI_IDPEDIDO       = :numSolicitacao
+                   AND NI_IDCANAL        = :codCanal
+                   AND NI_IDREDE         = :codCanalDistribuicao
                 """;
 
         Number count = (Number) em.createNativeQuery(sqlCheck)
@@ -72,8 +72,8 @@ public class HmGatewayJpa implements HmPort {
         }
 
         String sqlInsert = """
-                INSERT INTO LNK_HM_TB_REDE@dblink_hm
-                       (NU_SOLICITACAO, CD_CANAL, CD_CANALDISTRIBUICAO, DT_CADASTRO)
+                INSERT INTO TB_REDE@dblink_hm
+                       (NI_IDPEDIDO, NI_IDCANAL, NI_IDREDE, DT_PEDENCERRADO)
                 VALUES (:numSolicitacao, :codCanal, :codCanalDistribuicao, :dtCadastro)
                 """;
 
@@ -84,7 +84,7 @@ public class HmGatewayJpa implements HmPort {
                 .setParameter("dtCadastro", LocalDateTime.now())
                 .executeUpdate();
 
-        log.info("Autorização de recarga registrada em LNK_HM_TB_REDE - numSolicitacao={}, codCanal={}",
+        log.info("Autorização de recarga registrada em TB_REDE - numSolicitacao={}, codCanal={}",
                 numSolicitacao, codCanal);
     }
 
@@ -93,14 +93,14 @@ public class HmGatewayJpa implements HmPort {
     public void enviarAutorizacaoRecarga(Long numSolicitacao, Long numSolicitacaoItem, String codCanal,
             String numLogicoCartao, String codAssinaturaHsm,
             LocalDateTime dtPagtoEconomica, Integer seqRecarga,
-            BigDecimal valor, boolean liminar) {
+            BigDecimal valor, int liminar) {
 
         String sql = """
-                INSERT INTO LNK_HM_TB_AUTORIZACAORECARGA@dblink_hm
-                       (NU_SOLICITACAO, NU_SOLICITACAOITEM, CD_CANAL,
-                        NU_LOGICOCARTAO, CD_ASSINATURAHSM, DT_AUTORIZACAO,
-                        ID_AUTORIZACAO, VL_EVENTOFINANCEIRO, IN_LIMINAR,
-                        NI_STATUSHM, NI_STATUSSCD, DT_CADASTRO)
+                INSERT INTO TB_AUTORIZACAORECARGA@dblink_hm
+                       (NI_IDPEDIDO, NI_NSUCLIENT, NI_IDCANAL,
+                        NI_IDCARTAO, VC_ASSINATURA, DT_COMPRA,
+                        NI_IDAUTORIZACAO, NI_VALOR, NI_CARTEIRA,
+                        NI_STATUSHM, NI_STATUSSCD, DT_SCD)
                 VALUES (:numSolicitacao, :numSolicitacaoItem, :codCanal,
                         :numLogicoCartao, :codAssinaturaHsm, :dtAutorizacao,
                         :seqRecarga, :valor, :liminar,
@@ -118,7 +118,7 @@ public class HmGatewayJpa implements HmPort {
                 .setParameter("dtAutorizacao", dtAutorizacao)
                 .setParameter("seqRecarga", seqRecarga)
                 .setParameter("valor", valor)
-                .setParameter("liminar", liminar ? 1 : 0)
+                .setParameter("liminar", liminar)
                 .setParameter("dtCadastro", LocalDateTime.now())
                 .executeUpdate();
 

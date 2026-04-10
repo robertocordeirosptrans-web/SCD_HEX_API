@@ -68,6 +68,14 @@ public class MarketingDistribuitionChannelAdapterJpa implements MarketingDistrib
                 .map(mapper::toDomain);
     }
 
+    @Override
+    public Optional<MarketingDistribuitionChannel> findByAssocied(String codCanal) {
+        return jpaRepository.findByAssocied(codCanal)
+                .stream()
+                .findFirst()
+                .map(mapper::toDomain);
+    }
+
 
 
  

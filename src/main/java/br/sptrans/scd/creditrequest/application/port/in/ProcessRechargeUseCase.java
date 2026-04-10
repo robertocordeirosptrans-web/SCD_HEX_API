@@ -18,27 +18,6 @@ public interface ProcessRechargeUseCase {
      */
     void processarLoteRecarga(List<CreditRequestItems> itens);
 
-    /**
-     * Processa um item específico do pedido (granularidade fina).
-     */
-  
 
-    record ProcessRechargeCommand(
-            String codTipoDocumento,
-            Long idUsuarioCadastro,
-            Long sqPid
-            ) {
-
-    }
-
-    record ProcessItemCommand(
-            String codTipoDocumento,
-            Long idUsuarioCadastro,
-            Integer seqItem,
-            java.math.BigDecimal vlCarregado,
-            String codAssinaturaHsm
-            ) {
-
-    }
 
 }

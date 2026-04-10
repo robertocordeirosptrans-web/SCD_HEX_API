@@ -1,17 +1,14 @@
 package br.sptrans.scd.creditrequest.adapter.in.scheduler;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import br.sptrans.scd.creditrequest.application.service.ProcessRechargeService;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
-import br.sptrans.scd.channel.application.port.out.MarketingDistribuitionChannelPersistencePort;
+import br.sptrans.scd.creditrequest.application.service.ProcessRechargeService;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +37,7 @@ public class ProcessRechargeScheduler {
 
     private final CreditRequestItemsPort itemRepository;
     private final ProcessRechargeService processRechargeService;
-    private final MarketingDistribuitionChannelPersistencePort marketingDistribuitionChannelPersistencePort;
+
 
     @Value("${scheduler.processar-recarga.enabled:true}")
     private boolean enabled;
@@ -76,7 +73,7 @@ public class ProcessRechargeScheduler {
         List<CreditRequestItems> lote = itens.size() > tamanhoLote ? itens.subList(0, tamanhoLote) : itens;
 
         try {
-            processRechargeService.processarLoteRecarga(lote, marketingDistribuitionChannelPersistencePort);
+            processRechargeService.processarLoteRecarga(lote);
             log.info("Job ProcessarRecarga concluído. Processadas={}", lote.size());
         } catch (Exception e) {
             log.error("Erro ao processar lote de recarga: {}", e.getMessage(), e);
