@@ -8,9 +8,14 @@ import br.sptrans.scd.auth.domain.User;
  */
 public interface TokenGeneratorPort {
     /**
-     * Gera um token JWT de acesso.
+     * Gera um token JWT de acesso sem session_id (compatibilidade legada).
      */
     String generate(User user);
+
+    /**
+     * Gera um token JWT de acesso com session_id embutido no payload.
+     */
+    String generate(User user, String sessionId);
 
     /**
      * Gera um token JWT de refresh.
