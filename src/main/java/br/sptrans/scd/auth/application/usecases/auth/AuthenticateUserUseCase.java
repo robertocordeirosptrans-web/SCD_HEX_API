@@ -7,6 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import br.sptrans.scd.audit.application.port.in.AuditUseCase;
+import br.sptrans.scd.audit.domain.AuditEvent;
+import br.sptrans.scd.audit.domain.AuditEventType;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.out.AuthenticationPort;
 import br.sptrans.scd.auth.application.port.out.AuthorizationPort;
@@ -14,6 +17,7 @@ import br.sptrans.scd.auth.application.port.out.GroupUserPort;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.shared.audit.AuditContext;
 import br.sptrans.scd.shared.exception.AccountBlockedException;
 import br.sptrans.scd.shared.exception.AuthenticationFailedException;
 import br.sptrans.scd.shared.exception.InactiveUserException;
@@ -45,6 +49,7 @@ public class AuthenticateUserUseCase {
     private final AuthenticationPort authenticationPort;
     private final AuthorizationPort authorizationPort;
     private final GroupUserPort groupUserRepository;
+    private final AuditUseCase auditUseCase;
 
     /**
      * Autentica um usuário com as credenciais fornecidas.
@@ -67,12 +72,22 @@ public class AuthenticateUserUseCase {
         User user = userPort.findByCodLogin(command.codLogin())
             .orElseThrow(() -> {
                 log.warn("Falha na autenticação — usuário não encontrado");
+                AuditContext.Data ctx = AuditContext.get();
+                auditUseCase.audit(AuditEvent.preAuth(
+                        AuditEventType.LOGIN_FAILURE,
+                        ctx.ipAddress, ctx.userAgent,
+                        "{\"reason\":\"USER_NOT_FOUND\"}"));
                 return new AuthenticationFailedException("Usuário ou senha inválidos.");
             });
         
         // Valida conta bloqueada
         if (user.isBlocked()) {
             log.warn("Tentativa de acesso em conta bloqueada. ID: {}", user.getIdUsuario());
+            AuditContext.Data ctx = AuditContext.get();
+            auditUseCase.audit(AuditEvent.preAuth(
+                    AuditEventType.LOGIN_FAILURE,
+                    ctx.ipAddress, ctx.userAgent,
+                    "{\"reason\":\"ACCOUNT_BLOCKED\"}"));
             throw new AccountBlockedException(
                 "Conta bloqueada por excesso de tentativas. Contate o administrador.");
         }
@@ -80,6 +95,11 @@ public class AuthenticateUserUseCase {
         // Valida conta inativa
         if (user.isInactive()) {
             log.warn("Tentativa de acesso em conta inativa. ID: {}", user.getIdUsuario());
+            AuditContext.Data ctx = AuditContext.get();
+            auditUseCase.audit(AuditEvent.preAuth(
+                    AuditEventType.LOGIN_FAILURE,
+                    ctx.ipAddress, ctx.userAgent,
+                    "{\"reason\":\"USER_INACTIVE\"}"));
             throw new InactiveUserException(
                 "Conta inativa. Contate o administrador.");
         }
@@ -96,11 +116,20 @@ public class AuthenticateUserUseCase {
                     user.getNumTentativasFalha(),
                     user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
             
+            AuditContext.Data ctxWrongPwd = AuditContext.get();
             if (user.isBlocked()) {
                 log.warn("Conta bloqueada após excesso de tentativas. ID: {}", user.getIdUsuario());
+                auditUseCase.audit(AuditEvent.preAuth(
+                        AuditEventType.LOGIN_FAILURE,
+                        ctxWrongPwd.ipAddress, ctxWrongPwd.userAgent,
+                        "{\"reason\":\"ACCOUNT_BLOCKED_AFTER_ATTEMPTS\"}"));
                 throw new AccountBlockedException(
                     "Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
             }
+            auditUseCase.audit(AuditEvent.preAuth(
+                    AuditEventType.LOGIN_FAILURE,
+                    ctxWrongPwd.ipAddress, ctxWrongPwd.userAgent,
+                    "{\"reason\":\"WRONG_PASSWORD\",\"attempt\":" + user.getNumTentativasFalha() + "}"));
             throw new AuthenticationFailedException(
                 "Usuário ou senha inválidos. Tentativa " + user.getNumTentativasFalha() + " de 3.");
         }
@@ -108,12 +137,23 @@ public class AuthenticateUserUseCase {
         // Valida jornada de acesso
         if (!user.acessoPermitidoAgora()) {
             log.warn("Acesso fora da jornada permitida. ID: {}", user.getIdUsuario());
+            AuditContext.Data ctxJornada = AuditContext.get();
+            auditUseCase.audit(AuditEvent.preAuth(
+                    AuditEventType.LOGIN_FAILURE,
+                    ctxJornada.ipAddress, ctxJornada.userAgent,
+                    "{\"reason\":\"OUTSIDE_WORK_HOURS\"}"));
             throw new AuthenticationFailedException(
                 "Acesso não permitido neste dia/horário conforme sua jornada configurada.");
         }
         
         // Autentica com sucesso
         log.info("Login bem-sucedido. ID: {}", user.getIdUsuario());
+        AuditContext.Data ctxOk = AuditContext.get();
+        auditUseCase.audit(AuditEvent.of(
+                AuditEventType.LOGIN_SUCCESS,
+                user.getIdUsuario(), null,
+                ctxOk.ipAddress, ctxOk.userAgent,
+                null));
         user.resetarTentativas();
         
         authenticationPort.atualizarTentativasEStatus(

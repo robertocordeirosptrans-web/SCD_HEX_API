@@ -8,9 +8,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import br.sptrans.scd.audit.application.port.in.AuditUseCase;
+import br.sptrans.scd.audit.domain.AuditEvent;
+import br.sptrans.scd.audit.domain.AuditEventType;
 import br.sptrans.scd.auth.application.port.in.SessionManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.UserSessionRepository;
 import br.sptrans.scd.auth.domain.session.UserSession;
+import br.sptrans.scd.shared.audit.AuditContext;
+import br.sptrans.scd.shared.audit.Auditable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +37,7 @@ public class SessionManagementService implements SessionManagementUseCase {
     private static final Logger log = LoggerFactory.getLogger(SessionManagementService.class);
 
     private final UserSessionRepository sessionRepository;
+    private final AuditUseCase auditUseCase;
 
     @Value("${session.max-concurrent:5}")
     private int maxConcurrentSessions;
@@ -58,11 +64,18 @@ public class SessionManagementService implements SessionManagementUseCase {
         UserSession session = new UserSession(userId, ip, userAgent, sessionTtlHours);
         UserSession saved = sessionRepository.save(session);
         log.info("Nova sessão criada: id={}, usuario={}, ip={}", saved.getIdSessao(), userId, ip);
+
+        AuditContext.Data ctx = AuditContext.get();
+        auditUseCase.audit(AuditEvent.of(
+                AuditEventType.SESSION_CREATED,
+                userId, saved.getIdSessao(),
+                ctx.ipAddress, ctx.userAgent, null));
         return saved;
     }
 
     @Override
     @Transactional
+    @Auditable(action = AuditEventType.SESSION_REVOKED, targetIdParam = "revokedBy")
     public void revokeSession(String sessionId, Long revokedBy, String reason) {
         sessionRepository.revokeBySessionId(sessionId, revokedBy, reason);
     }
@@ -71,11 +84,27 @@ public class SessionManagementService implements SessionManagementUseCase {
     @Transactional
     public void revokeAllUserSessions(Long userId, String reason) {
         sessionRepository.revokeAllByUserId(userId, reason);
+        AuditContext.Data ctx = AuditContext.get();
+        auditUseCase.audit(new AuditEvent(
+                AuditEventType.SESSION_REVOKED,
+                ctx.userId,
+                userId,
+                null,
+                ctx.ipAddress,
+                ctx.userAgent,
+                "{\"reason\":\"REVOKE_ALL\",\"targetUserId\":" + userId + "}"));
     }
 
     @Override
     @Transactional
     public int expireSessions() {
-        return sessionRepository.expireSessions();
+        int count = sessionRepository.expireSessions();
+        if (count > 0) {
+            auditUseCase.audit(AuditEvent.preAuth(
+                    AuditEventType.SESSION_EXPIRED,
+                    null, null,
+                    "{\"count\":" + count + "}"));
+        }
+        return count;
     }
 }

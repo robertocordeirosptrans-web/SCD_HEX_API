@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.audit.application.port.in.AuditUseCase;
+import br.sptrans.scd.audit.domain.AuditEvent;
+import br.sptrans.scd.audit.domain.AuditEventType;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetPasswordComand;
@@ -22,6 +25,7 @@ import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.port.out.TokenGeneratorPort;
 import br.sptrans.scd.auth.domain.port.out.TokenValidatorPort;
 import br.sptrans.scd.auth.domain.session.UserSession;
+import br.sptrans.scd.shared.audit.AuditContext;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -45,6 +49,7 @@ public class AuthController {
     private final TokenGeneratorPort tokenGenerator;
     private final TokenValidatorPort tokenValidator;
     private final SessionManagementUseCase sessionUseCase;
+    private final AuditUseCase auditUseCase;
 
 
     @PostMapping("/login")
@@ -82,10 +87,14 @@ public class AuthController {
         String sessionId = token != null ? tokenValidator.extractSessionId(token) : null;
 
         if (sessionId != null) {
-            // Resolve userId do usuário logado para rastreabilidade
             String codLogin = authentication.getName();
             sessionUseCase.revokeSession(sessionId, null, "LOGOUT");
             log.info("Logout realizado: login={}, sessionId={}", codLogin, sessionId);
+            AuditContext.Data ctx = AuditContext.get();
+            auditUseCase.audit(AuditEvent.of(
+                    AuditEventType.LOGOUT,
+                    ctx.userId, sessionId,
+                    ctx.ipAddress, ctx.userAgent, null));
         }
         return ResponseEntity.ok(new ResponseSimple("Logout realizado com sucesso."));
     }

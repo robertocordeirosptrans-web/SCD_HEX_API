@@ -129,6 +129,12 @@
             <version>1.9.3</version> <!-- Check Maven Repository for latest version -->
         </dependency>
 
+        <!-- AOP — necessário para @Auditable + AuditAspect -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
         <!-- Oracle JDBC -->
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>

@@ -14,11 +14,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import br.sptrans.scd.audit.application.port.in.AuditUseCase;
+import br.sptrans.scd.audit.domain.AuditEvent;
+import br.sptrans.scd.audit.domain.AuditEventType;
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
 import br.sptrans.scd.auth.application.port.out.UserSessionRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.port.out.TokenValidatorPort;
 import br.sptrans.scd.auth.domain.session.UserSession;
+import br.sptrans.scd.shared.audit.AuditContext;
 import br.sptrans.scd.shared.exception.dto.ErrorResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -50,6 +54,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserSessionRepository sessionRepository;
     private final AuthorityBuilderAdapter authorityBuilder;
     private final ObjectMapper objectMapper;
+    private final AuditUseCase auditUseCase;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -75,12 +80,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
             if (user.isBlocked()) {
+                AuditContext.Data ctx = AuditContext.get();
+                auditUseCase.audit(AuditEvent.preAuth(
+                        AuditEventType.REQUEST_UNAUTHORIZED,
+                        ctx.ipAddress, ctx.userAgent,
+                        "{\"reason\":\"ACCOUNT_BLOCKED\"}"));
                 writeForbidden(response, "ACCOUNT_BLOCKED",
                     "Conta bloqueada por múltiplas tentativas de login", request);
                 return;
             }
 
             if (!user.isActived()) {
+                AuditContext.Data ctxInactive = AuditContext.get();
+                auditUseCase.audit(AuditEvent.preAuth(
+                        AuditEventType.REQUEST_UNAUTHORIZED,
+                        ctxInactive.ipAddress, ctxInactive.userAgent,
+                        "{\"reason\":\"USER_INACTIVE\"}"));
                 writeForbidden(response, "USER_INACTIVE", "Usuário inativo", request);
                 return;
             }
@@ -107,6 +122,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 authorities
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // Enriquece AuditContext + MDC com dados do usuário autenticado
+            AuditContext.setAuth(user.getIdUsuario(), sessionId);
+            org.slf4j.MDC.put("userId",    String.valueOf(user.getIdUsuario()));
+            org.slf4j.MDC.put("sessionId", sessionId != null ? sessionId : "-");
         }
 
         filterChain.doFilter(request, response);
