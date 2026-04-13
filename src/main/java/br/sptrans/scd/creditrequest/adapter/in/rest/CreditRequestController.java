@@ -29,8 +29,6 @@ import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageResponse;
 import br.sptrans.scd.creditrequest.application.port.in.dto.UpdateRequestCredit;
-import br.sptrans.scd.shared.idempotency.IdempotencyStore;
-import br.sptrans.scd.shared.idempotency.InMemoryIdempotencyStore;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -49,9 +47,6 @@ public class CreditRequestController {
         private final CreditRequestMapper creditRequestMapper;
         private final UserPersistencePort userRepository;
 
-
-        // Idempotency store (in-memory, para produção use uma implementação persistente)
-        private static final IdempotencyStore<ResponseEntity<?>> idempotencyStore = new InMemoryIdempotencyStore<>();
 
     /**
      * Busca pedidos com paginação por cursor. Classificação automática do modo
@@ -270,10 +265,7 @@ public class CreditRequestController {
 
                 // Chama o caso de uso para criar o pedido de crédito
                 var result = creditRequestManagementUseCase.createCreditRequest(request, idempotencyKey, userId);
-                ResponseEntity<?> response = ResponseEntity.status(HttpStatus.CREATED).body(result);
-
-                idempotencyStore.put(idempotencyKey, response);
-                return response;
+                return ResponseEntity.status(HttpStatus.CREATED).body(result);
         }
 
 }

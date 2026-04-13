@@ -25,6 +25,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthenticationException;
 import br.sptrans.scd.shared.exception.dto.ErrorResponse;
+import br.sptrans.scd.shared.idempotency.IdempotencyConflictException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -109,6 +110,28 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    /**
+     * Trata conflitos de idempotência (409 Conflict).
+     * Ocorre quando a mesma Idempotency-Key está em PROCESSING ou o payload diverge.
+     */
+    @ExceptionHandler(IdempotencyConflictException.class)
+    public ResponseEntity<ErrorResponse> handleIdempotencyConflict(
+            IdempotencyConflictException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse errorResponse = new ErrorResponse(
+            HttpStatus.CONFLICT.value(),
+            "Conflict",
+            ex.getMessage(),
+            ex.getErrorCode(),
+            request.getRequestURI()
+        );
+
+        log.warn("Idempotency conflict at URI: {} - key={} - message={}",
+                request.getRequestURI(), ex.getIdempotencyKey(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
     /**
