@@ -129,22 +129,14 @@ public class UserController {
 
     private String mapSortColumn(String sortBy) {
         return switch (sortBy) {
-            case "codLogin" ->
-                "COD_LOGIN";
-            case "nomUsuario" ->
-                "NOM_USUARIO";
-            case "nomEmail" ->
-                "NOM_EMAIL";
-            case "codStatus" ->
-                "COD_STATUS";
-            case "dtCriacao" ->
-                "DT_CRIACAO";
-            case "dtModi" ->
-                "DT_MODI";
-            case "dtUltimoAcesso" ->
-                "DT_ULTIMO_ACESSO";
-            default ->
-                "ID_USUARIO";
+            case "codLogin" -> "codLogin";
+            case "nomUsuario" -> "nomUsuario";
+            case "nomEmail" -> "nomEmail";
+            case "codStatus" -> "codStatus";
+            case "dtCriacao" -> "dtCriacao";
+            case "dtModi" -> "dtModi";
+            case "dtUltimoAcesso" -> "dtUltimoAcesso";
+            default -> "idUsuario";
         };
     }
 

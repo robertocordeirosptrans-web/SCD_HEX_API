@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.data.jpa.domain.Specification;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserFilterRequestDTO;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.auth.domain.User;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -14,7 +15,7 @@ import jakarta.persistence.criteria.Predicate;
 
 public class UserSpecification {
 
-    public static Specification<User> filterUsers(UserFilterRequestDTO filtro) {
+    public static Specification<UserEntityJpa> filterUsers(UserFilterRequestDTO filtro) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
