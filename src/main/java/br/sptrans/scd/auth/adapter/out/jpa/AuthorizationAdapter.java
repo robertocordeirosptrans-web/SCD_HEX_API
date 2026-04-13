@@ -32,9 +32,9 @@ import lombok.RequiredArgsConstructor;
 @Repository
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class AuthorizationRepositoryAdapter implements AuthorizationPort {
+public class AuthorizationAdapter implements AuthorizationPort {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthorizationRepositoryAdapter.class);
+    private static final Logger log = LoggerFactory.getLogger(AuthorizationAdapter.class);
 
     private final UserProfileJpaRepository userProfileJpaRepository;
 

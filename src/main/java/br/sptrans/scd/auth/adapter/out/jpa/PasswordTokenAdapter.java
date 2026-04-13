@@ -24,9 +24,9 @@ import lombok.RequiredArgsConstructor;
  */
 @Repository
 @RequiredArgsConstructor
-public class PasswordTokenRepositoryAdapter implements PasswordTokenPort {
+public class PasswordTokenAdapter implements PasswordTokenPort {
 
-    private static final Logger log = LoggerFactory.getLogger(PasswordTokenRepositoryAdapter.class);
+    private static final Logger log = LoggerFactory.getLogger(PasswordTokenAdapter.class);
 
     private final PasswordTokenJpaRepository tokenJpaRepository;
 
