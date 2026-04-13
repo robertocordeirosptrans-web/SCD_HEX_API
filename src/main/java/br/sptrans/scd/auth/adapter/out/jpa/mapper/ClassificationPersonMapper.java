@@ -1,21 +1,16 @@
 package br.sptrans.scd.auth.adapter.out.jpa.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import br.sptrans.scd.auth.adapter.out.persistence.entity.ClassificationPersonEntity;
 import br.sptrans.scd.auth.domain.ClassificationPerson;
 
-public class ClassificationPersonMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface ClassificationPersonMapper {
 
-    public static ClassificationPerson toDomain(ClassificationPersonEntity entity) {
-        if (entity == null) return null;
-        return new ClassificationPerson(
-                entity.getCodClassificacaoPessoa(),
-                entity.getDesClassificacaoPessoa(),
-                entity.getFlgVenda(),
-                entity.getDtCadastro(),
-                entity.getDtManutencao(),
-                entity.getStClassificacoesPessoa(),
-                null,
-                null);
-    }
+    @Mapping(target = "idUsuarioCadastro", ignore = true)
+    @Mapping(target = "idUsuarioManutencao", ignore = true)
+    ClassificationPerson toDomain(ClassificationPersonEntity entity);
 }

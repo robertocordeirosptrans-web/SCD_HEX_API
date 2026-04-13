@@ -37,6 +37,8 @@ public class AuthorizationAdapter implements AuthorizationPort {
     private static final Logger log = LoggerFactory.getLogger(AuthorizationAdapter.class);
 
     private final UserProfileJpaRepository userProfileJpaRepository;
+    private final FunctionalityMapper functionalityMapper;
+    private final ProfileMapper profileMapper;
 
     @Override
     @Cacheable(value = "permissoes", key = "'func:' + #idUsuario")
@@ -51,7 +53,7 @@ public class AuthorizationAdapter implements AuthorizationPort {
                 .filter(perfil -> perfil != null)
                 .flatMap(perfil -> perfil.getPerfilFuncionalidades().stream())
                 .filter(pf -> pf.getFuncionalidade() != null)
-                .map(pf -> FunctionalityMapper.toDomain(pf.getFuncionalidade()))
+                .map(pf -> functionalityMapper.toDomain(pf.getFuncionalidade()))
                 .collect(java.util.stream.Collectors.toSet());
             
             log.debug("Funcionalidades carregadas para usuário {}: {} itens", idUsuario, functionalities.size());
@@ -85,7 +87,7 @@ public class AuthorizationAdapter implements AuthorizationPort {
                 })
                 .map(up -> up.getPerfil())
                 .filter(perfil -> perfil != null && "A".equalsIgnoreCase(perfil.getCodStatus()))
-                .map(ProfileMapper::toDomain)
+                .map(profileMapper::toDomain)
                 .collect(java.util.stream.Collectors.toSet());
             
             if (perfisValidos.isEmpty()) {

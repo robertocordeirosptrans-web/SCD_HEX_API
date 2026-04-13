@@ -13,9 +13,7 @@ import br.sptrans.scd.auth.adapter.out.jpa.mapper.GroupMapper;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupJpaRepository;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupProfileJpaRepository;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserJpaRepository;
-import br.sptrans.scd.auth.adapter.out.persistence.entity.GroupProfileEntityJpa;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.GroupProfileEntityJpaId;
-import br.sptrans.scd.auth.adapter.out.persistence.entity.GroupUserEntityJpa;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.GroupUserEntityJpaId;
 import br.sptrans.scd.auth.application.port.out.GroupPort;
 import br.sptrans.scd.auth.domain.Group;
@@ -33,11 +31,12 @@ public class GroupAdapterJpa implements GroupPort {
     private final GroupJpaRepository groupJpaRepository;
     private final GroupProfileJpaRepository groupProfileJpaRepository;
     private final GroupUserJpaRepository groupUserJpaRepository;
+    private final GroupMapper groupMapper;
 
     @Override
     public Optional<Group> findById(String codGrupo) {
         return groupJpaRepository.findByCodGrupo(codGrupo)
-                .map(GroupMapper::toDomain);
+                .map(groupMapper::toDomain);
     }
 
     @Override
@@ -46,14 +45,7 @@ public class GroupAdapterJpa implements GroupPort {
         idJpa.setIdUsuario(id.getIdUsuario());
         idJpa.setCodGrupo(id.getCodGrupo());
         return groupUserJpaRepository.findById(idJpa)
-                .map(gu -> {
-                    GroupUser groupUser = new GroupUser();
-                    groupUser.setId(id);
-                    groupUser.setCodStatus(gu.getCodStatus());
-                    groupUser.setIdUsuarioManutencao(gu.getIdUsuarioManutencao());
-                    groupUser.setDtModi(gu.getDtManutencao());
-                    return groupUser;
-                });
+                .map(groupMapper::toDomain);
     }
 
     @Override
@@ -64,25 +56,19 @@ public class GroupAdapterJpa implements GroupPort {
     @Override
     public Page<Group> listGroups(String codStatus, Pageable pageable) {
         return groupJpaRepository.findAllByCodStatus(codStatus, pageable)
-                .map(GroupMapper::toDomain);
+                .map(groupMapper::toDomain);
     }
 
     @Override
     public Page<GroupUser> listGroupsByUser(Long idUsuario, Pageable pageable) {
-        return groupUserJpaRepository.findByGroupsUser(idUsuario, pageable).map(gu -> {
-            GroupUser groupUser = new GroupUser();
-            var idJpa = gu.getId();
-            groupUser.setId(idJpa != null ? new GroupUserKey(idJpa.getIdUsuario(), idJpa.getCodGrupo()) : null);
-            groupUser.setCodStatus(gu.getCodStatus());
-            groupUser.setIdUsuarioManutencao(gu.getIdUsuarioManutencao());
-            groupUser.setDtModi(gu.getDtManutencao());
-            return groupUser;
-        });
+        return groupUserJpaRepository.findByGroupsUser(idUsuario, pageable)
+                .map(groupMapper::toDomain);
     }
 
     @Override
     public java.util.List<GroupUser> listGroupUsers() {
-        return groupUserJpaRepository.findAll().stream().map(this::toDomain)
+        return groupUserJpaRepository.findAll().stream()
+            .map(groupMapper::toDomain)
             .collect(Collectors.toList());
     }
 
@@ -91,13 +77,13 @@ public class GroupAdapterJpa implements GroupPort {
         return groupUserJpaRepository.findAll().stream()
             .filter(e -> e.getId() != null && codGrupo.equals(e.getId().getCodGrupo())
                 && "A".equals(e.getCodStatus()))
-            .map(this::toDomain)
+            .map(groupMapper::toDomain)
             .collect(Collectors.toList());
     }
 
     @Override
     public void save(Group grupo) {
-        groupJpaRepository.save(GroupMapper.toEntity(grupo));
+        groupJpaRepository.save(groupMapper.toEntity(grupo));
     }
 
     @Override
@@ -136,29 +122,12 @@ public class GroupAdapterJpa implements GroupPort {
 
     @Override
     public Page<GroupUser> listGroupUsers(Pageable pageable) {
-        return groupUserJpaRepository.findAllGroupUsers(pageable).map(gu -> {
-            GroupUser groupUser = new GroupUser();
-            var idJpa = gu.getId();
-            groupUser.setId(idJpa != null ? new GroupUserKey(idJpa.getIdUsuario(), idJpa.getCodGrupo()) : null);
-            groupUser.setCodStatus(gu.getCodStatus());
-            groupUser.setIdUsuarioManutencao(gu.getIdUsuarioManutencao());
-            groupUser.setDtModi(gu.getDtManutencao());
-            return groupUser;
-        });
+        return groupUserJpaRepository.findAllGroupUsers(pageable).map(groupMapper::toDomain);
     }
 
     @Override
     public GroupUser save(GroupUser entity) {
-        // Salva ou atualiza usando o repository JPA
-        var id = new GroupUserEntityJpaId();
-        id.setIdUsuario(entity.getId().getIdUsuario());
-        id.setCodGrupo(entity.getId().getCodGrupo());
-        var groupUserEntity = new GroupUserEntityJpa();
-        groupUserEntity.setId(id);
-        groupUserEntity.setCodStatus(entity.getCodStatus());
-        groupUserEntity.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
-        groupUserEntity.setDtManutencao(entity.getDtModi());
-        groupUserJpaRepository.save(groupUserEntity);
+        groupUserJpaRepository.save(groupMapper.toEntity(entity));
         return entity;
     }
 
@@ -188,7 +157,7 @@ public class GroupAdapterJpa implements GroupPort {
         id.setCodGrupo(codGrupo);
         id.setCodPerfil(codPerfil);
         return groupProfileJpaRepository.findById(id)
-                .map(this::toDomainGroupProfile);
+                .map(groupMapper::toDomain);
     }
 
     @Override
@@ -196,7 +165,7 @@ public class GroupAdapterJpa implements GroupPort {
         return groupProfileJpaRepository.findAll().stream()
                 .filter(e -> e.getId() != null && codGrupo.equals(e.getId().getCodGrupo())
                         && codStatus.equals(e.getCodStatus()))
-                .map(this::toDomainGroupProfile)
+                .map(groupMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
@@ -206,31 +175,24 @@ public class GroupAdapterJpa implements GroupPort {
         idJpa.setCodGrupo(id.getCodGrupo());
         idJpa.setCodPerfil(id.getCodPerfil());
         return groupProfileJpaRepository.findById(idJpa)
-                .map(this::toDomainGroupProfile);
+                .map(groupMapper::toDomain);
     }
 
     @Override
     public List<GroupProfile> findAllGroupProfile() {
         return groupProfileJpaRepository.findAll().stream()
-                .map(this::toDomainGroupProfile)
+                .map(groupMapper::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Page<GroupProfile> findAllGroupProfile(Pageable pageable) {
-        return groupProfileJpaRepository.findAll(pageable).map(this::toDomainGroupProfile);
+        return groupProfileJpaRepository.findAll(pageable).map(groupMapper::toDomain);
     }
 
     @Override
     public GroupProfile saveGroupProfile(GroupProfile entity) {
-        var id = new GroupProfileEntityJpaId();
-        id.setCodGrupo(entity.getId().getCodGrupo());
-        id.setCodPerfil(entity.getId().getCodPerfil());
-        var groupProfileEntity = new GroupProfileEntityJpa();
-        groupProfileEntity.setId(id);
-        groupProfileEntity.setCodStatus(entity.getCodStatus());
-        // Datas e outros campos podem ser ajustados conforme necessário
-        groupProfileJpaRepository.save(groupProfileEntity);
+        groupProfileJpaRepository.save(groupMapper.toEntity(entity));
         return entity;
     }
 
@@ -252,41 +214,13 @@ public class GroupAdapterJpa implements GroupPort {
         return groupProfileJpaRepository.count();
     }
 
-    // Conversão manual entre entidade e domínio para GroupProfile
-    private GroupProfile toDomainGroupProfile(GroupProfileEntityJpa entity) {
-        if (entity == null) {
-            return null;
-        }
-        var domain = new GroupProfile();
-        var id = entity.getId();
-        if (id != null) {
-            domain.setId(new GroupProfileKey(id.getCodGrupo(), id.getCodPerfil()));
-        }
-        domain.setCodStatus(entity.getCodStatus());
-        // Datas e objetos relacionados podem ser expandidos conforme necessário
-        return domain;
-    }
-
     @Override
     public List<GroupUser> findById_IdUsuarioAndCodStatus(Long idUsuario, String codStatus) {
-        List<GroupUserEntityJpa> entities = groupUserJpaRepository.findAll();
-        return entities.stream()
+        return groupUserJpaRepository.findAll().stream()
                 .filter(e -> e.getId() != null && idUsuario.equals(e.getId().getIdUsuario())
                         && codStatus.equals(e.getCodStatus()))
-                .map(this::toDomain)
+                .map(groupMapper::toDomain)
                 .collect(Collectors.toList());
-    }
-
-    private GroupUser toDomain(GroupUserEntityJpa entity) {
-        GroupUser groupUser = new GroupUser();
-        if (entity.getId() != null) {
-            groupUser.setId(new GroupUserKey(entity.getId().getIdUsuario(), entity.getId().getCodGrupo()));
-        }
-        groupUser.setCodStatus(entity.getCodStatus());
-        groupUser.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
-        groupUser.setDtModi(entity.getDtManutencao());
-        // Adicione mapeamento de usuario/grupo se necessário
-        return groupUser;
     }
 
 }

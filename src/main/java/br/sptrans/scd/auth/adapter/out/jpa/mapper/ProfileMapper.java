@@ -1,17 +1,63 @@
 package br.sptrans.scd.auth.adapter.out.jpa.mapper;
 
-import br.sptrans.scd.auth.adapter.out.persistence.entity.ProfileEntityJpa;
-import br.sptrans.scd.auth.domain.Profile;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-public class ProfileMapper {
-	public static Profile toDomain(ProfileEntityJpa entity) {
-		if (entity == null) return null;
-		Profile profile = new Profile();
-		profile.setCodPerfil(entity.getCodPerfil());
-		profile.setNomPerfil(entity.getNomPerfil());
-		profile.setCodStatus(entity.getCodStatus());
-		profile.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
-		profile.setDtModi(entity.getDtManutencao());
-		return profile;
-	}
+import br.sptrans.scd.auth.adapter.out.persistence.entity.ProfileEntityJpa;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.ProfileFunctionalityJpa;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.ProfileFunctionalityJpaId;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserProfileJpa;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserProfileJpaId;
+import br.sptrans.scd.auth.domain.Profile;
+import br.sptrans.scd.auth.domain.ProfileFunctionality;
+import br.sptrans.scd.auth.domain.ProfileFunctionalityKey;
+import br.sptrans.scd.auth.domain.UserProfile;
+import br.sptrans.scd.auth.domain.UserProfileId;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface ProfileMapper {
+
+    // ── Profile ───────────────────────────────────────────────────────────────
+
+    @Mapping(target = "dtModi", source = "dtManutencao")
+    Profile toDomain(ProfileEntityJpa entity);
+
+    @Mapping(target = "dtManutencao", source = "dtModi")
+    @Mapping(target = "perfilFuncionalidades", ignore = true)
+    ProfileEntityJpa toEntity(Profile profile);
+
+    // ── ProfileFunctionality ─────────────────────────────────────────────────
+
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "dtInicioValidade", expression = "java(entity.getDtInicioValidade() != null ? entity.getDtInicioValidade().toLocalDate() : null)")
+    @Mapping(target = "funcionalidade", ignore = true)
+    @Mapping(target = "perfil", ignore = true)
+    ProfileFunctionality toDomain(ProfileFunctionalityJpa entity);
+
+    ProfileFunctionalityKey toKey(ProfileFunctionalityJpaId id);
+
+    ProfileFunctionalityJpaId toJpaId(ProfileFunctionalityKey key);
+
+    default ProfileFunctionalityJpa toEntity(ProfileFunctionality domain) {
+        if (domain == null) return null;
+        ProfileFunctionalityJpaId jpaId = toJpaId(domain.getId());
+        ProfileFunctionalityJpa entity = new ProfileFunctionalityJpa();
+        entity.setId(jpaId);
+        entity.setIdUsuarioManutencao(domain.getIdUsuarioManutencao());
+        if (domain.getDtInicioValidade() != null) {
+            entity.setDtInicioValidade(domain.getDtInicioValidade().atStartOfDay());
+        }
+        return entity;
+    }
+
+    // ── UserProfile ───────────────────────────────────────────────────────────
+
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "dtModi", source = "dtManutencao")
+    @Mapping(target = "usuario", ignore = true)
+    @Mapping(target = "perfil", ignore = true)
+    UserProfile toDomain(UserProfileJpa entity);
+
+    UserProfileId toUserProfileId(UserProfileJpaId id);
 }
