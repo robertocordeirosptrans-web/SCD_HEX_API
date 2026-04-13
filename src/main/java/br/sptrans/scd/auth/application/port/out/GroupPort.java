@@ -1,6 +1,5 @@
 package br.sptrans.scd.auth.application.port.out;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -22,8 +21,13 @@ public interface GroupPort extends GroupProfilePort, GroupUserPort {
      */
     boolean existsByCode(String codGrupo);
 
-    List<Group> listGroups(String codStatus);
     Page<Group> listGroups(String codStatus, Pageable pageable);
+
+    /**
+     * Lista todas as associações grupo-usuário.
+     */
+
+    Page<GroupUser> listGroupUsers(Pageable pageable);
 
     void save(Group grupo);
 
@@ -53,9 +57,4 @@ public interface GroupPort extends GroupProfilePort, GroupUserPort {
      */
     long countUserActive(String codGrupo);
 
-    /**
-     * Lista todas as associações grupo-usuário.
-     */
-    List<GroupUser> listGroupUsers();
-    Page<GroupUser> listGroupUsers(Pageable pageable);
 }

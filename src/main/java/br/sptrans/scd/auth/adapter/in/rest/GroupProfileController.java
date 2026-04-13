@@ -15,12 +15,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.GroupProfileRequestDTO;
 import br.sptrans.scd.auth.application.service.ManageProfileGroupService;
 import br.sptrans.scd.auth.domain.GroupProfile;
 import br.sptrans.scd.auth.domain.GroupProfileKey;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/group-profile")
@@ -46,14 +48,19 @@ public class GroupProfileController {
     }
 
     @PostMapping
-    public ResponseEntity<GroupProfile> create(@RequestBody GroupProfile groupProfile) {
+    public ResponseEntity<GroupProfile> create(@Valid @RequestBody GroupProfileRequestDTO request) {
+        GroupProfile groupProfile = new GroupProfile();
+        groupProfile.setId(new GroupProfileKey(request.codGrupo(), request.codPerfil()));
+        groupProfile.setCodStatus(request.codStatus());
         GroupProfile created = manageProfileGroupService.saveGroupProfile(groupProfile);
         return ResponseEntity.ok(created);
     }
 
     @PutMapping("/{codGrupo}/{codPerfil}")
-    public ResponseEntity<GroupProfile> update(@PathVariable String codGrupo, @PathVariable String codPerfil, @RequestBody GroupProfile groupProfile) {
+    public ResponseEntity<GroupProfile> update(@PathVariable String codGrupo, @PathVariable String codPerfil, @Valid @RequestBody GroupProfileRequestDTO request) {
+        GroupProfile groupProfile = new GroupProfile();
         groupProfile.setId(new GroupProfileKey(codGrupo, codPerfil));
+        groupProfile.setCodStatus(request.codStatus());
         GroupProfile updated = manageProfileGroupService.saveGroupProfile(groupProfile);
         return ResponseEntity.ok(updated);
     }

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityRequestDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityStatusRequestDTO;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.ProfileFunctionality;
@@ -24,6 +26,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/perfil-funcionalidade")
@@ -59,7 +62,7 @@ public class ProfileFunctionalityController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> associate(@RequestBody ProfileFunctionalityRequest request) {
+    public ResponseEntity<?> associate(@Valid @RequestBody ProfileFunctionalityRequestDTO request) {
 
         var functionality = new Functionality();
         groupProfileManagementUseCase.associateFunctionalitiesToProfile(
@@ -80,7 +83,7 @@ public class ProfileFunctionalityController {
         @ApiResponse(responseCode = "404", description = "Associação não encontrada")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> update(@RequestBody ProfileFunctionalityRequest request) {
+    public ResponseEntity<?> update(@Valid @RequestBody ProfileFunctionalityRequestDTO request) {
         // Implementar lógica de atualização se necessário
         return ResponseEntity.ok().build();
     }
@@ -93,7 +96,7 @@ public class ProfileFunctionalityController {
         @ApiResponse(responseCode = "404", description = "Associação não encontrada")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateStatus(@RequestBody ProfileFunctionalityStatusRequest request) {
+    public ResponseEntity<?> updateStatus(@Valid @RequestBody ProfileFunctionalityStatusRequestDTO request) {
    
         groupProfileManagementUseCase.disassociateFunctionalityFromProfile(
                 new GroupProfileManagementUseCase.DisassociateFunctionalityFromProfileCommand(
@@ -108,14 +111,6 @@ public class ProfileFunctionalityController {
                 )
         );
         return ResponseEntity.ok().build();
-    }
-
-    public record ProfileFunctionalityRequest(String codSistema, String codModulo, String codRotina, String codFuncionalidade, String codPerfil, Long idUsuarioLogado) {
-
-    }
-
-    public record ProfileFunctionalityStatusRequest(String codSistema, String codModulo, String codRotina, String codFuncionalidade, String codPerfil, String status, Long idUsuarioLogado) {
-
     }
 
     public record ProfileFunctionalityResponseDTO(

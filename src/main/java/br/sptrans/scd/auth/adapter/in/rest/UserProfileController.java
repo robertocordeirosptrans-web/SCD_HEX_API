@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileRequestDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileStatusRequestDTO;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.UserProfile;
 import br.sptrans.scd.shared.dto.PageResponse;
@@ -25,6 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/usuario-perfil")
@@ -78,7 +81,7 @@ public class UserProfileController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> associate(@RequestBody UserProfileRequest request) {
+    public ResponseEntity<?> associate(@Valid @RequestBody UserProfileRequestDTO request) {
         groupProfileManagementUseCase.associateProfilesToGroup(
                 new GroupProfileManagementUseCase.AssociateProfilesToGroupCommand(
                         request.idUsuario().toString(),
@@ -97,7 +100,7 @@ public class UserProfileController {
         @ApiResponse(responseCode = "404", description = "Associação não encontrada")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> update(@RequestBody UserProfileRequest request) {
+    public ResponseEntity<?> update(@Valid @RequestBody UserProfileRequestDTO request) {
         // Implementar lógica de atualização se necessário
         return ResponseEntity.ok().build();
     }
@@ -110,7 +113,7 @@ public class UserProfileController {
         @ApiResponse(responseCode = "404", description = "Associação não encontrada")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateStatus(@RequestBody UserProfileStatusRequest request) {
+    public ResponseEntity<?> updateStatus(@Valid @RequestBody UserProfileStatusRequestDTO request) {
         groupProfileManagementUseCase.disassociateProfileFromGroup(
                 new GroupProfileManagementUseCase.DisassociateProfileFromGroupCommand(
                         request.idUsuario().toString(),
@@ -119,14 +122,6 @@ public class UserProfileController {
                 )
         );
         return ResponseEntity.ok().build();
-    }
-
-    public record UserProfileRequest(Long idUsuario, String codPerfil) {
-
-    }
-
-    public record UserProfileStatusRequest(Long idUsuario, String codPerfil, String status) {
-
     }
 
     public record UserProfileResponseDTO(

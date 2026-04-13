@@ -11,18 +11,28 @@ import br.sptrans.scd.auth.domain.GroupUserKey;
 
 public interface GroupUserPort {
 
-    Optional<GroupUser> findById_IdUsuarioAndId_CodGrupo(Long idUsuario, String codGrupo);
+    /**
+     * Lista todas as associações grupo-usuário.
+     */
+    List<GroupUser> listGroupUsers();
 
-    List<GroupUser> findById_IdUsuarioAndCodStatus(Long idUsuario, String codStatus);
+    /**
+     * Lista todas as associações grupo-usuário paginadas.
+     */
+    Page<GroupUser> listGroupUsers(Pageable pageable);
 
-    List<GroupUser> findById_CodGrupoAndCodStatus(String codGrupo, String codStatus);
+    /**
+     * Lista todas as associações grupo-usuário de um grupo específico (apenas ativos).
+     */
+    List<GroupUser> listGroupUsersByCodGrupo(String codGrupo);
 
-    List<GroupUser> findById_IdUsuario(Long idUsuario);
+
 
     Optional<GroupUser> findById(GroupUserKey id);
 
-    List<GroupUser> listGroupUsers();
-    Page<GroupUser> listGroupUsers(Pageable pageable);
+    List<GroupUser> findById_IdUsuarioAndCodStatus(Long idUsuario, String codStatus);
+
+    Page<GroupUser> listGroupsByUser(Long idUsuario, Pageable pageable);
 
     GroupUser save(GroupUser entity);
 

@@ -26,7 +26,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -77,7 +79,7 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<ResponseSimple> changePassword(@RequestBody ResquestChangePassword req) {
+    public ResponseEntity<ResponseSimple> changePassword(@Valid @RequestBody ResquestChangePassword req) {
         log.info("REST POST /auth/change-password — Solicitação de troca de senha");
         ResetPasswordComand reset = new ResetPasswordComand(req.token(), req.novaSenha());
         casoUso.resetPassword(reset);
@@ -86,7 +88,7 @@ public class AuthController {
     }
 
     @PostMapping("/recovery-password")
-    public ResponseEntity<ResponseSimple> recoveryPassword(@RequestBody RequestRecoveryPassword req) {
+    public ResponseEntity<ResponseSimple> recoveryPassword(@Valid @RequestBody RequestRecoveryPassword req) {
         log.info("REST POST /auth/recovery-password — Solicitação de recuperação de senha");
 
         ResetRequestComand cmd = new ResetRequestComand(req.email());
@@ -117,11 +119,21 @@ public class AuthController {
 
     }
 
-    public record RequestRecoveryPassword(String email) {
+    public record RequestRecoveryPassword(
+            @NotBlank(message = "E-mail é obrigatório")
+            @Email(message = "E-mail deve ser válido")
+            @Size(max = 40, message = "E-mail deve ter no máximo 40 caracteres")
+            String email) {
 
     }
 
-    public record ResquestChangePassword(String token, String novaSenha) {
+    public record ResquestChangePassword(
+            @NotBlank(message = "Token é obrigatório")
+            String token,
+
+            @NotBlank(message = "Nova senha é obrigatória")
+            @Size(min = 6, message = "Nova senha deve ter no mínimo 6 caracteres")
+            String novaSenha) {
 
     }
 

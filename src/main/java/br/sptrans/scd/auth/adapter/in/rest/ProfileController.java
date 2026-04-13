@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.CreateProfileRequestDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UpdateProfileRequestDTO;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.shared.dto.PageResponse;
@@ -25,6 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -32,14 +35,6 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Perfis v1", description = "Endpoints para gerenciamento de perfis - Versão 1")
 @RequiredArgsConstructor
 public class ProfileController {
-
-    public record CreateProfileRequest(String codPerfil, String nomPerfil, Long idUsuarioLogado) {
-
-    }
-
-    public record UpdateProfileRequest(String nomPerfil, Long idUsuarioLogado) {
-
-    }
 
     private final GroupProfileManagementUseCase groupProfileManagementUseCase;
 
@@ -51,7 +46,7 @@ public class ProfileController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> createProfile(@RequestBody CreateProfileRequest request) {
+    public ResponseEntity<?> createProfile(@Valid @RequestBody CreateProfileRequestDTO request) {
         GroupProfileManagementUseCase.CreateProfileCommand cmd = new GroupProfileManagementUseCase.CreateProfileCommand(request.codPerfil(), request.nomPerfil(), request.idUsuarioLogado());
         var perfil = groupProfileManagementUseCase.createProfile(cmd);
         return ResponseEntity.ok(perfil);
@@ -93,7 +88,7 @@ public class ProfileController {
         @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateProfile(@PathVariable String codPerfil, @RequestBody UpdateProfileRequest request) {
+    public ResponseEntity<?> updateProfile(@PathVariable String codPerfil, @Valid @RequestBody UpdateProfileRequestDTO request) {
         GroupProfileManagementUseCase.UpdateProfileCommand cmd = new GroupProfileManagementUseCase.UpdateProfileCommand(codPerfil, request.nomPerfil(), request.idUsuarioLogado());
         var perfil = groupProfileManagementUseCase.updateProfile(cmd);
         return ResponseEntity.ok(perfil);

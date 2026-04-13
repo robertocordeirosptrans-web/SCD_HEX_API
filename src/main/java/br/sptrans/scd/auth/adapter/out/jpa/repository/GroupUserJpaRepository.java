@@ -1,7 +1,5 @@
 package br.sptrans.scd.auth.adapter.out.jpa.repository;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,9 +15,9 @@ public interface GroupUserJpaRepository extends JpaRepository<GroupUserEntityJpa
     long countActiveUsersByGroup(@Param("codGrupo") String codGrupo);
 
     @Query("SELECT gu FROM GroupUserEntityJpa gu ORDER BY gu.id.codGrupo, gu.id.idUsuario")
-    List<GroupUserEntityJpa> findAllGroupUsers();
-
-    @Query("SELECT gu FROM GroupUserEntityJpa gu ORDER BY gu.id.codGrupo, gu.id.idUsuario")
     Page<GroupUserEntityJpa> findAllGroupUsers(Pageable pageable);
+
+    @Query("SELECT gu FROM GroupUserEntityJpa gu WHERE gu.id.idUsuario = :idUsuario ORDER BY gu.id.codGrupo")
+    Page<GroupUserEntityJpa> findByGroupsUser(@Param("idUsuario") Long idUsuario, Pageable pageable);
 
 }
