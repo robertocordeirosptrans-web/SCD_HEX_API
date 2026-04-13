@@ -28,6 +28,9 @@ public interface ProfileJpaRepository extends JpaRepository<ProfileEntityJpa, St
     @Query("SELECT p FROM ProfileEntityJpa p WHERE (:codStatus IS NULL OR p.codStatus = :codStatus)")
     List<ProfileEntityJpa> findByCodStatus(@Param("codStatus") String codStatus);
 
-    @Query("SELECT p FROM ProfileEntityJpa p WHERE (:codStatus IS NULL OR p.codStatus = :codStatus)")
+    @Query(
+        value = "SELECT p FROM ProfileEntityJpa p LEFT JOIN FETCH p.usuarioManutencao WHERE (:codStatus IS NULL OR p.codStatus = :codStatus)",
+        countQuery = "SELECT COUNT(p) FROM ProfileEntityJpa p WHERE (:codStatus IS NULL OR p.codStatus = :codStatus)"
+    )
     Page<ProfileEntityJpa> findByCodStatus(@Param("codStatus") String codStatus, Pageable pageable);
 }

@@ -14,6 +14,7 @@ public class ProfileFunctionality {
     private LocalDate dtInicioValidade;
     private Functionality funcionalidade;
     private Profile perfil;
+    private User usuarioManutencao;
 
   
 }

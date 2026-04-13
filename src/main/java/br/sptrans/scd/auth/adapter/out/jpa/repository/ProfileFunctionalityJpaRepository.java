@@ -2,6 +2,8 @@ package br.sptrans.scd.auth.adapter.out.jpa.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -18,6 +20,12 @@ public interface ProfileFunctionalityJpaRepository extends JpaRepository<Profile
 
     @Query("SELECT pf FROM ProfileFunctionalityJpa pf JOIN FETCH pf.funcionalidade f WHERE pf.perfil = :perfil")
     List<ProfileFunctionalityJpa> findByPerfil(@Param("perfil") ProfileEntityJpa perfil);
+
+    @Query(
+        value = "SELECT pf FROM ProfileFunctionalityJpa pf LEFT JOIN FETCH pf.usuarioManutencao",
+        countQuery = "SELECT COUNT(pf) FROM ProfileFunctionalityJpa pf"
+    )
+    Page<ProfileFunctionalityJpa> findAll(Pageable pageable);
 
     @Query("SELECT pf FROM ProfileFunctionalityJpa pf WHERE pf.id.codPerfil = :codPerfil AND pf.id.codSistema = :codSistema AND pf.id.codModulo = :codModulo AND pf.id.codRotina = :codRotina AND pf.id.codFuncionalidade = :codFuncionalidade AND pf.idUsuarioManutencao IS NOT NULL")
     List<ProfileFunctionalityJpa> findActiveByProfileAndFunctionality(

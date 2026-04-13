@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.GroupUserRequestDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.GroupUserResponseDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.GroupUserStatusRequestDTO;
+import br.sptrans.scd.auth.adapter.in.rest.mapper.GroupUserRestMapper;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.shared.dto.PageResponse;
@@ -33,9 +35,12 @@ import jakarta.validation.Valid;
 public class GroupUserController {
 
     private final GroupProfileManagementUseCase groupProfileManagementUseCase;
+    private final GroupUserRestMapper groupUserRestMapper;
 
-    public GroupUserController(GroupProfileManagementUseCase groupProfileManagementUseCase) {
+    public GroupUserController(GroupProfileManagementUseCase groupProfileManagementUseCase,
+                               GroupUserRestMapper groupUserRestMapper) {
         this.groupProfileManagementUseCase = groupProfileManagementUseCase;
+        this.groupUserRestMapper = groupUserRestMapper;
     }
 
     @GetMapping
@@ -45,9 +50,10 @@ public class GroupUserController {
             @ApiResponse(responseCode = "200", description = "Lista de associações retornada com sucesso")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<GroupUser>> listGroupUsers(
+    public ResponseEntity<PageResponse<GroupUserResponseDTO>> listGroupUsers(
             Pageable pageable) {
-        Page<GroupUser> page = groupProfileManagementUseCase.listGroupUsers(pageable);
+        Page<GroupUserResponseDTO> page = groupProfileManagementUseCase.listGroupUsers(pageable)
+                .map(groupUserRestMapper::toDto);
         return ResponseEntity.ok(PageResponse.fromPage(page));
     }
 
@@ -59,12 +65,12 @@ public class GroupUserController {
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<GroupUser>> listGroupsByUser(@PathVariable Long idUsuario, Pageable pageable) {
+    public ResponseEntity<PageResponse<GroupUserResponseDTO>> listGroupsByUser(@PathVariable Long idUsuario, Pageable pageable) {
         Page<GroupUser> grupos = groupProfileManagementUseCase.listGroupsByUser(idUsuario, pageable);
         if (grupos == null || grupos.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(PageResponse.fromPage(grupos));
+        return ResponseEntity.ok(PageResponse.fromPage(grupos.map(groupUserRestMapper::toDto)));
     }
 
     @PostMapping
@@ -113,6 +119,7 @@ public class GroupUserController {
                         request.idUsuario()));
         return ResponseEntity.ok().build();
     }
+
 
 }
 

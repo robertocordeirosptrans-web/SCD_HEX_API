@@ -31,6 +31,10 @@ public class ProfileFunctionalityJpa {
     private Long idUsuarioManutencao;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO_MANUTENCAO", insertable = false, updatable = false)
+    private UserEntityJpa usuarioManutencao;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("codPerfil")
     @JoinColumn(name = "COD_PERFIL")
     private ProfileEntityJpa perfil;

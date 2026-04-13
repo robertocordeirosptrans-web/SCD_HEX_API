@@ -187,7 +187,7 @@ public class GroupAdapterJpa implements GroupPort {
 
     @Override
     public Page<GroupProfile> findAllGroupProfile(Pageable pageable) {
-        return groupProfileJpaRepository.findAll(pageable).map(groupMapper::toDomain);
+        return groupProfileJpaRepository.findAllWithUser(pageable).map(groupMapper::toDomain);
     }
 
     @Override

@@ -2,6 +2,8 @@ package br.sptrans.scd.auth.adapter.out.jpa.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -19,6 +21,10 @@ public interface GroupProfileJpaRepository extends JpaRepository<GroupProfileEnt
 
     @Query("SELECT gp FROM GroupProfileEntityJpa gp JOIN FETCH gp.grupo JOIN FETCH gp.perfil")
     List<GroupProfile> findAllGroupProfile();
+
+    @Query(value = "SELECT gp FROM GroupProfileEntityJpa gp LEFT JOIN FETCH gp.usuarioManutencao",
+           countQuery = "SELECT COUNT(gp) FROM GroupProfileEntityJpa gp")
+    Page<GroupProfileEntityJpa> findAllWithUser(Pageable pageable);
 
     @Modifying
     @Transactional

@@ -1,7 +1,5 @@
 package br.sptrans.scd.auth.adapter.in.rest;
 
-import java.time.LocalDate;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityRequestDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityResponseDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityStatusRequestDTO;
+import br.sptrans.scd.auth.adapter.in.rest.mapper.ProfileFunctionalityRestMapper;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Functionality;
-import br.sptrans.scd.auth.domain.ProfileFunctionality;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,9 +34,12 @@ import jakarta.validation.Valid;
 public class ProfileFunctionalityController {
 
     private final GroupProfileManagementUseCase groupProfileManagementUseCase;
+    private final ProfileFunctionalityRestMapper profileFunctionalityRestMapper;
 
-    public ProfileFunctionalityController(GroupProfileManagementUseCase groupProfileManagementUseCase) {
+    public ProfileFunctionalityController(GroupProfileManagementUseCase groupProfileManagementUseCase,
+                                          ProfileFunctionalityRestMapper profileFunctionalityRestMapper) {
         this.groupProfileManagementUseCase = groupProfileManagementUseCase;
+        this.profileFunctionalityRestMapper = profileFunctionalityRestMapper;
     }
 
     @GetMapping
@@ -50,7 +52,7 @@ public class ProfileFunctionalityController {
     public ResponseEntity<PageResponse<ProfileFunctionalityResponseDTO>> listProfileFunctionalities(
             Pageable pageable) {
         Page<ProfileFunctionalityResponseDTO> dtoPage = groupProfileManagementUseCase.listProfileFunctionalities(pageable)
-                .map(ProfileFunctionalityResponseDTO::new);
+                .map(profileFunctionalityRestMapper::toDto);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
@@ -111,29 +113,6 @@ public class ProfileFunctionalityController {
                 )
         );
         return ResponseEntity.ok().build();
-    }
-
-    public record ProfileFunctionalityResponseDTO(
-            String codSistema,
-            String codModulo,
-            String codRotina,
-            String codFuncionalidade,
-            String codPerfil,
-            Long idUsuarioManutencao,
-            LocalDate dtInicioValidade
-            ) {
-
-        public ProfileFunctionalityResponseDTO(ProfileFunctionality perfilFuncionalidade) {
-            this(
-                    perfilFuncionalidade.getId().getCodSistema(),
-                    perfilFuncionalidade.getId().getCodModulo(),
-                    perfilFuncionalidade.getId().getCodRotina(),
-                    perfilFuncionalidade.getId().getCodFuncionalidade(),
-                    perfilFuncionalidade.getId().getCodPerfil(),
-                    perfilFuncionalidade.getIdUsuarioManutencao(),
-                    perfilFuncionalidade.getDtInicioValidade()
-            );
-        }
     }
 
 }

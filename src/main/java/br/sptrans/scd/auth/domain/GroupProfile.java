@@ -19,5 +19,6 @@ public class GroupProfile {
     private LocalDate dtModi;
     private Group grupo;
     private Profile perfil;
+    private User usuarioManutencao;
 
 }

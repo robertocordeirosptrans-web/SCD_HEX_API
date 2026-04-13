@@ -1,6 +1,5 @@
 package br.sptrans.scd.auth.adapter.in.rest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.CreateProfileRequestDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileResponseDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UpdateProfileRequestDTO;
+import br.sptrans.scd.auth.adapter.in.rest.mapper.ProfileRestMapper;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.shared.dto.PageResponse;
@@ -37,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 public class ProfileController {
 
     private final GroupProfileManagementUseCase groupProfileManagementUseCase;
+    private final ProfileRestMapper profileRestMapper;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -46,10 +48,10 @@ public class ProfileController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> createProfile(@Valid @RequestBody CreateProfileRequestDTO request) {
+    public ResponseEntity<ProfileResponseDTO> createProfile(@Valid @RequestBody CreateProfileRequestDTO request) {
         GroupProfileManagementUseCase.CreateProfileCommand cmd = new GroupProfileManagementUseCase.CreateProfileCommand(request.codPerfil(), request.nomPerfil(), request.idUsuarioLogado());
-        var perfil = groupProfileManagementUseCase.createProfile(cmd);
-        return ResponseEntity.ok(perfil);
+        Profile perfil = groupProfileManagementUseCase.createProfile(cmd);
+        return ResponseEntity.ok(profileRestMapper.toDto(perfil));
     }
 
     @GetMapping
@@ -62,7 +64,7 @@ public class ProfileController {
     public ResponseEntity<PageResponse<ProfileResponseDTO>> getAllProfile(
             Pageable pageable) {
         Page<ProfileResponseDTO> dtoPage = groupProfileManagementUseCase.listProfiles(null, pageable)
-                .map(ProfileResponseDTO::new);
+                .map(profileRestMapper::toDto);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
@@ -74,10 +76,11 @@ public class ProfileController {
         @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> getProfileById(@PathVariable String codPerfil) {
+    public ResponseEntity<ProfileResponseDTO> getProfileById(@PathVariable String codPerfil) {
         List<Profile> perfis = groupProfileManagementUseCase.listProfiles(null);
         Optional<Profile> perfil = perfis.stream().filter(p -> p.getCodPerfil().equalsIgnoreCase(codPerfil)).findFirst();
-        return perfil.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return perfil.map(profileRestMapper::toDto).map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{codPerfil}")
@@ -88,29 +91,10 @@ public class ProfileController {
         @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateProfile(@PathVariable String codPerfil, @Valid @RequestBody UpdateProfileRequestDTO request) {
+    public ResponseEntity<ProfileResponseDTO> updateProfile(@PathVariable String codPerfil, @Valid @RequestBody UpdateProfileRequestDTO request) {
         GroupProfileManagementUseCase.UpdateProfileCommand cmd = new GroupProfileManagementUseCase.UpdateProfileCommand(codPerfil, request.nomPerfil(), request.idUsuarioLogado());
-        var perfil = groupProfileManagementUseCase.updateProfile(cmd);
-        return ResponseEntity.ok(perfil);
+        Profile perfil = groupProfileManagementUseCase.updateProfile(cmd);
+        return ResponseEntity.ok(profileRestMapper.toDto(perfil));
     }
 
-    public record ProfileResponseDTO(
-            String codPerfil,
-            String nomPerfil,
-            Long idUsuarioManutencao,
-            LocalDateTime dtModi,
-            String codStatus
-            ) {
-
-        public ProfileResponseDTO(Profile perfil) {
-            this(
-                    perfil.getCodPerfil(),
-                    perfil.getNomPerfil(),
-                    perfil.getIdUsuarioManutencao(),
-                    perfil.getDtModi(),
-                    perfil.getCodStatus()
-            );
-        }
-
-    }
 }

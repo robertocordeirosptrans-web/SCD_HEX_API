@@ -23,6 +23,8 @@ public class Profile {
 
     private String codStatus;
 
+    private User usuarioManutencao;
+
     public boolean isActive() {
         return "A".equalsIgnoreCase(this.codStatus);
     }

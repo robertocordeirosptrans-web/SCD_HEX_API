@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
-
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;

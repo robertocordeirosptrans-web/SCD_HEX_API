@@ -21,6 +21,7 @@ public class Group {
     private String nomGrupo;
     private Set<GroupProfile> perfis;
     private Set<GroupUser> usuarios;
+    private User usuarioManutencao;
 
     public boolean isActive() {
         return "A".equalsIgnoreCase(this.codStatus);

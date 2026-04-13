@@ -16,12 +16,14 @@ import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.GroupUserKey;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        uses = { UserMapper.class },
         imports = { GroupUserKey.class, GroupProfileKey.class })
 public interface GroupMapper {
 
     // ── Group ────────────────────────────────────────────────────────────────
 
     @Mapping(target = "dtModi", source = "dtManutencao")
+    @Mapping(target = "usuarioManutencao", source = "usuarioManutencao")
     @Mapping(target = "perfis", ignore = true)
     @Mapping(target = "usuarios", ignore = true)
     Group toDomain(GroupEntityJpa entity);
@@ -35,7 +37,8 @@ public interface GroupMapper {
 
     @Mapping(target = "id", expression = "java(entity.getId() != null ? new GroupUserKey(entity.getId().getIdUsuario(), entity.getId().getCodGrupo()) : null)")
     @Mapping(target = "dtModi", source = "dtManutencao")
-    @Mapping(target = "usuario", ignore = true)
+    @Mapping(target = "usuario", source = "usuario")
+    @Mapping(target = "usuarioManutencao", source = "usuarioManutencao")
     @Mapping(target = "grupo", ignore = true)
     GroupUser toDomain(GroupUserEntityJpa entity);
 
@@ -55,6 +58,8 @@ public interface GroupMapper {
     // ── GroupProfile ──────────────────────────────────────────────────────────
 
     @Mapping(target = "id", expression = "java(entity.getId() != null ? new GroupProfileKey(entity.getId().getCodGrupo(), entity.getId().getCodPerfil()) : null)")
+    @Mapping(target = "dtModi", expression = "java(entity.getDtManutencao() != null ? entity.getDtManutencao().toLocalDate() : null)")
+    @Mapping(target = "usuarioManutencao", source = "usuarioManutencao")
     @Mapping(target = "grupo", ignore = true)
     @Mapping(target = "perfil", ignore = true)
     GroupProfile toDomain(GroupProfileEntityJpa entity);

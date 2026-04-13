@@ -1,7 +1,5 @@
 package br.sptrans.scd.auth.adapter.in.rest;
 
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.MeResponse;
+import br.sptrans.scd.auth.adapter.in.rest.dto.ResponseLogin;
+import br.sptrans.scd.auth.adapter.in.rest.dto.ResponseSimple;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetPasswordComand;
@@ -106,18 +107,6 @@ public class AuthController {
 
     }
 
-    public record ResponseLogin(String token) {
-
-    }
-
-    public record MeResponse(Long id, String name, Set<String> roles, Set<String> permissions, Set<String> groups) {
-
-    }
-
-
-    public record ResponseSimple(String mensagem) {
-
-    }
 
     public record RequestRecoveryPassword(
             @NotBlank(message = "E-mail é obrigatório")

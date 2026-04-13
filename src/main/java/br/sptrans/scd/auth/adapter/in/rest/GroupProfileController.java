@@ -1,6 +1,5 @@
 package br.sptrans.scd.auth.adapter.in.rest;
 
-import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.GroupProfileRequestDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.GroupProfileResponseDTO;
+import br.sptrans.scd.auth.adapter.in.rest.mapper.GroupProfileRestMapper;
 import br.sptrans.scd.auth.application.service.ManageProfileGroupService;
 import br.sptrans.scd.auth.domain.GroupProfile;
 import br.sptrans.scd.auth.domain.GroupProfileKey;
@@ -32,56 +33,41 @@ public class GroupProfileController {
     @Autowired
     private ManageProfileGroupService manageProfileGroupService;
 
+    @Autowired
+    private GroupProfileRestMapper groupProfileRestMapper;
+
     @GetMapping
     public ResponseEntity<PageResponse<GroupProfileResponseDTO>> getAll(
             Pageable pageable
     ) {
         Page<GroupProfileResponseDTO> dtoPage = manageProfileGroupService.findAllGroupProfile(pageable)
-                .map(GroupProfileResponseDTO::new);
+                .map(groupProfileRestMapper::toDto);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @GetMapping("/{codGrupo}/{codPerfil}")
-    public ResponseEntity<GroupProfile> getById(@PathVariable String codGrupo, @PathVariable String codPerfil) {
+    public ResponseEntity<GroupProfileResponseDTO> getById(@PathVariable String codGrupo, @PathVariable String codPerfil) {
         Optional<GroupProfile> groupProfile = manageProfileGroupService.findByCodGrupoAndCodPerfil(codGrupo, codPerfil);
-        return groupProfile.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return groupProfile.map(groupProfileRestMapper::toDto).map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<GroupProfile> create(@Valid @RequestBody GroupProfileRequestDTO request) {
+    public ResponseEntity<GroupProfileResponseDTO> create(@Valid @RequestBody GroupProfileRequestDTO request) {
         GroupProfile groupProfile = new GroupProfile();
         groupProfile.setId(new GroupProfileKey(request.codGrupo(), request.codPerfil()));
         groupProfile.setCodStatus(request.codStatus());
         GroupProfile created = manageProfileGroupService.saveGroupProfile(groupProfile);
-        return ResponseEntity.ok(created);
+        return ResponseEntity.ok(groupProfileRestMapper.toDto(created));
     }
 
     @PutMapping("/{codGrupo}/{codPerfil}")
-    public ResponseEntity<GroupProfile> update(@PathVariable String codGrupo, @PathVariable String codPerfil, @Valid @RequestBody GroupProfileRequestDTO request) {
+    public ResponseEntity<GroupProfileResponseDTO> update(@PathVariable String codGrupo, @PathVariable String codPerfil, @Valid @RequestBody GroupProfileRequestDTO request) {
         GroupProfile groupProfile = new GroupProfile();
         groupProfile.setId(new GroupProfileKey(codGrupo, codPerfil));
         groupProfile.setCodStatus(request.codStatus());
         GroupProfile updated = manageProfileGroupService.saveGroupProfile(groupProfile);
-        return ResponseEntity.ok(updated);
-    }
-
-    public record GroupProfileResponseDTO(
-            String codGrupo,
-            String codPerfil,
-            Long idUsuarioManutencao,
-            String codStatus,
-            LocalDate dtModi
-            ) {
-
-        public GroupProfileResponseDTO(GroupProfile grupoPerfil) {
-            this(
-                    grupoPerfil.getGrupo() != null ? grupoPerfil.getGrupo().getCodGrupo() : null,
-                    grupoPerfil.getPerfil() != null ? grupoPerfil.getPerfil().getCodPerfil() : null,
-                    grupoPerfil.getIdUsuarioManutencao(),
-                    grupoPerfil.getCodStatus(),
-                    grupoPerfil.getDtModi()
-            );
-        }
+        return ResponseEntity.ok(groupProfileRestMapper.toDto(updated));
     }
 
 }

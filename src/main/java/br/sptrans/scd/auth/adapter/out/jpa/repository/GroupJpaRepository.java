@@ -31,9 +31,10 @@ public interface GroupJpaRepository extends JpaRepository<GroupEntityJpa, String
 	""")
 	List<GroupEntityJpa> findAllByCodStatus(@Param("codStatus") String codStatus);
 
-	@Query("""
-		SELECT g FROM GroupEntityJpa g WHERE (:codStatus IS NULL OR g.codStatus = :codStatus)
-	""")
+	@Query(
+		value = "SELECT g FROM GroupEntityJpa g LEFT JOIN FETCH g.usuarioManutencao WHERE (:codStatus IS NULL OR g.codStatus = :codStatus)",
+		countQuery = "SELECT COUNT(g) FROM GroupEntityJpa g WHERE (:codStatus IS NULL OR g.codStatus = :codStatus)"
+	)
 	Page<GroupEntityJpa> findAllByCodStatus(@Param("codStatus") String codStatus, Pageable pageable);
 
 }

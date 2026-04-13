@@ -1,8 +1,6 @@
 package br.sptrans.scd.auth.adapter.in.rest;
 
 
-import java.time.LocalDateTime;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileRequestDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileResponseDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileStatusRequestDTO;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
-import br.sptrans.scd.auth.domain.UserProfile;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
@@ -124,25 +122,5 @@ public class UserProfileController {
         return ResponseEntity.ok().build();
     }
 
-    public record UserProfileResponseDTO(
-            Long idUsuario,
-            String codPerfil,
-            String nomPerfil,
-            Long idUsuarioManutencao,
-            String codStatus,
-            LocalDateTime dtModi
-            ) {
-
-        public UserProfileResponseDTO(UserProfile usuarioPerfil) {
-            this(
-                    usuarioPerfil.getId().getIdUsuario() != null ? usuarioPerfil.getId().getIdUsuario() : null,
-                    usuarioPerfil.getId().getCodPerfil() != null ? usuarioPerfil.getId().getCodPerfil() : null,
-                    usuarioPerfil.getPerfil() != null ? usuarioPerfil.getPerfil().getNomPerfil() : null,
-                    usuarioPerfil.getIdUsuarioManutencao(),
-                    usuarioPerfil.getCodStatus(),
-                    usuarioPerfil.getDtModi()
-            );
-        }
-    }
 
 }

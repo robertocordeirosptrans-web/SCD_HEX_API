@@ -15,12 +15,14 @@ import br.sptrans.scd.auth.domain.ProfileFunctionalityKey;
 import br.sptrans.scd.auth.domain.UserProfile;
 import br.sptrans.scd.auth.domain.UserProfileId;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        uses = { UserMapper.class })
 public interface ProfileMapper {
 
     // ── Profile ───────────────────────────────────────────────────────────────
 
     @Mapping(target = "dtModi", source = "dtManutencao")
+    @Mapping(target = "usuarioManutencao", source = "usuarioManutencao")
     Profile toDomain(ProfileEntityJpa entity);
 
     @Mapping(target = "dtManutencao", source = "dtModi")
@@ -31,6 +33,7 @@ public interface ProfileMapper {
 
     @Mapping(target = "id", source = "id")
     @Mapping(target = "dtInicioValidade", expression = "java(entity.getDtInicioValidade() != null ? entity.getDtInicioValidade().toLocalDate() : null)")
+    @Mapping(target = "usuarioManutencao", source = "usuarioManutencao")
     @Mapping(target = "funcionalidade", ignore = true)
     @Mapping(target = "perfil", ignore = true)
     ProfileFunctionality toDomain(ProfileFunctionalityJpa entity);
