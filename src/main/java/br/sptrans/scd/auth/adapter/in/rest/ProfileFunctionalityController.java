@@ -19,6 +19,7 @@ import br.sptrans.scd.auth.adapter.in.rest.mapper.ProfileFunctionalityRestMapper
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.security.CacPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -43,7 +44,7 @@ public class ProfileFunctionalityController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.LISASSPERFUN + "')")
     @Operation(summary = "Listar associações perfil-funcionalidade", description = "Retorna uma lista paginada de todas as associações perfil-funcionalidade")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de associações retornada com sucesso")
@@ -57,7 +58,7 @@ public class ProfileFunctionalityController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.ASSFUNAOPER + "')")
     @Operation(summary = "Associar funcionalidade ao perfil", description = "Associa uma funcionalidade ao perfil")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Associação criada com sucesso"),
@@ -78,7 +79,7 @@ public class ProfileFunctionalityController {
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.ASSFUNAOPER + "')")
     @Operation(summary = "Atualizar associação perfil-funcionalidade", description = "Atualiza dados da associação")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Associação atualizada com sucesso"),
@@ -91,7 +92,7 @@ public class ProfileFunctionalityController {
     }
 
     @PatchMapping("/status")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.ASSFUNAOPER + "')")
     @Operation(summary = "Atualizar status da associação", description = "Atualiza o status da associação perfil-funcionalidade")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),

@@ -24,6 +24,7 @@ import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.UpdateUserC
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CacPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -42,7 +43,7 @@ public class UserController {
     private final UserResolverHelper userResolverHelper;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.LISUSU + "')")
     @Operation(summary = "Lista usuários com paginação, filtros e ordenação")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Usuario criado com sucesso"),
@@ -66,7 +67,7 @@ public class UserController {
 
 
     @GetMapping("/{idUsuario}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.LISUSU + "')")
     @Operation(summary = "Busca de usuarios por id")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Usuario encontrado"),

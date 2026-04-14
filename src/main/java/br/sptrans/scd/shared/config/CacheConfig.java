@@ -1,11 +1,15 @@
 package br.sptrans.scd.shared.config;
 
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 @Configuration
 @EnableCaching
@@ -13,7 +17,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager(
+        CaffeineCacheManager manager = new CaffeineCacheManager(
                 "usuarios",
                 "canais",
                 "produtos",
@@ -22,6 +26,10 @@ public class CacheConfig {
                 "productPeriodReport",
                 "permissoes"
         );
+        // TTL garante que permissões concedidas diretamente no banco (fora da API)
+        // sejam visíveis em no máximo 5 minutos, sem precisar reiniciar a aplicação.
+        manager.setCaffeine(Caffeine.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES));
+        return manager;
     }
 
     /**

@@ -32,7 +32,7 @@ public interface GroupUserPort {
 
     List<GroupUser> findById_IdUsuarioAndCodStatus(Long idUsuario, String codStatus);
 
-    Page<GroupUser> listGroupsByUser(Long idUsuario, Pageable pageable);
+    Page<GroupUser> listUsersByGroup(String codGrupo, Pageable pageable);
 
     GroupUser save(GroupUser entity);
 

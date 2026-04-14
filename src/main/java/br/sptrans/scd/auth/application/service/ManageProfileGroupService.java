@@ -92,8 +92,8 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
-    public Page<GroupUser> listGroupsByUser(Long idUsuario, Pageable pageable) {
-        return manageGroupProfileUseCase.listGroupsByUser(idUsuario, pageable);
+    public Page<GroupUser> listUsersByGroup(String codGrupo, Pageable pageable) {
+        return manageGroupProfileUseCase.listUsersByGroup(codGrupo, pageable);
     }
 
 
@@ -160,8 +160,8 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     // MÉTODOS LEGADOS (Compatibilidade)
     // ══════════════════════════════════════════════════════════════════════════
 
-    public Page<GroupUser> listGroupUsers(Long idUsuario, Pageable pageable) {
-        return manageGroupProfileUseCase.listGroupUsers(idUsuario, pageable);
+    public Page<GroupUser> listGroupUsers(String codGrupo, Pageable pageable) {
+        return manageGroupProfileUseCase.listUsersByGroup(codGrupo, pageable);
     }
 
     @Override

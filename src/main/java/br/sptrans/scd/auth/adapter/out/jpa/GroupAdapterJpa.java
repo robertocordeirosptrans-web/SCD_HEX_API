@@ -59,26 +59,27 @@ public class GroupAdapterJpa implements GroupPort {
                 .map(groupMapper::toDomain);
     }
 
+
+
     @Override
-    public Page<GroupUser> listGroupsByUser(Long idUsuario, Pageable pageable) {
-        return groupUserJpaRepository.findByGroupsUser(idUsuario, pageable)
-                .map(groupMapper::toDomain);
+    public Page<GroupUser> listUsersByGroup(String codGrupo, Pageable pageable) {
+        return groupUserJpaRepository.findByGroupCode(codGrupo, pageable).map(groupMapper::toDomain);
     }
 
     @Override
     public java.util.List<GroupUser> listGroupUsers() {
         return groupUserJpaRepository.findAll().stream()
-            .map(groupMapper::toDomain)
-            .collect(Collectors.toList());
+                .map(groupMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<GroupUser> listGroupUsersByCodGrupo(String codGrupo) {
         return groupUserJpaRepository.findAll().stream()
-            .filter(e -> e.getId() != null && codGrupo.equals(e.getId().getCodGrupo())
-                && "A".equals(e.getCodStatus()))
-            .map(groupMapper::toDomain)
-            .collect(Collectors.toList());
+                .filter(e -> e.getId() != null && codGrupo.equals(e.getId().getCodGrupo())
+                        && "A".equals(e.getCodStatus()))
+                .map(groupMapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override

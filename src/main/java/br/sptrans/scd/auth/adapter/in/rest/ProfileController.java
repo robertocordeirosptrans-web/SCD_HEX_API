@@ -22,6 +22,7 @@ import br.sptrans.scd.auth.adapter.in.rest.mapper.ProfileRestMapper;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.security.CacPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -41,7 +42,7 @@ public class ProfileController {
     private final ProfileRestMapper profileRestMapper;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.CRIPER + "')")
     @Operation(summary = "Criar perfil", description = "Cria um novo perfil no sistema")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Perfil criado com sucesso"),
@@ -55,7 +56,7 @@ public class ProfileController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.CRIPER + "')")
     @Operation(summary = "Listar perfis", description = "Retorna uma lista de todos os perfis")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de perfis retornada com sucesso")
@@ -69,7 +70,7 @@ public class ProfileController {
     }
 
     @GetMapping("/{codPerfil}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.CRIPER + "')")
     @Operation(summary = "Obter perfil por código", description = "Retorna um perfil específico pelo código")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Perfil retornado com sucesso"),
@@ -84,7 +85,7 @@ public class ProfileController {
     }
 
     @PutMapping("/{codPerfil}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.CRIPER + "')")
     @Operation(summary = "Atualizar perfil", description = "Atualiza um perfil específico")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Perfil atualizado com sucesso"),

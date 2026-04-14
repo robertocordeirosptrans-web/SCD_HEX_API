@@ -21,6 +21,7 @@ import br.sptrans.scd.auth.adapter.in.rest.mapper.GroupUserRestMapper;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.security.CacPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,92 +35,91 @@ import jakarta.validation.Valid;
 @Tag(name = "Grupo-Usuário v1", description = "Endpoints para associação de grupo e usuários")
 public class GroupUserController {
 
-    private final GroupProfileManagementUseCase groupProfileManagementUseCase;
-    private final GroupUserRestMapper groupUserRestMapper;
+        private final GroupProfileManagementUseCase groupProfileManagementUseCase;
+        private final GroupUserRestMapper groupUserRestMapper;
 
-    public GroupUserController(GroupProfileManagementUseCase groupProfileManagementUseCase,
-                               GroupUserRestMapper groupUserRestMapper) {
-        this.groupProfileManagementUseCase = groupProfileManagementUseCase;
-        this.groupUserRestMapper = groupUserRestMapper;
-    }
-
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Listar associações grupo-usuário", description = "Retorna uma lista paginada de todas as associações grupo-usuário")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lista de associações retornada com sucesso")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<GroupUserResponseDTO>> listGroupUsers(
-            Pageable pageable) {
-        Page<GroupUserResponseDTO> page = groupProfileManagementUseCase.listGroupUsers(pageable)
-                .map(groupUserRestMapper::toDto);
-        return ResponseEntity.ok(PageResponse.fromPage(page));
-    }
-
-    @GetMapping("/{idUsuario}/grupos")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Listar grupos do usuário", description = "Retorna uma lista de grupos que o usuário pertence")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lista de grupos retornada com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<GroupUserResponseDTO>> listGroupsByUser(@PathVariable Long idUsuario, Pageable pageable) {
-        Page<GroupUser> grupos = groupProfileManagementUseCase.listGroupsByUser(idUsuario, pageable);
-        if (grupos == null || grupos.isEmpty()) {
-            return ResponseEntity.notFound().build();
+        public GroupUserController(GroupProfileManagementUseCase groupProfileManagementUseCase,
+                        GroupUserRestMapper groupUserRestMapper) {
+                this.groupProfileManagementUseCase = groupProfileManagementUseCase;
+                this.groupUserRestMapper = groupUserRestMapper;
         }
-        return ResponseEntity.ok(PageResponse.fromPage(grupos.map(groupUserRestMapper::toDto)));
-    }
 
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Associar usuário ao grupo", description = "Associa um usuário ao grupo")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Associação criada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> associate(@Valid @RequestBody GroupUserRequestDTO request) {
-        groupProfileManagementUseCase.associateProfilesToGroup(
-                new GroupProfileManagementUseCase.AssociateProfilesToGroupCommand(
-                        request.codGrupo(),
-                        java.util.Set.of(request.idUsuario().toString()),
-                        request.idUsuario()));
-        return ResponseEntity.ok().build();
-    }
+        @GetMapping
+        @PreAuthorize("hasAuthority('" + CacPermissions.LISASSUSUPER + "')")
+        @Operation(summary = "Listar associações grupo-usuário", description = "Retorna uma lista paginada de todas as associações grupo-usuário")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lista de associações retornada com sucesso")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<PageResponse<GroupUserResponseDTO>> listGroupUsers(
+                        Pageable pageable) {
+                Page<GroupUserResponseDTO> page = groupProfileManagementUseCase.listGroupUsers(pageable)
+                                .map(groupUserRestMapper::toDto);
+                return ResponseEntity.ok(PageResponse.fromPage(page));
+        }
 
-    @PutMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Atualizar associação grupo-usuário", description = "Atualiza dados da associação")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Associação atualizada com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Associação não encontrada")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> update(@Valid @RequestBody GroupUserRequestDTO request) {
-        // Implementar lógica de atualização se necessário
-        return ResponseEntity.ok().build();
-    }
+        @GetMapping("/{codGrupo}/usuarios")
+        @PreAuthorize("hasAuthority('" + CacPermissions.LISASSUSUPER + "')")
+        @Operation(summary = "Listar usuários do grupo", description = "Retorna uma lista de usuários vinculados ao grupo informado")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso"),
+                        @ApiResponse(responseCode = "404", description = "Grupo não encontrado")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<PageResponse<GroupUserResponseDTO>> listUsersByGroup(@PathVariable String codGrupo,
+                        Pageable pageable) {
+                Page<GroupUser> usuarios = groupProfileManagementUseCase.listUsersByGroup(codGrupo, pageable);
+                if (usuarios == null || usuarios.isEmpty()) {
+                        return ResponseEntity.notFound().build();
+                }
+                return ResponseEntity.ok(PageResponse.fromPage(usuarios.map(groupUserRestMapper::toDto)));
+        }
 
-    @PatchMapping("/status")
-    @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Atualizar status da associação", description = "Atualiza o status da associação grupo-usuário")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Associação não encontrada")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateStatus(@Valid @RequestBody GroupUserStatusRequestDTO request) {
-        groupProfileManagementUseCase.disassociateProfileFromGroup(
-                new GroupProfileManagementUseCase.DisassociateProfileFromGroupCommand(
-                        request.codGrupo(),
-                        request.idUsuario().toString(),
-                        request.idUsuario()));
-        return ResponseEntity.ok().build();
-    }
+        @PostMapping
+        @PreAuthorize("hasAuthority('" + CacPermissions.ASSPERAOUSU + "')")
+        @Operation(summary = "Associar usuário ao grupo", description = "Associa um usuário ao grupo")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Associação criada com sucesso"),
+                        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<?> associate(@Valid @RequestBody GroupUserRequestDTO request) {
+                groupProfileManagementUseCase.associateProfilesToGroup(
+                                new GroupProfileManagementUseCase.AssociateProfilesToGroupCommand(
+                                                request.codGrupo(),
+                                                java.util.Set.of(request.idUsuario().toString()),
+                                                request.idUsuario()));
+                return ResponseEntity.ok().build();
+        }
 
+        @PutMapping
+        @PreAuthorize("hasAuthority('" + CacPermissions.ASSPERAOUSU + "')")
+        @Operation(summary = "Atualizar associação grupo-usuário", description = "Atualiza dados da associação")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Associação atualizada com sucesso"),
+                        @ApiResponse(responseCode = "404", description = "Associação não encontrada")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<?> update(@Valid @RequestBody GroupUserRequestDTO request) {
+                // Implementar lógica de atualização se necessário
+                return ResponseEntity.ok().build();
+        }
+
+        @PatchMapping("/status")
+        @PreAuthorize("hasAuthority('" + CacPermissions.ASSPERAOUSU + "')")
+        @Operation(summary = "Atualizar status da associação", description = "Atualiza o status da associação grupo-usuário")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
+                        @ApiResponse(responseCode = "404", description = "Associação não encontrada")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<?> updateStatus(@Valid @RequestBody GroupUserStatusRequestDTO request) {
+                groupProfileManagementUseCase.disassociateProfileFromGroup(
+                                new GroupProfileManagementUseCase.DisassociateProfileFromGroupCommand(
+                                                request.codGrupo(),
+                                                request.idUsuario().toString(),
+                                                request.idUsuario()));
+                return ResponseEntity.ok().build();
+        }
 
 }
-

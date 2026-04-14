@@ -21,6 +21,7 @@ import br.sptrans.scd.auth.adapter.in.rest.mapper.GroupRestMapper;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.security.CacPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,7 +41,7 @@ public class GroupController {
     private final GroupRestMapper groupRestMapper;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.CADGRU + "')")
     @Operation(summary = "Criar grupo", description = "Cria um novo grupo no sistema")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Grupo criado com sucesso"),
@@ -54,7 +55,7 @@ public class GroupController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.LISGRU + "')")
     @Operation(summary = "Listar grupos", description = "Retorna uma lista de todos os grupos")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de grupos retornada com sucesso")
@@ -68,7 +69,7 @@ public class GroupController {
     }
 
     @GetMapping("/{codGrupo}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.BUSGRUPORCOD + "')")
     @Operation(summary = "Obter grupo por código", description = "Retorna um grupo específico pelo código")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Grupo retornado com sucesso"),
@@ -82,7 +83,7 @@ public class GroupController {
     }
 
     @PutMapping("/{codGrupo}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.ATUGRU + "')")
     @Operation(summary = "Atualizar grupo", description = "Atualiza um grupo específico")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Grupo atualizado com sucesso"),

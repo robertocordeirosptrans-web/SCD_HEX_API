@@ -67,7 +67,7 @@ public interface GroupProfileManagementUseCase {
         // List<Group> listGroups(String statusCode);
         Page<Group> listGroups(String statusCode, Pageable pageable);
 
-        Page<GroupUser> listGroupsByUser(Long idUsuario, Pageable pageable);
+        Page<GroupUser> listUsersByGroup(String codGrupo, Pageable pageable);
 
         Optional<Group> getGroupByCode(String codGrupo);
 

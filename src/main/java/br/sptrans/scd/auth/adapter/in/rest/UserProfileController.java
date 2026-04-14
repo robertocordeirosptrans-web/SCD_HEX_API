@@ -19,6 +19,7 @@ import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileResponseDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileStatusRequestDTO;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.security.CacPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,7 +41,7 @@ public class UserProfileController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.LISASSUSUPER + "')")
     @Operation(summary = "Listar associações usuário-perfil", description = "Retorna uma lista paginada de todas as associações usuário-perfil")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de associações retornada com sucesso")
@@ -54,7 +55,7 @@ public class UserProfileController {
     }
 
     @GetMapping("/perfil/{codPerfil}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.LISASSUSUPER + "')")
     @Operation(summary = "Listar usuários associados a um perfil", description = "Retorna os usuários associados ao perfil informado")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Usuários associados retornados com sucesso"),
@@ -72,7 +73,7 @@ public class UserProfileController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.ASSPERAOUSU + "')")
     @Operation(summary = "Associar perfil ao usuário", description = "Associa um perfil ao usuário")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Associação criada com sucesso"),
@@ -91,7 +92,7 @@ public class UserProfileController {
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.ASSPERAOUSU + "')")
     @Operation(summary = "Atualizar associação usuário-perfil", description = "Atualiza dados da associação")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Associação atualizada com sucesso"),
@@ -104,7 +105,7 @@ public class UserProfileController {
     }
 
     @PatchMapping("/status")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('" + CacPermissions.ASSPERAOUSU + "')")
     @Operation(summary = "Atualizar status da associação", description = "Atualiza o status da associação usuário-perfil")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),

@@ -271,10 +271,6 @@ public class ManageGroupProfileUseCase {
     // }
 
 
-    public Page<GroupUser> listGroupsByUser(Long idUsuario, Pageable pageable) {
-        return groupUserRepository.listGroupsByUser(idUsuario, pageable);
-    }
-
     // ══════════════════════════════════════════════════════════════════════════
     // PERFIS
     // ══════════════════════════════════════════════════════════════════════════
@@ -472,8 +468,8 @@ public class ManageGroupProfileUseCase {
         return profileRepository.listProfile(statusCode, pageable);
     }
 
-    public Page<GroupUser> listGroupUsers(Long idUsuario, Pageable pageable) {
-        return groupUserRepository.listGroupsByUser(idUsuario, pageable);
+    public Page<GroupUser> listUsersByGroup(String codGrupo, Pageable pageable) {
+        return groupUserRepository.listUsersByGroup(codGrupo, pageable);
     }
 
     public List<UserProfile> listUserProfiles() {
