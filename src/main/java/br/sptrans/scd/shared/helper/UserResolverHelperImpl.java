@@ -73,5 +73,13 @@ public class UserResolverHelperImpl implements UserResolverHelper {
     public Long getCurrentUserId() {
         return getCurrentUser().getIdUsuario();
     }
+
+    /**
+     * Retorna o codEmpresa do usuário autenticado.
+     */
+    @Override
+    public String getCurrentCodEmpresa() {
+        return getCurrentUser().getCodEmpresa();
+    }
 }
 

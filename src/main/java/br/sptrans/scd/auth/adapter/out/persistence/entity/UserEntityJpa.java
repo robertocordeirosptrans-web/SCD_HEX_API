@@ -94,10 +94,4 @@ public class UserEntityJpa {
     @Column(name = "NUM_DIAS_SEMANAS_PERMITIDOS")
     private String numDiasSemanasPermitidos = "7";
 
-    // @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    // private Set<GrupoUsuarioJpaEntity> gruposUsuario;
-    // @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    // private Set<UsuarioPerfilJpaEntity> perfisUsuario;
-    // @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    // private Set<UsuarioFuncionalidadeJpaEntity> funcionalidadesUsuario;
 }
