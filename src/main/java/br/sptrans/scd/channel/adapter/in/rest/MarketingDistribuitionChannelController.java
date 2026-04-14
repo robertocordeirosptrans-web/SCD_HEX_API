@@ -28,6 +28,7 @@ import br.sptrans.scd.channel.application.port.in.MarketingDistribuitionChannelU
 import br.sptrans.scd.channel.domain.MarketingDistribuitionChannel;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,7 +40,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/marketing-distribuition-channels")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Canais Comercialização/Distribuição v1", description = "Endpoints para gerenciamento de canais de comercialização e distribuição")
 public class MarketingDistribuitionChannelController {
@@ -51,6 +51,7 @@ public class MarketingDistribuitionChannelController {
     private final MarketingDistribuitionChannelMapper marketingMapper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.ASSCOMDIST_CAD + "')")
     @Operation(summary = "Cadastra um novo canal de comercialização/distribuição")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Canal de comercialização/distribuição cadastrado com sucesso"),
@@ -71,6 +72,7 @@ public class MarketingDistribuitionChannelController {
     }
 
     @PutMapping("/{codCanalComercializacao}/{codCanalDistribuicao}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.ASSCOMDIST_ATU + "')")
     @Operation(summary = "Atualiza um canal de comercialização/distribuição")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Canal de comercialização/distribuição atualizado com sucesso"),
@@ -92,6 +94,7 @@ public class MarketingDistribuitionChannelController {
     }
 
     @GetMapping("/{codCanalComercializacao}/{codCanalDistribuicao}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.ASSCOMDIST_BUSCOD + "')")
     @Operation(summary = "Busca canal de comercialização/distribuição por chave composta")
     public ResponseEntity<MarketingDistribuitionChannelResponseDTO> findMarketingDistribuitionChannel(
             @PathVariable String codCanalComercializacao,
@@ -101,6 +104,7 @@ public class MarketingDistribuitionChannelController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.ASSCOMDIST_LIS + "')")
     @Operation(summary = "Lista canais de comercialização/distribuição com filtro opcional")
     public ResponseEntity<PageResponse<MarketingDistribuitionChannelResponseDTO>> findMarketingDistribuitionChannels(
             @RequestParam(required = false) String codCanalComercializacao,
@@ -112,6 +116,7 @@ public class MarketingDistribuitionChannelController {
     }
 
     @DeleteMapping("/{codCanalComercializacao}/{codCanalDistribuicao}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.ASSCOMDIST_REM + "')")
     @Operation(summary = "Remove um canal de comercialização/distribuição")
     public ResponseEntity<Void> deleteMarketingDistribuitionChannel(
             @PathVariable String codCanalComercializacao,

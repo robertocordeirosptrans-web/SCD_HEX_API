@@ -27,6 +27,7 @@ import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,7 +40,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/species")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Espécies v1", description = "Endpoints para gerenciamento de espécies de produto")
 public class SpeciesController {
@@ -47,7 +47,8 @@ public class SpeciesController {
     private final SpeciesManagementUseCase speciesManagementUseCase;
     private final UserResolverHelper userResolverHelper;
 
-    @PostMapping
+        @PostMapping
+        @PreAuthorize("hasAuthority('" + CadPermissions.SPE_CADESP + "')")
     @Operation(summary = "Cadastra uma nova espécie")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Espécie cadastrada com sucesso"),
@@ -64,7 +65,8 @@ public class SpeciesController {
         return ResponseEntity.status(HttpStatus.CREATED).body(species);
     }
 
-    @PutMapping("/{codEspecie}")
+        @PutMapping("/{codEspecie}")
+        @PreAuthorize("hasAuthority('" + CadPermissions.SPE_ATUESP + "')")
     @Operation(summary = "Atualiza dados de uma espécie")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Espécie atualizada com sucesso"),
@@ -79,7 +81,8 @@ public class SpeciesController {
         return ResponseEntity.ok(species);
     }
 
-    @GetMapping("/{codEspecie}")
+        @GetMapping("/{codEspecie}")
+        @PreAuthorize("hasAuthority('" + CadPermissions.SPE_BUSESPPORCOD + "')")
     @Operation(summary = "Busca espécie por código")
     public ResponseEntity<SpeciesResponseDTO> findBySpecies(@PathVariable String codEspecie) {
         Species species = speciesManagementUseCase.findById(codEspecie)
@@ -95,7 +98,8 @@ public class SpeciesController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping
+        @GetMapping
+        @PreAuthorize("hasAuthority('" + CadPermissions.SPE_LISESP + "')")
     @Operation(summary = "Lista todas as espécies, com filtro opcional de status")
     public ResponseEntity<PageResponse<SpeciesResponseDTO>> findAllSpecies(
             @RequestParam(required = false) String codStatus,
@@ -112,7 +116,8 @@ public class SpeciesController {
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
-    @PatchMapping("/{codEspecie}/activate")
+        @PatchMapping("/{codEspecie}/activate")
+        @PreAuthorize("hasAuthority('" + CadPermissions.SPE_ATIESP + "')")
     @Operation(summary = "Ativa uma espécie")
     public ResponseEntity<Void> activateSpecies(
             @PathVariable String codEspecie) {
@@ -120,7 +125,8 @@ public class SpeciesController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{codEspecie}/inactivate")
+        @PatchMapping("/{codEspecie}/inactivate")
+        @PreAuthorize("hasAuthority('" + CadPermissions.SPE_INAESP + "')")
     @Operation(summary = "Inativa uma espécie")
     public ResponseEntity<Void> inactivateSpecies(
             @PathVariable String codEspecie) {
@@ -128,7 +134,8 @@ public class SpeciesController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{codEspecie}")
+        @DeleteMapping("/{codEspecie}")
+        @PreAuthorize("hasAuthority('" + CadPermissions.SPE_REMESP + "')")
     @Operation(summary = "Remove uma espécie")
     public ResponseEntity<Void> deleteSpecies(@PathVariable String codEspecie) {
         speciesManagementUseCase.delete(codEspecie);

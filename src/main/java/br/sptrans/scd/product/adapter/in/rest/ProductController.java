@@ -25,6 +25,7 @@ import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -51,9 +52,10 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Produto cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_CADPRO + "')")
 
     public ResponseEntity<Void> createProduct(
-           @Valid  @RequestBody ProductRequest request) {
+            @Valid @RequestBody ProductRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         productUseCase.createProduct(new CreateProductCommand(
                 request.codProduto(),
@@ -84,10 +86,11 @@ public class ProductController {
 
     @GetMapping
     @Operation(summary = "Lista todos os produtos, com filtro opcional de status")
-
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_LISPRO + "')")
     public ResponseEntity<PageResponse<Product>> findAllProducts(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
+
         Page<Product> page = productUseCase.findAllProducts(codStatus, pageable);
         return ResponseEntity.ok(PageResponse.fromPage(page));
     }
@@ -95,17 +98,19 @@ public class ProductController {
     @GetMapping("/{codProduto}")
 
     @Operation(summary = "Busca produto por código")
-
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_BUSPROPORCOD + "')")
     public ResponseEntity<Product> findByProduct(@PathVariable String codProduto) {
+
         return ResponseEntity.ok(productUseCase.findByProduct(codProduto));
     }
 
     @PutMapping("/{codProduto}")
     @Operation(summary = "Atualiza dados de um produto")
-
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_ATUPRO + "')")
     public ResponseEntity<Void> updateProduct(
             @PathVariable String codProduto,
             @Valid @RequestBody ProductRequest request) {
+
         Long idUsuario = userResolverHelper.getCurrentUserId();
         productUseCase.updateProduct(codProduto, new UpdateProductCommand(
                 request.desProduto(),
@@ -136,15 +141,17 @@ public class ProductController {
     @PatchMapping("/{codProduto}/activate")
 
     @Operation(summary = "Ativa um produto")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_ATIPRO + "')")
     public ResponseEntity<Void> activateProduct(
             @PathVariable String codProduto) {
+
         productUseCase.activateProduct(codProduto, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{codProduto}/inactivate")
     @Operation(summary = "Inativa um produto")
-
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_INAPRO + "')")
     public ResponseEntity<Void> inactivateProduct(
             @PathVariable String codProduto) {
         productUseCase.inactivateProduct(codProduto, userResolverHelper.getCurrentUserId());

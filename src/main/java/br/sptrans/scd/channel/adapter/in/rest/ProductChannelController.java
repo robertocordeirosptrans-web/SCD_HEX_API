@@ -30,6 +30,7 @@ import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.product.adapter.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -42,7 +43,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/product-channels")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Canais de Produto v1", description = "Endpoints para gerenciamento de canais de produto")
 
@@ -54,7 +54,8 @@ public class ProductChannelController {
     private final UserResolverHelper userResolverHelper;
     private final ProductChannelMapper productChannelMapper;
 
-    @PostMapping
+        @PostMapping
+        @PreAuthorize("hasAuthority('" + CadPermissions.ASS_CADASS + "')")
     @Operation(summary = "Cadastra um novo canal de produto")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Canal de produto cadastrado com sucesso"),
@@ -83,7 +84,8 @@ public class ProductChannelController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
-    @PutMapping("/{codCanal}/{codProduto}")
+        @PutMapping("/{codCanal}/{codProduto}")
+        @PreAuthorize("hasAuthority('" + CadPermissions.ASS_ATUASS + "')")
     @Operation(summary = "Atualiza um canal de produto")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Canal de produto atualizado com sucesso"),
@@ -112,7 +114,8 @@ public class ProductChannelController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/{codCanal}/{codProduto}")
+        @GetMapping("/{codCanal}/{codProduto}")
+        @PreAuthorize("hasAuthority('" + CadPermissions.ASS_BUSASSPORCOD + "')")
     @Operation(summary = "Busca canal de produto por canal e produto")
     public ResponseEntity<PageResponse<ProductChDTO>> findProductChannel(
             @PathVariable String codCanal,
@@ -142,7 +145,8 @@ public class ProductChannelController {
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
-    @GetMapping
+        @GetMapping
+        @PreAuthorize("hasAuthority('" + CadPermissions.ASS_LISASS + "')")
     @Operation(summary = "Lista canais de produto com filtro opcional por canal ou produto")
     public ResponseEntity<PageResponse<ProductChResponseDTO>> findProductChannels(
             @RequestParam(required = false) String codCanal,
@@ -153,7 +157,8 @@ public class ProductChannelController {
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
-    @DeleteMapping("/{codCanal}/{codProduto}")
+        @DeleteMapping("/{codCanal}/{codProduto}")
+        @PreAuthorize("hasAuthority('" + CadPermissions.ASS_REMASS + "')")
     @Operation(summary = "Remove um canal de produto")
     public ResponseEntity<Void> deleteProductChannel(
             @PathVariable String codCanal,

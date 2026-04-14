@@ -26,6 +26,7 @@ import br.sptrans.scd.channel.application.port.in.TypesActivityUseCase.UpdateTyp
 import br.sptrans.scd.channel.domain.TypesActivity;
 import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,7 +38,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/types-activities")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Tipos de Atividade v1", description = "Endpoints para gerenciamento de tipos de atividade")
 public class TypesActivityController {
@@ -53,6 +53,7 @@ public class TypesActivityController {
             @ApiResponse(responseCode = "200", description = "Tipo de atividade cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
+    @PreAuthorize("hasAuthority('" + CadPermissions.TYP_CADTIPDEATI + "')")
     public ResponseEntity<TypesActivityResponseDTO> createTypesActivity(
             @RequestBody CreateTypesActivityRequest request) {
         log.info("REST POST /types-activities — Criando atividade: {}", request.codAtividade());
@@ -67,6 +68,7 @@ public class TypesActivityController {
             @ApiResponse(responseCode = "200", description = "Tipo de atividade atualizado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
+    @PreAuthorize("hasAuthority('" + CadPermissions.TYP_ATUTIPDEATI + "')")
     public ResponseEntity<TypesActivityResponseDTO> updateTypesActivity(
             @PathVariable String codAtividade,
             @RequestBody UpdateTypesActivityRequest request) {
@@ -82,6 +84,7 @@ public class TypesActivityController {
             @ApiResponse(responseCode = "200", description = "Tipo de atividade retornado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
+    @PreAuthorize("hasAuthority('" + CadPermissions.TYP_BUSTIPDEATIPORCOD + "')")
     public ResponseEntity<TypesActivityResponseDTO> findByTypesActivity(@PathVariable String codAtividade) {
         return ResponseEntity.ok(typesActivityMapper.toResponseDTO(typesActivityUseCase.findByTypesActivity(codAtividade)));
     }
@@ -92,6 +95,7 @@ public class TypesActivityController {
             @ApiResponse(responseCode = "200", description = "Lista de tipos de atividade retornada com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
+    @PreAuthorize("hasAuthority('" + CadPermissions.TYP_LISTIPDEATI + "')")
     public ResponseEntity<PageResponse<TypesActivityResponseDTO>> findAllTypesActivities(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
@@ -109,6 +113,7 @@ public class TypesActivityController {
 
     @PatchMapping("/{codAtividade}/activate")
     @Operation(summary = "Ativa um tipo de atividade")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TYP_ATITIPDEATI + "')")
     public ResponseEntity<Void> activateTypesActivity(@PathVariable String codAtividade) {
         typesActivityUseCase.activateTypesActivity(codAtividade);
         return ResponseEntity.noContent().build();
@@ -116,6 +121,7 @@ public class TypesActivityController {
 
     @PatchMapping("/{codAtividade}/inactivate")
     @Operation(summary = "Inativa um tipo de atividade")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TYP_INATIPDEATI + "')")
     public ResponseEntity<Void> inactivateTypesActivity(@PathVariable String codAtividade) {
         typesActivityUseCase.inactivateTypesActivity(codAtividade);
         return ResponseEntity.noContent().build();
@@ -123,6 +129,7 @@ public class TypesActivityController {
 
     @DeleteMapping("/{codAtividade}")
     @Operation(summary = "Remove um tipo de atividade")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TYP_REMTIPDEATI + "')")
     public ResponseEntity<Void> deleteTypesActivity(@PathVariable String codAtividade) {
         log.info("REST DELETE /types-activities/{}", codAtividade);
         typesActivityUseCase.deleteTypesActivity(codAtividade);

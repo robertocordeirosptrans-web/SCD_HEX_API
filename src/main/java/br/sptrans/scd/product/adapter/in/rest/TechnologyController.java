@@ -26,6 +26,7 @@ import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,7 +38,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/technologies")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Tecnologias v1", description = "Endpoints para gerenciamento de tecnologias de produto")
 public class TechnologyController {
@@ -46,6 +46,7 @@ public class TechnologyController {
     private final UserResolverHelper userResolverHelper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_CADTEC + "')")
     @Operation(summary = "Cadastra uma nova tecnologia")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Tecnologia cadastrada com sucesso"),
@@ -63,6 +64,7 @@ public class TechnologyController {
         }
 
     @PutMapping("/{codTecnologia}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_ATUTEC + "')")
     @Operation(summary = "Atualiza dados de uma tecnologia")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Tecnologia atualizada com sucesso"),
@@ -78,6 +80,7 @@ public class TechnologyController {
         }
 
     @GetMapping("/{codTecnologia}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_BUSTECPORCOD + "')")
     @Operation(summary = "Busca tecnologia por código")
     public ResponseEntity<TechnologyResponseDTO> findByTechnology(@PathVariable String codTecnologia) {
         Technology technology = technologyManagementUseCase.findById(codTecnologia)
@@ -95,6 +98,7 @@ public class TechnologyController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_LISTEC + "')")
     @Operation(summary = "Lista todas as tecnologias, com filtro opcional de status")
     public ResponseEntity<PageResponse<TechnologyResponseDTO>> findAllTechnologies(
             @RequestParam(required = false) String codStatus,
@@ -113,6 +117,7 @@ public class TechnologyController {
     }
 
     @PatchMapping("/{codTecnologia}/activate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_ATITEC + "')")
     @Operation(summary = "Ativa uma tecnologia")
     public ResponseEntity<Void> activateTechnology(
             @PathVariable String codTecnologia) {
@@ -121,6 +126,7 @@ public class TechnologyController {
     }
 
     @PatchMapping("/{codTecnologia}/inactivate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_INATEC + "')")
     @Operation(summary = "Inativa uma tecnologia")
     public ResponseEntity<Void> inactivateTechnology(
             @PathVariable String codTecnologia) {
@@ -129,6 +135,7 @@ public class TechnologyController {
     }
 
     @DeleteMapping("/{codTecnologia}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_REMTEC + "')")
     @Operation(summary = "Remove uma tecnologia")
     public ResponseEntity<Void> deleteTechnology(@PathVariable String codTecnologia) {
         technologyManagementUseCase.delete(codTecnologia);

@@ -26,6 +26,7 @@ import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,7 +39,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/products-types")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Tipos de Produto v1", description = "Endpoints para gerenciamento de tipos de produto")
 public class ProductsTypeController {
@@ -47,6 +47,7 @@ public class ProductsTypeController {
     private final UserResolverHelper userResolverHelper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_CADTIPDEPRO + "')")
     @Operation(summary = "Cadastra um novo tipo de produto")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Tipo de produto cadastrado com sucesso"),
@@ -64,6 +65,7 @@ public class ProductsTypeController {
         }
 
     @PutMapping("/{codTipoProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_ATUTIPDEPRO + "')")
     @Operation(summary = "Atualiza dados de um tipo de produto")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Tipo de produto atualizado com sucesso"),
@@ -79,6 +81,7 @@ public class ProductsTypeController {
         }
 
     @GetMapping("/{codTipoProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_BUSTIPDEPROPORCOD + "')")
     @Operation(summary = "Busca tipo de produto por código")
     public ResponseEntity<ProductsTypeResponseDTO> findByProductsType(@PathVariable String codTipoProduto) {
         ProductType productType = productsTypeManagementUseCase.findById(codTipoProduto)
@@ -96,6 +99,7 @@ public class ProductsTypeController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_LISTIPDEPRO + "')")
     @Operation(summary = "Lista todos os tipos de produto, com filtro opcional de status")
     public ResponseEntity<PageResponse<ProductsTypeResponseDTO>> findAllProductsTypes(
             @RequestParam(required = false) String codStatus,
@@ -114,6 +118,7 @@ public class ProductsTypeController {
     }
 
     @PatchMapping("/{codTipoProduto}/activate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_ATITIPDEPRO + "')")
     @Operation(summary = "Ativa um tipo de produto")
     public ResponseEntity<Void> activateProductsType(
             @PathVariable String codTipoProduto) {
@@ -122,6 +127,7 @@ public class ProductsTypeController {
     }
 
     @PatchMapping("/{codTipoProduto}/inactivate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_INATIPDEPRO + "')")
     @Operation(summary = "Inativa um tipo de produto")
     public ResponseEntity<Void> inactivateProductsType(
             @PathVariable String codTipoProduto) {
@@ -130,6 +136,7 @@ public class ProductsTypeController {
     }
 
     @DeleteMapping("/{codTipoProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_REMTIPDEPRO + "')")
     @Operation(summary = "Remove um tipo de produto")
     public ResponseEntity<Void> deleteProductsType(@PathVariable String codTipoProduto) {
         productsTypeManagementUseCase.delete(codTipoProduto);

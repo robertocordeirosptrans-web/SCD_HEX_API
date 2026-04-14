@@ -30,6 +30,7 @@ import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -42,9 +43,9 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/sales-channels")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Canais de Venda v1", description = "Endpoints para gerenciamento de canais de venda")
+
 
 public class SalesChannelController {
 
@@ -60,6 +61,7 @@ public class SalesChannelController {
             @ApiResponse(responseCode = "200", description = "Canal de venda cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
+        @PreAuthorize("hasAuthority('" + CadPermissions.SAL_CADCANDEVEN + "')")
     public ResponseEntity<SalesChannelResponseDTO> createSalesChannel(
             @Valid @RequestBody CreateSalesChannelRequest request) {
         log.info("REST POST /sales-channels — Criando canal: {}", request.codCanal());
@@ -94,6 +96,7 @@ public class SalesChannelController {
 
     @PutMapping("/{codCanal}")
     @Operation(summary = "Atualiza dados de um canal de venda")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SAL_ATUCANDEVEN + "')")
     public ResponseEntity<SalesChannelResponseDTO> updateSalesChannel(
             @PathVariable String codCanal,
             @Valid @RequestBody UpdateSalesChannelRequest request) {
@@ -126,6 +129,7 @@ public class SalesChannelController {
 
     @GetMapping("/{codCanal}")
     @Operation(summary = "Busca canal de venda por código")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SAL_BUSCANDEVENPORCOD + "')")
     public ResponseEntity<SalesChannelResponseDTO> findBySalesChannel(@PathVariable String codCanal) {
         SalesChannel channel = salesChannelUseCase.findBySalesChannel(codCanal);
         return ResponseEntity.ok(salesChannelMapper.toResponseDTO(channel));
@@ -133,6 +137,7 @@ public class SalesChannelController {
 
     @GetMapping
     @Operation(summary = "Lista todos os canais de venda, com filtro opcional de status")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SAL_LISCANDEVEN + "')")
     public ResponseEntity<PageResponse<SalesChannelResponseDTO>> findAllSalesChannels(
             @RequestParam(required = false) String stCanais,
             Pageable pageable) {
@@ -151,6 +156,7 @@ public class SalesChannelController {
 
     @PatchMapping("/{codCanal}/activate")
     @Operation(summary = "Ativa um canal de venda")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SAL_ATICANDEVEN + "')")
     public ResponseEntity<Void> activateSalesChannel(
             @PathVariable String codCanal) {
         log.info("REST PATCH /sales-channels/{}/activate", codCanal);
@@ -160,6 +166,7 @@ public class SalesChannelController {
 
     @PatchMapping("/{codCanal}/inactivate")
     @Operation(summary = "Inativa um canal de venda")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SAL_INACANDEVEN + "')")
     public ResponseEntity<Void> inactivateSalesChannel(
             @PathVariable String codCanal) {
         log.info("REST PATCH /sales-channels/{}/inactivate", codCanal);
@@ -169,6 +176,7 @@ public class SalesChannelController {
 
     @DeleteMapping("/{codCanal}")
     @Operation(summary = "Remove um canal de venda")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SAL_REMCANDEVEN + "')")
     public ResponseEntity<Void> deleteSalesChannel(@PathVariable String codCanal) {
         log.info("REST DELETE /sales-channels/{}", codCanal);
         salesChannelUseCase.deleteSalesChannel(codCanal);

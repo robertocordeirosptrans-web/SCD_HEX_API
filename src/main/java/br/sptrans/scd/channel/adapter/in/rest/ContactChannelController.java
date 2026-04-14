@@ -28,6 +28,7 @@ import br.sptrans.scd.channel.application.port.in.ContactChannelUseCase.UpdateCo
 import br.sptrans.scd.channel.domain.ContactChannel;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,7 +41,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/contact-channels")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Contatos do Canal v1", description = "Endpoints para gerenciamento de contatos do canal")
 public class ContactChannelController {
@@ -52,6 +52,7 @@ public class ContactChannelController {
     private final ContactChannelMapper contactChannelMapper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.CON_CADCON + "')")
         @Operation(summary = "Cadastra um novo contato do canal")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Contato do canal cadastrado com sucesso"),
@@ -82,6 +83,7 @@ public class ContactChannelController {
     }
 
     @PutMapping("/{codContato}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.CON_ATUCON + "')")
         @Operation(summary = "Atualiza dados de um contato do canal")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Contato do canal atualizado com sucesso"),
@@ -112,12 +114,14 @@ public class ContactChannelController {
     }
 
     @GetMapping("/{codContato}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.CON_BUSCONPORCOD + "')")
     @Operation(summary = "Busca contato do canal por código")
     public ResponseEntity<ContactChannelResponseDTO> findByContactChannel(@PathVariable String codContato) {
         return ResponseEntity.ok(contactChannelMapper.toResponseDTO(contactChannelUseCase.findByContactChannel(codContato)));
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.CON_LISCON + "')")
     @Operation(summary = "Lista contatos do canal, com filtro opcional por canal")
     public ResponseEntity<PageResponse<ContactChannelResponseDTO>> findAllContactChannels(
             @RequestParam(required = false) String codCanal,
@@ -127,6 +131,7 @@ public class ContactChannelController {
     }
 
     @DeleteMapping("/{codContato}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.CON_REMCON + "')")
     @Operation(summary = "Remove um contato do canal")
     public ResponseEntity<Void> deleteContactChannel(@PathVariable String codContato) {
         log.info("REST DELETE /contact-channels/{}", codContato);

@@ -27,6 +27,7 @@ import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,7 +40,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/families")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Famílias v1", description = "Endpoints para gerenciamento de famílias de produto")
 public class FamilyController {
@@ -48,6 +48,7 @@ public class FamilyController {
     private final UserResolverHelper userResolverHelper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.FAM_CADFAM + "')")
     @Operation(summary = "Cadastra uma nova família")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Família cadastrada com sucesso"),
@@ -65,6 +66,7 @@ public class FamilyController {
         }
 
     @PutMapping("/{codFamilia}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.FAM_ATUFAM + "')")
     @Operation(summary = "Atualiza dados de uma família")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Família atualizada com sucesso"),
@@ -80,6 +82,7 @@ public class FamilyController {
         }
 
     @GetMapping("/{codFamilia}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.FAM_BUSFAMPORCOD + "')")
     @Operation(summary = "Busca família por código")
     public ResponseEntity<FamilyResponseDTO> findByFamily(@PathVariable String codFamilia) {
         Family family = familyManagementUseCase.findById(codFamilia)
@@ -97,6 +100,7 @@ public class FamilyController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.FAM_LISFAM + "')")
     @Operation(summary = "Lista todas as famílias, com filtro opcional de status")
     public ResponseEntity<PageResponse<FamilyResponseDTO>> findAllFamilies(
             @RequestParam(required = false) String codStatus,
@@ -115,6 +119,7 @@ public class FamilyController {
     }
 
     @PatchMapping("/{codFamilia}/activate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.FAM_ATIFAM + "')")
     @Operation(summary = "Ativa uma família")
     public ResponseEntity<Void> activateFamily(
             @PathVariable String codFamilia) {
@@ -123,6 +128,7 @@ public class FamilyController {
     }
 
     @PatchMapping("/{codFamilia}/inactivate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.FAM_INAFAM + "')")
     @Operation(summary = "Inativa uma família")
     public ResponseEntity<Void> inactivateFamily(
             @PathVariable String codFamilia) {
@@ -131,6 +137,7 @@ public class FamilyController {
     }
 
     @DeleteMapping("/{codFamilia}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.FAM_REMFAM + "')")
     @Operation(summary = "Remove uma família")
     public ResponseEntity<Void> deleteFamily(@PathVariable String codFamilia) {
         familyManagementUseCase.delete(codFamilia);

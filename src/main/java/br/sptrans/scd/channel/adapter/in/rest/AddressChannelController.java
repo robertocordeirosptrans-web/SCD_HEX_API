@@ -30,6 +30,7 @@ import br.sptrans.scd.channel.application.port.in.AddressChannelUseCase.UpdateAd
 import br.sptrans.scd.channel.domain.AddressChannel;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -40,7 +41,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/address-channels")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Endereços do Canal v1", description = "Endpoints para gerenciamento de endereços do canal")
 public class AddressChannelController {
@@ -52,6 +52,7 @@ public class AddressChannelController {
     private final AddressChannelMapper addressChannelMapper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.END_CADEND + "')")
     @Operation(summary = "Cadastra um novo endereço do canal")
         public ResponseEntity<AddressChannelResponseDTO> createAddressChannel(
             @Valid @RequestBody CreateAddressChannelRequest request) {
@@ -79,6 +80,7 @@ public class AddressChannelController {
     }
 
     @PutMapping("/{codEndereco}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.END_ATUEND + "')")
     @Operation(summary = "Atualiza dados de um endereço do canal")
         public ResponseEntity<AddressChannelResponseDTO> updateAddressChannel(
             @PathVariable String codEndereco,
@@ -106,12 +108,14 @@ public class AddressChannelController {
     }
 
     @GetMapping("/{codEndereco}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.END_BUSENDPORCOD + "')")
     @Operation(summary = "Busca endereço do canal por código")
     public ResponseEntity<AddressChannelResponseDTO> findByAddressChannel(@PathVariable String codEndereco) {
         return ResponseEntity.ok(addressChannelMapper.toResponseDTO(addressChannelUseCase.findByAddressChannel(codEndereco)));
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.END_LISEND + "')")
     @Operation(summary = "Lista endereços do canal, com filtro opcional por canal")
     public ResponseEntity<PageResponse<AddressChannelResponseDTO>> findAllAddressChannels(
             @RequestParam(required = false) String codCanal,
@@ -121,6 +125,7 @@ public class AddressChannelController {
     }
 
     @DeleteMapping("/{codEndereco}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.END_REMEND + "')")
     @Operation(summary = "Remove um endereço do canal")
     public ResponseEntity<Void> deleteAddressChannel(@PathVariable String codEndereco) {
         log.info("REST DELETE /address-channels/{}", codEndereco);

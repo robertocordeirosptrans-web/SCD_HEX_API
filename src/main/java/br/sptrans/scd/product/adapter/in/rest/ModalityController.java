@@ -26,6 +26,7 @@ import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,7 +39,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/modalities")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Modalidades v1", description = "Endpoints para gerenciamento de modalidades de produto")
 public class ModalityController {
@@ -47,6 +47,7 @@ public class ModalityController {
     private final UserResolverHelper userResolverHelper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.MOD_CADMOD + "')")
     @Operation(summary = "Cadastra uma nova modalidade")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Modalidade cadastrada com sucesso"),
@@ -64,6 +65,7 @@ public class ModalityController {
         }
 
     @PutMapping("/{codModalidade}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.MOD_ATUMOD + "')")
     @Operation(summary = "Atualiza dados de uma modalidade")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Modalidade atualizada com sucesso"),
@@ -79,6 +81,7 @@ public class ModalityController {
         }
 
     @GetMapping("/{codModalidade}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.MOD_BUSMODPORCOD + "')")
     @Operation(summary = "Busca modalidade por código")
     public ResponseEntity<ModalityResponseDTO> findByModality(@PathVariable String codModalidade) {
         Modality modality = modalityManagementUseCase.findById(codModalidade)
@@ -96,6 +99,7 @@ public class ModalityController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.MOD_LISMOD + "')")
     @Operation(summary = "Lista todas as modalidades, com filtro opcional de status")
     public ResponseEntity<PageResponse<ModalityResponseDTO>> findAllModalities(
             @RequestParam(required = false) String codStatus,
@@ -114,6 +118,7 @@ public class ModalityController {
     }
 
     @PatchMapping("/{codModalidade}/activate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.MOD_ATIMOD + "')")
     @Operation(summary = "Ativa uma modalidade")
     public ResponseEntity<Void> activateModality(
             @PathVariable String codModalidade) {
@@ -122,6 +127,7 @@ public class ModalityController {
     }
 
     @PatchMapping("/{codModalidade}/inactivate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.MOD_INAMOD + "')")
     @Operation(summary = "Inativa uma modalidade")
     public ResponseEntity<Void> inactivateModality(
             @PathVariable String codModalidade) {
@@ -130,6 +136,7 @@ public class ModalityController {
     }
 
     @DeleteMapping("/{codModalidade}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.MOD_REMMOD + "')")
     @Operation(summary = "Remove uma modalidade")
     public ResponseEntity<Void> deleteModality(@PathVariable String codModalidade) {
         modalityManagementUseCase.delete(codModalidade);
