@@ -27,21 +27,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/perfil-funcionalidade")
 @Tag(name = "Perfil-Funcionalidade v1", description = "Endpoints para associação de perfil e funcionalidades")
-
+@RequiredArgsConstructor
 public class ProfileFunctionalityController {
 
     private final GroupProfileManagementUseCase groupProfileManagementUseCase;
     private final ProfileFunctionalityRestMapper profileFunctionalityRestMapper;
-
-    public ProfileFunctionalityController(GroupProfileManagementUseCase groupProfileManagementUseCase,
-                                          ProfileFunctionalityRestMapper profileFunctionalityRestMapper) {
-        this.groupProfileManagementUseCase = groupProfileManagementUseCase;
-        this.profileFunctionalityRestMapper = profileFunctionalityRestMapper;
-    }
 
     @GetMapping
     @PreAuthorize("hasAuthority('" + CacPermissions.LISASSPERFUN + "')")

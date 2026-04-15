@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.auth.application.port.in;
 
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.GroupUser;
@@ -67,7 +69,7 @@ public interface GroupProfileManagementUseCase {
         // List<Group> listGroups(String statusCode);
         Page<Group> listGroups(String statusCode, Pageable pageable);
 
-        Page<GroupUser> listUsersByGroup(String codGrupo, Pageable pageable);
+        Page<GroupUserCustomProjection> listCustomUsersByGroup(String codGrupo, Pageable pageable);
 
         Optional<Group> getGroupByCode(String codGrupo);
 

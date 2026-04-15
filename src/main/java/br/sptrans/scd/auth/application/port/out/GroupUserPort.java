@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.auth.application.port.out;
 
 import java.util.List;
@@ -6,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.GroupUserKey;
 
@@ -32,7 +34,7 @@ public interface GroupUserPort {
 
     List<GroupUser> findById_IdUsuarioAndCodStatus(Long idUsuario, String codStatus);
 
-    Page<GroupUser> listUsersByGroup(String codGrupo, Pageable pageable);
+    Page<GroupUserCustomProjection> listCustomUsersByGroup(String codGrupo, Pageable pageable);
 
     GroupUser save(GroupUser entity);
 

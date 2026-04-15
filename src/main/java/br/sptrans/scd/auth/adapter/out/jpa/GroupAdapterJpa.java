@@ -1,4 +1,5 @@
 
+
 package br.sptrans.scd.auth.adapter.out.jpa;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserJpaRepository;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.GroupProfileEntityJpaId;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.GroupUserEntityJpaId;
 import br.sptrans.scd.auth.application.port.out.GroupPort;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.GroupProfile;
 import br.sptrans.scd.auth.domain.GroupProfileKey;
@@ -62,8 +64,8 @@ public class GroupAdapterJpa implements GroupPort {
 
 
     @Override
-    public Page<GroupUser> listUsersByGroup(String codGrupo, Pageable pageable) {
-        return groupUserJpaRepository.findByGroupCode(codGrupo, pageable).map(groupMapper::toDomain);
+    public Page<GroupUserCustomProjection> listCustomUsersByGroup(String codGrupo, Pageable pageable) {
+        return groupUserJpaRepository.findCustomUsersByGroup(codGrupo, pageable);
     }
 
     @Override

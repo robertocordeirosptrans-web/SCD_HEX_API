@@ -1,6 +1,9 @@
 
 package br.sptrans.scd.auth.adapter.in.rest;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.GroupUserCustomResponseDTO;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -66,13 +69,20 @@ public class GroupUserController {
                         @ApiResponse(responseCode = "404", description = "Grupo não encontrado")
         })
         @SecurityRequirement(name = "bearerAuth")
-        public ResponseEntity<PageResponse<GroupUserResponseDTO>> listUsersByGroup(@PathVariable String codGrupo,
+        public ResponseEntity<PageResponse<GroupUserCustomResponseDTO>> listUsersByGroup(@PathVariable String codGrupo,
                         Pageable pageable) {
-                Page<GroupUser> usuarios = groupProfileManagementUseCase.listUsersByGroup(codGrupo, pageable);
+                Page<GroupUserCustomProjection> usuarios = groupProfileManagementUseCase.listCustomUsersByGroup(codGrupo, pageable);
                 if (usuarios == null || usuarios.isEmpty()) {
                         return ResponseEntity.notFound().build();
                 }
-                return ResponseEntity.ok(PageResponse.fromPage(usuarios.map(groupUserRestMapper::toDto)));
+                Page<GroupUserCustomResponseDTO> dtos = usuarios.map(u -> new GroupUserCustomResponseDTO(
+                        u.getCodLogin(),
+                        u.getNomUsuario(),
+                        u.getNomDepartamento(),
+                        u.getNomEmail(),
+                        u.getCodStatus()
+                ));
+                return ResponseEntity.ok(PageResponse.fromPage(dtos));
         }
 
         @PostMapping

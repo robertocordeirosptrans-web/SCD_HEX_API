@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.auth.application.usecases.grouporprofile;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.GroupPort;
 import br.sptrans.scd.auth.application.port.out.GroupUserPort;
@@ -468,8 +470,8 @@ public class ManageGroupProfileUseCase {
         return profileRepository.listProfile(statusCode, pageable);
     }
 
-    public Page<GroupUser> listUsersByGroup(String codGrupo, Pageable pageable) {
-        return groupUserRepository.listUsersByGroup(codGrupo, pageable);
+    public Page<GroupUserCustomProjection> listCustomUsersByGroup(String codGrupo, Pageable pageable) {
+        return groupUserRepository.listCustomUsersByGroup(codGrupo, pageable);
     }
 
     public List<UserProfile> listUserProfiles() {

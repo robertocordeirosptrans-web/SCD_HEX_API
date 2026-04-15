@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.GroupProfilePort;
 import br.sptrans.scd.auth.application.usecases.grouporprofile.ManageGroupProfileUseCase;
@@ -91,9 +92,10 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         return manageGroupProfileUseCase.listGroups(statusCode, pageable);
     }
 
+
     @Override
-    public Page<GroupUser> listUsersByGroup(String codGrupo, Pageable pageable) {
-        return manageGroupProfileUseCase.listUsersByGroup(codGrupo, pageable);
+    public Page<GroupUserCustomProjection> listCustomUsersByGroup(String codGrupo, Pageable pageable) {
+        return manageGroupProfileUseCase.listCustomUsersByGroup(codGrupo, pageable);
     }
 
 
@@ -160,9 +162,6 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     // MÉTODOS LEGADOS (Compatibilidade)
     // ══════════════════════════════════════════════════════════════════════════
 
-    public Page<GroupUser> listGroupUsers(String codGrupo, Pageable pageable) {
-        return manageGroupProfileUseCase.listUsersByGroup(codGrupo, pageable);
-    }
 
     @Override
     public List<UserProfile> listUserProfiles() {
