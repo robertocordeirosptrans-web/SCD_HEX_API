@@ -20,7 +20,7 @@ public final class CadPermissions {
     public static final String TYP_REMTIPDEATI = PREFIX + "TYP_REMTIPDEATI";
 
     // SAL - Canal de Venda
-    public static final String SAL_CADCANDEVEN = PREFIX + "SAL_CADCANDEVEN";
+    public static final String SAL_CADCANDEVEN = PREFIX + "SAL_CADCANDEVEN"; 
     public static final String SAL_ATUCANDEVEN = PREFIX + "SAL_ATUCANDEVEN";
     public static final String SAL_BUSCANDEVENPORCOD = PREFIX + "SAL_BUSCANDEVENPORCOD";
     public static final String SAL_LISCANDEVEN = PREFIX + "SAL_LISCANDEVEN";
@@ -30,6 +30,10 @@ public final class CadPermissions {
 
     // REC - Limite de Recarga
     public static final String REC_CADLIMDEREC = PREFIX + "REC_CADLIMDEREC";
+    public static final String REC_ATULIMDEREC = PREFIX + "REC_ATULIMIT";
+    public static final String REC_BUSLIMDERECPORCOD = PREFIX + "REC_BUSLIMITCOD";
+    public static final String REC_LISLIMDEREC = PREFIX + "REC_LISLIMIT";
+    public static final String REC_REMLIMDEREC = PREFIX + "REC_REMLIMIT";
 
     // PRO - Produto
     public static final String PRO_CADPRO = PREFIX + "PRO_CADPRO";

@@ -80,7 +80,7 @@ public class RechargeLimitController {
     }
 
     @PutMapping("/{codCanal}/{codProduto}")
-    @PreAuthorize("hasAuthority('" + CadPermissions.LIMIT_ATULIMIT + "')")
+    @PreAuthorize("hasAuthority('" + CadPermissions.REC_ATULIMDEREC + "')")
     @Operation(summary = "Atualiza um limite de recarga")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Limite de recarga atualizado com sucesso"),
@@ -105,7 +105,7 @@ public class RechargeLimitController {
     }
 
     @GetMapping("/{codCanal}/{codProduto}")
-    @PreAuthorize("hasAuthority('" + CadPermissions.LIMIT_BUSLIMITCOD + "')")
+    @PreAuthorize("hasAuthority('" + CadPermissions.REC_BUSLIMDERECPORCOD + "')")
     @Operation(summary = "Busca limite de recarga por canal e produto")
     public ResponseEntity<RechargeLimitResponseDTO> findRechargeLimit(
             @PathVariable String codCanal,
@@ -117,7 +117,7 @@ public class RechargeLimitController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('" + CadPermissions.LIMIT_LISLIMIT + "')")
+    @PreAuthorize("hasAuthority('" + CadPermissions.REC_LISLIMDEREC + "')")
     @Operation(summary = "Lista limites de recarga com filtro opcional por canal ou produto")
     public ResponseEntity<PageResponse<RechargeLimitResponseDTO>> findRechargeLimits(
             @RequestParam(required = false) String codCanal,
@@ -128,7 +128,7 @@ public class RechargeLimitController {
     }
 
     @DeleteMapping("/{codCanal}/{codProduto}")
-    @PreAuthorize("hasAuthority('" + CadPermissions.LIMIT_REMLIMIT + "')")
+    @PreAuthorize("hasAuthority('" + CadPermissions.REC_REMLIMDEREC + "')")
     @Operation(summary = "Remove um limite de recarga")
     public ResponseEntity<Void> deleteRechargeLimit(
             @PathVariable String codCanal,

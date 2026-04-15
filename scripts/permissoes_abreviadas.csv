@@ -2,15 +2,15 @@
 SCD_WEB_API;CAC;USU;Listar associações usuário-perfil;LISASSUSUPER
 SCD_WEB_API;CAC;USU;Associar perfil ao usuário;ASSPERAOUSU
 SCD_WEB_API;CAC;USE;Listar usuários;LISUSU
-SCD_WEB_API;CAC;PER;Listar associações perfil-funcionalidade;LISASSPERFUN
-SCD_WEB_API;CAC;PER;Associar funcionalidade ao perfil;ASSFUNAOPER
+SCD_WEB_API;CAC;PER;Listar associações perfil-função;LISASSPERFUN
+SCD_WEB_API;CAC;PER;Associar função ao perfil;ASSFUNAOPER
 SCD_WEB_API;CAC;PER;Criar perfil;CRIPER
 SCD_WEB_API;CAD;TYP;Cadastrar tipo de atividade;CADTIPDEATI
 SCD_WEB_API;CAD;SAL;Cadastrar canal de venda;CADCANDEVEN
 SCD_WEB_API;CAD;REC;Cadastrar limite de recarga;CADLIMDEREC
-SCD_WEB_API;PEDCR;PED;Buscar pedidos;BUSPED
-SCD_WEB_API;CARTAO;INI;Gestão de cartões inicializados;GESDECARINI
-SCD_WEB_API;CAD;PRO;Cadastrar produto;CADPRO
+SCD_WEB_API;PEDCR;PED;Buscar pedido;BUSPED
+SCD_WEB_API;INITIALCARD;INI;Gerenciar cartões inicializados;GESDECARINI
+SCD_WEB_API;PRO;PRO;Cadastrar produto;CADPRO
 SCD_WEB_API;CAD;TEC;Cadastrar tecnologia;CADTEC
 SCD_WEB_API;CAD;TEC;Atualizar tecnologia;ATUTEC
 SCD_WEB_API;CAD;TEC;Buscar tecnologia por código;BUSTECPORCOD
@@ -18,16 +18,15 @@ SCD_WEB_API;CAD;TEC;Listar tecnologias;LISTEC
 SCD_WEB_API;CAD;TEC;Ativar tecnologia;ATITEC
 SCD_WEB_API;CAD;TEC;Inativar tecnologia;INATEC
 SCD_WEB_API;CAD;TEC;Remover tecnologia;REMTEC
-SCD_WEB_API;CAD;SPE;Cadastrar especie;CADESP
-SCD_WEB_API;CAD;SPE;Atualizar especie;ATUESP
-SCD_WEB_API;CAD;SPE;Buscar especie por código;BUSESPPORCÃ“D
-SCD_WEB_API;CAD;SPE;Listar especies;LISESP
-SCD_WEB_API;CAD;SPE;Ativar especie;ATIESP
-SCD_WEB_API;CAD;SPE;Inativar especie;INAESP
-SCD_WEB_API;CAD;SPE;Remover especie;REMESP
+SCD_WEB_API;CAD;SPE;Cadastrar especialidade;CADESP
+SCD_WEB_API;CAD;SPE;Atualizar especialidade;ATUESP
+SCD_WEB_API;CAD;SPE;Buscar especialidade por código;BUSESPPORCÃ"D
+SCD_WEB_API;CAD;SPE;Listar especialidades;LISESP
+SCD_WEB_API;CAD;SPE;Ativar especialidade;ATIESP
+SCD_WEB_API;CAD;SPE;Inativar especialidade;INAESP
+SCD_WEB_API;CAD;SPE;Remover especialidade;REMESP
 SCD_WEB_API;CAD;PRO;Cadastrar tipo de produto;CADTIPDEPRO
 SCD_WEB_API;CAD;PRO;Atualizar tipo de produto;ATUTIPDEPRO
-SCD_WEB_API;CAD;PRO;Buscar tipo de produto por código;BUSTIPDEPROPORCOD
 SCD_WEB_API;CAD;PRO;Listar tipos de produto;LISTIPDEPRO
 SCD_WEB_API;CAD;PRO;Ativar tipo de produto;ATITIPDEPRO
 SCD_WEB_API;CAD;PRO;Inativar tipo de produto;INATIPDEPRO
@@ -39,35 +38,49 @@ SCD_WEB_API;CAD;MOD;Listar modalidades;LISMOD
 SCD_WEB_API;CAD;MOD;Ativar modalidade;ATIMOD
 SCD_WEB_API;CAD;MOD;Inativar modalidade;INAMOD
 SCD_WEB_API;CAD;MOD;Remover modalidade;REMMOD
-SCD_WEB_API;CAD;FAM;Cadastrar familia;CADFAM
-SCD_WEB_API;CAD;FAM;Atualizar familia;ATUFAM
-SCD_WEB_API;CAD;FAM;Buscar familia por código;BUSFAMPORCOD
-SCD_WEB_API;CAD;FAM;Listar familias;LISFAM
-SCD_WEB_API;CAD;FAM;Ativar familia;ATIFAM
-SCD_WEB_API;CAD;FAM;Inativar familia;INAFAM
-SCD_WEB_API;CAD;FAM;Remover familia;REMFAM
+SCD_WEB_API;CAD;FAM;Cadastrar família;CADFAM
+SCD_WEB_API;CAD;FAM;Atualizar família;ATUFAM
+SCD_WEB_API;CAD;FAM;Buscar família por código;BUSFAMPORCOD
+SCD_WEB_API;CAD;FAM;Listar famílias;LISFAM
+SCD_WEB_API;CAD;FAM;Ativar família;ATIFAM
+SCD_WEB_API;CAD;FAM;Inativar família;INAFAM
+SCD_WEB_API;CAD;FAM;Remover família;REMFAM
 SCD_WEB_API;CAD;FEE;Cadastrar tarifa;CADTAR
 SCD_WEB_API;CAD;FEE;Atualizar tarifa;ATUTAR
-SCD_WEB_API;CAD;FEE;Buscar tarifas;BUSTAR
+SCD_WEB_API;CAD;FEE;Buscar tarifa;BUSTAR
 SCD_WEB_API;CAD;FEE;Remover tarifa;REMTAR
-SCD_WEB_API;CAD;FEE;Cadastrar taxa;CADTAX
-SCD_WEB_API;CAD;FEE;Atualizar taxa;ATUTAX
-SCD_WEB_API;CAD;FEE;Buscar taxas;BUSTAX
-SCD_WEB_API;CAD;FEE;Remover taxa;REMTAX
-SCD_WEB_API;CAD;TYP;Cadastrar tipo de atividade;CADTIPDEATI
-SCD_WEB_API;CAD;TYP;Atualizar tipo de atividade;ATUTIPDEATI
-SCD_WEB_API;CAD;TYP;Buscar tipo de atividade por código;BUSTIPDEATIPORCOD
-SCD_WEB_API;CAD;TYP;Listar tipos de atividade;LISTIPDEATI
-SCD_WEB_API;CAD;TYP;Ativar tipo de atividade;ATITIPDEATI
-SCD_WEB_API;CAD;TYP;Inativar tipo de atividade;INATIPDEATI
-SCD_WEB_API;CAD;SAL;Atualizar canal de venda;ATUCANDEVEN
-SCD_WEB_API;CAD;SAL;Buscar canal de venda por código;BUSCANDEVENPORCOD
-SCD_WEB_API;CAD;SAL;Listar canais de venda;LISCANDEVEN
-SCD_WEB_API;CAD;SAL;Ativar canal de venda;ATICANDEVEN
-SCD_WEB_API;CAD;SAL;Inativar canal de venda;INACANDEVEN
-SCD_WEB_API;CAD;SAL;Remover canal de venda;REMCANDEVEN
-SCD_WEB_API;CAD;PRO;Atualizar produto;ATUPRO
-SCD_WEB_API;CAD;PRO;Buscar produto por código;BUSPROPORCOD
-SCD_WEB_API;CAD;PRO;Listar produtos;LISPRO
-SCD_WEB_API;CAD;PRO;Ativar produto;ATIPRO
-SCD_WEB_API;CAD;PRO;Inativar produto;INAPRO
+SCD_WEB_API;CAC;GRP;Listar grupos;LISGRU
+SCD_WEB_API;CAC;GRP;Buscar grupo por código;BUSGRUPORCOD
+SCD_WEB_API;CAC;GRP;Cadastrar grupo;CADGRU
+SCD_WEB_API;CAC;GRP;Atualizar grupo;ATUGRU
+SCD_WEB_API;CAC;GRP;Remover grupo;REMGRU
+SCD_WEB_API;CAD;END;Cadastrar endereço do canal;CADEND
+SCD_WEB_API;CAD;END;Buscar endereço do canal por código;BUSENDPORCOD
+SCD_WEB_API;CAD;END;Listar endereços do canal;LISEND
+SCD_WEB_API;CAD;END;Atualizar endereço do canal;ATUEND
+SCD_WEB_API;CAD;END;Remover endereço do canal;REMEND
+SCD_WEB_API;CAD;VIG;Cadastrar vigência de convênio;CADVIG
+SCD_WEB_API;CAD;VIG;Buscar vigência de convênio por código;BUSVIGPORCOD
+SCD_WEB_API;CAD;VIG;Listar vigências de convênio;LISVIG
+SCD_WEB_API;CAD;VIG;Atualizar vigência de convênio;ATUVIG
+SCD_WEB_API;CAD;VIG;Remover vigência de convênio;REMVIG
+SCD_WEB_API;CAD;CON;Cadastrar contato do canal;CADCON
+SCD_WEB_API;CAD;CON;Buscar contato do canal por código;BUSCONPORCOD
+SCD_WEB_API;CAD;CON;Listar contatos do canal;LISCON
+SCD_WEB_API;CAD;CON;Atualizar contato do canal;ATUCON
+SCD_WEB_API;CAD;CON;Remover contato do canal;REMCON
+SCD_WEB_API;CAD;ASSCOMERDIST;Cadastrar canal de comercialização/distribuição;CADASSCOMERDIST
+SCD_WEB_API;CAD;ASSCOMERDIST;Buscar canal de comercialização/distribuição por código;BUSASSCOMERDISTPORCOD
+SCD_WEB_API;CAD;ASSCOMERDIST;Listar canais de comercialização/distribuição;LISASSCOMERDIST
+SCD_WEB_API;CAD;ASSCOMERDIST;Atualizar canal de comercialização/distribuição;ATUASSCOMERDIST
+SCD_WEB_API;CAD;ASSCOMERDIST;Remover canal de comercialização/distribuição;REMASSCOMERDIST
+SCD_WEB_API;CAD;ASS;Cadastrar canal de produto;CADASS
+SCD_WEB_API;CAD;ASS;Buscar canal de produto por código;BUSASSPORCOD
+SCD_WEB_API;CAD;ASS;Listar canais de produto;LISASS
+SCD_WEB_API;CAD;ASS;Atualizar canal de produto;ATUASS
+SCD_WEB_API;CAD;ASS;Remover canal de produto;REMASS
+SCD_WEB_API;CAD;LIMIT;Cadastrar limite de recarga;CADLIMIT
+SCD_WEB_API;CAD;LIMIT;Buscar limite de recarga por código;BUSLIMITPORCOD
+SCD_WEB_API;CAD;LIMIT;Listar limites de recarga;LISLIMIT
+SCD_WEB_API;CAD;LIMIT;Atualizar limite de recarga;ATULIMIT
+SCD_WEB_API;CAD;LIMIT;Remover limite de recarga;REMLIMIT
