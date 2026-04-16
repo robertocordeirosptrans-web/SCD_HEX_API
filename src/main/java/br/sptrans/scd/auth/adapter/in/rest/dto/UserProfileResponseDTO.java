@@ -14,12 +14,15 @@ public record UserProfileResponseDTO(
 ) {
     public UserProfileResponseDTO(UserProfile usuarioPerfil) {
         this(
-            usuarioPerfil.getId().getIdUsuario() != null ? usuarioPerfil.getId().getIdUsuario() : null,
-            usuarioPerfil.getId().getCodPerfil() != null ? usuarioPerfil.getId().getCodPerfil() : null,
-            usuarioPerfil.getPerfil() != null ? usuarioPerfil.getPerfil().getNomPerfil() : null,
-            usuarioPerfil.getIdUsuarioManutencao(),
-            usuarioPerfil.getCodStatus(),
-            usuarioPerfil.getDtModi()
+            (usuarioPerfil != null && usuarioPerfil.getId() != null && usuarioPerfil.getId().getIdUsuario() != null)
+                ? usuarioPerfil.getId().getIdUsuario() : null,
+            (usuarioPerfil != null && usuarioPerfil.getId() != null && usuarioPerfil.getId().getCodPerfil() != null)
+                ? usuarioPerfil.getId().getCodPerfil() : null,
+            (usuarioPerfil != null && usuarioPerfil.getPerfil() != null && usuarioPerfil.getPerfil().getNomPerfil() != null)
+                ? usuarioPerfil.getPerfil().getNomPerfil() : null,
+            usuarioPerfil != null ? usuarioPerfil.getIdUsuarioManutencao() : null,
+            usuarioPerfil != null ? usuarioPerfil.getCodStatus() : null,
+            usuarioPerfil != null ? usuarioPerfil.getDtModi() : null
         );
     }
 }

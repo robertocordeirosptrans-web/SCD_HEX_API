@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.auth.application.port.out;
 
 import java.util.List;
@@ -6,12 +7,13 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityProjectionDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileProjectionDTO;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.FunctionalityKey;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.ProfileFunctionality;
 import br.sptrans.scd.auth.domain.UserProfile;
-
 
 /**
  * Porta de Saída — repositório de Perfis e Funcionalidades.
@@ -25,11 +27,23 @@ public interface ProfilePort extends ProfileFunctionalityPort {
     boolean existsByCode(String codPerfil);
 
     List<Profile> listProfile(String codStatus);
+
     Page<Profile> listProfile(String codStatus, Pageable pageable);
 
     void save(Profile perfil);
 
     void updateStatus(String codPerfil, String codStatus, Long idUsuarioManutencao);
+
+    /**
+     * Lista funcionalidades associadas a um perfil, paginado.
+     */
+
+
+    Page<ProfileFunctionalityProjectionDTO> listFunctionalitiesProjectionByProfile(String codPerfil, Pageable pageable);
+
+        // Projeção customizada para usuários por perfil
+    Page<UserProfileProjectionDTO> listUserProfilesByPerfil(String codPerfil, Pageable pageable);
+   
 
     // ── Associações PERFIL_FUNCIONALIDADES ────────────────────────────────────
     /**
@@ -61,13 +75,16 @@ public interface ProfilePort extends ProfileFunctionalityPort {
      * Lista todas as associações usuário-perfil.
      */
     List<UserProfile> listUserProfiles();
+
     Page<UserProfile> listUserProfiles(Pageable pageable);
-    Page<UserProfile> listUserProfilesByPerfil(String codPerfil, Pageable pageable);
+
+
 
     /**
      * Lista todas as associações perfil-funcionalidade.
      */
     List<ProfileFunctionality> listProfileFunctionalities();
+
     Page<ProfileFunctionality> listProfileFunctionalities(Pageable pageable);
 
 }

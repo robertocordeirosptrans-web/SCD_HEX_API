@@ -6,12 +6,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityProjectionDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityRequestDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityResponseDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityStatusRequestDTO;
@@ -30,13 +32,30 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping(ApiVersionConfig.API_V1_PATH + "/perfil-funcionalidade")
+@RequestMapping(ApiVersionConfig.API_V1_PATH + "/profile_functionality")
 @Tag(name = "Perfil-Funcionalidade v1", description = "Endpoints para associação de perfil e funcionalidades")
 @RequiredArgsConstructor
 public class ProfileFunctionalityController {
 
     private final GroupProfileManagementUseCase groupProfileManagementUseCase;
     private final ProfileFunctionalityRestMapper profileFunctionalityRestMapper;
+
+ 
+    @GetMapping("/{codPerfil}/functionalities")
+    @PreAuthorize("hasAuthority('" + CacPermissions.LISASSPERFUN + "')")
+    @Operation(summary = "Listar funcionalidades de um perfil", description = "Retorna as funcionalidades associadas ao perfil informado (projeção customizada)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de funcionalidades retornada com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<PageResponse<ProfileFunctionalityProjectionDTO>> listFunctionalitiesByProfile(
+            @PathVariable("codPerfil") String codPerfil,
+            Pageable pageable) {
+        Page<ProfileFunctionalityProjectionDTO> dtoPage = groupProfileManagementUseCase
+            .listFunctionalitiesProjectionByProfile(codPerfil, pageable);
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
+        }
 
     @GetMapping
     @PreAuthorize("hasAuthority('" + CacPermissions.LISASSPERFUN + "')")

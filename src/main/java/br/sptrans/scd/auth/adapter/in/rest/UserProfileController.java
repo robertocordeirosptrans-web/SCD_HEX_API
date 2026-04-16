@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileProjectionDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileRequestDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileResponseDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileStatusRequestDTO;
@@ -62,10 +63,9 @@ public class UserProfileController {
         @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<UserProfileResponseDTO>> getUsersByProfile(
+    public ResponseEntity<PageResponse<UserProfileProjectionDTO>> getUsersByProfile(
             Pageable pageable, @PathVariable String codPerfil) {
-        Page<UserProfileResponseDTO> dtoPage = groupProfileManagementUseCase.listUserProfilesByPerfil(codPerfil, pageable)
-                .map(UserProfileResponseDTO::new);
+        Page<UserProfileProjectionDTO> dtoPage = groupProfileManagementUseCase.listUserProfilesByPerfil(codPerfil, pageable);
         if (dtoPage.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

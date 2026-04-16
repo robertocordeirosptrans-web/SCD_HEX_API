@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.auth.adapter.out.jpa;
 
 import java.util.List;
@@ -7,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityProjectionDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileProjectionDTO;
 import br.sptrans.scd.auth.adapter.out.jpa.mapper.FunctionalityMapper;
 import br.sptrans.scd.auth.adapter.out.jpa.mapper.ProfileMapper;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.FunctionalityJpaRepository;
@@ -79,15 +82,15 @@ public class ProfileAdapterJpa implements ProfilePort {
     }
 
     @Override
-    public void desassociateFunctionalitiesToProfile(String codPerfil, FunctionalityKey chave, Long idUsuarioManutencao) {
+    public void desassociateFunctionalitiesToProfile(String codPerfil, FunctionalityKey chave,
+            Long idUsuarioManutencao) {
         profileFunctionalityJpaRepository.desassociateFunctionality(
                 codPerfil,
                 chave.getCodSistema(),
                 chave.getCodModulo(),
                 chave.getCodRotina(),
                 chave.getCodFuncionalidade(),
-                idUsuarioManutencao
-        );
+                idUsuarioManutencao);
     }
 
     @Override
@@ -97,8 +100,7 @@ public class ProfileAdapterJpa implements ProfilePort {
                 chave.getCodSistema(),
                 chave.getCodModulo(),
                 chave.getCodRotina(),
-                chave.getCodFuncionalidade()
-        ) > 0;
+                chave.getCodFuncionalidade()) > 0;
     }
 
     @Override
@@ -107,6 +109,17 @@ public class ProfileAdapterJpa implements ProfilePort {
                 .filter(f -> "A".equalsIgnoreCase(f.getCodStatus()))
                 .map(functionalityMapper::toDomain)
                 .toList();
+    }
+
+    public Page<ProfileFunctionalityProjectionDTO> listFunctionalitiesProjectionByProfile(
+            String codPerfil, Pageable pageable) {
+        return profileFunctionalityJpaRepository.findAllProjectedByCodPerfil(codPerfil, pageable);
+    }
+
+    @Override
+    public Page<UserProfileProjectionDTO> listUserProfilesByPerfil(
+            String codPerfil, Pageable pageable) {
+        return userProfileJpaRepository.findAllProjectedByCodPerfil(codPerfil, pageable);
     }
 
     @Override
@@ -138,10 +151,6 @@ public class ProfileAdapterJpa implements ProfilePort {
         return userProfileJpaRepository.listAllUserProfiles(pageable).map(profileMapper::toDomain);
     }
 
-    @Override
-    public Page<UserProfile> listUserProfilesByPerfil(String codPerfil, Pageable pageable) {
-        return userProfileJpaRepository.findByIdCodPerfil(codPerfil, pageable).map(profileMapper::toDomain);
-    }
 
     @Override
     public void save(Profile perfil) {
@@ -194,5 +203,3 @@ public class ProfileAdapterJpa implements ProfilePort {
         return profileFunctionalityJpaRepository.count();
     }
 }
-
-

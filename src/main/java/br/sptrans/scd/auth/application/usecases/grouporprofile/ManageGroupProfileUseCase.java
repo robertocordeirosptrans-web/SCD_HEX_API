@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityProjectionDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileProjectionDTO;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.GroupPort;
@@ -112,6 +114,8 @@ public class ManageGroupProfileUseCase {
 
         return grupo;
     }
+
+
 
     /**
      * Inativa grupo.
@@ -249,13 +253,18 @@ public class ManageGroupProfileUseCase {
         return profileRepository.listFunctionalityActive();
     }
 
+    public Page<ProfileFunctionalityProjectionDTO> listFunctionalitiesProjectionByProfile(
+            String codPerfil, Pageable pageable) {
+        return profileRepository.listFunctionalitiesProjectionByProfile(codPerfil, pageable);
+    }
+
     /**
      * Lista todos os grupos, opcionalmente filtrado por status.
      * 
      * @param statusCode status de filtro (null = todos)
      * @return lista de grupos
      */
-  
+
     public Page<Group> listGroups(String statusCode, Pageable pageable) {
         log.debug("Listando grupos paginados. Status: {}", statusCode);
         return groupRepository.listGroups(statusCode, pageable);
@@ -268,10 +277,9 @@ public class ManageGroupProfileUseCase {
      * @return lista de usuários ativos
      */
     // public List<GroupUser> listGroupUsersByCodGrupo(String codGrupo) {
-    //     log.debug("Listando usuários ativos do grupo: {}", codGrupo);
-    //     return groupUserRepository.listGroupUsersByCodGrupo(codGrupo);
+    // log.debug("Listando usuários ativos do grupo: {}", codGrupo);
+    // return groupUserRepository.listGroupUsersByCodGrupo(codGrupo);
     // }
-
 
     // ══════════════════════════════════════════════════════════════════════════
     // PERFIS
@@ -482,7 +490,7 @@ public class ManageGroupProfileUseCase {
         return profileRepository.listUserProfiles(pageable);
     }
 
-    public Page<UserProfile> listUserProfilesByPerfil(String codPerfil, Pageable pageable) {
+    public Page<UserProfileProjectionDTO> listUserProfilesByPerfil(String codPerfil, Pageable pageable) {
         return profileRepository.listUserProfilesByPerfil(codPerfil, pageable);
     }
 

@@ -8,6 +8,8 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityProjectionDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileProjectionDTO;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
@@ -121,6 +123,14 @@ public interface GroupProfileManagementUseCase {
          */
         List<Functionality> listFunctionalities();
 
+        /**
+         * Lista funcionalidades disponíveis para vinculação (todas ativas).
+         */
+        // Page<ProfileFunctionality> listFunctionalitiesByProfile(String codPerfil, Pageable pageable);
+
+        Page<ProfileFunctionalityProjectionDTO> listFunctionalitiesProjectionByProfile(
+                        String codPerfil, Pageable pageable);
+
         // ══════════════════════════════════════════════════════════════════════════
         // ASSOCIAÇÕES
         // ══════════════════════════════════════════════════════════════════════════
@@ -144,7 +154,7 @@ public interface GroupProfileManagementUseCase {
 
         Page<UserProfile> listUserProfiles(Pageable pageable);
 
-        Page<UserProfile> listUserProfilesByPerfil(String codPerfil, Pageable pageable);
+        Page<UserProfileProjectionDTO> listUserProfilesByPerfil(String codPerfil, Pageable pageable);
 
         /**
          * Lista todas as associações perfil-funcionalidade.
