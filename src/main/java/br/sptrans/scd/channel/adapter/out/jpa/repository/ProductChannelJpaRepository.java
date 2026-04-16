@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.channel.adapter.out.persistence.entity.ProductChannelEntityJpa;
 import br.sptrans.scd.channel.adapter.out.persistence.entity.ProductChannelKeyEntityJpa;
+import br.sptrans.scd.channel.application.port.out.query.ChannelByProductProjection;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 
 public interface ProductChannelJpaRepository extends JpaRepository<ProductChannelEntityJpa, ProductChannelKeyEntityJpa>, JpaSpecificationExecutor<ProductChannelEntityJpa> {
@@ -312,4 +313,21 @@ public interface ProductChannelJpaRepository extends JpaRepository<ProductChanne
         t.DT_INICIAL DESC 
         """, nativeQuery = true)
     List<ProductChannelProjection> findCompletoByCanalDistrib(@Param("codCanalDistribuicao") Integer codCanalDistribuicao);
+
+    @Query(value = """
+        SELECT
+            cp.COD_CANAL        AS codCanal,
+            c.DES_CANAL         AS desCanal,
+            t.DT_INICIO_VALIDADE AS dtInicioValidade,
+            t.DT_FIM_VALIDADE   AS dtFimValidade,
+            t.COD_STATUS        AS codStatus
+        FROM SPTRANSDBA.CANAIS_PRODUTOS cp
+        LEFT JOIN SPTRANSDBA.CANAIS c
+            ON cp.COD_CANAL = c.COD_CANAL
+        LEFT JOIN SPTRANSDBA.CONVENIOS_VIGENCIAS t
+            ON cp.COD_PRODUTO = t.COD_PRODUTO
+        WHERE cp.COD_PRODUTO = :codProduto
+        ORDER BY cp.COD_CANAL
+    """, nativeQuery = true)
+    List<ChannelByProductProjection> findChannelsByProduct(@Param("codProduto") String codProduto);
 }

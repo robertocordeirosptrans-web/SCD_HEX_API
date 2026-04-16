@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.application.port.in;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -58,9 +59,14 @@ public interface ProductUseCase {
     ProductVersion createNewVersion(String codProduto, CreateVersionCommand cmd);
 
     /**
-     * Consulta uma versão específica.
+     * Lista todas as versões de um produto por código de produto.
      */
-    ProductVersion findByVersion(String codVersao);
+    List<ProductVersion> findAllVersion(String codProduto);
+
+    /**
+     * Lista todas as versões de um produto por código de produto (paginado).
+     */
+    Page<ProductVersion> findAllVersion(String codProduto, Pageable pageable);
 
     // ── Command / Query records ────────────────────────────────────────────
     record CreateProductCommand(

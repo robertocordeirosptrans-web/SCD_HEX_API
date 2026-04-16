@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.product.adapter.in.rest.dto.ProductRequest;
+import br.sptrans.scd.product.adapter.in.rest.dto.ProductVersionDetailResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.ProductVersionRequest;
+import br.sptrans.scd.product.adapter.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.product.application.port.in.ProductUseCase;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateProductCommand;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateVersionCommand;
@@ -190,11 +192,41 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(version);
     }
 
-    @GetMapping("/versions/{codVersao}")
-    @Operation(summary = "Busca uma versão de produto por código")
-
-    public ResponseEntity<ProductVersion> findByVersion(@PathVariable String codVersao) {
-        return ResponseEntity.ok(productUseCase.findByVersion(codVersao));
+    @GetMapping("/{codProduto}/versions")
+    @Operation(summary = "Lista o histórico de versionamento de um produto")
+    public ResponseEntity<PageResponse<ProductVersionDetailResponseDTO>> findAllVersion(
+            @PathVariable String codProduto,
+            Pageable pageable) {
+        var dtoPage = productUseCase.findAllVersion(codProduto, pageable)
+                .map(v -> ProductVersionDetailResponseDTO.builder()
+                        .codVersao(v.getCodVersao())
+                        .codProduto(v.getCodProduto())
+                        .dtValidade(v.getDtValidade())
+                        .dtVidaInicio(v.getDtVidaInicio())
+                        .dtVidaFim(v.getDtVidaFim())
+                        .dtLiberacao(v.getDtLiberacao())
+                        .dtLancamento(v.getDtLancamento())
+                        .dtVendaInicio(v.getDtVendaInicio())
+                        .dtVendaFim(v.getDtVendaFim())
+                        .dtUsoIni(v.getDtUsoInicio())
+                        .dtUsoFim(v.getDtUsoFim())
+                        .dtTrocaIni(v.getDtTrocaInicio())
+                        .dtTrocaFim(v.getDtTrocaFim())
+                        .flgBloqFabricacao(v.getFlgBloqFabricacao())
+                        .flgBloqVenda(v.getFlgBloqVenda())
+                        .flgBloqDistribuicao(v.getFlgBloqDistribuicao())
+                        .flgBloqTroca(v.getFlgBloqTroca())
+                        .flgBloqAquisicao(v.getFlgBloqAquisicao())
+                        .flgBloqPedido(v.getFlgBloqPedido())
+                        .flgBloqDevolucao(v.getFlgBloqDevolucao())
+                        .dtCadastro(v.getDtCadastro())
+                        .dtManutencao(v.getDtManutencao())
+                        .stProdutosVersoes(v.getCodStatus())
+                        .desProdutoVersoes(v.getDesProdutoVersoes())
+                        .usuarioCadastro(UserSimpleMapper.toDto(v.getIdUsuarioCadastro()))
+                        .usuarioManutencao(UserSimpleMapper.toDto(v.getIdUsuarioManutencao()))
+                        .build());
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
 }

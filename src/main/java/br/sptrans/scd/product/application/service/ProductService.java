@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.application.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -233,9 +234,19 @@ public class ProductService implements ProductUseCase {
     }
 
     @Override
-    public ProductVersion findByVersion(String codVersao) {
-        return productVersionRepository.findById(codVersao)
-                .orElseThrow(() -> new ProductException(ProductErrorType.VERSION_NOT_FOUND));
+    public List<ProductVersion> findAllVersion(String codProduto) {
+        if (!productRepository.existsByProduct(codProduto)) {
+            throw new ProductException(ProductErrorType.PRODUCT_NOT_FOUND);
+        }
+        return productVersionRepository.findAllByProduct(codProduto);
+    }
+
+    @Override
+    public Page<ProductVersion> findAllVersion(String codProduto, Pageable pageable) {
+        if (!productRepository.existsByProduct(codProduto)) {
+            throw new ProductException(ProductErrorType.PRODUCT_NOT_FOUND);
+        }
+        return productVersionRepository.findAllByProduct(codProduto, pageable);
     }
 
     // =========================================================================

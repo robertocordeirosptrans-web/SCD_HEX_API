@@ -1,7 +1,10 @@
 package br.sptrans.scd.product.adapter.in.rest;
 
-// ...
 
+
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,7 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.product.adapter.in.rest.dto.FareListResponseDTO;
+import br.sptrans.scd.channel.adapter.in.rest.dto.UserSimpleDTO;
+import br.sptrans.scd.product.adapter.in.rest.dto.FareDetailResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.FareResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.FeeListResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.FeeResponseDTO;
@@ -22,6 +26,7 @@ import br.sptrans.scd.product.adapter.in.rest.dto.RegisterFeeRequest;
 import br.sptrans.scd.product.adapter.in.rest.dto.UpdateFareRequest;
 import br.sptrans.scd.product.adapter.in.rest.dto.UpdateFeeRequest;
 import br.sptrans.scd.product.application.port.in.FeeFareManagementUseCase;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -95,26 +100,30 @@ public class FeeFareController {
         return ResponseEntity.ok(dto);
     }
 
-        @GetMapping("/tarifas/{codProduto}/{codCanal}")
+        @GetMapping("/tarifas/{codProduto}")
         @PreAuthorize("hasAuthority('" + CadPermissions.FEE_BUSTAR + "')")
-    public ResponseEntity<FareListResponseDTO> listFares(@PathVariable String codProduto,
-            @PathVariable String codCanal) {
-        var fares = feeFareManagementUseCase.listFares(codProduto, codCanal);
-        var dtoList = fares.stream().map(fare -> FareResponseDTO.builder()
-                .codTarifa(fare.getCodTarifa())
-                .codProduto(fare.getCodProduto())
-                .codVersao(fare.getCodVersao())
-                .desTarifa(fare.getDesTarifa())
-                .valTarifa(fare.getValTarifa() != null ? new java.math.BigDecimal(fare.getValTarifa()) : null)
-                .dtVigenciaInicio(fare.getDtVigenciaInicio())
-                .dtVigenciaFim(fare.getDtVigenciaFim())
-                .dtCadastro(fare.getDtCadastro())
-                .dtManutencao(fare.getDtManutencao())
-                .codStatus(fare.getCodStatus())
-                .idUsuarioCadastro(fare.getIdUsuarioCadastro())
-                .idUsuarioManutencao(fare.getIdUsuarioManutencao())
-                .build()).toList();
-        return ResponseEntity.ok(FareListResponseDTO.builder().fares(dtoList).build());
+    public ResponseEntity<PageResponse<FareDetailResponseDTO>> listFares(@PathVariable String codProduto, Pageable pageable) {
+        Page<FareDetailResponseDTO> dtoPage = feeFareManagementUseCase.listFares(codProduto, pageable)
+                .map(p -> FareDetailResponseDTO.builder()
+                        .codTarifa(p.getCodTarifa())
+                        .codProduto(p.getCodProduto())
+                        .nomProduto(p.getNomProduto())
+                        .codVersao(p.getCodVersao())
+                        .dtVigenciaIni(p.getDtVigenciaIni())
+                        .dtVigenciaFim(p.getDtVigenciaFim())
+                        .dtCadastro(p.getDtCadastro())
+                        .dtManutencao(p.getDtManutencao())
+                        .desTarifa(p.getDesTarifa())
+                        .stTarifas(p.getStTarifas())
+                        .vlTarifa(p.getVlTarifa())
+                        .usuarioCadastro(p.getIdUsuarioCadastro() != null
+                                ? new UserSimpleDTO(p.getIdUsuarioCadastro(), p.getLoginCadastro(), p.getNomeCadastro())
+                                : null)
+                        .usuarioManutencao(p.getIdUsuarioManutencao() != null
+                                ? new UserSimpleDTO(p.getIdUsuarioManutencao(), p.getLoginManutencao(), p.getNomeManutencao())
+                                : null)
+                        .build());
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     // Taxas (Fee)

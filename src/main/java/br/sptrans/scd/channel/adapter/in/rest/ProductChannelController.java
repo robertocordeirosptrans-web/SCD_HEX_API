@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.in.rest.dto.ChannelByProductDTO;
 import br.sptrans.scd.channel.adapter.in.rest.dto.CreateProductChannelRequest;
 import br.sptrans.scd.channel.adapter.in.rest.dto.ProductChDTO;
 import br.sptrans.scd.channel.adapter.in.rest.dto.ProductChResponseDTO;
@@ -166,6 +167,30 @@ public class ProductChannelController {
         log.info("REST DELETE /product-channels/{}/{}", codCanal, codProduto);
         productChannelUseCase.deleteProductChannel(codCanal, codProduto);
         return ResponseEntity.noContent().build();
+    }
+
+        @GetMapping("/by-product/{codProduto}")
+        @PreAuthorize("hasAuthority('" + CadPermissions.ASS_BUSASSPORCOD + "')")
+    @Operation(summary = "Lista os canais e vigências de convênio de um produto")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Canais encontrados"),
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado")
+    })
+    public ResponseEntity<PageResponse<ChannelByProductDTO>> findChannelsByProduct(
+            @PathVariable String codProduto,
+            Pageable pageable) {
+        log.info("REST GET /product-channels/by-product/{}", codProduto);
+        var page = productChannelUseCase.findChannelsByProduct(codProduto, pageable);
+        if (page.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        var dtoPage = page.map(p -> new ChannelByProductDTO(
+                p.getCodCanal(),
+                p.getDesCanal(),
+                p.getDtInicioValidade(),
+                p.getDtFimValidade(),
+                p.getCodStatus()));
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
 }

@@ -3,6 +3,9 @@ package br.sptrans.scd.product.adapter.out.jpa.adapter;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
@@ -85,5 +88,22 @@ public class ProductVersionAdapterJpa implements ProductVersionPort {
                 .filter(e -> codProduto.equals(e.getCodProduto()))
                 .reduce((first, second) -> second)
                 .map(productVersionMapper::toDomain);
+    }
+
+    @Override
+    public List<ProductVersion> findAllByProduct(String codProduto) {
+        return repository.findAll().stream()
+                .filter(e -> codProduto.equals(e.getCodProduto()))
+                .map(productVersionMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Page<ProductVersion> findAllByProduct(String codProduto, Pageable pageable) {
+        List<ProductVersion> all = findAllByProduct(codProduto);
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), all.size());
+        List<ProductVersion> slice = all.subList(start, end);
+        return new PageImpl<>(slice, pageable, all.size());
     }
 }

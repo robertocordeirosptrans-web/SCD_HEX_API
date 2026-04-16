@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +13,7 @@ import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.out.jpa.mapper.ProductChannelMapper;
 import br.sptrans.scd.channel.adapter.out.jpa.repository.ProductChannelJpaRepository;
 import br.sptrans.scd.channel.application.port.out.ProductChannelPersistencePort;
+import br.sptrans.scd.channel.application.port.out.query.ChannelByProductProjection;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
@@ -113,5 +115,20 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
             throw new IllegalArgumentException("codCanal deve ser um número inteiro", e);
         }
     }
+
+    @Override
+    public List<ChannelByProductProjection> findChannelsByProduct(String codProduto) {
+        return productChannelJpaRepository.findChannelsByProduct(codProduto);
+    }
+
+    @Override
+    public Page<ChannelByProductProjection> findChannelsByProduct(String codProduto, Pageable pageable) {
+        List<ChannelByProductProjection> all = productChannelJpaRepository.findChannelsByProduct(codProduto);
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), all.size());
+        List<ChannelByProductProjection> slice = all.subList(start, end);
+        return new PageImpl<>(slice, pageable, all.size());
+    }
+    
 
 }

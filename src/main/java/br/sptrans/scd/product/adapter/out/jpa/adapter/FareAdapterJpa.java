@@ -5,12 +5,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.FareMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.FareJpaRepository;
 import br.sptrans.scd.product.adapter.out.persistence.entity.FareEntityJpa;
+import br.sptrans.scd.product.application.port.out.query.FareDetailProjection;
 import br.sptrans.scd.product.application.port.out.repository.FarePort;
 import br.sptrans.scd.product.domain.Fare;
 import lombok.RequiredArgsConstructor;
@@ -76,5 +80,14 @@ public class FareAdapterJpa implements FarePort {
                 .sorted((a, b) -> b.getDtVigenciaInicio().compareTo(a.getDtVigenciaInicio()))
                 .map(fareMapper::toDomain)
                 .findFirst();
+    }
+
+    @Override
+    public Page<FareDetailProjection> listDetailByProduct(String codProduto, Pageable pageable) {
+        List<FareDetailProjection> all = fareJpaRepository.findDetailByProduct(codProduto);
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), all.size());
+        List<FareDetailProjection> slice = all.subList(start, end);
+        return new PageImpl<>(slice, pageable, all.size());
     }
 }

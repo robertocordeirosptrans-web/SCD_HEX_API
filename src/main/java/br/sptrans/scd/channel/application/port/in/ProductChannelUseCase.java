@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.application.port.out.query.ChannelByProductProjection;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
@@ -27,6 +28,10 @@ public interface ProductChannelUseCase {
         List<ProductChannelProjection> findProjections(String codCanal, String codProduto);
 
         Page<ProductChannelProjection> findProjections(String codCanal, String codProduto, Pageable pageable);
+
+        List<ChannelByProductProjection> findChannelsByProduct(String codProduto);
+
+        Page<ChannelByProductProjection> findChannelsByProduct(String codProduto, Pageable pageable);
 
         void deleteProductChannel(String codCanal, String codProduto);
 

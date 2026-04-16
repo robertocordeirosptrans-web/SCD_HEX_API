@@ -4,6 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import br.sptrans.scd.product.application.port.out.query.FareDetailProjection;
 import br.sptrans.scd.product.domain.Fare;
 import br.sptrans.scd.product.domain.Fee;
 
@@ -24,9 +28,9 @@ public interface FeeFareManagementUseCase {
     Fare updateFare(String codTarifa, UpdateFareCommand command);
 
     /**
-     * Lista tarifas de um produto/canal com filtro de vigência.
+     * Lista tarifas de um produto com todos os detalhes (nome do produto, usuários).
      */
-    List<Fare> listFares(String codProduto, String codCanal);
+    Page<FareDetailProjection> listFares(String codProduto, Pageable pageable);
 
     // =========================================================================
     // Gestão de Taxas (Fee)

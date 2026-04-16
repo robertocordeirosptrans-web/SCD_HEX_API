@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import br.sptrans.scd.channel.application.port.out.query.ChannelByProductProjection;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
@@ -23,6 +24,10 @@ public interface ProductChannelPersistencePort {
     Page<ProductChannel> findByCodCanal(String codCanal, Pageable pageable);
 
     Page<ProductChannel> findByCodProduto(String codProduto, Pageable pageable);
+
+    List<ChannelByProductProjection> findChannelsByProduct(String codProduto);
+
+    Page<ChannelByProductProjection> findChannelsByProduct(String codProduto, Pageable pageable);
 
     ProductChannel save(ProductChannel entity);
 
