@@ -7,7 +7,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.in.rest.dto.SubSalesChannelProjection;
 import br.sptrans.scd.channel.domain.SalesChannel;
+import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 
 public interface SalesChannelUseCase {
 
@@ -17,13 +19,16 @@ public interface SalesChannelUseCase {
 
     SalesChannel findBySalesChannel(String codCanal);
 
-        Page<SalesChannel> findAllSalesChannels(br.sptrans.scd.channel.domain.enums.ChannelDomainStatus stCanais, Pageable pageable);
+    Page<SalesChannel> findAllSalesChannels(ChannelDomainStatus stCanais, Pageable pageable);
 
     void activateSalesChannel(String codCanal, User usuario);
 
     void inactivateSalesChannel(String codCanal, User usuario);
 
     void deleteSalesChannel(String codCanal);
+
+     Page<SubSalesChannelProjection> findSubChannelsByCodCanalSuperior(String codCanalSuperior, Pageable pageable);
+
 
     // ── Commands ──────────────────────────────────────────────────────────────
 

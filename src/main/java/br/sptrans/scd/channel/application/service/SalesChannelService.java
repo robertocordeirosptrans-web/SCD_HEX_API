@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.application.port.out.ClassificationPort;
 import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.in.rest.dto.SubSalesChannelProjection;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.application.port.out.TypesActivityPersistencePort;
@@ -57,7 +58,7 @@ public class SalesChannelService implements SalesChannelUseCase {
                     .orElseThrow(() -> new ChannelException(ChannelErrorType.TYPES_ACTIVITY_NOT_FOUND));
         }
 
-        if(cmd.usuario() != null) {
+        if (cmd.usuario() != null) {
             var user = userResolverHelper.resolve(cmd.usuario().getIdUsuario());
             if (user == null) {
                 throw new ChannelException(ChannelErrorType.USER_NOT_FOUND);
@@ -96,6 +97,13 @@ public class SalesChannelService implements SalesChannelUseCase {
         SalesChannel saved = salesChannelRepository.save(salesChannel);
         log.info("Canal de venda criado com sucesso. Código: {}", saved.getCodCanal());
         return saved;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<SubSalesChannelProjection> findSubChannelsByCodCanalSuperior(
+            String codCanalSuperior, Pageable pageable) {
+        return salesChannelRepository.findSubChannelsByCodCanalSuperior(codCanalSuperior, pageable);
     }
 
     @Override

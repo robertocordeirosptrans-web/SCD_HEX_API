@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.channel.adapter.in.rest;
 
 // ...
@@ -46,7 +47,6 @@ import lombok.RequiredArgsConstructor;
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Canais de Venda v1", description = "Endpoints para gerenciamento de canais de venda")
 
-
 public class SalesChannelController {
 
     private static final Logger log = LoggerFactory.getLogger(SalesChannelController.class);
@@ -61,7 +61,7 @@ public class SalesChannelController {
             @ApiResponse(responseCode = "200", description = "Canal de venda cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
-        @PreAuthorize("hasAuthority('" + CadPermissions.SAL_CADCANDEVEN + "')")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SAL_CADCANDEVEN + "')")
     public ResponseEntity<SalesChannelResponseDTO> createSalesChannel(
             @Valid @RequestBody CreateSalesChannelRequest request) {
         log.info("REST POST /sales-channels — Criando canal: {}", request.codCanal());
@@ -133,6 +133,19 @@ public class SalesChannelController {
     public ResponseEntity<SalesChannelResponseDTO> findBySalesChannel(@PathVariable String codCanal) {
         SalesChannel channel = salesChannelUseCase.findBySalesChannel(codCanal);
         return ResponseEntity.ok(salesChannelMapper.toResponseDTO(channel));
+    }
+
+    @GetMapping("/subcanal/{codCanalSuperior}")
+    @Operation(summary = "Lista subcanais de um canal superior, paginado, com projeção customizada")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SAL_LISCANDEVEN + "')")
+    public ResponseEntity<PageResponse<br.sptrans.scd.channel.adapter.in.rest.dto.SubSalesChannelProjection>> findSubChannelsByCodCanalSuperior(
+            @PathVariable String codCanalSuperior,
+            Pageable pageable) {
+        var page = salesChannelUseCase.findSubChannelsByCodCanalSuperior(codCanalSuperior, pageable);
+        if (page.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(PageResponse.fromPage(page));
     }
 
     @GetMapping

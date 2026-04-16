@@ -12,9 +12,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.sptrans.scd.channel.adapter.in.rest.dto.SubSalesChannelProjection;
 import br.sptrans.scd.channel.adapter.out.persistence.entity.SalesChannelEntityJpa;
 
-public interface SalesChannelJpaRepository extends JpaRepository<SalesChannelEntityJpa, String>, JpaSpecificationExecutor<SalesChannelEntityJpa> {
+public interface SalesChannelJpaRepository
+        extends JpaRepository<SalesChannelEntityJpa, String>, JpaSpecificationExecutor<SalesChannelEntityJpa> {
 
     @Query("SELECT c FROM SalesChannelEntityJpa c WHERE c.codCanal = :codCanal")
     Optional<SalesChannelEntityJpa> findByCodCanal(@Param("codCanal") String codCanal);
@@ -31,31 +33,31 @@ public interface SalesChannelJpaRepository extends JpaRepository<SalesChannelEnt
     @Modifying
     @Transactional
     @Query("""
-        UPDATE SalesChannelEntityJpa c SET
-            c.codCanalSuperior = :codCanalSuperior,
-            c.desCanal = :desCanal,
-            c.desRazaoSocial = :desRazaoSocial,
-            c.desNomeFantasia = :desNomeFantasia,
-            c.vlCaucao = :vlCaucao,
-            c.dtInicioCaucao = :dtInicioCaucao,
-            c.dtFimCaucao = :dtFimCaucao,
-            c.seqNivel = :seqNivel,
-            c.flgCriticaNumlote = :flgCriticaNumlote,
-            c.flgLimiteDias = :flgLimiteDias,
-            c.flgProcessamentoAutomatico = :flgProcessamentoAutomatico,
-            c.flgProcessamentoParcial = :flgProcessamentoParcial,
-            c.flgSaldoDevedor = :flgSaldoDevedor,
-            c.numMinutoIniLibRecarga = :numMinutoIniLibRecarga,
-            c.numMinutoFimLibRecarga = :numMinutoFimLibRecarga,
-            c.flgEmiteReciboPedido = :flgEmiteReciboPedido,
-            c.flgSupercanal = :flgSupercanal,
-            c.flgPagtoFuturo = :flgPagtoFuturo,
-            c.codClassificacaoPessoa = :codClassificacaoPessoa,
-            c.codAtividade = :codAtividade,
-            c.dtManutencao = CURRENT_TIMESTAMP,
-            c.idUsuarioManutencao = :idUsuarioManutencao
-        WHERE c.codCanal = :codCanal
-    """)
+                UPDATE SalesChannelEntityJpa c SET
+                    c.codCanalSuperior = :codCanalSuperior,
+                    c.desCanal = :desCanal,
+                    c.desRazaoSocial = :desRazaoSocial,
+                    c.desNomeFantasia = :desNomeFantasia,
+                    c.vlCaucao = :vlCaucao,
+                    c.dtInicioCaucao = :dtInicioCaucao,
+                    c.dtFimCaucao = :dtFimCaucao,
+                    c.seqNivel = :seqNivel,
+                    c.flgCriticaNumlote = :flgCriticaNumlote,
+                    c.flgLimiteDias = :flgLimiteDias,
+                    c.flgProcessamentoAutomatico = :flgProcessamentoAutomatico,
+                    c.flgProcessamentoParcial = :flgProcessamentoParcial,
+                    c.flgSaldoDevedor = :flgSaldoDevedor,
+                    c.numMinutoIniLibRecarga = :numMinutoIniLibRecarga,
+                    c.numMinutoFimLibRecarga = :numMinutoFimLibRecarga,
+                    c.flgEmiteReciboPedido = :flgEmiteReciboPedido,
+                    c.flgSupercanal = :flgSupercanal,
+                    c.flgPagtoFuturo = :flgPagtoFuturo,
+                    c.codClassificacaoPessoa = :codClassificacaoPessoa,
+                    c.codAtividade = :codAtividade,
+                    c.dtManutencao = CURRENT_TIMESTAMP,
+                    c.idUsuarioManutencao = :idUsuarioManutencao
+                WHERE c.codCanal = :codCanal
+            """)
     int updateSalesChannel(
             @Param("codCanalSuperior") String codCanalSuperior,
             @Param("desCanal") String desCanal,
@@ -78,25 +80,27 @@ public interface SalesChannelJpaRepository extends JpaRepository<SalesChannelEnt
             @Param("codClassificacaoPessoa") String codClassificacaoPessoa,
             @Param("codAtividade") String codAtividade,
             @Param("idUsuarioManutencao") Long idUsuarioManutencao,
-            @Param("codCanal") String codCanal
-    );
+            @Param("codCanal") String codCanal);
 
     @Modifying
     @Transactional
     @Query("""
-        UPDATE SalesChannelEntityJpa c SET
-            c.stCanais = :stCanais,
-            c.dtManutencao = CURRENT_TIMESTAMP,
-            c.idUsuarioManutencao = :idUsuarioManutencao
-        WHERE c.codCanal = :codCanal
-    """)
+                UPDATE SalesChannelEntityJpa c SET
+                    c.stCanais = :stCanais,
+                    c.dtManutencao = CURRENT_TIMESTAMP,
+                    c.idUsuarioManutencao = :idUsuarioManutencao
+                WHERE c.codCanal = :codCanal
+            """)
     int updateStatus(
             @Param("stCanais") String stCanais,
             @Param("idUsuarioManutencao") Long idUsuarioManutencao,
-            @Param("codCanal") String codCanal
-    );
+            @Param("codCanal") String codCanal);
 
-    // Buscar canais por canal superior
+    @Query("SELECT c FROM SalesChannelEntityJpa c WHERE c.codCanalSuperior = :codCanalSuperior")
     List<SalesChannelEntityJpa> findByCodCanalSuperior(String codCanalSuperior);
+
+    @Query(value = "SELECT COD_CANAL as codCanal, DES_CANAL as desCanal, COD_CANAL_SUPERIOR as codCanalSuperior, ST_CANAIS as stCanal FROM SPTRANSDBA.CANAIS WHERE COD_CANAL_SUPERIOR = :codCanalSuperior", countQuery = "SELECT COUNT(1) FROM SPTRANSDBA.CANAIS WHERE COD_CANAL_SUPERIOR = :codCanalSuperior", nativeQuery = true)
+    Page<SubSalesChannelProjection> findSubChannelsByCodCanalSuperior(
+            @Param("codCanalSuperior") String codCanalSuperior, Pageable pageable);
 
 }

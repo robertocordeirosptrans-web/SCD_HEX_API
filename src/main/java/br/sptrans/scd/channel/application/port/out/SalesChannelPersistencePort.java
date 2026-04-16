@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.in.rest.dto.SubSalesChannelProjection;
 import br.sptrans.scd.channel.domain.SalesChannel;
 
 public interface SalesChannelPersistencePort {
@@ -24,4 +25,6 @@ public interface SalesChannelPersistencePort {
     void deleteById(String codCanal);
 
     List<SalesChannel> findByCodCanalSuperior(String codCanalSuperior);
+
+    Page<SubSalesChannelProjection> findSubChannelsByCodCanalSuperior(String codCanalSuperior, Pageable pageable);
 }
