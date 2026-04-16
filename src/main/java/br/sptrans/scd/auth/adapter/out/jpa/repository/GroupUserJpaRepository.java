@@ -10,7 +10,11 @@ import org.springframework.data.repository.query.Param;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.GroupUserEntityJpa;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.GroupUserEntityJpaId;
 
+
 public interface GroupUserJpaRepository extends JpaRepository<GroupUserEntityJpa, GroupUserEntityJpaId> {
+    @Query(value = "SELECT u.COD_GRUPO as codGrupo, g.NOM_GRUPO as nomGrupo, u.DT_MODI as dtModi, u.COD_STATUS as codStatus FROM SPTRANSDBA.GRUPO_USUARIOS u LEFT JOIN SPTRANSDBA.GRUPOS g ON g.COD_GRUPO = u.COD_GRUPO WHERE u.ID_USUARIO = :idUsuario", 
+           countQuery = "SELECT COUNT(*) FROM SPTRANSDBA.GRUPO_USUARIOS u WHERE u.ID_USUARIO = :idUsuario", nativeQuery = true)
+    Page<GroupCustomProjection> findGroupsByUserId(@Param("idUsuario") Long idUsuario, Pageable pageable);
 
     @Query("SELECT COUNT(gu) FROM GroupUserEntityJpa gu WHERE gu.id.codGrupo = :codGrupo AND gu.codStatus = 'A'")
     long countActiveUsersByGroup(@Param("codGrupo") String codGrupo);

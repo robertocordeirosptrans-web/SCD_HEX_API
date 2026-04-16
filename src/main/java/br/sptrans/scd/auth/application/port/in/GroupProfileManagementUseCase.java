@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityProjectionDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileProjectionDTO;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupCustomProjection;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
@@ -29,6 +30,8 @@ import br.sptrans.scd.auth.domain.UserProfile;
  * Toda alteração registra ID_USUARIO_MANUTENCAO + DT_MANUTENCAO.
  */
 public interface GroupProfileManagementUseCase {
+
+        Page<GroupCustomProjection> listCustomGroupsByUser(Long idUsuario, Pageable pageable);
 
         // ══════════════════════════════════════════════════════════════════════════
         // GRUPOS

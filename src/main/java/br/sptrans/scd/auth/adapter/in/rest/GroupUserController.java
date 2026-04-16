@@ -1,9 +1,6 @@
 
 package br.sptrans.scd.auth.adapter.in.rest;
 
-import br.sptrans.scd.auth.adapter.in.rest.dto.GroupUserCustomResponseDTO;
-import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +14,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.GroupCustomResponseDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.GroupUserCustomResponseDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.GroupUserRequestDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.GroupUserResponseDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.GroupUserStatusRequestDTO;
 import br.sptrans.scd.auth.adapter.in.rest.mapper.GroupUserRestMapper;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupCustomProjection;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
-import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.security.CacPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -32,20 +32,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/grupo-usuario")
 @Tag(name = "Grupo-Usuário v1", description = "Endpoints para associação de grupo e usuários")
+@RequiredArgsConstructor
 public class GroupUserController {
 
         private final GroupProfileManagementUseCase groupProfileManagementUseCase;
         private final GroupUserRestMapper groupUserRestMapper;
-
-        public GroupUserController(GroupProfileManagementUseCase groupProfileManagementUseCase,
-                        GroupUserRestMapper groupUserRestMapper) {
-                this.groupProfileManagementUseCase = groupProfileManagementUseCase;
-                this.groupUserRestMapper = groupUserRestMapper;
-        }
 
         @GetMapping
         @PreAuthorize("hasAuthority('" + CacPermissions.LISASSUSUPER + "')")
@@ -61,6 +57,29 @@ public class GroupUserController {
                 return ResponseEntity.ok(PageResponse.fromPage(page));
         }
 
+        @GetMapping("/{idUsuario}/grupos")
+        @PreAuthorize("hasAuthority('" + CacPermissions.LISASSUSUPER + "')")
+        @Operation(summary = "Listar grupos do usuário", description = "Retorna uma lista paginada de grupos vinculados ao usuário informado")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lista de grupos retornada com sucesso"),
+                        @ApiResponse(responseCode = "404", description = "Usuário não encontrado ou sem grupos")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<PageResponse<GroupCustomResponseDTO>> listGroupsByUser(@PathVariable Long idUsuario,
+                        Pageable pageable) {
+                Page<GroupCustomProjection> grupos = groupProfileManagementUseCase.listCustomGroupsByUser(idUsuario,
+                                pageable);
+                if (grupos == null || grupos.isEmpty()) {
+                        return ResponseEntity.notFound().build();
+                }
+                Page<GroupCustomResponseDTO> dtos = grupos.map(g -> new GroupCustomResponseDTO(
+                                g.getCodGrupo(),
+                                g.getNomGrupo(),
+                                g.getDtModi(),
+                                g.getCodStatus()));
+                return ResponseEntity.ok(PageResponse.fromPage(dtos));
+        }
+
         @GetMapping("/{codGrupo}/usuarios")
         @PreAuthorize("hasAuthority('" + CacPermissions.LISASSUSUPER + "')")
         @Operation(summary = "Listar usuários do grupo", description = "Retorna uma lista de usuários vinculados ao grupo informado")
@@ -71,17 +90,17 @@ public class GroupUserController {
         @SecurityRequirement(name = "bearerAuth")
         public ResponseEntity<PageResponse<GroupUserCustomResponseDTO>> listUsersByGroup(@PathVariable String codGrupo,
                         Pageable pageable) {
-                Page<GroupUserCustomProjection> usuarios = groupProfileManagementUseCase.listCustomUsersByGroup(codGrupo, pageable);
+                Page<GroupUserCustomProjection> usuarios = groupProfileManagementUseCase
+                                .listCustomUsersByGroup(codGrupo, pageable);
                 if (usuarios == null || usuarios.isEmpty()) {
                         return ResponseEntity.notFound().build();
                 }
                 Page<GroupUserCustomResponseDTO> dtos = usuarios.map(u -> new GroupUserCustomResponseDTO(
-                        u.getCodLogin(),
-                        u.getNomUsuario(),
-                        u.getNomDepartamento(),
-                        u.getNomEmail(),
-                        u.getCodStatus()
-                ));
+                                u.getCodLogin(),
+                                u.getNomUsuario(),
+                                u.getNomDepartamento(),
+                                u.getNomEmail(),
+                                u.getCodStatus()));
                 return ResponseEntity.ok(PageResponse.fromPage(dtos));
         }
 

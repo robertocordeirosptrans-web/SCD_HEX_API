@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupCustomProjection;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.GroupUserKey;
@@ -43,4 +44,5 @@ public interface GroupUserPort {
     void deleteById(GroupUserKey id);
 
     long count();
+    Page<GroupCustomProjection> listCustomGroupsByUser(Long idUsuario, Pageable pageable);
 }

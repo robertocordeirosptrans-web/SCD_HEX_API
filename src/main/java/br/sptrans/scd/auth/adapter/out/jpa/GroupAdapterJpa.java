@@ -11,13 +11,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.adapter.out.jpa.mapper.GroupMapper;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupCustomProjection;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupJpaRepository;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupProfileJpaRepository;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserJpaRepository;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.GroupProfileEntityJpaId;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.GroupUserEntityJpaId;
 import br.sptrans.scd.auth.application.port.out.GroupPort;
-import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.GroupProfile;
 import br.sptrans.scd.auth.domain.GroupProfileKey;
@@ -224,6 +225,11 @@ public class GroupAdapterJpa implements GroupPort {
                         && codStatus.equals(e.getCodStatus()))
                 .map(groupMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<GroupCustomProjection> listCustomGroupsByUser(Long idUsuario, Pageable pageable) {
+        return groupUserJpaRepository.findGroupsByUserId(idUsuario, pageable);
     }
 
 }

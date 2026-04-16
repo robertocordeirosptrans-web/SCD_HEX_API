@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityProjectionDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileProjectionDTO;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupCustomProjection;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.GroupPort;
@@ -480,6 +481,10 @@ public class ManageGroupProfileUseCase {
 
     public Page<GroupUserCustomProjection> listCustomUsersByGroup(String codGrupo, Pageable pageable) {
         return groupUserRepository.listCustomUsersByGroup(codGrupo, pageable);
+    }
+
+    public Page<GroupCustomProjection> listCustomGroupsByUser(Long idUsuario, Pageable pageable) {
+        return groupUserRepository.listCustomGroupsByUser(idUsuario, pageable);
     }
 
     public List<UserProfile> listUserProfiles() {
