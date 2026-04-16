@@ -1,16 +1,20 @@
 package br.sptrans.scd.creditrequest.adapter.in.rest;
 
+import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +33,7 @@ import br.sptrans.scd.creditrequest.application.port.in.dto.CreditRequestDTO;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageResponse;
 import br.sptrans.scd.creditrequest.application.port.in.dto.UpdateRequestCredit;
+import br.sptrans.scd.creditrequest.application.port.out.projection.ProductPeriodReportProjection;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.idempotency.IdempotencyStore;
 import br.sptrans.scd.shared.idempotency.InMemoryIdempotencyStore;
@@ -54,6 +59,47 @@ public class CreditRequestController {
         private final UserResolverHelper userResolverHelper;
 
         private static final IdempotencyStore<ResponseEntity<?>> idempotencyStore = new InMemoryIdempotencyStore<>();
+
+        @GetMapping("/period")
+        @Operation(summary = "Gera relatório de período de produto", description = """
+                        Gera um relatório completo mostrando a contagem diária de itens por produto para um período específico.
+
+                        **Recursos:**
+
+                        - Detalhamento diário da contagem de itens (até 31 dias)
+                        - Agregado por código de produto
+                        - Inclui totais financeiros (VL_TOTAL e VL_PAGO)
+                        - Filtros por código de canal e intervalo de datas
+                        - Filtro opcional por códigos de produto específicos
+
+                        **Restrições:**
+
+                        - O código de canal é obrigatório
+                        - O intervalo de datas não pode exceder 31 dias
+                        - A data de início deve ser anterior ou igual à data de término
+
+                        **Estrutura da resposta:**
+
+                        Cada registro contém:
+
+                        - codProduto: Código do produto
+                        - dia01 a dia31: Contagem de itens para cada dia (a partir de dataInicio)
+                        - totalItensPeriodo: Total de itens em todos os dias
+                        - vlTotalPeriodo: Valor financeiro total
+                        - vlPagoPeriodo: Valor total pago
+                                    """)
+        public ResponseEntity<List<ProductPeriodReportProjection>> getProductPeriodReport(
+                        @Parameter(description = "Código do Canal", required = true) @RequestParam String codCanal,
+                        @Parameter(description = "Data de início (YYYY-MM-DD)", required = true) @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
+                        @Parameter(description = "Data de término (YYYY-MM-DD)", required = true) @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
+                        @Parameter(description = "Lista opcional de códigos de produto para filtrar (separados por vírgula)", required = false) @RequestParam(required = false) List<String> listCodProdutos) {
+                List<ProductPeriodReportProjection> report = creditRequestManagementUseCase
+                                .generateProductPeriodReport(
+                                                new CreditRequestManagementUseCase.ProductPeriodReportEntry(codCanal,
+                                                                dataInicio.atStartOfDay(), dataFim.atStartOfDay(),
+                                                                listCodProdutos));
+                return ResponseEntity.ok(report);
+        }
 
         /**
          * Busca pedidos com paginação por cursor. Classificação automática do modo
@@ -340,8 +386,6 @@ public class CreditRequestController {
         private boolean hasSobreCanalPermission() {
                 return hasAuthority(CreditRequestPermissions.SOBRE_CANAL);
         }
-
-                        
 
         private static Long parseLongOrNull(String value) {
                 try {

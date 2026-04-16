@@ -9,6 +9,7 @@ import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEnt
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEntityKey;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.CreditRequestItemJpaRepository;
+import br.sptrans.scd.creditrequest.application.port.out.projection.ProductPeriodReportProjection;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
@@ -84,6 +85,18 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
         return itemJpaRepository.findAllById(entityKeys).stream()
                 .map(creditRequestMapper::toDomainItem)
                 .toList();
+    }
+
+    @Override
+    public List<ProductPeriodReportProjection> findProductPeriodReport(
+            String codCanal, String dataInicio, String dataFim) {
+        return itemJpaRepository.findProductPeriodReport(codCanal, dataInicio, dataFim);
+    }
+
+    @Override
+    public List<ProductPeriodReportProjection> findProductPeriodReportWithProductFilter(
+            String codCanal, String dataInicio, String dataFim, List<String> codProdutos) {
+        return itemJpaRepository.findProductPeriodReportWithProductFilter(codCanal, dataInicio, dataFim, codProdutos);
     }
 
 }

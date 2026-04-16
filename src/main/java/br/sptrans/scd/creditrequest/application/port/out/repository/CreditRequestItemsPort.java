@@ -6,7 +6,7 @@ import java.util.Optional;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 
-public interface CreditRequestItemsPort {
+public interface CreditRequestItemsPort extends ReportCreditPort {
     /**
      * Busca os primeiros 100 itens de recarga com situação informada.
      */

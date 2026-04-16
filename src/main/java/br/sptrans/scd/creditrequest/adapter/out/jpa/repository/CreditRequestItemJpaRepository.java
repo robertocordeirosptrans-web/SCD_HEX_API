@@ -17,7 +17,8 @@ public interface CreditRequestItemJpaRepository
 
         /**
          * Busca os primeiros 100 itens de recarga com situação informada.
-         * Nota: Oracle não suporta bind variable em FETCH FIRST, por isso o limite é fixo.
+         * Nota: Oracle não suporta bind variable em FETCH FIRST, por isso o limite é
+         * fixo.
          */
         @Query(value = """
                         SELECT i.*
@@ -32,13 +33,8 @@ public interface CreditRequestItemJpaRepository
                         SELECT i.*\r
                         FROM SPTRANSDBA.SOL_DISTRIB_ITENS i\r
                         WHERE i.COD_SITUACAO = :codSituacao\r
-                        FETCH FIRST 100 ROWS ONLY""" 
-        , nativeQuery = true)
+                        FETCH FIRST 100 ROWS ONLY""", nativeQuery = true)
         List<CreditRequestItemsEntity> searchItemsToBeProcessed(@Param("codSituacao") String codSituacao);
-
- 
-        
-
 
         @Query("SELECT i FROM CreditRequestItemsEntity i WHERE i.id.numSolicitacao = :num AND i.id.codCanal = :canal")
         List<CreditRequestItemsEntity> findAllBySolicitacao(@Param("num") Long num, @Param("canal") String canal);
@@ -93,6 +89,75 @@ public interface CreditRequestItemJpaRepository
                         @Param("dataInicio") String dataInicio,
                         @Param("dataFim") String dataFim,
                         @Param("codProdutos") List<String> codProdutos);
+
+        /**
+         * Relatório de período por produto (sem filtro de produto).
+         */
+        @Query(value = """
+                           WITH TotaisFinanceiros AS (
+                            SELECT
+                                I2.COD_PRODUTO,
+                                SUM(DISTINCT S2.VL_TOTAL) AS VL_TOTAL_PERIODO,
+                                SUM(DISTINCT S2.VL_PAGO) AS VL_PAGO_PERIODO
+                            FROM SPTRANSDBA.SOL_DISTRIB_ITENS I2
+                            INNER JOIN SPTRANSDBA.SOL_DISTRIBUICOES S2
+                                ON S2.NUM_SOLICITACAO = I2.NUM_SOLICITACAO
+                                AND S2.COD_CANAL = I2.COD_CANAL
+                            WHERE S2.COD_CANAL = :codCanal
+                              AND I2.DT_RECARGA BETWEEN TO_DATE(:dataInicio, 'YYYY-MM-DD') AND TO_DATE(:dataFim, 'YYYY-MM-DD')
+                            GROUP BY I2.COD_PRODUTO
+                        )
+                        SELECT
+                            I.COD_PRODUTO as codProduto,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 0 THEN 1 ELSE 0 END), 0) AS dia01,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 1 THEN 1 ELSE 0 END), 0) AS dia02,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 2 THEN 1 ELSE 0 END), 0) AS dia03,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 3 THEN 1 ELSE 0 END), 0) AS dia04,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 4 THEN 1 ELSE 0 END), 0) AS dia05,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 5 THEN 1 ELSE 0 END), 0) AS dia06,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 6 THEN 1 ELSE 0 END), 0) AS dia07,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 7 THEN 1 ELSE 0 END), 0) AS dia08,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 8 THEN 1 ELSE 0 END), 0) AS dia09,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 9 THEN 1 ELSE 0 END), 0) AS dia10,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 10 THEN 1 ELSE 0 END), 0) AS dia11,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 11 THEN 1 ELSE 0 END), 0) AS dia12,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 12 THEN 1 ELSE 0 END), 0) AS dia13,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 13 THEN 1 ELSE 0 END), 0) AS dia14,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 14 THEN 1 ELSE 0 END), 0) AS dia15,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 15 THEN 1 ELSE 0 END), 0) AS dia16,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 16 THEN 1 ELSE 0 END), 0) AS dia17,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 17 THEN 1 ELSE 0 END), 0) AS dia18,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 18 THEN 1 ELSE 0 END), 0) AS dia19,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 19 THEN 1 ELSE 0 END), 0) AS dia20,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 20 THEN 1 ELSE 0 END), 0) AS dia21,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 21 THEN 1 ELSE 0 END), 0) AS dia22,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 22 THEN 1 ELSE 0 END), 0) AS dia23,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 23 THEN 1 ELSE 0 END), 0) AS dia24,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 24 THEN 1 ELSE 0 END), 0) AS dia25,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 25 THEN 1 ELSE 0 END), 0) AS dia26,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 26 THEN 1 ELSE 0 END), 0) AS dia27,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 27 THEN 1 ELSE 0 END), 0) AS dia28,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 28 THEN 1 ELSE 0 END), 0) AS dia29,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 29 THEN 1 ELSE 0 END), 0) AS dia30,
+                            COALESCE(SUM(CASE WHEN TRUNC(I.DT_RECARGA) = TO_DATE(:dataInicio, 'YYYY-MM-DD') + 30 THEN 1 ELSE 0 END), 0) AS dia31,
+                            COUNT(I.NUM_SOLICITACAO_ITEM) AS totalItensPeriodo,
+                            COALESCE(MAX(TF.VL_TOTAL_PERIODO), 0) AS vlTotalPeriodo,
+                            COALESCE(MAX(TF.VL_PAGO_PERIODO), 0) AS vlPagoPeriodo
+                        FROM SPTRANSDBA.SOL_DISTRIB_ITENS I
+                        INNER JOIN SPTRANSDBA.SOL_DISTRIBUICOES S
+                            ON S.NUM_SOLICITACAO = I.NUM_SOLICITACAO
+                            AND S.COD_CANAL = I.COD_CANAL
+                        LEFT JOIN TotaisFinanceiros TF
+                            ON TF.COD_PRODUTO = I.COD_PRODUTO
+                        WHERE S.COD_CANAL = :codCanal
+                          AND I.DT_RECARGA BETWEEN TO_DATE(:dataInicio, 'YYYY-MM-DD') AND TO_DATE(:dataFim, 'YYYY-MM-DD')
+                        GROUP BY I.COD_PRODUTO
+                        ORDER BY I.COD_PRODUTO
+                            """, nativeQuery = true)
+        List<ProductPeriodReportProjection> findProductPeriodReport(
+                        @Param("codCanal") String codCanal,
+                        @Param("dataInicio") String dataInicio,
+                        @Param("dataFim") String dataFim);
 
         /**
          * Busca todos os números de solicitação de item para uma solicitação, canal
