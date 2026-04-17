@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.product.adapter.in.rest.dto.FamilyRequest;
-import br.sptrans.scd.product.adapter.in.rest.dto.FamilyResponseDTO;
-import br.sptrans.scd.product.adapter.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase.CreateFamilyCommand;
 import br.sptrans.scd.product.application.port.in.FamilyManagementUseCase.UpdateFamilyCommand;
 import br.sptrans.scd.product.domain.Family;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
+import br.sptrans.scd.shared.dto.CatalogueDTO;
+import br.sptrans.scd.shared.dto.CatalogueMapper;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.security.CadPermissions;
@@ -46,75 +46,59 @@ public class FamilyController {
 
     private final FamilyManagementUseCase familyManagementUseCase;
     private final UserResolverHelper userResolverHelper;
+    private final CatalogueMapper catalogueMapper;
 
     @PostMapping
     @PreAuthorize("hasAuthority('" + CadPermissions.FAM_CADFAM + "')")
     @Operation(summary = "Cadastra uma nova família")
-        @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Família cadastrada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
-            public ResponseEntity<Family> createFamily(
-               @Valid  @RequestBody FamilyRequest request) {
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Família cadastrada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
+    public ResponseEntity<CatalogueDTO> createFamily(
+            @Valid @RequestBody FamilyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Family family = familyManagementUseCase.create(
             new CreateFamilyCommand(
                 request.codFamilia(),
                 request.desFamilia(),
                 idUsuario));
-        return ResponseEntity.status(HttpStatus.CREATED).body(family);
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(catalogueMapper.toDto(family));
+    }
 
     @PutMapping("/{codFamilia}")
     @PreAuthorize("hasAuthority('" + CadPermissions.FAM_ATUFAM + "')")
     @Operation(summary = "Atualiza dados de uma família")
-        @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Família atualizada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
-            public ResponseEntity<Family> updateFamily(
-                @PathVariable String codFamilia,
-                @Valid @RequestBody FamilyRequest request) {
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Família atualizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
+    public ResponseEntity<CatalogueDTO> updateFamily(
+            @PathVariable String codFamilia,
+            @Valid @RequestBody FamilyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Family family = familyManagementUseCase.update(codFamilia,
             new UpdateFamilyCommand(request.desFamilia(), idUsuario));
-        return ResponseEntity.ok(family);
-        }
+        return ResponseEntity.ok(catalogueMapper.toDto(family));
+    }
 
     @GetMapping("/{codFamilia}")
     @PreAuthorize("hasAuthority('" + CadPermissions.FAM_BUSFAMPORCOD + "')")
     @Operation(summary = "Busca família por código")
-    public ResponseEntity<FamilyResponseDTO> findByFamily(@PathVariable String codFamilia) {
+    public ResponseEntity<CatalogueDTO> findByFamily(@PathVariable String codFamilia) {
         Family family = familyManagementUseCase.findById(codFamilia)
                 .orElseThrow(() -> new ProductException(ProductErrorType.FAMILY_NOT_FOUND));
-        FamilyResponseDTO dto = new FamilyResponseDTO(
-            family.getCodFamilia(),
-            family.getDesFamilia(),
-            family.getCodStatus(),
-            family.getDtCadastro(),
-            family.getDtManutencao(),
-            UserSimpleMapper.toDto(family.getIdUsuarioCadastro()),
-            UserSimpleMapper.toDto(family.getIdUsuarioManutencao())
-        );
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(catalogueMapper.toDto(family));
     }
 
     @GetMapping
     @PreAuthorize("hasAuthority('" + CadPermissions.FAM_LISFAM + "')")
     @Operation(summary = "Lista todas as famílias, com filtro opcional de status")
-    public ResponseEntity<PageResponse<FamilyResponseDTO>> findAllFamilies(
+    public ResponseEntity<PageResponse<CatalogueDTO>> findAllFamilies(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
-        Page<FamilyResponseDTO> dtoPage = familyManagementUseCase.findAll(codStatus, pageable)
-            .map(family -> new FamilyResponseDTO(
-                family.getCodFamilia(),
-                family.getDesFamilia(),
-                family.getCodStatus(),
-                family.getDtCadastro(),
-                family.getDtManutencao(),
-                UserSimpleMapper.toDto(family.getIdUsuarioCadastro()),
-                UserSimpleMapper.toDto(family.getIdUsuarioManutencao())
-            ));
+        Page<CatalogueDTO> dtoPage = familyManagementUseCase.findAll(codStatus, pageable)
+            .map(catalogueMapper::toDto);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
@@ -143,5 +127,4 @@ public class FamilyController {
         familyManagementUseCase.delete(codFamilia);
         return ResponseEntity.noContent().build();
     }
-
 }
