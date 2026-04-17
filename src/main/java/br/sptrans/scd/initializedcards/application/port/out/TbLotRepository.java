@@ -1,10 +1,14 @@
 package br.sptrans.scd.initializedcards.application.port.out;
 
+import java.util.List;
+
 import br.sptrans.scd.initializedcards.domain.TbLotSCD;
 
 public interface TbLotRepository {
 
-    TbLotSCD findAll();
+    List<TbLotSCD> findAll();
 
-    TbLotSCD findById(Long numLote);
+    TbLotSCD findById(Long idLote);
+
+    List<TbLotSCD> findAllByIds(List<Long> ids);
 }

@@ -1,14 +1,15 @@
 package br.sptrans.scd.initializedcards.adapter.out.jpa.adapter;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Repository;
-import lombok.RequiredArgsConstructor;
+
+import br.sptrans.scd.initializedcards.adapter.out.jpa.mapper.HistRequestInitializedMapper;
+import br.sptrans.scd.initializedcards.adapter.out.jpa.repository.HistRequestIniJpaRepository;
 import br.sptrans.scd.initializedcards.application.port.out.HistRequestInitializedRepository;
 import br.sptrans.scd.initializedcards.domain.HistRequestInitializedCards;
-import br.sptrans.scd.initializedcards.adapter.out.jpa.repository.HistRequestIniJpaRepository;
-import br.sptrans.scd.initializedcards.adapter.out.persistence.entity.HistRICEntityJpa;
-import br.sptrans.scd.initializedcards.adapter.out.jpa.mapper.HistRequestInitializedMapper;
-
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
@@ -19,21 +20,22 @@ public class HistRequestInitializedAdapter implements HistRequestInitializedRepo
 
     @Override
     public HistRequestInitializedCards save(HistRequestInitializedCards entity) {
-        HistRICEntityJpa jpaEntity = mapper.toEntity(entity);
-        repository.save(jpaEntity);
-        return entity;
+        var jpaEntity = mapper.toEntity(entity);
+        var saved = repository.save(jpaEntity);
+        return mapper.toDomain(saved);
     }
 
     @Override
-    public HistRequestInitializedCards findByHistId(String codCanal, Long nrSolicitacao, String seqHistSolicCartaoIni) {
-        // seqHistSolicCartaoIni convertido para Long
-        Optional<HistRICEntityJpa> result = repository.findByHistId(codCanal, nrSolicitacao, Long.valueOf(seqHistSolicCartaoIni));
-        return result.map(mapper::toDomain).orElse(null);
+    public List<HistRequestInitializedCards> findAllHist(String codCanal, Long nrSolicitacao) {
+        return repository.findAllHistByCodCanalAndNrSolicitacao(codCanal, nrSolicitacao)
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public HistRequestInitializedCards findAllHist(String codCanal, Long nrSolicitacao, String codAdquirente) {
-        Optional<HistRICEntityJpa> result = repository.findByAllHist(codCanal, nrSolicitacao, codAdquirente);
-        return result.map(mapper::toDomain).orElse(null);
+    public Long nextSeqHist(String codCanal, Long nrSolicitacao) {
+        Long next = repository.nextSeqHist(codCanal, nrSolicitacao);
+        return next != null ? next : 1L;
     }
 }

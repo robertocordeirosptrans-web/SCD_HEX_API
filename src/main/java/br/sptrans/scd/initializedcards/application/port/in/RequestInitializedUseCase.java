@@ -1,35 +1,83 @@
 package br.sptrans.scd.initializedcards.application.port.in;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import br.sptrans.scd.initializedcards.domain.HistRequestInitializedCards;
 import br.sptrans.scd.initializedcards.domain.RequestInitializedCards;
+import br.sptrans.scd.initializedcards.domain.RequestLotSCP;
+import br.sptrans.scd.initializedcards.domain.TbLotSCD;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public interface RequestInitializedUseCase {
 
-    RequestInitializedCards createRequestInitialized(RequestInitializedCardCommand command);
+    RequestInitializedCards criarSolicitacao(CriarSolicitacaoCommand command);
 
-    RequestInitializedCards findById(String codCanal, Long nrSolicitacao);
+    Page<RequestInitializedCards> listarSolicitacoes(String codCanal, String codAdquirente, Pageable pageable);
 
-    List<RequestInitializedCards> findAllRequestInitialized(String codCanal, Long nrSolicitacao, String codAdquirente);
+    RequestInitializedCards buscarPorId(String codCanal, Long nrSolicitacao);
 
-    public record RequestInitializedCardCommand(
-            String cod_tipo_canal,
-            String cod_Canal,
-            Long Num_Solicitacao,
-            String Cod_Adquirente,
-            String Cod_Produto,
-            Long qtdsolicitada,
-            String Tipo_Saida,
-            String Tipo_Volume,
-            String Associacao_Usuario,
-            String Gerar_Arquivo,
-            String Resp_Entrega,
-            String Nome_Responsavel,
-            String RG_Responsavel,
-            String Endereco,
-            String Data_Prevista,
-            String data_solicitacao
-            ) {
+    SolicitacaoDetalhe detalharSolicitacao(String codCanal, Long nrSolicitacao);
 
+    void associarLotes(AssociarLotesCommand command);
+
+    void desassociarLotes(DesassociarLotesCommand command);
+
+    void cancelarSolicitacao(CancelarCommand command);
+
+    // ── Comandos ──────────────────────────────────────────────────────────────
+
+    record CriarSolicitacaoCommand(
+            @NotBlank @Size(max = 20) String codTipoCanal,
+            @NotBlank @Size(max = 20) String codCanal,
+            String codAdquirente,
+            String codProduto,
+            @NotNull Long qtdSolicitada,
+            @NotBlank @Size(max = 1) String flgTipoSaida,
+            @Size(max = 1) String flgTipoVolume,
+            @Size(max = 1) String flgAssociacaoUsuario,
+            @Size(max = 1) String flgGeraArquivo,
+            @Size(max = 1) String flgRespEntregaRetirada,
+            @Size(max = 60) String desNomeRespEntrega,
+            @Size(max = 3) String codTipoDoctoRespEntrega,
+            @Size(max = 20) String codDoctoRespEntrega,
+            @Size(max = 20) String codEnderecoEntrega,
+            @NotNull LocalDateTime dtPrevistaEntrega,
+            Long idUsuarioCadastro) {
+    }
+
+    record AssociarLotesCommand(
+            @NotBlank String codCanal,
+            @NotNull Long nrSolicitacao,
+            @NotEmpty List<Long> idsLotes,
+            Long idUsuario) {
+    }
+
+    record DesassociarLotesCommand(
+            @NotBlank String codCanal,
+            @NotNull Long nrSolicitacao,
+            Long idUsuario) {
+    }
+
+    record CancelarCommand(
+            @NotBlank String codCanal,
+            @NotNull Long nrSolicitacao,
+            Long idUsuario) {
+    }
+
+    // ── Agregado de detalhe ────────────────────────────────────────────────────
+
+    record SolicitacaoDetalhe(
+            RequestInitializedCards solicitacao,
+            List<RequestLotSCP> lotes,
+            List<HistRequestInitializedCards> historico,
+            List<TbLotSCD> tbLotes) {
     }
 }
+
