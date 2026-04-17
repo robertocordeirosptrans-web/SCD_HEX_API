@@ -3,6 +3,8 @@ package br.sptrans.scd.creditrequest.adapter.in.rest;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.out.UserPersistencePort;
+import br.sptrans.scd.creditrequest.adapter.in.rest.response.ListarItensResponse;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.BlockCommand;
@@ -34,6 +38,8 @@ import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageRequest;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CursorPageResponse;
 import br.sptrans.scd.creditrequest.application.port.in.dto.UpdateRequestCredit;
 import br.sptrans.scd.creditrequest.application.port.out.projection.ProductPeriodReportProjection;
+import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.idempotency.IdempotencyStore;
 import br.sptrans.scd.shared.idempotency.InMemoryIdempotencyStore;
@@ -59,6 +65,21 @@ public class CreditRequestController {
         private final UserResolverHelper userResolverHelper;
 
         private static final IdempotencyStore<ResponseEntity<?>> idempotencyStore = new InMemoryIdempotencyStore<>();
+
+        @GetMapping("/{id}/itens")
+        public ResponseEntity<PageResponse<ListarItensResponse>> listarItens(
+                @Parameter(description = "numSolicitacaoItem é obrigatório", required = true)
+                @PathVariable Long id,
+                @Parameter(description = "Código do canal", required = true) @RequestParam String canal,
+                @RequestParam(defaultValue = "0") int page,
+                @RequestParam(defaultValue = "20") int size) {
+
+            PageRequest pageRequest = PageRequest.of(page, size);
+            Page<CreditRequestItems> itemsPage = creditRequestManagementUseCase.searchOrderByChannel(canal, id, pageRequest);
+            Page<ListarItensResponse> responsePage = itemsPage.map(ListarItensResponse::fromDomain);
+            PageResponse<ListarItensResponse> pageResponse = PageResponse.fromPage(responsePage);
+            return ResponseEntity.ok(pageResponse);
+        }
 
         @GetMapping("/period")
         @Operation(summary = "Gera relatório de período de produto", description = """

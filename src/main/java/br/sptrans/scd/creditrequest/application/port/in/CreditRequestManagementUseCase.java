@@ -4,17 +4,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.AcceptPendingCommand;
-import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.BlockCommand;
-import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.CancelCommand;
-import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.CursorPage;
-import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.PayCommand;
-import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.SearchCommand;
-import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase.UnblockCommand;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse;
 import br.sptrans.scd.creditrequest.application.port.out.projection.ProductPeriodReportProjection;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
+import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -38,6 +35,8 @@ public interface CreditRequestManagementUseCase {
 
         // ── Consultas ────────────────────────────────────────────────────
         CreditRequest findById(String codTipoDocumento, Long idUsuarioCadastro);
+
+        Page<CreditRequestItems> searchOrderByChannel(String codCanal, Long numSolicitacao, PageRequest pageRequest);
 
         CursorPage<CreditRequest> findAll(SearchCommand comando);
 

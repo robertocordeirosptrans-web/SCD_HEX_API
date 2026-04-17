@@ -74,6 +74,9 @@ public class CreditRequestEntity {
     @Column(name = "VL_TOTAL", precision = 15, scale = 2)
     private BigDecimal vlTotal;
 
+    @Column(name = "VL_PAGO", precision = 15, scale = 2)
+    private BigDecimal vlPago;
+
     @Column(name = "DT_CADASTRO")
     private LocalDateTime dtCadastro;
 

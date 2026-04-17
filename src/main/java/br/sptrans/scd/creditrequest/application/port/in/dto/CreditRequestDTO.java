@@ -2,7 +2,6 @@ package br.sptrans.scd.creditrequest.application.port.in.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -50,8 +49,7 @@ public class CreditRequestDTO {
     private Long idUsuarioManutencao;
     private String flgBloq;
     private BigDecimal vlPago;
-    // Lista de itens do pedido
-    private List<CreditRequestItemsDTO> itens;
+
 }
     
    

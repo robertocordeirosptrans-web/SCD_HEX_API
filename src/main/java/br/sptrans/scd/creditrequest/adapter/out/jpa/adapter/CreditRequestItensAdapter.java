@@ -3,6 +3,8 @@ package br.sptrans.scd.creditrequest.adapter.out.jpa.adapter;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEntity;
@@ -97,6 +99,12 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
     public List<ProductPeriodReportProjection> findProductPeriodReportWithProductFilter(
             String codCanal, String dataInicio, String dataFim, List<String> codProdutos) {
         return itemJpaRepository.findProductPeriodReportWithProductFilter(codCanal, dataInicio, dataFim, codProdutos);
+    }
+
+    @Override
+    public Page<CreditRequestItems> findItemsByChannelAndNumSolicitacao(String codCanal, Long numSolicitacao, PageRequest pageRequest) {
+        return itemJpaRepository.findItemsByChannelAndNumSolicitacao(codCanal, numSolicitacao, pageRequest)
+                .map(creditRequestMapper::toDomainItem);
     }
 
 }

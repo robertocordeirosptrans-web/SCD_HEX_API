@@ -1,1 +1,0 @@
-Arquivos DTOs e mappers legados removidos em 2026-04-17 para padronização CatalogueDTO.
