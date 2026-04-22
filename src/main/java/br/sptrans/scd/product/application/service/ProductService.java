@@ -10,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ProductUseCase;
+import br.sptrans.scd.product.application.port.out.repository.CardTypePort;
 import br.sptrans.scd.product.application.port.out.repository.ProductPort;
 import br.sptrans.scd.product.application.port.out.repository.ProductVersionPort;
+import br.sptrans.scd.product.domain.CardType;
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -27,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductService implements ProductUseCase {
 
     private final ProductPort productRepository;
+    private final CardTypePort cardTypeRepository;
     private final ProductVersionPort productVersionRepository;
     private final UserResolverHelper userResolverHelper;
 
@@ -288,5 +291,10 @@ public class ProductService implements ProductUseCase {
                     return String.valueOf(num + 1);
                 })
                 .orElse("1");
+    }
+
+    @Override
+    public List<CardType> findAllCardTypes() {
+        return cardTypeRepository.findAllViaDblink();
     }
 }

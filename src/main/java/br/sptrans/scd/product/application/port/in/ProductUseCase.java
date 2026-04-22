@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import br.sptrans.scd.product.adapter.out.persistence.entity.ProductEntityJpa;
+import br.sptrans.scd.product.domain.CardType;
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ProductVersion;
 
@@ -51,6 +52,8 @@ public interface ProductUseCase {
          * Lista todos os produtos, com filtros dinâmicos via Specification.
          */
         Page<Product> findAllProducts(Specification<ProductEntityJpa> spec, Pageable pageable);
+
+        List<CardType> findAllCardTypes();
 
 
 

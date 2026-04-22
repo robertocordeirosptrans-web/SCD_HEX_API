@@ -1,5 +1,6 @@
 package br.sptrans.scd.product.adapter.in.rest;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ import br.sptrans.scd.product.application.port.in.ProductUseCase;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateProductCommand;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateVersionCommand;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.UpdateProductCommand;
+import br.sptrans.scd.product.domain.CardType;
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.shared.dto.PageResponse;
@@ -104,6 +106,12 @@ public class ProductController {
         Page<Product> page = productUseCase.findAllProducts(spec, pageable);
         Page<ProductResponseDTO> dtoPage = page.map(productMapper::toResponseDTO);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
+    }
+
+    @GetMapping("/tp_cartoes")
+    @Operation(summary = "Lista todos os tipos de cartões")
+    public ResponseEntity<List<CardType>> getTypeCards() {
+        return ResponseEntity.ok(productUseCase.findAllCardTypes());
     }
 
     @GetMapping("/{codProduto}")
