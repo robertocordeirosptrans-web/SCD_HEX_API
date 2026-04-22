@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -106,6 +107,11 @@ public class UserPersistenceAdapter implements UserPersistencePort {
         return entities.stream()
                 .filter(e -> nome == null || e.getNomUsuario().toLowerCase().contains(nome.toLowerCase()))
                 .count();
+    }
+
+    @Override
+    public Page<User> findAllPaginated(Specification<UserEntityJpa> spec, Pageable pageable) {
+        return userRepositoryJpa.findAll(spec, pageable).map(userMapper::toDomain);
     }
 
     // ────────────────────────────────────────────────────────────────────────────

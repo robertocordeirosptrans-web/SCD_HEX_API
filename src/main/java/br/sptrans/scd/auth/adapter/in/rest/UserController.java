@@ -1,10 +1,11 @@
 package br.sptrans.scd.auth.adapter.in.rest;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,8 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.UpdateUserDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserFilterRequestDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserRequestDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserResponseDTO;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
+import br.sptrans.scd.auth.adapter.specification.UserSpecification;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.CreateUserCommand;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase.StatusChangeCommand;
@@ -46,22 +50,22 @@ public class UserController {
     @PreAuthorize("hasAuthority('" + CacPermissions.LISUSU + "')")
     @Operation(summary = "Lista usuários com paginação, filtros e ordenação")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Usuario criado com sucesso"),
+        @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public PageResponse<UserResponseDTO> listUsers(
-            @ModelAttribute UserManagementUseCase.UserFilterRequest filtro,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "idUsuario") String sortBy,
-            @RequestParam(defaultValue = "ASC") String sortDir
+    public ResponseEntity<PageResponse<UserResponseDTO>> listUsers(
+            @RequestParam(required = false) String nomUsuario,
+            @RequestParam(required = false) String nomEmail,
+            @RequestParam(required = false) String codStatus,
+            @RequestParam(required = false) String codPerfil,
+            Pageable pageable
     ) {
-        String dbSortColumn = mapSortColumn(sortBy);
-        List<User> users = userManagementUseCase.listUsersPaginated(filtro, page, size, dbSortColumn, sortDir);
-        long totalElements = userManagementUseCase.countUsers(filtro);
-        List<UserResponseDTO> content = users.stream().map(this::toResponseDTO).toList();
-        return PageResponse.of(content, page, size, totalElements);
+        var filtro = new UserFilterRequestDTO(nomUsuario, nomEmail, codPerfil, codStatus);
+        Specification<UserEntityJpa> spec = UserSpecification.filterUsers(filtro);
+        Page<User> page = userManagementUseCase.listUsersPaginated(spec, pageable);
+        Page<UserResponseDTO> dtoPage = page.map(this::toResponseDTO);
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
 
@@ -126,19 +130,6 @@ public class UserController {
 
     private UserResponseDTO toResponseDTO(User user) {
         return new UserResponseDTO(user, null);
-    }
-
-    private String mapSortColumn(String sortBy) {
-        return switch (sortBy) {
-            case "codLogin" -> "codLogin";
-            case "nomUsuario" -> "nomUsuario";
-            case "nomEmail" -> "nomEmail";
-            case "codStatus" -> "codStatus";
-            case "dtCriacao" -> "dtCriacao";
-            case "dtModi" -> "dtModi";
-            case "dtUltimoAcesso" -> "dtUltimoAcesso";
-            default -> "idUsuario";
-        };
     }
 
     public record UserResponse(String nomUsuario, String nomFuncao, String nomCargo) {

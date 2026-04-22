@@ -5,9 +5,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 import br.sptrans.scd.auth.domain.User;
@@ -97,5 +101,10 @@ public class QueryUserUseCase {
                     log.warn("Usuário não encontrado. ID: {}", idUsuario);
                     return new ResourceNotFoundException("Usuário", "id", idUsuario);
                 });
+    }
+
+    public Page<User> listUsersPaginated(Specification<UserEntityJpa> spec, Pageable pageable) {
+        log.debug("Listando usuários com Specification. Pageable: {}", pageable);
+        return userReader.findAllPaginated(spec, pageable);
     }
 }

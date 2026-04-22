@@ -8,10 +8,12 @@ import org.springframework.data.jpa.domain.Specification;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserFilterRequestDTO;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserProfileJpa;
 import br.sptrans.scd.auth.domain.User;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Subquery;
 
 public class UserSpecification {
 
@@ -36,9 +38,15 @@ public class UserSpecification {
             }
 
             if (filtro.codPerfil() != null && !filtro.codPerfil().isBlank()) {
-                Join<Object, Object> usuarioPerfilJoin = root.join("perfisUsuario", JoinType.LEFT);
-                predicates.add(criteriaBuilder.equal(usuarioPerfilJoin.get("id").get("codPerfil"), filtro.codPerfil()));
-                predicates.add(criteriaBuilder.equal(usuarioPerfilJoin.get("codStatus"), "A"));
+                Subquery<Long> sub = query.subquery(Long.class);
+                var upRoot = sub.from(UserProfileJpa.class);
+                sub.select(upRoot.get("id").get("idUsuario"))
+                   .where(
+                       criteriaBuilder.equal(upRoot.get("id").get("idUsuario"), root.get("idUsuario")),
+                       criteriaBuilder.equal(upRoot.get("id").get("codPerfil"), filtro.codPerfil()),
+                       criteriaBuilder.equal(upRoot.get("codStatus"), "A")
+                   );
+                predicates.add(criteriaBuilder.exists(sub));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
@@ -69,11 +77,6 @@ public class UserSpecification {
                         break;
                     case "codStatus":
                         predicates.add(criteriaBuilder.equal(root.get("codStatus"), value));
-                        break;
-                    case "codPerfil":
-                        Join<Object, Object> usuarioPerfilJoin = root.join("perfisUsuario", JoinType.LEFT);
-                        predicates.add(criteriaBuilder.equal(usuarioPerfilJoin.get("id").get("codPerfil"), value));
-                        predicates.add(criteriaBuilder.equal(usuarioPerfilJoin.get("codStatus"), "A"));
                         break;
                     default:
                         break;

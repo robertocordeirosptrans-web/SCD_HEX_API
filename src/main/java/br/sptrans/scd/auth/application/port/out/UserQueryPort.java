@@ -3,6 +3,11 @@ package br.sptrans.scd.auth.application.port.out;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.auth.domain.User;
 
 /**
@@ -29,4 +34,6 @@ public interface UserQueryPort {
             int offset, int limit, String sortBy, String sortDir);
 
     long countAll(String status, String nome, String email, String perfil);
+
+    Page<User> findAllPaginated(Specification<UserEntityJpa> spec, Pageable pageable);
 }
