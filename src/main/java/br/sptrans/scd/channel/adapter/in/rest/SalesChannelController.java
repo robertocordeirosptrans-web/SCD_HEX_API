@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,14 +22,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.channel.adapter.in.rest.dto.CreateSalesChannelRequest;
+import br.sptrans.scd.channel.adapter.in.rest.dto.SalesChannelFilterRequest;
 import br.sptrans.scd.channel.adapter.in.rest.dto.SalesChannelResponseDTO;
 import br.sptrans.scd.channel.adapter.in.rest.dto.UpdateSalesChannelRequest;
 import br.sptrans.scd.channel.adapter.out.jpa.mapper.SalesChannelMapper;
+import br.sptrans.scd.channel.adapter.out.persistence.entity.SalesChannelEntityJpa;
+import br.sptrans.scd.channel.adapter.specification.SalesChannelSpecification;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.CreateSalesChannelCommand;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase.UpdateSalesChannelCommand;
 import br.sptrans.scd.channel.domain.SalesChannel;
-import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.security.CadPermissions;
@@ -149,20 +152,25 @@ public class SalesChannelController {
     }
 
     @GetMapping
-    @Operation(summary = "Lista todos os canais de venda, com filtro opcional de status")
+    @Operation(summary = "Lista todos os canais de venda, com filtros avançados")
     @PreAuthorize("hasAuthority('" + CadPermissions.SAL_LISCANDEVEN + "')")
     public ResponseEntity<PageResponse<SalesChannelResponseDTO>> findAllSalesChannels(
+            @RequestParam(required = false) String codDocumento,
             @RequestParam(required = false) String stCanais,
+            @RequestParam(required = false) String vlCaucao,
+            @RequestParam(required = false) String dtInicioCaucao,
+            @RequestParam(required = false) String dtFimCaucao,
+            @RequestParam(required = false) String codCanalSuperior,
             Pageable pageable) {
-        ChannelDomainStatus statusEnum = null;
-        if (stCanais != null) {
-            try {
-                statusEnum = ChannelDomainStatus.fromCode(stCanais);
-            } catch (Exception e) {
-                return ResponseEntity.ok(PageResponse.fromPage(Page.empty(pageable)));
-            }
-        }
-        Page<SalesChannel> page = salesChannelUseCase.findAllSalesChannels(statusEnum, pageable);
+        // Monta o filtro
+        var filterRequest = new SalesChannelFilterRequest(
+                codDocumento, stCanais, vlCaucao, dtInicioCaucao, dtFimCaucao, codCanalSuperior);
+
+        // Usa Specification para filtrar
+        Specification<SalesChannelEntityJpa> spec = SalesChannelSpecification.filterChannels(filterRequest);
+
+        // Adapta a chamada do use case para aceitar Specification
+        Page<SalesChannel> page = salesChannelUseCase.findAllSalesChannels(spec, pageable);
         Page<SalesChannelResponseDTO> dtoPage = page.map(salesChannelMapper::toResponseDTO);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }

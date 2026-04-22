@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import br.sptrans.scd.channel.adapter.out.persistence.entity.SalesChannelEntityJpa;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.in.rest.dto.SubSalesChannelProjection;
@@ -16,7 +18,7 @@ public interface SalesChannelPersistencePort {
 
     boolean existsById(String codCanal);
 
-    Page<SalesChannel> findAll(String stCanais, Pageable pageable);
+    Page<SalesChannel> findAll(Specification<SalesChannelEntityJpa> spec, Pageable pageable);
 
     SalesChannel save(SalesChannel salesChannel);
 

@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.application.port.out.ClassificationPort;
@@ -66,8 +67,8 @@ public class SalesChannelAdapterJpa implements SalesChannelPersistencePort {
     }
 
     @Override
-    public Page<SalesChannel> findAll(String stCanais, Pageable pageable) {
-        return repository.findAllByStCanais(stCanais, pageable)
+    public Page<SalesChannel> findAll(Specification<SalesChannelEntityJpa> spec, Pageable pageable) {
+        return repository.findAll(spec, pageable)
                 .map(entity -> enrichDomain(entity, mapper.toDomain(entity)));
     }
 
