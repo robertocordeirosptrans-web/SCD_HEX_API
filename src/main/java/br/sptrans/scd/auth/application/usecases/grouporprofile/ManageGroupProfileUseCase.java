@@ -260,13 +260,14 @@ public class ManageGroupProfileUseCase {
     /**
      * Lista todos os grupos, opcionalmente filtrado por status.
      * 
-     * @param statusCode status de filtro (null = todos)
+     * @param nomGrupo nome do grupo para filtro (null = todos)
+     * @param codStatus status de filtro (null = todos)
      * @return lista de grupos
      */
 
-    public Page<Group> listGroups(String statusCode, Pageable pageable) {
-        log.debug("Listando grupos paginados. Status: {}", statusCode);
-        return groupRepository.listGroups(statusCode, pageable);
+    public Page<Group> listGroups(String nomGrupo, String codStatus, Pageable pageable) {
+        log.debug("Listando grupos paginados. nomGrupo: {}, codStatus: {}", nomGrupo, codStatus);
+        return groupRepository.listGroups(nomGrupo, codStatus, pageable);
     }
 
     /**

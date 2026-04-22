@@ -1,5 +1,4 @@
 
-
 package br.sptrans.scd.auth.adapter.out.jpa;
 
 import java.util.List;
@@ -56,13 +55,9 @@ public class GroupAdapterJpa implements GroupPort {
         return groupJpaRepository.existsByCodGrupo(codGrupo);
     }
 
-    @Override
-    public Page<Group> listGroups(String codStatus, Pageable pageable) {
-        return groupJpaRepository.findAllByCodStatus(codStatus, pageable)
-                .map(groupMapper::toDomain);
+    public Page<Group> listGroups(String nomGrupo, String codStatus, Pageable pageable) {
+        return groupJpaRepository.findByNomGrupoAndCodStatus(nomGrupo, codStatus, pageable).map(groupMapper::toDomain);
     }
-
-
 
     @Override
     public Page<GroupUserCustomProjection> listCustomUsersByGroup(String codGrupo, Pageable pageable) {

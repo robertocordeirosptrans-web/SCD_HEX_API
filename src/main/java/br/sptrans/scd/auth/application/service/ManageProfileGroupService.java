@@ -93,8 +93,8 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
-    public Page<Group> listGroups(String statusCode, Pageable pageable) {
-        return manageGroupProfileUseCase.listGroups(statusCode, pageable);
+    public Page<Group> listGroups(String nomGrupo, String codStatus, Pageable pageable) {
+        return manageGroupProfileUseCase.listGroups(nomGrupo, codStatus, pageable);
     }
 
     @Override

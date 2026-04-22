@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.CreateGroupRequestDTO;
@@ -62,8 +63,10 @@ public class GroupController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PageResponse<GrupoResponseDTO>> getAllGroup(
+            @RequestParam(required = false) String nomGrupo,
+            @RequestParam(required = false) String codStatus,
             Pageable pageable) {
-        Page<GrupoResponseDTO> dtoPage = groupProfileManagementUseCase.listGroups(null, pageable)
+        Page<GrupoResponseDTO> dtoPage = groupProfileManagementUseCase.listGroups(nomGrupo, codStatus, pageable)
             .map(groupRestMapper::toDto);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }

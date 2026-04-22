@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.auth.application.port.out;
 
 import java.util.Optional;
@@ -21,7 +22,7 @@ public interface GroupPort extends GroupProfilePort, GroupUserPort {
      */
     boolean existsByCode(String codGrupo);
 
-    Page<Group> listGroups(String codStatus, Pageable pageable);
+    Page<Group> listGroups(String nomGrupo, String codStatus, Pageable pageable);
 
     /**
      * Lista todas as associações grupo-usuário.

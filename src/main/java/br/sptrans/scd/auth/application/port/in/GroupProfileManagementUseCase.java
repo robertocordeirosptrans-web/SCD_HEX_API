@@ -1,5 +1,4 @@
 
-
 package br.sptrans.scd.auth.application.port.in;
 
 import java.util.List;
@@ -72,8 +71,9 @@ public interface GroupProfileManagementUseCase {
         /**
          * Lista todos os grupos, opcionalmente filtrado por status.
          */
-        // List<Group> listGroups(String statusCode);
-        Page<Group> listGroups(String statusCode, Pageable pageable);
+        // List<Group> listGroups(String nomGrupo, String codStatus, Pageable pageable);
+
+        Page<Group> listGroups(String nomGrupo, String codStatus, Pageable pageable);
 
         Page<GroupUserCustomProjection> listCustomUsersByGroup(String codGrupo, Pageable pageable);
 
