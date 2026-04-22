@@ -76,13 +76,13 @@ public class CreditRequestItems {
 
     private LocalDateTime dtInicProcesso;
 
-    private Long idUsuarioCartao = 0L;
+    private Long idUsuarioCartao;
 
-    private Integer sqRecarga = 0;
+    private Integer sqRecarga;
 
-    private BigDecimal vlTxadm = BigDecimal.ZERO;
+    private BigDecimal vlTxadm;
 
-    private BigDecimal vlTxserv = BigDecimal.ZERO;
+    private BigDecimal vlTxserv;
 
     private BigDecimal vlTxtotal;
 

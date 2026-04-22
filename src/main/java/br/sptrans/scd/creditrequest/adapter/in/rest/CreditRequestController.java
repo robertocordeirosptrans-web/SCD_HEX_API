@@ -1,5 +1,6 @@
 package br.sptrans.scd.creditrequest.adapter.in.rest;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -253,7 +254,8 @@ public class CreditRequestController {
                                                         "Acesso negado: PAGO");
                                 }
                         }
-                        // DESBLOQUEAR não exige permissão extra
+                        default -> throw new IllegalArgumentException("Unexpected value: " + request.getAcao());
+                        
                 }
                 // Se não tiver permissão especial, força codCanal do usuário
                 if (!hasSobreCanalPermission()) {
@@ -395,7 +397,7 @@ public class CreditRequestController {
                         method.invoke(request, codCanal);
                 } catch (NoSuchMethodException e) {
                         // método não existe, ignora
-                } catch (Exception e) {
+                } catch (IllegalAccessException | SecurityException | InvocationTargetException e) {
                         throw new RuntimeException("Erro ao definir codCanal", e);
                 }
         }

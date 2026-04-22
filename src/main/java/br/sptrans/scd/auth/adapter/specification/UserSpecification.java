@@ -10,8 +10,6 @@ import br.sptrans.scd.auth.adapter.in.rest.dto.UserFilterRequestDTO;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.UserProfileJpa;
 import br.sptrans.scd.auth.domain.User;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Subquery;
 
@@ -22,7 +20,7 @@ public class UserSpecification {
             List<Predicate> predicates = new ArrayList<>();
 
             if (filtro == null) {
-                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+                return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
             }
 
             if (filtro.nomUsuario() != null && !filtro.nomUsuario().isBlank()) {
@@ -49,7 +47,7 @@ public class UserSpecification {
                 predicates.add(criteriaBuilder.exists(sub));
             }
 
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
     }
 
@@ -58,7 +56,7 @@ public class UserSpecification {
             List<Predicate> predicates = new ArrayList<>();
 
             if (filters == null || filters.isEmpty()) {
-                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+                return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
             }
 
             filters.forEach((key, value) -> {
@@ -66,24 +64,16 @@ public class UserSpecification {
                     return;
                 }
                 switch (key) {
-                    case "codLogin":
-                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("codLogin")), "%" + value.toLowerCase() + "%"));
-                        break;
-                    case "nomUsuario":
-                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("nomUsuario")), "%" + value.toLowerCase() + "%"));
-                        break;
-                    case "nomEmail":
-                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("nomEmail")), "%" + value.toLowerCase() + "%"));
-                        break;
-                    case "codStatus":
-                        predicates.add(criteriaBuilder.equal(root.get("codStatus"), value));
-                        break;
-                    default:
-                        break;
+                    case "codLogin" -> predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("codLogin")), "%" + value.toLowerCase() + "%"));
+                    case "nomUsuario" -> predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("nomUsuario")), "%" + value.toLowerCase() + "%"));
+                    case "nomEmail" -> predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("nomEmail")), "%" + value.toLowerCase() + "%"));
+                    case "codStatus" -> predicates.add(criteriaBuilder.equal(root.get("codStatus"), value));
+                    default -> {
+                    }
                 }
             });
 
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
     }
 }

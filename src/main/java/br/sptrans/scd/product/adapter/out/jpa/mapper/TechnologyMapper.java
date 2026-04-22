@@ -9,7 +9,8 @@ import br.sptrans.scd.product.domain.Technology;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = UserEntityJpaMapper.class)
 public interface TechnologyMapper {
-
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "active", ignore = true)
     @Mapping(source = "usuarioCadastro", target = "idUsuarioCadastro")
     @Mapping(source = "usuarioManutencao", target = "idUsuarioManutencao")
     Technology toDomain(TechnologyEntityJpa entity);

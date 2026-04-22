@@ -10,6 +10,8 @@ import br.sptrans.scd.product.domain.Species;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = UserEntityJpaMapper.class)
 public interface SpeciesMapper {
 
+	@Mapping(target = "id", ignore = true)
+	@Mapping(target = "active", ignore = true)
 	@Mapping(source = "usuarioCadastro", target = "idUsuarioCadastro")
 	@Mapping(source = "usuarioManutencao", target = "idUsuarioManutencao")
 	Species toDomain(SpeciesEntityJpa entity);
