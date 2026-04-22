@@ -154,17 +154,18 @@ public class SalesChannelController {
     @GetMapping
     @Operation(summary = "Lista todos os canais de venda, com filtros avançados")
     @PreAuthorize("hasAuthority('" + CadPermissions.SAL_LISCANDEVEN + "')")
-    public ResponseEntity<PageResponse<SalesChannelResponseDTO>> findAllSalesChannels(
+        public ResponseEntity<PageResponse<SalesChannelResponseDTO>> findAllSalesChannels(
             @RequestParam(required = false) String codDocumento,
             @RequestParam(required = false) String stCanais,
             @RequestParam(required = false) String vlCaucao,
             @RequestParam(required = false) String dtInicioCaucao,
             @RequestParam(required = false) String dtFimCaucao,
             @RequestParam(required = false) String codCanalSuperior,
+            @RequestParam(required = false) String codAtividade,
             Pageable pageable) {
         // Monta o filtro
         var filterRequest = new SalesChannelFilterRequest(
-                codDocumento, stCanais, vlCaucao, dtInicioCaucao, dtFimCaucao, codCanalSuperior);
+            codDocumento, stCanais, vlCaucao, dtInicioCaucao, dtFimCaucao, codCanalSuperior, codAtividade);
 
         // Usa Specification para filtrar
         Specification<SalesChannelEntityJpa> spec = SalesChannelSpecification.filterChannels(filterRequest);
@@ -173,7 +174,7 @@ public class SalesChannelController {
         Page<SalesChannel> page = salesChannelUseCase.findAllSalesChannels(spec, pageable);
         Page<SalesChannelResponseDTO> dtoPage = page.map(salesChannelMapper::toResponseDTO);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
-    }
+        }
 
     @PatchMapping("/{codCanal}/activate")
     @Operation(summary = "Ativa um canal de venda")

@@ -23,39 +23,42 @@ public class SalesChannelSpecification {
     private static final String WILDCARD = "%";
 
     public static Specification<SalesChannelEntityJpa> filterChannels(SalesChannelFilterRequest filters) {
-    return (root, query, criteriaBuilder) -> {
-        if (filters == null) {
-        return criteriaBuilder.conjunction();
-        }
+        return (root, query, criteriaBuilder) -> {
+            if (filters == null) {
+                return criteriaBuilder.conjunction();
+            }
 
-        List<Predicate> predicates = new ArrayList<>();
+            List<Predicate> predicates = new ArrayList<>();
 
-        addStringPredicate(predicates, root, criteriaBuilder,
-            filters.codDocumento(), "codDocumento", true);
+            addStringPredicate(predicates, root, criteriaBuilder,
+                    filters.codDocumento(), "codDocumento", true);
 
-        addEqualPredicate(predicates, root, criteriaBuilder,
-            filters.stCanais(), "stCanais");
+            addEqualPredicate(predicates, root, criteriaBuilder,
+                    filters.stCanais(), "stCanais");
 
-        addNumericPredicate(predicates, root, criteriaBuilder,
-            filters.vlCaucao(), "vlCaucao");
+            addNumericPredicate(predicates, root, criteriaBuilder,
+                    filters.vlCaucao(), "vlCaucao");
 
-        addDatePredicate(predicates, root, criteriaBuilder,
-            filters.dtInicioCaucao(), "dtInicioCaucao");
+            addDatePredicate(predicates, root, criteriaBuilder,
+                    filters.dtInicioCaucao(), "dtInicioCaucao");
 
-        addDatePredicate(predicates, root, criteriaBuilder,
-            filters.dtFimCaucao(), "dtFimCaucao");
+            addDatePredicate(predicates, root, criteriaBuilder,
+                    filters.dtFimCaucao(), "dtFimCaucao");
 
-        addStringPredicate(predicates, root, criteriaBuilder,
-            filters.codCanalSuperior(), "codCanalSuperior", true);
+            addStringPredicate(predicates, root, criteriaBuilder,
+                    filters.codCanalSuperior(), "codCanalSuperior", true);
 
-        return predicates.isEmpty()
-            ? criteriaBuilder.conjunction()
-            : criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-    };
+            addStringPredicate(predicates, root, criteriaBuilder,
+                    filters.codAtividade(), "codAtividade", true);
+
+            return predicates.isEmpty()
+                    ? criteriaBuilder.conjunction()
+                    : criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
     }
 
     // Métodos auxiliares reutilizáveis
-        private static void addStringPredicate(List<Predicate> predicates,
+    private static void addStringPredicate(List<Predicate> predicates,
             Root<SalesChannelEntityJpa> root,
             CriteriaBuilder criteriaBuilder,
             String value, String fieldName, boolean caseInsensitive) {
@@ -74,7 +77,7 @@ public class SalesChannelSpecification {
         }
     }
 
-        private static void addEqualPredicate(List<Predicate> predicates,
+    private static void addEqualPredicate(List<Predicate> predicates,
             Root<SalesChannelEntityJpa> root,
             CriteriaBuilder criteriaBuilder,
             String value, String fieldName) {
@@ -84,7 +87,7 @@ public class SalesChannelSpecification {
         predicates.add(criteriaBuilder.equal(root.get(fieldName), value));
     }
 
-        private static void addNumericPredicate(List<Predicate> predicates,
+    private static void addNumericPredicate(List<Predicate> predicates,
             Root<SalesChannelEntityJpa> root,
             CriteriaBuilder criteriaBuilder,
             String value, String fieldName) {
@@ -104,7 +107,7 @@ public class SalesChannelSpecification {
         }
     }
 
-        private static void addDatePredicate(List<Predicate> predicates,
+    private static void addDatePredicate(List<Predicate> predicates,
             Root<SalesChannelEntityJpa> root,
             CriteriaBuilder criteriaBuilder,
             String value, String fieldName) {
@@ -164,7 +167,8 @@ public class SalesChannelSpecification {
                 filtersMap.get("vlCaucao"),
                 filtersMap.get("dtInicioCaucao"),
                 filtersMap.get("dtFimCaucao"),
-                filtersMap.get("codCanalSuperior"));
+                filtersMap.get("codCanalSuperior"),
+                filtersMap.get("codAtividade"));
 
         return filterChannels(request);
     }
@@ -190,7 +194,8 @@ public class SalesChannelSpecification {
     }
 
     // Método adicional: combinar lista de specifications
-    public static Specification<SalesChannelEntityJpa> combine(List<Specification<SalesChannelEntityJpa>> specifications) {
+    public static Specification<SalesChannelEntityJpa> combine(
+            List<Specification<SalesChannelEntityJpa>> specifications) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
