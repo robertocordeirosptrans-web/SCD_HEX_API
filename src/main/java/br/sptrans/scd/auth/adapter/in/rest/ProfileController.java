@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.CreateProfileRequestDTO;
@@ -62,12 +63,14 @@ public class ProfileController {
         @ApiResponse(responseCode = "200", description = "Lista de perfis retornada com sucesso")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<ProfileResponseDTO>> getAllProfile(
+        public ResponseEntity<PageResponse<ProfileResponseDTO>> getAllProfile(
+            @RequestParam(required = false) String nomPerfil,
+            @RequestParam(required = false) String codStatus,
             Pageable pageable) {
-        Page<ProfileResponseDTO> dtoPage = groupProfileManagementUseCase.listProfiles(null, pageable)
-                .map(profileRestMapper::toDto);
+        Page<ProfileResponseDTO> dtoPage = groupProfileManagementUseCase.listProfiles(nomPerfil, codStatus, pageable)
+            .map(profileRestMapper::toDto);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
-    }
+        }
 
     @GetMapping("/{codPerfil}")
     @PreAuthorize("hasAuthority('" + CacPermissions.CRIPER + "')")

@@ -1,4 +1,5 @@
 
+
 package br.sptrans.scd.auth.application.port.in;
 
 import java.util.List;
@@ -119,7 +120,7 @@ public interface GroupProfileManagementUseCase {
          */
         List<Profile> listProfiles(String statusCode);
 
-        Page<Profile> listProfiles(String statusCode, Pageable pageable);
+        Page<Profile> listProfiles(String nomPerfil, String statusCode, Pageable pageable);
 
         /**
          * Lista funcionalidades disponíveis para vinculação (todas ativas).
@@ -129,7 +130,8 @@ public interface GroupProfileManagementUseCase {
         /**
          * Lista funcionalidades disponíveis para vinculação (todas ativas).
          */
-        // Page<ProfileFunctionality> listFunctionalitiesByProfile(String codPerfil, Pageable pageable);
+        // Page<ProfileFunctionality> listFunctionalitiesByProfile(String codPerfil,
+        // Pageable pageable);
 
         Page<ProfileFunctionalityProjectionDTO> listFunctionalitiesProjectionByProfile(
                         String codPerfil, Pageable pageable);

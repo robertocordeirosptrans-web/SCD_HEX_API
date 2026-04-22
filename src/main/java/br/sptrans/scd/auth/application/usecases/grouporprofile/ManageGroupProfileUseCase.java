@@ -116,8 +116,6 @@ public class ManageGroupProfileUseCase {
         return grupo;
     }
 
-
-
     /**
      * Inativa grupo.
      * 
@@ -474,9 +472,9 @@ public class ManageGroupProfileUseCase {
         return profileRepository.listProfile(statusCode);
     }
 
-    public Page<Profile> listProfiles(String statusCode, Pageable pageable) {
-        log.debug("Listando perfis paginados. Status: {}", statusCode);
-        return profileRepository.listProfile(statusCode, pageable);
+    public Page<Profile> listProfiles(String nomPerfil, String codStatus, Pageable pageable) {
+        log.debug("Listando perfis paginados. nomPerfil: {}, codStatus: {}", nomPerfil, codStatus);
+        return profileRepository.listProfile(nomPerfil, codStatus, pageable);
     }
 
     public Page<GroupUserCustomProjection> listCustomUsersByGroup(String codGrupo, Pageable pageable) {

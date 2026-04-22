@@ -1,4 +1,3 @@
-
 package br.sptrans.scd.auth.adapter.out.jpa;
 
 import java.util.List;
@@ -56,9 +55,10 @@ public class ProfileAdapterJpa implements ProfilePort {
     }
 
     @Override
-    public Page<Profile> listProfile(String codStatus, Pageable pageable) {
-        return profileJpaRepository.findByCodStatus(codStatus, pageable).map(profileMapper::toDomain);
+    public Page<Profile> listProfile(String nomPerfil, String codStatus, Pageable pageable) {
+        return profileJpaRepository.findByNomPerfilAndCodStatus(nomPerfil, codStatus, pageable).map(profileMapper::toDomain);
     }
+
 
     @Override
     public void updateStatus(String codPerfil, String codStatus, Long idUsuarioManutencao) {

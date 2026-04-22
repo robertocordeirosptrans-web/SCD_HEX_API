@@ -14,7 +14,8 @@ import org.springframework.stereotype.Repository;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.ProfileEntityJpa;
 
 @Repository
-public interface ProfileJpaRepository extends JpaRepository<ProfileEntityJpa, String>, JpaSpecificationExecutor<ProfileEntityJpa> {
+public interface ProfileJpaRepository
+        extends JpaRepository<ProfileEntityJpa, String>, JpaSpecificationExecutor<ProfileEntityJpa> {
 
     @Override
     ProfileEntityJpa save(ProfileEntityJpa pf);
@@ -28,9 +29,8 @@ public interface ProfileJpaRepository extends JpaRepository<ProfileEntityJpa, St
     @Query("SELECT p FROM ProfileEntityJpa p WHERE (:codStatus IS NULL OR p.codStatus = :codStatus)")
     List<ProfileEntityJpa> findByCodStatus(@Param("codStatus") String codStatus);
 
-    @Query(
-        value = "SELECT p FROM ProfileEntityJpa p LEFT JOIN FETCH p.usuarioManutencao WHERE (:codStatus IS NULL OR p.codStatus = :codStatus)",
-        countQuery = "SELECT COUNT(p) FROM ProfileEntityJpa p WHERE (:codStatus IS NULL OR p.codStatus = :codStatus)"
-    )
-    Page<ProfileEntityJpa> findByCodStatus(@Param("codStatus") String codStatus, Pageable pageable);
+    @Query(value = "SELECT p FROM ProfileEntityJpa p LEFT JOIN FETCH p.usuarioManutencao WHERE (:codStatus IS NULL OR p.codStatus = :codStatus) AND (:nomPerfil IS NULL OR LOWER(p.nomPerfil) LIKE LOWER(CONCAT('%', :nomPerfil, '%')))", countQuery = "SELECT COUNT(p) FROM ProfileEntityJpa p WHERE (:codStatus IS NULL OR p.codStatus = :codStatus) AND (:nomPerfil IS NULL OR LOWER(p.nomPerfil) LIKE LOWER(CONCAT('%', :nomPerfil, '%')))")
+    Page<ProfileEntityJpa> findByNomPerfilAndCodStatus(@Param("nomPerfil") String nomPerfil,
+            @Param("codStatus") String codStatus, Pageable pageable);
+
 }

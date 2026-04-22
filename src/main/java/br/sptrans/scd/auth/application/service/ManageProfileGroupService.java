@@ -166,8 +166,8 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
-    public Page<Profile> listProfiles(String statusCode, Pageable pageable) {
-        return manageGroupProfileUseCase.listProfiles(statusCode, pageable);
+    public Page<Profile> listProfiles(String nomPerfil, String statusCode, Pageable pageable) {
+        return manageGroupProfileUseCase.listProfiles(nomPerfil, statusCode, pageable);
     }
 
     // ══════════════════════════════════════════════════════════════════════════

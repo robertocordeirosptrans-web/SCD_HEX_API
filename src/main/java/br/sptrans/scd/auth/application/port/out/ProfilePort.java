@@ -1,4 +1,4 @@
-
+   
 package br.sptrans.scd.auth.application.port.out;
 
 import java.util.List;
@@ -28,7 +28,8 @@ public interface ProfilePort extends ProfileFunctionalityPort {
 
     List<Profile> listProfile(String codStatus);
 
-    Page<Profile> listProfile(String codStatus, Pageable pageable);
+     Page<Profile> listProfile(String nomPerfil, String codStatus, Pageable pageable);
+
 
     void save(Profile perfil);
 
