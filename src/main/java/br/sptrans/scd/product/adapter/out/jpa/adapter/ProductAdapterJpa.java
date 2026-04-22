@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.product.adapter.out.jpa.adapter;
 
 import java.util.List;
@@ -5,11 +6,13 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductJpaRepository;
+import br.sptrans.scd.product.adapter.out.persistence.entity.ProductEntityJpa;
 import br.sptrans.scd.product.application.port.out.repository.ProductPort;
 import br.sptrans.scd.product.domain.Product;
 import lombok.RequiredArgsConstructor;
@@ -41,12 +44,8 @@ public class ProductAdapterJpa implements ProductPort {
     }
 
     @Override
-    public Page<Product> findAll(String codStatus, Pageable pageable) {
-        if (codStatus != null && !codStatus.isBlank()) {
-            return repository.findByCodStatus(codStatus, pageable)
-                    .map(productMapper::toDomain);
-        }
-        return repository.findAll(pageable)
+    public Page<Product> findAll(Specification<ProductEntityJpa> spec, Pageable pageable) {
+        return repository.findAll(spec, pageable)
                 .map(productMapper::toDomain);
     }
 

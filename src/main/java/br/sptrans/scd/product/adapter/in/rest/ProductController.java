@@ -1,7 +1,10 @@
 package br.sptrans.scd.product.adapter.in.rest;
 
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,9 +19,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.product.adapter.in.rest.dto.ProductRequest;
+import br.sptrans.scd.product.adapter.in.rest.dto.ProductResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.ProductVersionDetailResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.ProductVersionRequest;
 import br.sptrans.scd.product.adapter.in.rest.dto.UserSimpleMapper;
+import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductMapper;
+import br.sptrans.scd.product.adapter.out.persistence.entity.ProductEntityJpa;
+import br.sptrans.scd.product.adapter.specification.ProductSpecification;
 import br.sptrans.scd.product.application.port.in.ProductUseCase;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateProductCommand;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateVersionCommand;
@@ -47,6 +54,7 @@ public class ProductController {
 
     private final ProductUseCase productUseCase;
     private final UserResolverHelper userResolverHelper;
+    private final ProductMapper productMapper;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo produto")
@@ -87,18 +95,18 @@ public class ProductController {
     }
 
     @GetMapping
-    @Operation(summary = "Lista todos os produtos, com filtro opcional de status")
+    @Operation(summary = "Lista todos os produtos, com filtros dinâmicos")
     @PreAuthorize("hasAuthority('" + CadPermissions.PRO_LISPRO + "')")
-    public ResponseEntity<PageResponse<Product>> findAllProducts(
-            @RequestParam(required = false) String codStatus,
+    public ResponseEntity<PageResponse<ProductResponseDTO>> findAllProducts(
+            @RequestParam Map<String, String> filters,
             Pageable pageable) {
-
-        Page<Product> page = productUseCase.findAllProducts(codStatus, pageable);
-        return ResponseEntity.ok(PageResponse.fromPage(page));
+        Specification<ProductEntityJpa> spec = ProductSpecification.filterProducts(filters);
+        Page<Product> page = productUseCase.findAllProducts(spec, pageable);
+        Page<ProductResponseDTO> dtoPage = page.map(productMapper::toResponseDTO);
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @GetMapping("/{codProduto}")
-
     @Operation(summary = "Busca produto por código")
     @PreAuthorize("hasAuthority('" + CadPermissions.PRO_BUSPROPORCOD + "')")
     public ResponseEntity<Product> findByProduct(@PathVariable String codProduto) {

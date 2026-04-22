@@ -184,8 +184,8 @@ public class ProductService implements ProductUseCase {
     }
 
     @Override
-    public Page<Product> findAllProducts(String codStatus, Pageable pageable) {
-        return productRepository.findAll(codStatus, pageable);
+    public Page<Product> findAllProducts(org.springframework.data.jpa.domain.Specification<br.sptrans.scd.product.adapter.out.persistence.entity.ProductEntityJpa> spec, Pageable pageable) {
+        return productRepository.findAll(spec, pageable);
     }
 
     // =========================================================================

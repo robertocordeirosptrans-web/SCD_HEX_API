@@ -55,6 +55,7 @@ public class GroupAdapterJpa implements GroupPort {
         return groupJpaRepository.existsByCodGrupo(codGrupo);
     }
 
+    @Override
     public Page<Group> listGroups(String nomGrupo, String codStatus, Pageable pageable) {
         return groupJpaRepository.findByNomGrupoAndCodStatus(nomGrupo, codStatus, pageable).map(groupMapper::toDomain);
     }

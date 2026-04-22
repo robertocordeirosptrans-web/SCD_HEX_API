@@ -88,6 +88,22 @@ public class Product {
 
     private Long idUsuarioManutencao;
 
+    // ── Campos de leitura enriquecida (opcionais, populados em queries) ───────
+
+    private String desTipoProduto;
+
+    private String desTecnologia;
+
+    private String desModalidade;
+
+    private String desFamilia;
+
+    private String desEspecie;
+
+    private String nomeUsuarioCadastro;
+
+    private String nomeUsuarioManutencao;
+
     // -------------------------------------------------------------------------
     // Consultas de status
     // -------------------------------------------------------------------------

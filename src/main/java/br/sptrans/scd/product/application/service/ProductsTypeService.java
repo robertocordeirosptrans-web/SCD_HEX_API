@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase;
-import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase.CreateProductsTypeCommand;
-import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase.UpdateProductsTypeCommand;
 import br.sptrans.scd.product.application.port.out.repository.ProductsTypePort;
 import br.sptrans.scd.product.domain.ProductType;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;

@@ -116,6 +116,30 @@ public class ProductEntityJpa {
     @Column(name = "COD_ESPECIE")
     private String codEspecie;
 
+    // ── Joins de leitura para catálogos (insertable/updatable=false) ──────────
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "COD_TIPO_PRODUTO", insertable = false, updatable = false)
+    private ProductTypesEntityJpa tipoProduto;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "COD_TECNOLOGIA", insertable = false, updatable = false)
+    private TechnologyEntityJpa tecnologia;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "COD_MODALIDADE", insertable = false, updatable = false)
+    private ModalityEntityJpa modalidade;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "COD_FAMILIA", insertable = false, updatable = false)
+    private FamilyEntityJpa familia;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "COD_ESPECIE", insertable = false, updatable = false)
+    private SpeciesEntityJpa especie;
+
+    // ── Usuários ──────────────────────────────────────────────────────────────
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_USUARIO_CADASTRO")
     private UserEntityJpa usuarioCadastro;
