@@ -18,11 +18,12 @@ import br.sptrans.scd.auth.adapter.in.rest.request.CreateClassificationPersonReq
 import br.sptrans.scd.auth.adapter.in.rest.request.UpdateClassificationPersonRequest;
 import br.sptrans.scd.auth.application.port.in.ClassificationPersonCase;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.version.ApiVersionConfig;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/classification-person")
+@RequestMapping(ApiVersionConfig.API_V1_PATH + "/classification-person")
 @RequiredArgsConstructor
 public class ClassificationPersonController {
     private final ClassificationPersonCase useCase;

@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.channel.adapter.out.jpa.adapter;
 
 import java.util.List;
@@ -29,9 +30,24 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
     private final UserQueryPort userQueryPort;
 
     private User resolveUser(Long id) {
-        if (id == null) return null;
+        if (id == null)
+            return null;
         return userQueryPort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", id));
+    }
+
+    @Override
+    public List<br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO> findProdutosCodigoDescricaoByChannel(
+            String codCanal, String stCanaisProdutos, String stProdutos) {
+        // Consulta customizada para buscar apenas código e descrição
+        return productChannelJpaRepository
+                .findAvailableProductsByChannel(codCanal, stCanaisProdutos, stProdutos)
+                .stream()
+                .filter(entity -> entity.getProduct() != null)
+                .map(entity -> new br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO(
+                        entity.getProduct().getCodProduto(),
+                        entity.getProduct().getCodProduto() + " - " + entity.getProduct().getDesProduto()))
+                .toList();
     }
 
     @Override
@@ -52,6 +68,19 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
                     User userMan = resolveUser(entity.getIdUsuarioManutencao());
                     return productChannelMapper.toDomain(entity, userCad, userMan);
                 });
+    }
+
+    public List<ProductChannel> findAvailableProductsByChannel(String codCanal, String stCanaisProdutos,
+            String stProdutos) {
+        return productChannelJpaRepository
+                .findAvailableProductsByChannel(codCanal, stCanaisProdutos, stProdutos)
+                .stream()
+                .map(entity -> {
+                    User userCad = resolveUser(entity.getIdUsuarioCadastro());
+                    User userMan = resolveUser(entity.getIdUsuarioManutencao());
+                    return productChannelMapper.toDomain(entity, userCad, userMan);
+                })
+                .toList();
     }
 
     @Override
@@ -91,7 +120,6 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
         return productChannelJpaRepository.existsById(productChannelMapper.toEntityKey(id));
     }
 
-
     @Override
     public List<ProductChannelProjection> findCompletoByCanal(String codCanal) {
         if (codCanal == null || codCanal.isEmpty()) {
@@ -129,6 +157,6 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
         List<ChannelByProductProjection> slice = all.subList(start, end);
         return new PageImpl<>(slice, pageable, all.size());
     }
-    
+
 
 }

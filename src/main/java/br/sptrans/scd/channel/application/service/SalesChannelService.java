@@ -2,6 +2,7 @@
 package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +100,10 @@ public class SalesChannelService implements SalesChannelUseCase {
         SalesChannel saved = salesChannelRepository.save(salesChannel);
         log.info("Canal de venda criado com sucesso. Código: {}", saved.getCodCanal());
         return saved;
+    }
+
+    public List<SalesChannel> findByCodClassificacaoPessoaAndStCanais(String codClassificacaoPessoa, String stCanais) {
+        return salesChannelRepository.findByCodClassificacaoPessoaAndStCanais(codClassificacaoPessoa, stCanais);
     }
 
     @Override

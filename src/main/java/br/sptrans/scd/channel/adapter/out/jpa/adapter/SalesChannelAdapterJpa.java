@@ -31,6 +31,13 @@ public class SalesChannelAdapterJpa implements SalesChannelPersistencePort {
     private final ClassificationPort classificationPort;
     private final UserResolverHelper userResolverHelper;
 
+    public List<SalesChannel> findByCodClassificacaoPessoaAndStCanais(String codClassificacaoPessoa, String stCanais) {
+        return repository.findByCodClassificacaoPessoaAndStCanais(codClassificacaoPessoa, stCanais)
+                .stream()
+                .map(entity -> enrichDomain(entity, mapper.toDomain(entity)))
+                .toList();
+    }
+
     private SalesChannel enrichDomain(SalesChannelEntityJpa entity, SalesChannel domain) {
         if (entity.getCodAtividade() != null) {
             typesActivityPort.findById(entity.getCodAtividade())

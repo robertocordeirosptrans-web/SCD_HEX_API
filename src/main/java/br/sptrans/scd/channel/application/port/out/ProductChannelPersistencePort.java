@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.channel.application.port.out;
 
 import java.util.List;
@@ -12,6 +13,15 @@ import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
 
 public interface ProductChannelPersistencePort {
+
+    /**
+     * Busca produtos disponíveis por canal, status e tipo, retornando apenas código
+     * e descrição.
+     */
+    List<br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO> findProdutosCodigoDescricaoByChannel(
+            String codCanal, String stCanaisProdutos, String stProdutos);
+
+
 
     Optional<ProductChannel> findById(ProductChannelKey id);
 

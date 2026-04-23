@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
@@ -35,8 +36,12 @@ public class ProductChannelService implements ProductChannelUseCase {
     private final SalesChannelPersistencePort salesChannelRepository;
 
 
+    @Override
+    public List<br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO> findProdutosCodigoDescricaoByChannel(
+            String codCanal, String stCanaisProdutos, String stProdutos) {
+        return repository.findProdutosCodigoDescricaoByChannel(codCanal, stCanaisProdutos, stProdutos);
+    }
 
-    
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "canais", key = "'product-projections-' + #codCanal + '-' + (#codProduto != null ? #codProduto : 'ALL')")
@@ -44,7 +49,7 @@ public class ProductChannelService implements ProductChannelUseCase {
         // Exemplo: busca por canal, pode ser adaptado para outros filtros
         if (codCanal != null && !codCanal.isEmpty()) {
             try {
-               
+
                 return repository.findCompletoByCanal(codCanal);
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("codCanal deve ser um número inteiro", e);
@@ -81,23 +86,22 @@ public class ProductChannelService implements ProductChannelUseCase {
 
         User usuCad = cmd.usuarioCadastro();
         ProductChannel entity = ProductChannel.criar(
-            key,
-            cmd.qtdLimiteComercializacao(),
-            cmd.qtdMinimaEstoque(),
-            cmd.qtdMaximaEstoque(),
-            cmd.qtdMinimaRessuprimento(),
-            cmd.qtdMaximaRessuprimento(),
-            cmd.codOrgaoEmissor(),
-            cmd.vlFace(),
-            cmd.codStatus(),
-            LocalDateTime.now(),
-            LocalDateTime.now(),
-            cmd.codConvenio(),
-            cmd.codTipoOperHM(),
-            cmd.flgCarac(),
-            usuCad,
-            null
-        );
+                key,
+                cmd.qtdLimiteComercializacao(),
+                cmd.qtdMinimaEstoque(),
+                cmd.qtdMaximaEstoque(),
+                cmd.qtdMinimaRessuprimento(),
+                cmd.qtdMaximaRessuprimento(),
+                cmd.codOrgaoEmissor(),
+                cmd.vlFace(),
+                cmd.codStatus(),
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                cmd.codConvenio(),
+                cmd.codTipoOperHM(),
+                cmd.flgCarac(),
+                usuCad,
+                null);
         ProductChannel saved = repository.save(entity);
         log.info("Produto do canal criado. Canal: {}, Produto: {}", cmd.codCanal(), cmd.codProduto());
         return saved;
@@ -110,24 +114,23 @@ public class ProductChannelService implements ProductChannelUseCase {
         log.info("Atualizando produto do canal. Canal: {}, Produto: {}", codCanal, codProduto);
         ProductChannelKey key = new ProductChannelKey(codCanal, codProduto);
         ProductChannel existing = repository.findById(key)
-            .orElseThrow(() -> new ChannelException(ChannelErrorType.PRODUCT_CHANNEL_NOT_FOUND));
+                .orElseThrow(() -> new ChannelException(ChannelErrorType.PRODUCT_CHANNEL_NOT_FOUND));
 
         User usuMan = cmd.usuarioManutencao();
         existing.atualizar(
-            cmd.qtdLimiteComercializacao(),
-            cmd.qtdMinimaEstoque(),
-            cmd.qtdMaximaEstoque(),
-            cmd.qtdMinimaRessuprimento(),
-            cmd.qtdMaximaRessuprimento(),
-            cmd.codOrgaoEmissor(),
-            cmd.vlFace(),
-            cmd.codStatus(),
-            java.time.LocalDateTime.now(),
-            cmd.codConvenio(),
-            cmd.codTipoOperHM(),
-            cmd.flgCarac(),
-            usuMan
-        );
+                cmd.qtdLimiteComercializacao(),
+                cmd.qtdMinimaEstoque(),
+                cmd.qtdMaximaEstoque(),
+                cmd.qtdMinimaRessuprimento(),
+                cmd.qtdMaximaRessuprimento(),
+                cmd.codOrgaoEmissor(),
+                cmd.vlFace(),
+                cmd.codStatus(),
+                java.time.LocalDateTime.now(),
+                cmd.codConvenio(),
+                cmd.codTipoOperHM(),
+                cmd.flgCarac(),
+                usuMan);
         ProductChannel saved = repository.save(existing);
         log.info("Produto do canal atualizado. Canal: {}, Produto: {}", codCanal, codProduto);
         return saved;

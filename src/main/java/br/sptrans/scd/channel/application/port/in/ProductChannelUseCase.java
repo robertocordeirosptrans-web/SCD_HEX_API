@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.channel.application.port.in;
 
 import java.util.List;
@@ -12,6 +13,13 @@ import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 
 public interface ProductChannelUseCase {
+
+        /**
+         * Busca produtos disponíveis por canal, status e tipo, retornando apenas código
+         * e descrição.
+         */
+        List<br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO> findProdutosCodigoDescricaoByChannel(
+                        String codCanal, String stCanaisProdutos, String stProdutos);
 
         ProductChannel createProductChannel(CreateProductChannelCommand command);
 

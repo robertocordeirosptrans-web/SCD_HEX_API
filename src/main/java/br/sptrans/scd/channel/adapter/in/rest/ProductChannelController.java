@@ -1,5 +1,7 @@
 package br.sptrans.scd.channel.adapter.in.rest;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -49,6 +51,7 @@ import lombok.RequiredArgsConstructor;
 
 public class ProductChannelController {
 
+
     private static final Logger log = LoggerFactory.getLogger(ProductChannelController.class);
 
     private final ProductChannelUseCase productChannelUseCase;
@@ -83,6 +86,24 @@ public class ProductChannelController {
                         request.flgCarac(),
                         usuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    
+    @GetMapping("/available-products")
+    @PreAuthorize("hasAuthority('" + CadPermissions.ASS_LISASS + "')")
+    @Operation(summary = "Lista produtos disponíveis por canal, status e tipo")
+    public ResponseEntity<List<br.sptrans.scd.channel.adapter.in.rest.dto.CodigoDescricaoDTO>> findAvailableProductsByChannel(
+            @RequestParam String codCanal,
+            @RequestParam String stCanaisProdutos,
+            @RequestParam String stProdutos) {
+        var produtos = productChannelUseCase.findProdutosCodigoDescricaoByChannel(codCanal, stCanaisProdutos, stProdutos)
+            .stream()
+            .map(dto -> new br.sptrans.scd.channel.adapter.in.rest.dto.CodigoDescricaoDTO(dto.getCodigo(), dto.getDescricao()))
+            .toList();
+        if (produtos == null || produtos.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(produtos);
     }
 
         @PutMapping("/{codCanal}/{codProduto}")

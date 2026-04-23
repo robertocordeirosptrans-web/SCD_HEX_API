@@ -1,7 +1,8 @@
 
 package br.sptrans.scd.channel.adapter.in.rest;
 
-// ...
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -52,11 +53,34 @@ import lombok.RequiredArgsConstructor;
 
 public class SalesChannelController {
 
+
     private static final Logger log = LoggerFactory.getLogger(SalesChannelController.class);
 
     private final SalesChannelUseCase salesChannelUseCase;
     private final UserResolverHelper userResolverHelper;
     private final SalesChannelMapper salesChannelMapper;
+
+
+    
+    @GetMapping("/by-classificacao")
+    @Operation(summary = "Lista canais de venda por classificação de pessoa e status")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SAL_LISCANDEVEN + "')")
+    public ResponseEntity<List<br.sptrans.scd.channel.adapter.in.rest.dto.CodigoDescricaoDTO>> findByCodClassificacaoPessoaAndStCanais(
+            @RequestParam String codClassificacaoPessoa,
+            @RequestParam String stCanais) {
+        var canais = ((br.sptrans.scd.channel.application.service.SalesChannelService) salesChannelUseCase)
+                .findByCodClassificacaoPessoaAndStCanais(codClassificacaoPessoa, stCanais)
+                .stream()
+                .map(c -> new br.sptrans.scd.channel.adapter.in.rest.dto.CodigoDescricaoDTO(
+                        c.getCodCanal(),
+                        c.getDesNomeFantasia()
+                ))
+                .toList();
+        if (canais.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(canais);
+    }
 
     @PostMapping
     @Operation(summary = "Cadastra um novo canal de venda")

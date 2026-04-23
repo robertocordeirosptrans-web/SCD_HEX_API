@@ -13,6 +13,8 @@ import br.sptrans.scd.channel.adapter.in.rest.dto.SubSalesChannelProjection;
 import br.sptrans.scd.channel.domain.SalesChannel;
 
 public interface SalesChannelPersistencePort {
+
+        List<SalesChannel> findByCodClassificacaoPessoaAndStCanais(String codClassificacaoPessoa, String stCanais);
     
     Optional<SalesChannel> findById(String codCanal);
 
