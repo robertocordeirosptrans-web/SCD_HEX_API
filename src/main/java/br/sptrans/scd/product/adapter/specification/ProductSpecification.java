@@ -35,6 +35,7 @@ public class ProductSpecification {
             addStringPredicate(predicates, root, cb, filters.desProduto(), "desProduto", true);
             addEqualPredicate(predicates, root, cb, filters.codStatus(), "codStatus");
             addEqualPredicate(predicates, root, cb, filters.codTipoProduto(), "codTipoProduto");
+            
             // Adicione outros campos conforme necessário
 
             return predicates.isEmpty()

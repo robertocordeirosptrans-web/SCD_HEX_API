@@ -12,7 +12,7 @@ public interface AddressChannelPersistencePort {
 
     boolean existsById(String codEndereco);
 
-    Page<AddressChannel> findAllByCanal(String codCanal, Pageable pageable);
+    Page<AddressChannel> findAllByCanal(String codCanal, String flgTipoSaida, Pageable pageable);
 
     AddressChannel save(AddressChannel addressChannel);
 

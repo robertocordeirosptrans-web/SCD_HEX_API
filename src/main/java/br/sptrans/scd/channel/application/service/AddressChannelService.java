@@ -125,9 +125,9 @@ public class AddressChannelService implements AddressChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "canais", key = "'address-all-' + #codCanal + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
-    public Page<AddressChannel> findAllAddressChannels(String codCanal, Pageable pageable) {
-        return addressChannelRepository.findAllByCanal(codCanal, pageable);
+    @Cacheable(value = "canais", key = "'address-all-' + #codCanal + '-' + #flgTipoSaida + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    public Page<AddressChannel> findAllAddressChannels(String codCanal,String flgTipoSaida, Pageable pageable) {
+        return addressChannelRepository.findAllByCanal(codCanal, flgTipoSaida, pageable);
     }
 
     @Override

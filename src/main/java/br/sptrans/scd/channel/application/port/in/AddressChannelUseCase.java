@@ -14,7 +14,7 @@ public interface AddressChannelUseCase {
 
     AddressChannel findByAddressChannel(String codEndereco);
 
-    Page<AddressChannel> findAllAddressChannels(String codCanal, Pageable pageable);
+    Page<AddressChannel> findAllAddressChannels(String codCanal, String flgTipoSaida, Pageable pageable);
 
     void deleteAddressChannel(String codEndereco);
 

@@ -116,11 +116,12 @@ public class AddressChannelController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('" + CadPermissions.END_LISEND + "')")
-    @Operation(summary = "Lista endereços do canal, com filtro opcional por canal")
+    @Operation(summary = "Lista endereços do canal, com filtro opcional por canal e tipo de saída (Entrega/Retirada)")
     public ResponseEntity<PageResponse<AddressChannelResponseDTO>> findAllAddressChannels(
             @RequestParam(required = false) String codCanal,
+            @RequestParam(name = "flgTipoSaida", required = false) String flgTipoSaida,
             Pageable pageable) {
-        Page<AddressChannel> page = addressChannelUseCase.findAllAddressChannels(codCanal, pageable);
+        Page<AddressChannel> page = addressChannelUseCase.findAllAddressChannels(codCanal, flgTipoSaida, pageable);
         return ResponseEntity.ok(PageResponse.fromPage(page.map(addressChannelMapper::toResponseDTO)));
     }
 
