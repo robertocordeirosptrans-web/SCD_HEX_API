@@ -35,13 +35,22 @@ public class RequestInitializedAdapter implements RequestInitializedRepository {
     }
 
     @Override
-    public Page<RequestInitializedCards> findAll(String codCanal, String codAdquirente, Pageable pageable) {
+    public Page<RequestInitializedCards> findAll(String codCanal, Long nrSolicitacao, String codAdquirente, String codProduto, String flgFaseSolicitacao, Pageable pageable) {
         Specification<RICEntityJpa> spec = Specification.where(null);
         if (codCanal != null && !codCanal.isBlank()) {
             spec = spec.and((root, q, cb) -> cb.equal(root.get("id").get("codCanal"), codCanal));
         }
+        if (nrSolicitacao != null) {
+            spec = spec.and((root, q, cb) -> cb.equal(root.get("id").get("nrSolicitacao"), nrSolicitacao));
+        }
         if (codAdquirente != null && !codAdquirente.isBlank()) {
             spec = spec.and((root, q, cb) -> cb.equal(root.get("codAdquirente"), codAdquirente));
+        }
+        if (codProduto != null && !codProduto.isBlank()) {
+            spec = spec.and((root, q, cb) -> cb.equal(root.get("codProduto"), codProduto));
+        }
+        if (flgFaseSolicitacao != null && !flgFaseSolicitacao.isBlank()) {
+            spec = spec.and((root, q, cb) -> cb.equal(root.get("flgFaseSolicitacao"), flgFaseSolicitacao));
         }
         return repository.findAll(spec, pageable).map(mapper::toDomain);
     }

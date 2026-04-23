@@ -97,8 +97,13 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
     @Override
     @Transactional(readOnly = true)
     public Page<RequestInitializedCards> listarSolicitacoes(
-            String codCanal, String codAdquirente, Pageable pageable) {
-        return requestInitializedRepository.findAll(codCanal, codAdquirente, pageable);
+            String codCanal,
+            Long nrSolicitacao,
+            String codAdquirente,
+            String codProduto,
+            String flgFaseSolicitacao,
+            Pageable pageable) {
+        return requestInitializedRepository.findAll(codCanal, nrSolicitacao, codAdquirente, codProduto, flgFaseSolicitacao, pageable);
     }
 
     // ── Buscar por ID ──────────────────────────────────────────────────────────

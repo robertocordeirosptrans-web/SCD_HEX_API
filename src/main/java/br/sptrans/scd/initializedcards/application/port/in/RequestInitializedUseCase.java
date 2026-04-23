@@ -19,7 +19,7 @@ public interface RequestInitializedUseCase {
 
     RequestInitializedCards criarSolicitacao(CriarSolicitacaoCommand command);
 
-    Page<RequestInitializedCards> listarSolicitacoes(String codCanal, String codAdquirente, Pageable pageable);
+        Page<RequestInitializedCards> listarSolicitacoes(String codCanal, Long nrSolicitacao, String codAdquirente, String codProduto, String flgFaseSolicitacao, Pageable pageable);
 
     RequestInitializedCards buscarPorId(String codCanal, Long nrSolicitacao);
 

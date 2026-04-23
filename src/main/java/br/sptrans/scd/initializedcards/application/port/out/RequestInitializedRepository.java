@@ -11,7 +11,7 @@ public interface RequestInitializedRepository {
 
     RequestInitializedCards findById(String codCanal, Long nrSolicitacao);
 
-    Page<RequestInitializedCards> findAll(String codCanal, String codAdquirente, Pageable pageable);
+    Page<RequestInitializedCards> findAll(String codCanal, Long nrSolicitacao, String codAdquirente, String codProduto, String flgFaseSolicitacao, Pageable pageable);
 
     Long nextNrSolicitacao(String codTipoCanal, String codCanal);
 }

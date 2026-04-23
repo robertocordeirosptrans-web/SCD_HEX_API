@@ -86,11 +86,14 @@ public class RequestInitializedController {
     @GetMapping
     public ResponseEntity<PageResponse<SolicitacaoResponse>> listarSolicitacoes(
             @RequestParam(required = false) String codCanal,
+            @RequestParam(required = false) Long nrSolicitacao,
             @RequestParam(required = false) String codAdquirente,
+            @RequestParam(required = false) String codProduto,
+            @RequestParam(required = false) String flgFaseSolicitacao,
             @PageableDefault(size = 20) Pageable pageable) {
 
         Page<SolicitacaoResponse> page = useCase
-                .listarSolicitacoes(codCanal, codAdquirente, pageable)
+                .listarSolicitacoes(codCanal, nrSolicitacao, codAdquirente, codProduto, flgFaseSolicitacao, pageable)
                 .map(SolicitacaoResponse::fromDomain);
 
         return ResponseEntity.ok(PageResponse.fromPage(page));
