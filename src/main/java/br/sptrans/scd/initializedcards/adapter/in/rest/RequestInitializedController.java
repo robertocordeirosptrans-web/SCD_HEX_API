@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import br.sptrans.scd.initializedcards.adapter.in.rest.request.AssociarLotesRequest;
 import br.sptrans.scd.initializedcards.adapter.in.rest.request.CriarSolicitacaoRequest;
 import br.sptrans.scd.initializedcards.adapter.in.rest.response.HistoricoResponse;
+import br.sptrans.scd.initializedcards.adapter.in.rest.response.LoteDisponivelResponse;
 import br.sptrans.scd.initializedcards.adapter.in.rest.response.SolicitacaoDetalheResponse;
 import br.sptrans.scd.initializedcards.adapter.in.rest.response.SolicitacaoResponse;
 import br.sptrans.scd.initializedcards.application.port.in.HistRequestInitializedUseCase;
@@ -162,6 +163,21 @@ public class RequestInitializedController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(historico);
+    }
+
+    // ── Lotes Disponíveis ──────────────────────────────────────────────────────
+
+    @Operation(summary = "Buscar lotes disponíveis para associação")
+    @GetMapping("/lotes/disponiveis")
+    public ResponseEntity<List<LoteDisponivelResponse>> buscarLotesDisponiveis(
+            @RequestParam(required = false, defaultValue = "idLote") String sortBy) {
+
+        List<LoteDisponivelResponse> lotes = useCase.buscarLotesDisponiveis(sortBy)
+                .stream()
+                .map(LoteDisponivelResponse::fromDomain)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(lotes);
     }
 }
 

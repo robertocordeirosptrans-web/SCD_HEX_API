@@ -6,10 +6,13 @@ import java.util.Date;
 
 import org.springframework.stereotype.Component;
 
+import br.sptrans.scd.auth.domain.ClassificationPerson;
+import br.sptrans.scd.channel.adapter.out.persistence.entity.SalesChannelEntityJpa;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.initializedcards.adapter.out.persistence.entity.RICEntityJpa;
 import br.sptrans.scd.initializedcards.adapter.out.persistence.entity.RICEntityJpaKey;
 import br.sptrans.scd.initializedcards.domain.RequestInitializedCards;
+import br.sptrans.scd.product.adapter.out.persistence.entity.ProductEntityJpa;
 import br.sptrans.scd.product.domain.Product;
 
 @Component
@@ -21,11 +24,11 @@ public class RequestInitializedMapper {
         RICEntityJpaKey key = entity.getId();
         if (key != null) {
             domain.setCodTipoCanal(key.getCodTipoCanal());
-            domain.setCodCanal(toMinimalSalesChannel(key.getCodCanal()));
+            domain.setCodCanal(toSalesChannel(key.getCodCanal(), entity.getSalesChannel()));
             domain.setNrSolicitacao(key.getNrSolicitacao());
         }
         domain.setCodAdquirente(entity.getCodAdquirente());
-        domain.setCodProduto(toMinimalProduct(entity.getCodProduto()));
+        domain.setCodProduto(toProduct(entity.getCodProduto(), entity.getProduto()));
         domain.setQtdSolicitada(entity.getQtdSolicitada());
         domain.setQtdAtendida(entity.getQtdAtendida());
         domain.setQtdRecebida(entity.getQtdRecebida());
@@ -108,17 +111,29 @@ public class RequestInitializedMapper {
         return entity;
     }
 
-    private SalesChannel toMinimalSalesChannel(String codCanal) {
-        if (codCanal == null) return null;
+    private SalesChannel toSalesChannel(String codCanal, SalesChannelEntityJpa entity) {
+        if (codCanal == null && entity == null) return null;
         SalesChannel sc = new SalesChannel();
         sc.setCodCanal(codCanal);
+        if (entity != null) {
+            sc.setDesCanal(entity.getDesCanal());
+            if (entity.getClassificacaoPessoa() != null) {
+                ClassificationPerson cp = new ClassificationPerson();
+                cp.setCodClassificacaoPessoa(entity.getClassificacaoPessoa().getCodClassificacaoPessoa());
+                cp.setDesClassificacaoPessoa(entity.getClassificacaoPessoa().getDesClassificacaoPessoa());
+                sc.setCodClassificacaoPessoa(cp);
+            }
+        }
         return sc;
     }
 
-    private Product toMinimalProduct(String codProduto) {
-        if (codProduto == null) return null;
+    private Product toProduct(String codProduto, ProductEntityJpa entity) {
+        if (codProduto == null && entity == null) return null;
         Product p = new Product();
         p.setCodProduto(codProduto);
+        if (entity != null) {
+            p.setDesProduto(entity.getDesProduto());
+        }
         return p;
     }
 

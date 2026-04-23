@@ -249,6 +249,14 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
         salvarHistorico(saved);
     }
 
+    // ── Lotes Disponíveis ──────────────────────────────────────────────────────
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TbLotSCD> buscarLotesDisponiveis(String sortBy) {
+        return tbLotRepository.findDisponiveis(sortBy);
+    }
+
     // ── Histórico (HistRequestInitializedUseCase) ─────────────────────────────
 
     @Override

@@ -16,28 +16,38 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class SolicitacaoDetalheResponse {
 
-    private String codTipoCanal;
-    private String codCanal;
-    private Long nrSolicitacao;
-    private String codAdquirente;
-    private String codProduto;
-    private Long qtdSolicitada;
-    private Long qtdAtendida;
-    private Long qtdRecebida;
-    private String flgTipoSaida;
-    private String flgTipoVolume;
-    private String flgAssociacaoUsuario;
-    private String flgGeraArquivo;
-    private String flgAprovado;
-    private LocalDateTime dtPrevistaEntrega;
-    private LocalDateTime dtSolicitacao;
-    private String flgFaseSolicitacao;
-    private String stSolicitaCartaoInicializad;
-    private LocalDateTime dtCancelamento;
-    private List<LoteResponse> lotes;
-    private List<HistoricoResponse> historico;
+        private String codTipoCanal;
+        private String codCanal;
+        private String desCanal;
+        private String desClassificacaoPessoa;
+        private Long nrSolicitacao;
+        private String codAdquirente;
+        private String codProduto;
+        private String desProduto;
+        private Long qtdSolicitada;
+        private Long qtdAtendida;
+        private Long qtdRecebida;
+        private String flgTipoSaida;
+        private String flgTipoVolume;
+        private String flgAssociacaoUsuario;
+        private String flgGeraArquivo;
+        private String flgAprovado;
+        private String desNomeRespEntrega;
+        private String codTipoDoctoRespEntrega;
+        private String codDoctoRespEntrega;
+        private String desNomeRespRecebimento;
+        private String codTipoDoctoRespRecebe;
+        private String codDoctoRespRecebe;
+        private LocalDateTime dtPrevistaEntrega;
+        private LocalDateTime dtSolicitacao;
+        private String flgFaseSolicitacao;
+        private String stSolicitaCartaoInicializad;
+        private LocalDateTime dtCancelamento;
+        private List<LoteResponse> lotes;
+        private List<HistoricoResponse> historico;
 
     public static SolicitacaoDetalheResponse fromDomain(SolicitacaoDetalhe detalhe, List<TbLotSCD> tbLotes) {
         var solicitacao = detalhe.solicitacao();
@@ -57,9 +67,15 @@ public class SolicitacaoDetalheResponse {
         return SolicitacaoDetalheResponse.builder()
                 .codTipoCanal(solicitacao.getCodTipoCanal())
                 .codCanal(solicitacao.getCodCanal() != null ? solicitacao.getCodCanal().getCodCanal() : null)
+                .desCanal(solicitacao.getCodCanal() != null ? solicitacao.getCodCanal().getDesCanal() : null)
+                .desClassificacaoPessoa(solicitacao.getCodCanal() != null
+                        && solicitacao.getCodCanal().getCodClassificacaoPessoa() != null
+                        ? solicitacao.getCodCanal().getCodClassificacaoPessoa().getDesClassificacaoPessoa()
+                        : null)
                 .nrSolicitacao(solicitacao.getNrSolicitacao())
                 .codAdquirente(solicitacao.getCodAdquirente())
                 .codProduto(solicitacao.getCodProduto() != null ? solicitacao.getCodProduto().getCodProduto() : null)
+                .desProduto(solicitacao.getCodProduto() != null ? solicitacao.getCodProduto().getDesProduto() : null)
                 .qtdSolicitada(solicitacao.getQtdSolicitada())
                 .qtdAtendida(solicitacao.getQtdAtendida())
                 .qtdRecebida(solicitacao.getQtdRecebida())
@@ -68,6 +84,12 @@ public class SolicitacaoDetalheResponse {
                 .flgAssociacaoUsuario(solicitacao.getFlgAssociaUsuario())
                 .flgGeraArquivo(solicitacao.getFlgGerarArquivo())
                 .flgAprovado(solicitacao.getFlgAprovado())
+                .desNomeRespEntrega(solicitacao.getDesRespEntrega())
+                .codTipoDoctoRespEntrega(solicitacao.getCodTipoRespEntrega())
+                .codDoctoRespEntrega(solicitacao.getCodDoctoRespEntrega())
+                .desNomeRespRecebimento(solicitacao.getDesRespRecebimento())
+                .codTipoDoctoRespRecebe(solicitacao.getCodTipoDoctoRespRecebe())
+                .codDoctoRespRecebe(solicitacao.getCodDoctoRespRecebe())
                 .dtPrevistaEntrega(solicitacao.getDtPrevistaEntrega())
                 .dtSolicitacao(solicitacao.getDtSolicitacao())
                 .flgFaseSolicitacao(solicitacao.getFlgFaseSolicitacao())

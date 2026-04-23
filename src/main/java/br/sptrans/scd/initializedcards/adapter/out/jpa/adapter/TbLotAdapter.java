@@ -1,9 +1,11 @@
 package br.sptrans.scd.initializedcards.adapter.out.jpa.adapter;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.initializedcards.adapter.out.jpa.mapper.TbLotSCDMapper;
@@ -16,8 +18,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TbLotAdapter implements TbLotRepository {
 
+
     private final TbLotJpaRepository repository;
     private final TbLotSCDMapper mapper;
+
+    
+    private static final Map<String, String> ALLOWED_SORT_FIELDS = Map.of(
+            "idLote", "idLote",
+            "qtdCartoesLote", "qtdCartoesLote",
+            "dtGeracao", "dtGeracao",
+            "codTipoCartao", "codTipoCartao"
+    );
 
     @Override
     public TbLotSCD findById(Long idLote) {
@@ -37,6 +48,16 @@ public class TbLotAdapter implements TbLotRepository {
     @Override
     public List<TbLotSCD> findAllByIds(List<Long> ids) {
         return repository.findAllById(ids)
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TbLotSCD> findDisponiveis(String sortBy) {
+        String field = ALLOWED_SORT_FIELDS.getOrDefault(sortBy, "idLote");
+        Sort sort = Sort.by(Sort.Direction.ASC, field);
+        return repository.findDisponiveis(sort)
                 .stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());

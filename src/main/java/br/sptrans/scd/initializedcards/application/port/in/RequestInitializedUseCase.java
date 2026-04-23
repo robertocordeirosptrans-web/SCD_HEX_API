@@ -31,6 +31,8 @@ public interface RequestInitializedUseCase {
 
     void cancelarSolicitacao(CancelarCommand command);
 
+    List<TbLotSCD> buscarLotesDisponiveis(String sortBy);
+
     // ── Comandos ──────────────────────────────────────────────────────────────
 
     record CriarSolicitacaoCommand(

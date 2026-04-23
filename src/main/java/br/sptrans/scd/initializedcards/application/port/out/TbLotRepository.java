@@ -11,4 +11,6 @@ public interface TbLotRepository {
     TbLotSCD findById(Long idLote);
 
     List<TbLotSCD> findAllByIds(List<Long> ids);
+
+    List<TbLotSCD> findDisponiveis(String sortBy);
 }
