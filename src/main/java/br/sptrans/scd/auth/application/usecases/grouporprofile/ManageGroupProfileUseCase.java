@@ -443,15 +443,16 @@ public class ManageGroupProfileUseCase {
             GroupProfileManagementUseCase.DisassociateFunctionalityFromProfileCommand command) {
 
         log.info("Removendo funcionalidade do perfil. Perfil: {}, Funcionalidade: {}",
-                command.codPerfil(), command.functionality().codFuncionalidade());
+                command.codPerfil(), command.functionality().getCodFuncionalidade());
 
         findProfileOrThrow(command.codPerfil());
 
         var functionalityKey = new FunctionalityKey(
-                command.functionality().codSistema(),
-                command.functionality().codModulo(),
-                command.functionality().codRotina(),
-                command.functionality().codFuncionalidade());
+                command.functionality().getCodSistema(),
+
+                command.functionality().getCodModulo(),
+                command.functionality().getCodRotina(),
+                command.functionality().getCodFuncionalidade());
 
         profileRepository.desassociateFunctionalitiesToProfile(
                 command.codPerfil(),
@@ -459,7 +460,7 @@ public class ManageGroupProfileUseCase {
                 command.idUsuarioLogado());
 
         log.info("Funcionalidade removida. Perfil: {}, Funcionalidade: {}",
-                command.codPerfil(), command.functionality().codFuncionalidade());
+                command.codPerfil(), command.functionality().getCodFuncionalidade());
     }
 
     /**

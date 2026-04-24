@@ -108,6 +108,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         return manageGroupProfileUseCase.listCustomUsersByGroup(codGrupo, pageable);
     }
 
+    @Override
     public Page<GroupCustomProjection> listCustomGroupsByUser(Long idUsuario, Pageable pageable) {
         return manageGroupProfileUseCase.listCustomGroupsByUser(idUsuario, pageable);
     }
@@ -189,6 +190,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         return manageGroupProfileUseCase.listGroupUsers(pageable);
     }
 
+    @Override
     public Page<UserProfile> listUserProfiles(Pageable pageable) {
         return manageGroupProfileUseCase.listUserProfiles(pageable);
     }
@@ -203,6 +205,7 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         return manageGroupProfileUseCase.listProfileFunctionalities();
     }
 
+    @Override
     public Page<ProfileFunctionality> listProfileFunctionalities(Pageable pageable) {
         return manageGroupProfileUseCase.listProfileFunctionalities(pageable);
     }

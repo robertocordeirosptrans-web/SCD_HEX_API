@@ -17,69 +17,69 @@ import jakarta.validation.constraints.Size;
 
 public interface RequestInitializedUseCase {
 
-    RequestInitializedCards criarSolicitacao(CriarSolicitacaoCommand command);
+        RequestInitializedCards criarSolicitacao(CriarSolicitacaoCommand command);
 
-        Page<RequestInitializedCards> listarSolicitacoes(String codCanal, Long nrSolicitacao, String codAdquirente, String codProduto, String flgFaseSolicitacao, Pageable pageable);
+        Page<RequestInitializedCards> listarSolicitacoes(String codCanal, Long nrSolicitacao, String codAdquirente,
+                        String codProduto, String flgFaseSolicitacao, Pageable pageable);
 
-    RequestInitializedCards buscarPorId(String codCanal, Long nrSolicitacao);
+        RequestInitializedCards buscarPorId(String codCanal, Long nrSolicitacao);
 
-    SolicitacaoDetalhe detalharSolicitacao(String codCanal, Long nrSolicitacao);
+        SolicitacaoDetalhe detalharSolicitacao(String codCanal, Long nrSolicitacao);
 
-    void associarLotes(AssociarLotesCommand command);
+        void associarLotes(AssociarLotesCommand command);
 
-    void desassociarLotes(DesassociarLotesCommand command);
+        void desassociarLotes(DesassociarLotesCommand command);
 
-    void cancelarSolicitacao(CancelarCommand command);
+        void cancelarSolicitacao(CancelarCommand command);
 
-    List<TbLotSCD> buscarLotesDisponiveis(String sortBy);
+        List<TbLotSCD> buscarLotesDisponiveis(String sortBy);
 
-    // ── Comandos ──────────────────────────────────────────────────────────────
+        // ── Comandos ──────────────────────────────────────────────────────────────
 
-    record CriarSolicitacaoCommand(
-            @NotBlank @Size(max = 20) String codTipoCanal,
-            @NotBlank @Size(max = 20) String codCanal,
-            String codAdquirente,
-            String codProduto,
-            @NotNull Long qtdSolicitada,
-            @NotBlank @Size(max = 1) String flgTipoSaida,
-            @Size(max = 1) String flgTipoVolume,
-            @Size(max = 1) String flgAssociacaoUsuario,
-            @Size(max = 1) String flgGeraArquivo,
-            @Size(max = 1) String flgRespEntregaRetirada,
-            @Size(max = 60) String desNomeRespEntrega,
-            @Size(max = 3) String codTipoDoctoRespEntrega,
-            @Size(max = 20) String codDoctoRespEntrega,
-            @Size(max = 20) String codEnderecoEntrega,
-            @NotNull LocalDateTime dtPrevistaEntrega,
-            Long idUsuarioCadastro) {
-    }
+        record CriarSolicitacaoCommand(
+                        @NotBlank @Size(max = 20) String codTipoCanal,
+                        @NotBlank @Size(max = 20) String codCanal,
+                        String codAdquirente,
+                        String codProduto,
+                        @NotNull Long qtdSolicitada,
+                        @NotBlank @Size(max = 1) String flgTipoSaida,
+                        @Size(max = 1) String flgTipoVolume,
+                        @Size(max = 1) String flgAssociacaoUsuario,
+                        @Size(max = 1) String flgGeraArquivo,
+                        @Size(max = 1) String flgRespEntregaRetirada,
+                        @Size(max = 60) String desNomeRespEntrega,
+                        @Size(max = 3) String codTipoDoctoRespEntrega,
+                        @Size(max = 20) String codDoctoRespEntrega,
+                        @Size(max = 20) String codEnderecoEntrega,
+                        @NotNull LocalDateTime dtPrevistaEntrega,
+                        Long idUsuarioCadastro) {
+        }
 
-    record AssociarLotesCommand(
-            @NotBlank String codCanal,
-            @NotNull Long nrSolicitacao,
-            @NotEmpty List<Long> idsLotes,
-            Long idUsuario) {
-    }
+        record AssociarLotesCommand(
+                        @NotBlank String codCanal,
+                        @NotNull Long nrSolicitacao,
+                        @NotEmpty List<Long> idsLotes,
+                        Long idUsuario) {
+        }
 
-    record DesassociarLotesCommand(
-            @NotBlank String codCanal,
-            @NotNull Long nrSolicitacao,
-            Long idUsuario) {
-    }
+        record DesassociarLotesCommand(
+                        @NotBlank String codCanal,
+                        @NotNull Long nrSolicitacao,
+                        Long idUsuario) {
+        }
 
-    record CancelarCommand(
-            @NotBlank String codCanal,
-            @NotNull Long nrSolicitacao,
-            Long idUsuario) {
-    }
+        record CancelarCommand(
+                        @NotBlank String codCanal,
+                        @NotNull Long nrSolicitacao,
+                        Long idUsuario) {
+        }
 
-    // ── Agregado de detalhe ────────────────────────────────────────────────────
+        // ── Agregado de detalhe ────────────────────────────────────────────────────
 
-    record SolicitacaoDetalhe(
-            RequestInitializedCards solicitacao,
-            List<RequestLotSCP> lotes,
-            List<HistRequestInitializedCards> historico,
-            List<TbLotSCD> tbLotes) {
-    }
+        record SolicitacaoDetalhe(
+                        RequestInitializedCards solicitacao,
+                        List<RequestLotSCP> lotes,
+                        List<HistRequestInitializedCards> historico,
+                        List<TbLotSCD> tbLotes) {
+        }
 }
-

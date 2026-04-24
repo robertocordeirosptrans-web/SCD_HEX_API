@@ -43,7 +43,8 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
     @Override
     public RequestInitializedCards criarSolicitacao(CriarSolicitacaoCommand command) {
         // Regra 2: data prevista deve ser futura
-        if (!command.dtPrevistaEntrega().isAfter(LocalDateTime.now())) {
+        if (command.dtPrevistaEntrega().isAfter(LocalDateTime.now())) {
+        } else {
             throw new ValidationException("A data prevista de entrega deve ser uma data futura.");
         }
 

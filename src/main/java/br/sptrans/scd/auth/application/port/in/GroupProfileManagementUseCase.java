@@ -13,6 +13,7 @@ import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileProjectionDTO;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupCustomProjection;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.domain.Functionality;
+import br.sptrans.scd.auth.domain.FunctionalityKey;
 import br.sptrans.scd.auth.domain.Group;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.Profile;
@@ -239,13 +240,13 @@ public interface GroupProfileManagementUseCase {
 
         }
 
-        record FunctionalityKey(
-                        String codSistema,
-                        String codModulo,
-                        String codRotina,
-                        String codFuncionalidade) {
+        // record FunctionalityKey(
+        //                 String codSistema,
+        //                 String codModulo,
+        //                 String codRotina,
+        //                 String codFuncionalidade) {
 
-        }
+        // }
 
         // ══════════════════════════════════════════════════════════════════════════
         // Domain Exceptions

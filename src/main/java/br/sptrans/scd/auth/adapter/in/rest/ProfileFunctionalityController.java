@@ -1,5 +1,7 @@
 package br.sptrans.scd.auth.adapter.in.rest;
 
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +22,9 @@ import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityStatusRequest
 import br.sptrans.scd.auth.adapter.in.rest.mapper.ProfileFunctionalityRestMapper;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Functionality;
+import br.sptrans.scd.auth.domain.FunctionalityKey;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.security.CacPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,97 +41,162 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ProfileFunctionalityController {
 
-    private final GroupProfileManagementUseCase groupProfileManagementUseCase;
-    private final ProfileFunctionalityRestMapper profileFunctionalityRestMapper;
+        private final GroupProfileManagementUseCase groupProfileManagementUseCase;
+        private final ProfileFunctionalityRestMapper profileFunctionalityRestMapper;
+        private final UserResolverHelper userResolverHelper;
 
- 
-    @GetMapping("/{codPerfil}/functionalities")
-    @PreAuthorize("hasAuthority('" + CacPermissions.LISASSPERFUN + "')")
-    @Operation(summary = "Listar funcionalidades de um perfil", description = "Retorna as funcionalidades associadas ao perfil informado (projeção customizada)")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Lista de funcionalidades retornada com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<ProfileFunctionalityProjectionDTO>> listFunctionalitiesByProfile(
-            @PathVariable("codPerfil") String codPerfil,
-            Pageable pageable) {
-        Page<ProfileFunctionalityProjectionDTO> dtoPage = groupProfileManagementUseCase
-            .listFunctionalitiesProjectionByProfile(codPerfil, pageable);
-        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
+        @GetMapping("/{codPerfil}/functionalities")
+        @PreAuthorize("hasAuthority('" + CacPermissions.LISASSPERFUN + "')")
+        @Operation(summary = "Listar funcionalidades de um perfil", description = "Retorna as funcionalidades associadas ao perfil informado (projeção customizada)")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lista de funcionalidades retornada com sucesso"),
+                        @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<PageResponse<ProfileFunctionalityProjectionDTO>> listFunctionalitiesByProfile(
+                        @PathVariable("codPerfil") String codPerfil,
+                        Pageable pageable) {
+                Page<ProfileFunctionalityProjectionDTO> dtoPage = groupProfileManagementUseCase
+                                .listFunctionalitiesProjectionByProfile(codPerfil, pageable);
+                return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
         }
 
-    @GetMapping
-    @PreAuthorize("hasAuthority('" + CacPermissions.LISASSPERFUN + "')")
-    @Operation(summary = "Listar associações perfil-funcionalidade", description = "Retorna uma lista paginada de todas as associações perfil-funcionalidade")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Lista de associações retornada com sucesso")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<PageResponse<ProfileFunctionalityResponseDTO>> listProfileFunctionalities(
-            Pageable pageable) {
-        Page<ProfileFunctionalityResponseDTO> dtoPage = groupProfileManagementUseCase.listProfileFunctionalities(pageable)
-                .map(profileFunctionalityRestMapper::toDto);
-        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
-    }
+        @GetMapping
+        @PreAuthorize("hasAuthority('" + CacPermissions.LISASSPERFUN + "')")
+        @Operation(summary = "Listar associações perfil-funcionalidade", description = "Retorna uma lista paginada de todas as associações perfil-funcionalidade")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lista de associações retornada com sucesso")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<PageResponse<ProfileFunctionalityResponseDTO>> listProfileFunctionalities(
+                        Pageable pageable) {
+                Page<ProfileFunctionalityResponseDTO> dtoPage = groupProfileManagementUseCase
+                                .listProfileFunctionalities(pageable)
+                                .map(profileFunctionalityRestMapper::toDto);
+                return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
+        }
 
-    @PostMapping
-    @PreAuthorize("hasAuthority('" + CacPermissions.ASSFUNAOPER + "')")
-    @Operation(summary = "Associar funcionalidade ao perfil", description = "Associa uma funcionalidade ao perfil")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Associação criada com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> associate(@Valid @RequestBody ProfileFunctionalityRequestDTO request) {
+        @PostMapping
+        @PreAuthorize("hasAuthority('" + CacPermissions.ASSFUNAOPER + "')")
+        @Operation(summary = "Associar funcionalidade ao perfil", description = "Associa uma funcionalidade ao perfil")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Associação criada com sucesso"),
+                        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<?> associate(@Valid @RequestBody ProfileFunctionalityRequestDTO request) {
 
-        var functionality = new Functionality();
-        groupProfileManagementUseCase.associateFunctionalitiesToProfile(
-                new GroupProfileManagementUseCase.AssociateFunctionalitiesToProfileCommand(
-                        request.codPerfil(),
-                        java.util.Set.of(functionality),
-                        request.idUsuarioLogado()
-                )
-        );
-        return ResponseEntity.ok().build();
-    }
+                Long idUsuario = userResolverHelper.getCurrentUserId();
 
-    @PutMapping
-    @PreAuthorize("hasAuthority('" + CacPermissions.ASSFUNAOPER + "')")
-    @Operation(summary = "Atualizar associação perfil-funcionalidade", description = "Atualiza dados da associação")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Associação atualizada com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Associação não encontrada")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> update(@Valid @RequestBody ProfileFunctionalityRequestDTO request) {
-        // Implementar lógica de atualização se necessário
-        return ResponseEntity.ok().build();
-    }
-
-    @PatchMapping("/status")
-    @PreAuthorize("hasAuthority('" + CacPermissions.ASSFUNAOPER + "')")
-    @Operation(summary = "Atualizar status da associação", description = "Atualiza o status da associação perfil-funcionalidade")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Associação não encontrada")
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateStatus(@Valid @RequestBody ProfileFunctionalityStatusRequestDTO request) {
-   
-        groupProfileManagementUseCase.disassociateFunctionalityFromProfile(
-                new GroupProfileManagementUseCase.DisassociateFunctionalityFromProfileCommand(
-                        request.codPerfil(),
-                        new GroupProfileManagementUseCase.FunctionalityKey(
+                // Criar FunctionalityKey com os dados do request
+                var functionalityKey = new FunctionalityKey(
                                 request.codSistema(),
                                 request.codModulo(),
                                 request.codRotina(),
-                                request.codFuncionalidade()
-                        ),
-                        request.idUsuarioLogado()
-                )
-        );
-        return ResponseEntity.ok().build();
-    }
+                                request.codFuncionalidade());
+
+                // Criar e popular a Functionality com os dados do request
+                var functionality = new Functionality();
+
+                functionality.setId(functionalityKey);
+                functionality.setCodStatus("A"); // Status ativo por padrão
+                functionality.setIdUsuarioManutencao(idUsuario);
+                functionality.setDtModi(java.time.LocalDateTime.now());
+
+                groupProfileManagementUseCase.associateFunctionalitiesToProfile(
+                                new GroupProfileManagementUseCase.AssociateFunctionalitiesToProfileCommand(
+                                                request.codPerfil(),
+                                                Set.of(functionality),
+                                                idUsuario));
+                return ResponseEntity.ok().build();
+        }
+
+        @PutMapping
+        @PreAuthorize("hasAuthority('" + CacPermissions.ASSFUNAOPER + "')")
+        @Operation(summary = "Atualizar associação perfil-funcionalidade", description = "Atualiza dados da associação")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Associação atualizada com sucesso"),
+                        @ApiResponse(responseCode = "404", description = "Associação não encontrada")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<?> update(@Valid @RequestBody ProfileFunctionalityRequestDTO request) {
+
+                Long idUsuario = userResolverHelper.getCurrentUserId();
+
+                // Remover associação anterior
+                groupProfileManagementUseCase.disassociateFunctionalityFromProfile(
+                                new GroupProfileManagementUseCase.DisassociateFunctionalityFromProfileCommand(
+                                                request.codPerfil(),
+                                                new FunctionalityKey(
+                                                                request.codSistema(),
+                                                                request.codModulo(),
+                                                                request.codRotina(),
+                                                                request.codFuncionalidade()),
+                                                idUsuario));
+
+                // Criar e popular a Functionality com os dados atualizados
+                var functionality = new Functionality();
+                var id = new FunctionalityKey(
+                                request.codSistema(),
+                                request.codModulo(),
+                                request.codRotina(),
+                                request.codFuncionalidade());
+                functionality.setId(id);
+                functionality.setCodStatus("A"); // Status ativo por padrão
+                functionality.setIdUsuarioManutencao(idUsuario);
+                functionality.setDtModi(java.time.LocalDateTime.now());
+
+                // Recriar com novos dados
+                groupProfileManagementUseCase.associateFunctionalitiesToProfile(
+                                new GroupProfileManagementUseCase.AssociateFunctionalitiesToProfileCommand(
+                                                request.codPerfil(),
+                                                Set.of(functionality),
+                                                idUsuario));
+
+                return ResponseEntity.ok().build();
+        }
+
+        @PatchMapping("/status")
+        @PreAuthorize("hasAuthority('" + CacPermissions.ASSFUNAOPER + "')")
+        @Operation(summary = "Atualizar status da associação", description = "Atualiza o status da associação perfil-funcionalidade")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
+                        @ApiResponse(responseCode = "404", description = "Associação não encontrada")
+        })
+        @SecurityRequirement(name = "bearerAuth")
+        public ResponseEntity<?> updateStatus(@Valid @RequestBody ProfileFunctionalityStatusRequestDTO request) {
+
+                Long idUsuario = request.idUsuarioLogado();
+                // Criar FunctionalityKey com os dados do request
+                var functionalityKey = new FunctionalityKey(
+                                request.codSistema(),
+                                request.codModulo(),
+                                request.codRotina(),
+                                request.codFuncionalidade());
+                // Se o status é 'I' (inativo), remover a associação
+                if ("I".equals(request.status())) {
+                        groupProfileManagementUseCase.disassociateFunctionalityFromProfile(
+                                        new GroupProfileManagementUseCase.DisassociateFunctionalityFromProfileCommand(
+                                                        request.codPerfil(),
+                                                        functionalityKey,
+                                                        idUsuario));
+                }
+                // Se o status é 'A' (ativo), recriar a associação
+                else if ("A".equals(request.status())) {
+                        var functionality = new Functionality();
+                        functionality.setId(functionalityKey);
+                        functionality.setCodStatus("A");
+                        functionality.setIdUsuarioManutencao(idUsuario);
+                        functionality.setDtModi(java.time.LocalDateTime.now());
+
+                        groupProfileManagementUseCase.associateFunctionalitiesToProfile(
+                                        new GroupProfileManagementUseCase.AssociateFunctionalitiesToProfileCommand(
+                                                        request.codPerfil(),
+                                                        Set.of(functionality),
+                                                        idUsuario));
+                }
+
+                return ResponseEntity.ok().build();
+        }
 
 }

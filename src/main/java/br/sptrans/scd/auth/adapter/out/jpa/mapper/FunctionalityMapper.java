@@ -13,10 +13,10 @@ import br.sptrans.scd.auth.domain.FunctionalityKey;
 public interface FunctionalityMapper {
 
     @Mapping(target = "id", expression = "java(entity.getId() != null ? new FunctionalityKey(entity.getId().getCodSistema(), entity.getId().getCodModulo(), entity.getId().getCodRotina(), entity.getId().getCodFuncionalidade()) : null)")
-    @Mapping(target = "codSistema", source = "id.codSistema")
-    @Mapping(target = "codModulo", source = "id.codModulo")
-    @Mapping(target = "codRotina", source = "id.codRotina")
-    @Mapping(target = "codFuncionalidade", source = "id.codFuncionalidade")
+    @Mapping(target = "id.codSistema", source = "id.codSistema")
+    @Mapping(target = "id.codModulo", source = "id.codModulo")
+    @Mapping(target = "id.codRotina", source = "id.codRotina")
+    @Mapping(target = "id.codFuncionalidade", source = "id.codFuncionalidade")
     @Mapping(target = "dtModi", source = "dtManutencao")
     @Mapping(target = "dtSinc", source = "dtCadastro")
     Functionality toDomain(FunctionalityEntityJpa entity);

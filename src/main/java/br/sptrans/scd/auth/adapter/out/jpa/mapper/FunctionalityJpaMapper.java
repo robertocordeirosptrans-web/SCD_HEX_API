@@ -32,12 +32,13 @@ public class FunctionalityJpaMapper {
         domain.setIdUsuarioManutencao(entity.getIdUsuarioManutencao());
         domain.setFlgMonitoracao(entity.getFlgMonitoracao());
         domain.setFlgEvento(entity.getFlgEvento());
-        if (entity.getId() != null) {
-            domain.setCodSistema(entity.getId().getCodSistema());
-            domain.setCodModulo(entity.getId().getCodModulo());
-            domain.setCodRotina(entity.getId().getCodRotina());
-            domain.setCodFuncionalidade(entity.getId().getCodFuncionalidade());
-        }
+        // domain.setId(id);
+        // if (entity.getId() != null) {
+        //     domain.setCodSistema(entity.getId().getCodSistema());
+        //     domain.setCodModulo(entity.getId().getCodModulo());
+        //     domain.setCodRotina(entity.getId().getCodRotina());
+        //     domain.setCodFuncionalidade(entity.getId().getCodFuncionalidade());
+        // }
         return domain;
     }
 

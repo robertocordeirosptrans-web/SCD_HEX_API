@@ -51,6 +51,8 @@ public interface ProfileMapper {
         if (domain.getDtInicioValidade() != null) {
             entity.setDtInicioValidade(domain.getDtInicioValidade().atStartOfDay());
         }
+        // Nota: perfil e funcionalidade devem ser setados pelo adapter após buscar do banco
+        // Este mapeador apenas mapeia os campos do domain para a entidade
         return entity;
     }
 

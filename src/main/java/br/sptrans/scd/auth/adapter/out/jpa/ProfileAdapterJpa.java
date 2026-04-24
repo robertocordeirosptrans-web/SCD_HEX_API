@@ -72,12 +72,28 @@ public class ProfileAdapterJpa implements ProfilePort {
 
     @Override
     public void associateFunctionalitiesToProfile(String codPerfil, FunctionalityKey chave, Long idUsuarioManutencao) {
+        // Buscar as entidades relacionadas para estabelecer as relações JPA
+        var perfil = profileJpaRepository.findByCodPerfil(codPerfil)
+                .orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado: " + codPerfil));
+        
+        FunctionalityEntityJpaKey functionalityKey = new FunctionalityEntityJpaKey();
+        functionalityKey.setCodSistema(chave.getCodSistema());
+        functionalityKey.setCodModulo(chave.getCodModulo());
+        functionalityKey.setCodRotina(chave.getCodRotina());
+        functionalityKey.setCodFuncionalidade(chave.getCodFuncionalidade());
+        
+        var funcionalidade = functionalityJpaRepository.findById(functionalityKey)
+                .orElseThrow(() -> new IllegalArgumentException("Funcionalidade não encontrada: " + functionalityKey));
+        
         ProfileFunctionalityJpaId pfId = profileMapper.toJpaId(new ProfileFunctionalityKey(
                 chave.getCodSistema(), chave.getCodModulo(), chave.getCodRotina(),
                 chave.getCodFuncionalidade(), codPerfil));
+        
         ProfileFunctionalityJpa pf = new ProfileFunctionalityJpa();
         pf.setId(pfId);
         pf.setIdUsuarioManutencao(idUsuarioManutencao);
+        pf.setPerfil(perfil);  // ✅ Setar a relação com Perfil
+        pf.setFuncionalidade(funcionalidade);  // ✅ Setar a relação com Funcionalidade
         profileFunctionalityJpaRepository.save(pf);
     }
 
@@ -184,7 +200,23 @@ public class ProfileAdapterJpa implements ProfilePort {
 
     @Override
     public ProfileFunctionality save(ProfileFunctionality entity) {
-        ProfileFunctionalityJpa saved = profileFunctionalityJpaRepository.save(profileMapper.toEntity(entity));
+        // Buscar as entidades relacionadas para estabelecer as relações JPA
+        var perfil = profileJpaRepository.findByCodPerfil(entity.getId().getCodPerfil())
+                .orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado: " + entity.getId().getCodPerfil()));
+        
+        FunctionalityEntityJpaKey functionalityKey = new FunctionalityEntityJpaKey();
+        functionalityKey.setCodSistema(entity.getId().getCodSistema());
+        functionalityKey.setCodModulo(entity.getId().getCodModulo());
+        functionalityKey.setCodRotina(entity.getId().getCodRotina());
+        functionalityKey.setCodFuncionalidade(entity.getId().getCodFuncionalidade());
+        
+        var funcionalidade = functionalityJpaRepository.findById(functionalityKey)
+                .orElseThrow(() -> new IllegalArgumentException("Funcionalidade não encontrada: " + functionalityKey));
+        
+        ProfileFunctionalityJpa jpaEntity = profileMapper.toEntity(entity);
+        jpaEntity.setPerfil(perfil);  // ✅ Setar a relação com Perfil
+        jpaEntity.setFuncionalidade(funcionalidade);  // ✅ Setar a relação com Funcionalidade
+        ProfileFunctionalityJpa saved = profileFunctionalityJpaRepository.save(jpaEntity);
         return profileMapper.toDomain(saved);
     }
 
