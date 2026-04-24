@@ -6,8 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityProjectionDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityRequestDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityResponseDTO;
-import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityStatusRequestDTO;
 import br.sptrans.scd.auth.adapter.in.rest.mapper.ProfileFunctionalityRestMapper;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.domain.Functionality;
@@ -156,47 +155,38 @@ public class ProfileFunctionalityController {
                 return ResponseEntity.ok().build();
         }
 
-        @PatchMapping("/status")
+        @DeleteMapping("/{codPerfil}/{codSistema}/{codModulo}/{codRotina}/{codFuncionalidade}")
         @PreAuthorize("hasAuthority('" + CacPermissions.ASSFUNAOPER + "')")
-        @Operation(summary = "Atualizar status da associação", description = "Atualiza o status da associação perfil-funcionalidade")
+        @Operation(summary = "Remover associação perfil-funcionalidade", description = "Remove a associação entre perfil e funcionalidade do banco de dados")
         @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
+                        @ApiResponse(responseCode = "204", description = "Associação removida com sucesso"),
                         @ApiResponse(responseCode = "404", description = "Associação não encontrada")
         })
         @SecurityRequirement(name = "bearerAuth")
-        public ResponseEntity<?> updateStatus(@Valid @RequestBody ProfileFunctionalityStatusRequestDTO request) {
+        public ResponseEntity<?> delete(
+                        @PathVariable("codPerfil") String codPerfil,
+                        @PathVariable("codSistema") String codSistema,
+                        @PathVariable("codModulo") String codModulo,
+                        @PathVariable("codRotina") String codRotina,
+                        @PathVariable("codFuncionalidade") String codFuncionalidade) {
 
-                Long idUsuario = request.idUsuarioLogado();
-                // Criar FunctionalityKey com os dados do request
+                Long idUsuario = userResolverHelper.getCurrentUserId();
+
+                // Criar FunctionalityKey com os dados dos PathVariable
                 var functionalityKey = new FunctionalityKey(
-                                request.codSistema(),
-                                request.codModulo(),
-                                request.codRotina(),
-                                request.codFuncionalidade());
-                // Se o status é 'I' (inativo), remover a associação
-                if ("I".equals(request.status())) {
-                        groupProfileManagementUseCase.disassociateFunctionalityFromProfile(
-                                        new GroupProfileManagementUseCase.DisassociateFunctionalityFromProfileCommand(
-                                                        request.codPerfil(),
-                                                        functionalityKey,
-                                                        idUsuario));
-                }
-                // Se o status é 'A' (ativo), recriar a associação
-                else if ("A".equals(request.status())) {
-                        var functionality = new Functionality();
-                        functionality.setId(functionalityKey);
-                        functionality.setCodStatus("A");
-                        functionality.setIdUsuarioManutencao(idUsuario);
-                        functionality.setDtModi(java.time.LocalDateTime.now());
+                                codSistema,
+                                codModulo,
+                                codRotina,
+                                codFuncionalidade);
 
-                        groupProfileManagementUseCase.associateFunctionalitiesToProfile(
-                                        new GroupProfileManagementUseCase.AssociateFunctionalitiesToProfileCommand(
-                                                        request.codPerfil(),
-                                                        Set.of(functionality),
-                                                        idUsuario));
-                }
+                // Executar a lógica de negócio para remover a associação
+                groupProfileManagementUseCase.disassociateFunctionalityFromProfile(
+                                new GroupProfileManagementUseCase.DisassociateFunctionalityFromProfileCommand(
+                                                codPerfil,
+                                                functionalityKey,
+                                                idUsuario));
 
-                return ResponseEntity.ok().build();
+                return ResponseEntity.noContent().build();
         }
 
 }

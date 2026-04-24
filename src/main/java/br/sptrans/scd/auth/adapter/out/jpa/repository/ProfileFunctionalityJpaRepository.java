@@ -37,7 +37,7 @@ public interface ProfileFunctionalityJpaRepository
             @Param("codFuncionalidade") String codFuncionalidade);
 
     @Modifying
-    @Query("UPDATE ProfileFunctionalityJpa pf SET pf.idUsuarioManutencao = :idUsuarioManutencao WHERE pf.id.codPerfil = :codPerfil AND pf.id.codSistema = :codSistema AND pf.id.codModulo = :codModulo AND pf.id.codRotina = :codRotina AND pf.id.codFuncionalidade = :codFuncionalidade")
+    @Query("DELETE FROM ProfileFunctionalityJpa pf WHERE pf.id.codPerfil = :codPerfil AND pf.id.codSistema = :codSistema AND pf.id.codModulo = :codModulo AND pf.id.codRotina = :codRotina AND pf.id.codFuncionalidade = :codFuncionalidade")
     void desassociateFunctionality(
             @Param("codPerfil") String codPerfil,
             @Param("codSistema") String codSistema,
