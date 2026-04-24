@@ -55,6 +55,11 @@ public class FunctionalityService implements FunctionCase, FunctionalityUseCase 
 	}
 
 	@Override
+	public Page<Functionality> listFunctionalitiesWithFilters(String codSistema, String codModulo, String nomFuncionalidade, Pageable pageable) {
+		return functionalityPort.findWithFilters(codSistema, codModulo, nomFuncionalidade, pageable);
+	}
+
+	@Override
 	public Optional<Functionality> findById(FunctionalityKey key) {
 		return functionalityPort.findById(key);
 	}

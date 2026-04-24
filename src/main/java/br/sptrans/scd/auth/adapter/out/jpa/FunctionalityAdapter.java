@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.adapter.out.jpa.mapper.FunctionalityJpaMapper;
@@ -47,6 +48,12 @@ public class FunctionalityAdapter implements FunctionalityPort {
     @Override
     public Page<Functionality> findAll(int page, int size) {
         var pageResult = repository.findAll(PageRequest.of(page, size));
+        return pageResult.map(FunctionalityJpaMapper::toDomain);
+    }
+
+    @Override
+    public Page<Functionality> findWithFilters(String codSistema, String codModulo, String nomFuncionalidade, Pageable pageable) {
+        var pageResult = repository.findWithFilters(codSistema, codModulo, nomFuncionalidade, pageable);
         return pageResult.map(FunctionalityJpaMapper::toDomain);
     }
 }

@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.FunctionalityResponseDTO;
+import br.sptrans.scd.auth.adapter.in.rest.mapper.FunctionalityRestMapper;
 import br.sptrans.scd.auth.adapter.in.rest.request.CreateFunctionalityRequest;
 import br.sptrans.scd.auth.adapter.in.rest.request.DeactivateFunctionalityRequest;
 import br.sptrans.scd.auth.adapter.in.rest.request.ReactivateFunctionalityRequest;
@@ -21,7 +23,6 @@ import br.sptrans.scd.auth.adapter.in.rest.request.UpdateFunctionalityRequest;
 import br.sptrans.scd.auth.application.port.in.FunctionCase;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.FunctionalityKey;
-import br.sptrans.scd.auth.adapter.in.rest.mapper.FunctionalityRestMapper;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
@@ -45,15 +46,28 @@ public class FunctionalityController {
         private final FunctionalityRestMapper functionRestMapper;
 
     @GetMapping
-    @Operation(summary = "Listar Funcionalidades", description = "Retorna uma lista de todas as funcionalidades")
+    @Operation(summary = "Listar Funcionalidades", description = "Retorna uma lista de todas as funcionalidades com filtros opcionais")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de funcionalidades retornada com sucesso")
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PageResponse<FunctionalityResponseDTO>> getAllFunctionality(
+            @RequestParam(required = false) String codSistema,
+            @RequestParam(required = false) String codModulo,
+            @RequestParam(required = false) String nomFuncionalidade,
             Pageable pageable) {
-        Page<FunctionalityResponseDTO> dtoPage = functionCase.listFunctionalities(pageable)
-                .map(functionRestMapper::toDto);
+        
+        Page<FunctionalityResponseDTO> dtoPage;
+        
+        // Se há filtros, usa o método com filtros; senão usa o método padrão
+        if (codSistema != null || codModulo != null || nomFuncionalidade != null) {
+            dtoPage = functionCase.listFunctionalitiesWithFilters(codSistema, codModulo, nomFuncionalidade, pageable)
+                    .map(functionRestMapper::toDto);
+        } else {
+            dtoPage = functionCase.listFunctionalities(pageable)
+                    .map(functionRestMapper::toDto);
+        }
+        
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 

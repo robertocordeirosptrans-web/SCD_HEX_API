@@ -28,6 +28,16 @@ public interface FunctionCase {
 
     Page<Functionality> listFunctionalities(Pageable pageable);
 
+    /**
+     * Lista funcionalidades com filtros opcionais.
+     * @param codSistema - filtro por código do sistema (opcional)
+     * @param codModulo - filtro por código do módulo (opcional)
+     * @param nomFuncionalidade - filtro por nome da funcionalidade (busca parcial, case-insensitive)
+     * @param pageable - paginação
+     * @return Page com funcionalidades filtradas
+     */
+    Page<Functionality> listFunctionalitiesWithFilters(String codSistema, String codModulo, String nomFuncionalidade, Pageable pageable);
+
     Optional<Functionality> findById(FunctionalityKey key);
 
     /**
