@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityProjectionDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileProjectionDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileResponseDTO;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupCustomProjection;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
@@ -198,6 +199,11 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     @Override
     public Page<UserProfileProjectionDTO> listUserProfilesByPerfil(String codPerfil, Pageable pageable) {
         return manageGroupProfileUseCase.listUserProfilesByPerfil(codPerfil, pageable);
+    }
+
+    @Override
+    public Page<UserProfileResponseDTO> listProfilesByUsuario(Long idUsuario, Pageable pageable) {
+        return manageGroupProfileUseCase.listProfilesByUsuario(idUsuario, pageable);
     }
 
     @Override

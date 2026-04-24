@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -72,12 +71,29 @@ public class UserProfileController {
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
+    @GetMapping("/usuario/{idUsuario}")
+    @PreAuthorize("hasAuthority('" + CacPermissions.LISASSUSUPER + "')")
+    @Operation(summary = "Listar perfis associados a um usuário", description = "Retorna os perfis associados ao usuário informado")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Perfis associados retornados com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado ou sem perfis associados")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<PageResponse<UserProfileResponseDTO>> getProfilesByUser(
+            Pageable pageable, @PathVariable Long idUsuario) {
+        Page<UserProfileResponseDTO> dtoPage = groupProfileManagementUseCase.listProfilesByUsuario(idUsuario, pageable);
+        if (dtoPage.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('" + CacPermissions.ASSPERAOUSU + "')")
-    @Operation(summary = "Associar perfil ao usuário", description = "Associa um perfil ao usuário")
+    @Operation(summary = "Associar perfil ao usuário", description = "Associa um perfil ativo ao usuário")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Associação criada com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        @ApiResponse(responseCode = "400", description = "Dados inválidos ou perfil/usuário não encontrado")
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> associate(@Valid @RequestBody UserProfileRequestDTO request) {
@@ -91,28 +107,36 @@ public class UserProfileController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping
+    @PatchMapping("/ativar")
     @PreAuthorize("hasAuthority('" + CacPermissions.ASSPERAOUSU + "')")
-    @Operation(summary = "Atualizar associação usuário-perfil", description = "Atualiza dados da associação")
+    @Operation(summary = "Ativar associação usuário-perfil", description = "Ativa a associação do perfil com o usuário")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Associação atualizada com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Associação não encontrada")
+        @ApiResponse(responseCode = "200", description = "Associação ativada com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Associação não encontrada"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> update(@Valid @RequestBody UserProfileRequestDTO request) {
-        // Implementar lógica de atualização se necessário
+    public ResponseEntity<?> activate(@Valid @RequestBody UserProfileStatusRequestDTO request) {
+        groupProfileManagementUseCase.associateProfilesToGroup(
+                new GroupProfileManagementUseCase.AssociateProfilesToGroupCommand(
+                        request.idUsuario().toString(),
+                        java.util.Set.of(request.codPerfil()),
+                        request.idUsuario()
+                )
+        );
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/status")
+    @PatchMapping("/inativar")
     @PreAuthorize("hasAuthority('" + CacPermissions.ASSPERAOUSU + "')")
-    @Operation(summary = "Atualizar status da associação", description = "Atualiza o status da associação usuário-perfil")
+    @Operation(summary = "Inativar associação usuário-perfil", description = "Inativa a associação do perfil com o usuário")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Status atualizado com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Associação não encontrada")
+        @ApiResponse(responseCode = "200", description = "Associação inativada com sucesso"),
+        @ApiResponse(responseCode = "404", description = "Associação não encontrada"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateStatus(@Valid @RequestBody UserProfileStatusRequestDTO request) {
+    public ResponseEntity<?> deactivate(@Valid @RequestBody UserProfileStatusRequestDTO request) {
         groupProfileManagementUseCase.disassociateProfileFromGroup(
                 new GroupProfileManagementUseCase.DisassociateProfileFromGroupCommand(
                         request.idUsuario().toString(),

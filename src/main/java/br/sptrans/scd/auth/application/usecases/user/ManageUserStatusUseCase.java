@@ -8,11 +8,8 @@ import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.AuthenticationPort;
-
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
-
 import br.sptrans.scd.auth.application.port.out.UserStatusPort;
-
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.enums.UserStatus;
 import br.sptrans.scd.shared.cache.InvalidateUserCache;
@@ -175,6 +172,37 @@ public class ManageUserStatusUseCase {
         log.info("Senha administrativa resetada. Usuário ID: {}", command.idUsuario());
         
         return TEMP_PASSWORD;
+    }
+
+    /**
+     * Bloqueia um usuário ativo. Operação administrativa.
+     * 
+     * Regras: - Usuário deve estar ativo - Redefine contador de tentativas - 
+     * Registra quem bloqueou e quando
+     * 
+     * @param command contém ID do usuário e quem está fazendo a ação
+     * @throws BusinessException se usuário já está bloqueado ou inativo
+     */
+    @InvalidateUserCache
+    public void blockUser(UserManagementUseCase.StatusChangeCommand command) {
+        log.info("Bloqueando usuário ID: {}", command.idUsuario());
+        
+        // Busca usuário
+        User user = findUserOrThrow(command.idUsuario());
+
+        // Valida se já está bloqueado
+        if (user.isBlocked()) {
+            log.warn("Usuário já está bloqueado. ID: {}", command.idUsuario());
+            throw new BusinessException("Usuário já está bloqueado.", "ALREADY_BLOCKED");
+        }
+
+        // Bloqueia usuário
+        userStatusPort.updateStatus(
+            command.idUsuario(),
+            UserStatus.BLOCKED.getCode(),
+            command.idUsuarioLogado());
+        
+        log.info("Usuário bloqueado. ID: {}", command.idUsuario());
     }
 
     /**

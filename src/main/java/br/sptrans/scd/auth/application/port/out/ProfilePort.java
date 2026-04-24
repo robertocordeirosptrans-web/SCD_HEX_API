@@ -79,6 +79,8 @@ public interface ProfilePort extends ProfileFunctionalityPort {
 
     Page<UserProfile> listUserProfiles(Pageable pageable);
 
+    Page<UserProfile> findByIdUsuario(Long idUsuario, Pageable pageable);
+
 
 
     /**

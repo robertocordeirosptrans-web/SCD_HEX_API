@@ -57,6 +57,12 @@ public class UserManagementService implements UserManagementUseCase {
         manageUserStatusUseCase.unblockUser(cmd);
     }
 
+    // ── blockUser ─────────────────────────────────────────────────────────────────────────
+    @Override
+    public void blockUser(StatusChangeCommand cmd) {
+        manageUserStatusUseCase.blockUser(cmd);
+    }
+
     // ── adminResetPassword ────────────────────────────────────────────────────
     @Override
     public String adminResetPassword(AdminResetPasswordCommand cmd) {

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.StatusChangeResponseDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UpdateUserDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserFilterRequestDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserRequestDTO;
@@ -50,8 +51,8 @@ public class UserController {
     @PreAuthorize("hasAuthority('" + CacPermissions.LISUSU + "')")
     @Operation(summary = "Lista usuários com paginação, filtros e ordenação")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+            @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PageResponse<UserResponseDTO>> listUsers(
@@ -59,8 +60,7 @@ public class UserController {
             @RequestParam(required = false) String nomEmail,
             @RequestParam(required = false) String codStatus,
             @RequestParam(required = false) String codPerfil,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         var filtro = new UserFilterRequestDTO(nomUsuario, nomEmail, codPerfil, codStatus);
         Specification<UserEntityJpa> spec = UserSpecification.filterUsers(filtro);
         Page<User> page = userManagementUseCase.listUsersPaginated(spec, pageable);
@@ -68,30 +68,28 @@ public class UserController {
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
-
-
     @GetMapping("/{idUsuario}")
     @PreAuthorize("hasAuthority('" + CacPermissions.LISUSU + "')")
     @Operation(summary = "Busca de usuarios por id")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
-        @ApiResponse(responseCode = "404", description = "Usuario não encontrado")
+            @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+            @ApiResponse(responseCode = "404", description = "Usuario não encontrado")
     })
     public UserResponseDTO getUsersById(@PathVariable Long idUsuario) {
         User user = userManagementUseCase.findById(idUsuario);
-        // O campo desCanal não está presente, então passamos null ou ajuste conforme necessário
+        // O campo desCanal não está presente, então passamos null ou ajuste conforme
+        // necessário
         return new UserResponseDTO(
                 user,
-                null
-        );
+                null);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Criar usuario", description = "Cria um novo usuario no sistema")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Usuario criado com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+            @ApiResponse(responseCode = "200", description = "Usuario criado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
     public UserResponseDTO createUser(@RequestBody UserRequestDTO dto) {
@@ -105,8 +103,7 @@ public class UserController {
                 dto.numDiasSemanasPermitidos(),
                 dto.dtJornadaIni(),
                 dto.dtJornadaFim(),
-                idUsuarioLogado
-        ));
+                idUsuarioLogado));
         return toResponseDTO(user);
     }
 
@@ -123,13 +120,105 @@ public class UserController {
         return toResponseDTO(user);
     }
 
+    // ── Gerenciamento de Status de Usuário ────────────────────────────────────
+
     @PatchMapping("/{idUsuario}/deactivate")
-    public void deactivateUser(@PathVariable Long idUsuario, @RequestParam Long idUsuarioLogado) {
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Desativa um usuário", description = "Altera o status do usuário para INATIVO")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuário desativado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
+            @ApiResponse(responseCode = "409", description = "Usuário já inativo ou tem sessão ativa"),
+            @ApiResponse(responseCode = "403", description = "Sem permissão para desativar usuário")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<StatusChangeResponseDTO> deactivateUser(
+            @PathVariable Long idUsuario) {
+        Long idUsuarioLogado = userResolverHelper.getCurrentUserId();
         userManagementUseCase.deactivateUser(new StatusChangeCommand(idUsuario, idUsuarioLogado));
+        User user = userManagementUseCase.findById(idUsuario);
+        StatusChangeResponseDTO response = buildStatusChangeResponse(user, "Usuário desativado com sucesso");
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{idUsuario}/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Ativa um usuário", description = "Altera o status do usuário para ATIVO e reseta contador de tentativas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuário ativado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
+            @ApiResponse(responseCode = "409", description = "Usuário já está ativo"),
+            @ApiResponse(responseCode = "403", description = "Sem permissão para ativar usuário")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<StatusChangeResponseDTO> activateUser(
+            @PathVariable Long idUsuario) {
+        Long idUsuarioLogado = userResolverHelper.getCurrentUserId();
+        userManagementUseCase.reactivateUser(new StatusChangeCommand(idUsuario, idUsuarioLogado));
+        User user = userManagementUseCase.findById(idUsuario);
+        StatusChangeResponseDTO response = buildStatusChangeResponse(user, "Usuário ativado com sucesso");
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{idUsuario}/block")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Bloqueia um usuário", description = "Altera o status do usuário para BLOQUEADO, impedindo seu login")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuário bloqueado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
+            @ApiResponse(responseCode = "409", description = "Usuário já está bloqueado"),
+            @ApiResponse(responseCode = "403", description = "Sem permissão para bloquear usuário")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<StatusChangeResponseDTO> blockUser(
+            @PathVariable Long idUsuario) {
+        Long idUsuarioLogado = userResolverHelper.getCurrentUserId();
+        userManagementUseCase.blockUser(new StatusChangeCommand(idUsuario, idUsuarioLogado));
+        User user = userManagementUseCase.findById(idUsuario);
+        StatusChangeResponseDTO response = buildStatusChangeResponse(user, "Usuário bloqueado com sucesso");
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{idUsuario}/unblock")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Desbloqueia um usuário", description = "Altera o status do usuário bloqueado para ATIVO e reseta contador de tentativas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuário desbloqueado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
+            @ApiResponse(responseCode = "409", description = "Usuário não está bloqueado"),
+            @ApiResponse(responseCode = "403", description = "Sem permissão para desbloquear usuário")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<StatusChangeResponseDTO> unblockUser(
+            @PathVariable Long idUsuario) {
+        Long idUsuarioLogado = userResolverHelper.getCurrentUserId();
+        userManagementUseCase.unblockUser(new StatusChangeCommand(idUsuario, idUsuarioLogado));
+        User user = userManagementUseCase.findById(idUsuario);
+        StatusChangeResponseDTO response = buildStatusChangeResponse(user, "Usuário desbloqueado com sucesso");
+        return ResponseEntity.ok(response);
     }
 
     private UserResponseDTO toResponseDTO(User user) {
         return new UserResponseDTO(user, null);
+    }
+
+    private StatusChangeResponseDTO buildStatusChangeResponse(User user, String mensagem) {
+        String status = user.getAudit() != null && user.getAudit().getCodStatus() != null 
+            ? user.getAudit().getCodStatus().name() 
+            : "DESCONHECIDO";
+        String statusDescricao = user.getAudit() != null && user.getAudit().getCodStatus() != null 
+            ? user.getAudit().getCodStatus().getDescription() 
+            : "Status desconhecido";
+        
+        return new StatusChangeResponseDTO(
+            user.getIdUsuario(),
+            user.getCredentials() != null ? user.getCredentials().getCodLogin() : null,
+            user.getPersonalInfo() != null ? user.getPersonalInfo().getNomUsuario() : null,
+            status,
+            statusDescricao,
+            user.getAudit() != null ? user.getAudit().getDtModi() : null,
+            mensagem
+        );
     }
 
     public record UserResponse(String nomUsuario, String nomFuncao, String nomCargo) {

@@ -2,11 +2,11 @@ package br.sptrans.scd.auth.adapter.in.rest.dto;
 
 import java.time.LocalDateTime;
 
-
 import br.sptrans.scd.auth.domain.User;
 
 public record UserResponseDTO(
         String codLogin,
+        Long idUsuario,
         String codStatus,
         LocalDateTime dtModi,
         String nomUsuario,
@@ -32,6 +32,7 @@ public record UserResponseDTO(
     public UserResponseDTO(User user, String desCanal) {
         this(
                 user.getCodLogin(),
+                user.getIdUsuario(),
                 user.getCodStatus() != null ? user.getCodStatus().getCode() : null,
                 user.getDtModi(),
                 user.getNomUsuario(),

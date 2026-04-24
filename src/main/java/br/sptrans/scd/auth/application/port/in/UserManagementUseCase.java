@@ -58,6 +58,12 @@ public interface UserManagementUseCase {
     void unblockUser(StatusChangeCommand command);
 
     /**
+     * Bloqueia um usuário ativo (COD_STATUS = 'A' → 'B'). Operação
+     * administrativa que impede o login até desbloqueio.
+     */
+    void blockUser(StatusChangeCommand command);
+
+    /**
      * Redefinição administrativa de senha. Gera nova senha temporária e define
      * DT_EXPIRA_SENHA = now() para forçar troca no próximo login. Não exige
      * token — o administrador que executa a operação.

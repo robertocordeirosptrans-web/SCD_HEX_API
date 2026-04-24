@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityProjectionDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileProjectionDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileResponseDTO;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupCustomProjection;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.domain.Functionality;
@@ -161,6 +162,8 @@ public interface GroupProfileManagementUseCase {
         Page<UserProfile> listUserProfiles(Pageable pageable);
 
         Page<UserProfileProjectionDTO> listUserProfilesByPerfil(String codPerfil, Pageable pageable);
+
+        Page<UserProfileResponseDTO> listProfilesByUsuario(Long idUsuario, Pageable pageable);
 
         /**
          * Lista todas as associações perfil-funcionalidade.

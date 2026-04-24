@@ -54,4 +54,7 @@ public interface UserProfileJpaRepository
         Page<UserProfileProjectionDTO> findAllProjectedByCodPerfil(
                         @Param("codPerfil") String codPerfil, Pageable pageable);
 
+        @Query("SELECT up FROM UserProfileJpa up WHERE up.id.idUsuario = :idUsuario ORDER BY up.id.codPerfil")
+        Page<UserProfileJpa> findByIdUsuario(@Param("idUsuario") Long idUsuario, Pageable pageable);
+
 }

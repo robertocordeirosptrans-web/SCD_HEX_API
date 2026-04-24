@@ -127,6 +127,7 @@ public class ProfileAdapterJpa implements ProfilePort {
                 .toList();
     }
 
+    @Override
     public Page<ProfileFunctionalityProjectionDTO> listFunctionalitiesProjectionByProfile(
             String codPerfil, Pageable pageable) {
         return profileFunctionalityJpaRepository.findAllProjectedByCodPerfil(codPerfil, pageable);
@@ -165,6 +166,11 @@ public class ProfileAdapterJpa implements ProfilePort {
     @Override
     public Page<UserProfile> listUserProfiles(Pageable pageable) {
         return userProfileJpaRepository.listAllUserProfiles(pageable).map(profileMapper::toDomain);
+    }
+
+    @Override
+    public Page<UserProfile> findByIdUsuario(Long idUsuario, Pageable pageable) {
+        return userProfileJpaRepository.findByIdUsuario(idUsuario, pageable).map(profileMapper::toDomain);
     }
 
 
