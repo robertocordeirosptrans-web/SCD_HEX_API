@@ -1,5 +1,4 @@
 package br.sptrans.scd.creditrequest.adapter.in.scheduler;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -68,11 +67,7 @@ public class ReleaseRechargeScheduler {
             log.debug("Job LiberarRecarga desativado (scheduler.liberar-recarga.enabled=false)");
             return;
         }
-        LocalDateTime agora = LocalDateTime.now();
-        LocalDateTime dtFim = agora.minusMinutes(atrasoMinutos);
-        LocalDateTime dtInicio = dtFim.minusMinutes(janelaMinutos);
 
-        log.debug("Iniciando job LiberarRecarga. Janela: [{} - {}]", dtInicio, dtFim);
 
         // Busca diretamente os itens elegíveis conforme a nova query
         String codSituacao = SituationCreditRequestItems.PAGO.getCode();

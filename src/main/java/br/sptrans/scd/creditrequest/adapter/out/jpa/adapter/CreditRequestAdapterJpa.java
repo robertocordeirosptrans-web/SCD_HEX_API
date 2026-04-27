@@ -55,20 +55,9 @@ public class CreditRequestAdapterJpa implements CreditRequestPort {
         return jpaRepository.countByNumLoteAndCodCanal(numLote, codCanal) > 0;
     }
 
-    @Override
-    public List<CreditRequest> findElegiveisParaLiberacao(String codSituacao, LocalDateTime dtInicio, LocalDateTime dtFim, int limit) {
-        return jpaRepository.findElegiveisParaLiberacao(codSituacao, dtInicio, dtFim, limit).stream().map(mapper::toDomain).toList();
-    }
 
-    @Override
-    public CreditRequest findElegiveisParaProcessamento(String codSituacao) {
-        return jpaRepository.findElegiveisParaProcessamento(codSituacao).stream().findFirst().map(mapper::toDomain).orElse(null);
-    }
 
-    @Override
-    public List<CreditRequest> findElegiveisParaConfirmacao(String codSituacao, int limit) {
-        return jpaRepository.findElegiveisParaConfirmacao(codSituacao, limit).stream().map(mapper::toDomain).toList();
-    }
+
 
     // ── Buscas específicas ─────────────────────────────────────────
 

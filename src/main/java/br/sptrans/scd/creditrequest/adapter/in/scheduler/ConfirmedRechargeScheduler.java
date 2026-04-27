@@ -7,8 +7,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.creditrequest.application.port.in.ConfirmedRechargeUseCase;
-import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
-import br.sptrans.scd.creditrequest.domain.CreditRequest;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
+import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ConfirmedRechargeScheduler {
 
-    private final CreditRequestPort solDistribuicoesRepository;
+    private final CreditRequestItemsPort repository;
     private final ConfirmedRechargeUseCase confirmarRecargaUseCase;
 
     @Value("${scheduler.confirmar-recarga.enabled:true}")
@@ -60,25 +60,22 @@ public class ConfirmedRechargeScheduler {
         }
         log.debug("Iniciando job ConfirmarRecarga");
 
-        List<CreditRequest> solicitacoes = solDistribuicoesRepository.findElegiveisParaConfirmacao(
-                SituationCreditRequest.EM_PROCESSO_DE_RECARGA.getCode(),
-                tamanhoLote);
+        List<CreditRequestItems> itensElegiveis = repository.searchItemsToBeConfirmed(SituationCreditRequest.EM_PROCESSO_DE_RECARGA.getCode(), tamanhoLote);
 
-        int totalEncontradas = solicitacoes.size();
+        int totalEncontradas = itensElegiveis.size();
         int processadas = 0;
         int ignoradas = 0;
 
-        for (CreditRequest solicitacao : solicitacoes) {
-            Long numSolicitacao = solicitacao.getNumSolicitacao();
-            String codCanal = solicitacao.getCodCanal();
+        for (CreditRequestItems item : itensElegiveis) {
+
 
             try {
-                confirmarRecargaUseCase.confirmarRecarga(numSolicitacao, codCanal);
+                confirmarRecargaUseCase.confirmarRecarga(item);
                 processadas++;
-                log.info("Confirmação de recarga processada para solicitação {}/{}.", numSolicitacao, codCanal);
+                log.info("Confirmação de recarga processada para solicitação {}/{}.", item.getId().getNumSolicitacao(), item.getId().getCodCanal());
             } catch (Exception e) {
                 log.error("Erro ao confirmar recarga para solicitação {}/{}: {}",
-                        numSolicitacao, codCanal, e.getMessage(), e);
+                        item.getId().getNumSolicitacao(), item.getId().getCodCanal(), e.getMessage(), e);
                 ignoradas++;
             }
         }

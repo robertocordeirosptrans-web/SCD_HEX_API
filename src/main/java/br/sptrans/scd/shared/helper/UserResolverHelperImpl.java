@@ -51,18 +51,22 @@ public class UserResolverHelperImpl implements UserResolverHelper {
     }
 
     /**
-     * Detecta se o contexto de chamada é o Scheduler.
-     * Pode ser aprimorado conforme padrão de nomes de thread ou stacktrace.
+     * Detecta se o contexto de chamada é um job agendado (sem SecurityContext).
+     *
+     * <p>Duas heurísticas em ordem de custo crescente:
+     * <ol>
+     *   <li>Nome da thread contém "scheduling" ou "scheduler" (padrão Spring).</li>
+     *   <li>Stack trace contém alguma classe do pacote {@code .adapter.in.scheduler}
+     *       (cobre todos os schedulers atuais e futuros sem necessidade de manutenção).</li>
+     * </ol>
      */
     private boolean isSchedulerContext() {
-        // Heurística: thread do scheduler geralmente contém "scheduler" no nome
         String threadName = Thread.currentThread().getName().toLowerCase();
-        if (threadName.contains("scheduler")) {
+        if (threadName.contains("scheduling") || threadName.contains("scheduler")) {
             return true;
         }
-        // Alternativamente, verifica se há ReleaseRechargeScheduler na stacktrace
         for (StackTraceElement el : Thread.currentThread().getStackTrace()) {
-            if (el.getClassName().contains("ReleaseRechargeScheduler")) {
+            if (el.getClassName().contains(".adapter.in.scheduler.")) {
                 return true;
             }
         }

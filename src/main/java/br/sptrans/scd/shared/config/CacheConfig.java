@@ -6,6 +6,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.cache.interceptor.KeyGenerator;
+import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,6 +15,9 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 @Configuration
 @EnableCaching
 public class CacheConfig {
+
+    @Value("${api.security.token.expiration-hours:2}")
+    private int sessionTtlHours;
 
     @Bean
     public CacheManager cacheManager() {
@@ -34,7 +38,6 @@ public class CacheConfig {
 
     /**
      * KeyGenerator para listUsersPaginated().
-     * Substitui SpEL expression gigante por código legível.
      */
     @Bean(name = "listUsersPaginatedKeyGenerator")
     public KeyGenerator listUsersPaginatedKeyGenerator() {
@@ -43,11 +46,10 @@ public class CacheConfig {
 
     /**
      * KeyGenerator para countUsers().
-     * Substitui SpEL expression gigante por código legível.
      */
     @Bean(name = "countUsersKeyGenerator")
     public KeyGenerator countUsersKeyGenerator() {
         return new UserCacheKeyGenerators.CountUsersKeyGenerator();
     }
-
 }
+

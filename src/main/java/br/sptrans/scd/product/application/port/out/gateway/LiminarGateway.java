@@ -33,12 +33,12 @@ public interface LiminarGateway {
      * @param numeroPedido número da solicitação do pedido
      * @return 1 se a empresa possui liminar; 0 caso contrário
      */
-    int verificarLiminarEmpresa(String numeroPedido);
+    int verificarLiminarEmpresa(Long numeroPedido);
 
     /**
      * Momento 2 — passo 2: verifica liminar do cartão para envio ao HM.
      *
-     * @param liminarEmpresa resultado de {@link #verificarLiminarEmpresa(String)}
+     * @param liminarEmpresa resultado de {@link #verificarLiminarEmpresa(Long)}
      * @param numeroCartao   número lógico do cartão
      * @return 1 se o cartão (e a empresa) possuem liminar; 0 caso contrário
      */
@@ -54,5 +54,5 @@ public interface LiminarGateway {
      * @param numLogicoCartao número lógico do cartão
      * @return {@code true} se existe liminar ativa; {@code false} caso contrário ou em falha
      */
-    boolean existeLiminar(String codCanal, String numLogicoCartao);
+    // boolean existeLiminar(String codCanal, String numLogicoCartao);
 }

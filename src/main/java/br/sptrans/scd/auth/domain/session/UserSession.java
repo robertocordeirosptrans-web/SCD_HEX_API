@@ -32,6 +32,7 @@ public class UserSession {
     private LocalDateTime dtExpiracao;
     private LocalDateTime dtRevogacao; // null = sessão ainda válida
     private String motivoRevogacao;    // "LOGOUT", "ADMIN_REVOKE", "PASSWORD_CHANGED"
+    private Long idRevogadoPor;        // ID do usuário que revogou (null se expiração automática)
 
     // Construtor chamado no momento do login
     public UserSession(Long idUsuario, String enderecoIp, String agenteUsuario, int ttlHoras) {
@@ -42,18 +43,30 @@ public class UserSession {
         this.dtCriacao     = LocalDateTime.now();
         this.dtExpiracao   = LocalDateTime.now().plusHours(ttlHoras);
         this.dtRevogacao   = null;
+        this.idRevogadoPor = null;
+    }
+
+    /** Status computado da sessão */
+    public SessionStatus getStatus() {
+        if (dtRevogacao != null) return SessionStatus.REVOKED;
+        if (LocalDateTime.now().isAfter(dtExpiracao)) return SessionStatus.EXPIRED;
+        return SessionStatus.ACTIVE;
     }
 
     /** Sessão válida = não expirada E não revogada */
     public boolean isAtiva() {
-        return dtRevogacao == null && LocalDateTime.now().isBefore(dtExpiracao);
+        return getStatus() == SessionStatus.ACTIVE;
     }
 
-    /** Logout do usuário — revoga a sessão */
-    public void revogar(String motivo) {
-        this.dtRevogacao    = LocalDateTime.now();
+    /** Revoga a sessão com motivo e quem revogou */
+    public void revogar(String motivo, Long revokedBy) {
+        this.dtRevogacao     = LocalDateTime.now();
         this.motivoRevogacao = motivo;
+        this.idRevogadoPor   = revokedBy;
     }
 
-   
+    /** Logout do usuário — revoga a sessão sem rastrear executor */
+    public void revogar(String motivo) {
+        revogar(motivo, null);
+    }
 }

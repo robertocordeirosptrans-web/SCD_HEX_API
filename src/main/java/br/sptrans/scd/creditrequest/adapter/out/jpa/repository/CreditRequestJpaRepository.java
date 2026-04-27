@@ -31,15 +31,6 @@ public interface CreditRequestJpaRepository extends JpaRepository<CreditRequestE
     @Query(value = "SELECT COUNT(1) FROM SPTRANSDBA.SOL_DISTRIBUICOES WHERE NUM_LOTE = :numLote AND COD_CANAL = :codCanal", nativeQuery = true)
     int countByNumLoteAndCodCanal(@Param("numLote") String numLote, @Param("codCanal") String codCanal);
 
-    @Query(value = "SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s WHERE s.COD_SITUACAO = :codSituacao AND s.DT_SOLICITACAO >= :dtInicio AND s.DT_SOLICITACAO <= :dtFim FETCH FIRST :limit ROWS ONLY", nativeQuery = true)
-    List<CreditRequestEntity> findElegiveisParaLiberacao(@Param("codSituacao") String codSituacao, @Param("dtInicio") LocalDateTime dtInicio, @Param("dtFim") LocalDateTime dtFim, @Param("limit") int limit);
-
-    @Query(value = "SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s WHERE s.COD_SITUACAO = :codSituacao", nativeQuery = true)
-    List<CreditRequestEntity> findElegiveisParaProcessamento(@Param("codSituacao") String codSituacao);
-
-    @Query(value = "SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s WHERE s.COD_SITUACAO = :codSituacao FETCH FIRST :limit ROWS ONLY", nativeQuery = true)
-    List<CreditRequestEntity> findElegiveisParaConfirmacao(@Param("codSituacao") String codSituacao, @Param("limit") int limit);
-
     @Query(value = "SELECT * FROM SPTRANSDBA.SOL_DISTRIBUICOES s WHERE s.NUM_SOLICITACAO = :numSolicitacao AND (:codCanal IS NULL OR s.COD_CANAL = :codCanal)", nativeQuery = true)
     List<CreditRequestEntity> findByNumSolicitacaoSpecific(@Param("numSolicitacao") Long numSolicitacao, @Param("codCanal") String codCanal);
 

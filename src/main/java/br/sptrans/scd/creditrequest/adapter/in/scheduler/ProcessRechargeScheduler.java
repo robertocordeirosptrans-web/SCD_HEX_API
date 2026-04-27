@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.application.service.ProcessRechargeService;
@@ -53,7 +52,6 @@ public class ProcessRechargeScheduler {
      * configurável via {@code scheduler.processar-recarga.intervalo-ms}.
      */
     @Scheduled(fixedRateString = "${scheduler.processar-recarga.intervalo-ms:60000}")
-    @Transactional
     public void executar() {
         if (!enabled) {
             log.debug("Job ProcessarRecarga desativado (scheduler.processar-recarga.enabled=false)");

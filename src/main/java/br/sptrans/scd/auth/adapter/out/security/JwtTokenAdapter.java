@@ -34,14 +34,22 @@ public class JwtTokenAdapter implements TokenGeneratorPort, TokenValidatorPort {
 
     @Override
     public String generate(User user) {
+        return generate(user, null);
+    }
+
+    @Override
+    public String generate(User user, String sessionId) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.create()
+            var builder = JWT.create()
                 .withIssuer("app-api")
                 .withSubject(user.getCodLogin())
                 .withClaim("userId", user.getIdUsuario())
-                .withExpiresAt(Instant.now().plus(expirationHours, ChronoUnit.HOURS))
-                .sign(algorithm);
+                .withExpiresAt(Instant.now().plus(expirationHours, ChronoUnit.HOURS));
+            if (sessionId != null) {
+                builder = builder.withClaim("sessionId", sessionId);
+            }
+            return builder.sign(algorithm);
         } catch (IllegalArgumentException e) {
             throw new TokenGenerationException(
                 "Falha ao gerar token JWT: configuração inválida do secret",
@@ -91,6 +99,20 @@ public class JwtTokenAdapter implements TokenGeneratorPort, TokenValidatorPort {
                 "Falha ao validar token JWT: configuração inválida do secret",
                 e
             );
+        }
+    }
+
+    @Override
+    public String extractSessionId(String token) {
+        try {
+            return JWT.require(Algorithm.HMAC256(secret))
+                .withIssuer("app-api")
+                .build()
+                .verify(token)
+                .getClaim("sessionId")
+                .asString();
+        } catch (Exception e) {
+            return null;
         }
     }
 }

@@ -37,8 +37,13 @@ import br.sptrans.scd.creditrequest.domain.enums.SituationCreditRequestItems;
 import br.sptrans.scd.product.application.service.FeeFareService;
 import br.sptrans.scd.product.domain.Fee;
 import br.sptrans.scd.product.domain.vo.TaxaCalculada;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import br.sptrans.scd.shared.exception.ValidationException;
+import br.sptrans.scd.shared.idempotency.IdempotencyConflictException;
+import br.sptrans.scd.shared.idempotency.IdempotencyStatus;
 import br.sptrans.scd.shared.idempotency.IdempotencyStore;
+import br.sptrans.scd.shared.idempotency.PayloadHashUtil;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -59,6 +64,7 @@ public class CreateCreditRequestCase {
         private final CreditRequestItemsPort itemRepository;
         private final HistCreditRequestService historyService;
         private final IdempotencyStore<CreateRequestResponse> idempotencyStore;
+        private final ObjectMapper objectMapper;
         private final FeeFareService feeFareService;
         private final CreditRequestMapper creditRequestMapper;
         private final CreditRequestRDPort creditRequestRDPort;
@@ -73,15 +79,15 @@ public class CreateCreditRequestCase {
                 auditLog.info("[createCreditRequest] INICIADO - idempotencyKey={}, codCanal={}, totalPedidos={}",
                                 idempotencyKey, request.codCanal(), request.pedidos().size());
 
-                // 1. Idempotency check — retorna resposta em cache sem reprocessar
-                Optional<CreateRequestResponse> cached = idempotencyStore.get(idempotencyKey);
-                if (cached.isPresent()) {
-                        auditLog.info("[createCreditRequest] Resposta idempotente retornada - idempotencyKey={}",
-                                        idempotencyKey);
-                        return cached.get();
+                // 1. Idempotência via banco — tenta registrar a chave como PROCESSING
+                String payloadHash = computePayloadHash(request);
+                boolean acquired = idempotencyStore.tryMarkProcessing(idempotencyKey, payloadHash);
+                if (!acquired) {
+                        return resolveConflict(idempotencyKey, payloadHash);
                 }
 
                 // 2. Validações prévias
+                try {
                 auditLog.info("[createCreditRequest] Validando canal e data de liberação - codCanal={}",
                                 request.codCanal());
                 SalesChannel canal = validationService.validarCanal(request.codCanal());
@@ -94,7 +100,6 @@ public class CreateCreditRequestCase {
                 }
 
                 boolean processamentoParcialPermitido = canal.isProcessamentoParcialHabilitado();
-                
 
                 List<ItemProcessado> processados = new ArrayList<>();
                 List<ItemRejeitado> rejeitados = new ArrayList<>();
@@ -162,9 +167,7 @@ public class CreateCreditRequestCase {
                                 processados,
                                 rejeitados);
 
-                // Salvar no cache de idempotência ANTES de retornar — impede reprocessamento em
-                // retry
-                idempotencyStore.put(idempotencyKey, response);
+                idempotencyStore.markSuccess(idempotencyKey, response);
 
                 auditLog.info("[AUDIT] Pedido de crédito processado - userId={}, codCanal={}, processados={}, rejeitados={}",
                                 userId, request.codCanal(), processados.size(), rejeitados.size());
@@ -172,6 +175,54 @@ public class CreateCreditRequestCase {
                                 rejeitados.size());
 
                 return response;
+
+                } catch (IdempotencyConflictException e) {
+                        throw e;
+                } catch (Exception e) {
+                        idempotencyStore.markFailed(idempotencyKey);
+                        throw e;
+                }
+        }
+
+        private String computePayloadHash(CreateRequestCredit request) {
+                try {
+                        return PayloadHashUtil.hash(objectMapper.writeValueAsString(request));
+                } catch (Exception e) {
+                        auditLog.warn("[createCreditRequest] Falha ao computar hash do payload", e);
+                        return "";
+                }
+        }
+
+        private CreateRequestResponse resolveConflict(String idempotencyKey, String payloadHash) {
+                Optional<IdempotencyStatus> status = idempotencyStore.getStatus(idempotencyKey);
+                IdempotencyStatus s = status.orElse(null);
+
+                if (s == IdempotencyStatus.SUCCESS) {
+                        Optional<String> existingHash = idempotencyStore.getPayloadHash(idempotencyKey);
+                        if (existingHash.isPresent()
+                                        && !payloadHash.isBlank()
+                                        && !payloadHash.equals(existingHash.get())) {
+                                auditLog.warn("[createCreditRequest] Payload divergente para chave existente - key={}",
+                                                idempotencyKey);
+                                throw new IdempotencyConflictException(idempotencyKey,
+                                                "Payload divergente para chave de idempotência já executada com sucesso");
+                        }
+                        auditLog.info("[createCreditRequest] Replay de resposta SUCCESS - key={}", idempotencyKey);
+                        return idempotencyStore.get(idempotencyKey)
+                                        .orElseThrow(() -> new IdempotencyConflictException(idempotencyKey,
+                                                        "Resposta não disponível para replay"));
+                }
+
+                if (s == IdempotencyStatus.PROCESSING) {
+                        auditLog.info("[createCreditRequest] Requisição em PROCESSING ativo - key={}", idempotencyKey);
+                        throw new IdempotencyConflictException(idempotencyKey,
+                                        "Requisição em processamento — tente novamente em instantes");
+                }
+
+                auditLog.warn("[createCreditRequest] Estado inesperado na resolução de conflito - key={}, status={}",
+                                idempotencyKey, s);
+                throw new IdempotencyConflictException(idempotencyKey,
+                                "Conflito de idempotência — estado inesperado");
         }
 
         // Nova versão: validação usando contexto pré-carregado

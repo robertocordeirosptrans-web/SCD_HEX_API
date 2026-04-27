@@ -14,4 +14,10 @@ public interface TokenValidatorPort {
      * Retorna null ou string vazia se o token for inválido/expirado.
      */
     String validateAndGetSubject(String token);
+
+    /**
+     * Extrai o session_id do payload do token sem revalidar a assinatura.
+     * Retorna null se o claim não estiver presente.
+     */
+    String extractSessionId(String token);
 }

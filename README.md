@@ -188,16 +188,22 @@ Catálogo completo de produtos do sistema de cartões.
 - **Tecnologias** — CRUD com ativação/inativação
 - **Tipos de produto** — CRUD com ativação/inativação
 
+
 ### Pedidos de Crédito (`creditrequest`)
 
-Gestão de pedidos de crédito (em desenvolvimento).
+Gestão completa de pedidos de crédito.
 
-- **Pedidos** — API para gestão de pedidos de crédito
+- **Pedidos** — API para cadastro, atualização, busca paginada, pagamento, bloqueio/desbloqueio e cancelamento de pedidos de crédito
+- **Histórico de pedidos** — consulta detalhada do histórico de status dos itens do pedido
 - Entidades: `CreditRequest`, `CreditRequestItems`, `HistCreditRequest`, `PaymentMethod`, `Situation`, `RechargeLog`, `DocumentsType`
 
 ### Cartões Inicializados (`initializedcards`)
 
-Módulo para gestão de cartões inicializados (em desenvolvimento).
+Gestão de solicitações de cartões inicializados.
+
+- **Solicitações** — cadastro, consulta e atualização de solicitações de cartões inicializados
+- **Histórico de solicitações** — consulta do histórico de movimentações das solicitações
+- Entidades: `RequestInitializedCards`, `HistRequestInitializedCards`, `TbLotSCD`, `RequestLotSCP`
 
 ### Infraestrutura Compartilhada (`shared`)
 
@@ -339,11 +345,32 @@ Base path: `/api/v1`
 | PATCH | `/api/v1/products-types/{codTipoProduto}/inactivate` | Inativar |
 | DELETE | `/api/v1/products-types/{codTipoProduto}` | Remover |
 
+
 ### Pedidos de Crédito
 
 | Método | Endpoint | Descrição |
 |---|---|---|
-| — | `/api/v1/pedidos` | Em desenvolvimento |
+| POST | `/api/v1/pedidos` | Criar pedido de crédito |
+| PUT | `/api/v1/pedidos/{id}` | Atualizar pedido de crédito |
+| POST | `/api/v1/pedidos/buscar` | Buscar pedidos (paginação/cursor) |
+| POST | `/api/v1/pedidos/pagar` | Realizar pagamento de pedido |
+| POST | `/api/v1/pedidos/bloquear` | Bloquear pedido |
+| POST | `/api/v1/pedidos/desbloquear` | Desbloquear pedido |
+| POST | `/api/v1/pedidos/cancelar` | Cancelar pedido |
+
+### Histórico de Pedidos de Crédito
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| GET | `/api/v1/hist/pedidos` | Consultar histórico de status dos itens do pedido |
+### Cartões Inicializados
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| POST | `/api/v1/initialized-cards` | Criar solicitação de cartões inicializados |
+| GET | `/api/v1/initialized-cards/{id}` | Consultar solicitação de cartões inicializados |
+| GET | `/api/v1/initialized-cards` | Listar solicitações de cartões inicializados |
+| GET | `/api/v1/hist/initialized-cards` | Consultar histórico de solicitações |
 
 ## Documentação Swagger
 

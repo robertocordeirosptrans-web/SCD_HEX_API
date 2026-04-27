@@ -37,4 +37,10 @@ public interface CreditRequestItemsPort extends ReportCreditPort {
 
 
     Page<CreditRequestItems> findItemsByChannelAndNumSolicitacao(String codCanal, Long numSolicitacao, PageRequest pageRequest);
+        /**
+     * Busca itens elegíveis para processamento de recarga com a situação informada.
+     */
+    List<CreditRequestItems> searchItemsToBeConfirmed(String codSituacao, Integer limit);
+
+
 }

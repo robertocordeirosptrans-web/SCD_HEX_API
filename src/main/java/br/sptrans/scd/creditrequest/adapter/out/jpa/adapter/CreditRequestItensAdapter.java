@@ -105,6 +105,11 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
     public Page<CreditRequestItems> findItemsByChannelAndNumSolicitacao(String codCanal, Long numSolicitacao, PageRequest pageRequest) {
         return itemJpaRepository.findItemsByChannelAndNumSolicitacao(codCanal, numSolicitacao, pageRequest)
                 .map(creditRequestMapper::toDomainItem);
+    public List<CreditRequestItems> searchItemsToBeConfirmed(String codSituacao, Integer limit) {
+        return itemJpaRepository.searchItemsToBeConfirmed(codSituacao, limit)
+                .stream()
+                .map(creditRequestMapper::toDomainItem)
+                .toList();
     }
 
 }

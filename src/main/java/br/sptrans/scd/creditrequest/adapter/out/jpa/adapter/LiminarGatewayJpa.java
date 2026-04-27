@@ -6,9 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.ParameterMode;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.StoredProcedureQuery;
 
 /**
  * Implementação do {@link LiminarGateway} que consulta o sistema SCA via DBLink.
@@ -34,18 +32,14 @@ public class LiminarGatewayJpa implements LiminarGateway {
     @Override
     public boolean empresaPossuiIsencaoTaxa(String numeroPedido) {
         try {
-            StoredProcedureQuery query = em
-                    .createStoredProcedureQuery(
-                            "PKG_EMPRESA_LIMINAR.FIND_TAXA_ISENTA_BY_PEDIDO@DBLINK_SCA")
-                    .registerStoredProcedureParameter(1, String.class, ParameterMode.IN)
-                    .registerStoredProcedureParameter(2, Integer.class, ParameterMode.OUT)
-                    .setParameter(1, numeroPedido);
-
-            query.execute();
-            Integer resultado = (Integer) query.getOutputParameterValue(2);
-            return resultado != null && resultado == 1;
-
-        } catch (Exception e) {
+            var query = em.createNativeQuery(
+                "SELECT PKG_EMPRESA_LIMINAR.FIND_TAXA_ISENTA_BY_PEDIDO@DBLINK_SCA(?) FROM dual"
+            );
+            query.setParameter(1, numeroPedido);
+            var result = query.getSingleResult();
+            // Esperado: retorna 1 para isento, 0 para não isento
+            return result != null && Integer.parseInt(result.toString()) == 1;
+        } catch (NumberFormatException e) {
             log.warn("Falha ao consultar liminar SCA para pedido {}. "
                     + "Taxa será aplicada normalmente.", numeroPedido, e);
             return false;
@@ -53,19 +47,19 @@ public class LiminarGatewayJpa implements LiminarGateway {
     }
 
     @Override
-    public int verificarLiminarEmpresa(String numeroPedido) {
+    public int verificarLiminarEmpresa(Long numeroPedido) {
         try {
-            StoredProcedureQuery query = em
-                    .createStoredProcedureQuery(
-                            "PKG_EMPRESA_LIMINAR.FIND_BY_PEDIDO@DBLINK_SCA")
-                    .registerStoredProcedureParameter(1, String.class, ParameterMode.IN)
-                    .registerStoredProcedureParameter(2, Integer.class, ParameterMode.OUT)
-                    .setParameter(1, numeroPedido);
-
-            query.execute();
-            Integer resultado = (Integer) query.getOutputParameterValue(2);
-            return resultado != null ? resultado : 0;
-
+            var query = em.createNativeQuery(
+                "SELECT PKG_EMPRESA_LIMINAR.FIND_BY_PEDIDO@DBLINK_SCA(?) FROM dual"
+            );
+            query.setParameter(1, numeroPedido);
+            var result = query.getResultList();
+            // Ajuste conforme o tipo de retorno esperado
+            if (result != null && !result.isEmpty()) {
+                // Exemplo: retorna 1 se encontrou, 0 se não encontrou
+                return 1;
+            }
+            return 0;
         } catch (Exception e) {
             log.warn("Falha ao verificar liminar de empresa para pedido {}. "
                     + "Assumindo sem liminar.", numeroPedido, e);
@@ -79,33 +73,18 @@ public class LiminarGatewayJpa implements LiminarGateway {
             return 0;
         }
         try {
-            StoredProcedureQuery query = em
-                    .createStoredProcedureQuery(
-                            "PKG_CARTAO_LIMINAR.FIND_BY_CARTAO@DBLINK_SCA")
-                    .registerStoredProcedureParameter(1, String.class, ParameterMode.IN)
-                    .registerStoredProcedureParameter(2, Integer.class, ParameterMode.OUT)
-                    .setParameter(1, numeroCartao);
-
-            query.execute();
-            Integer resultado = (Integer) query.getOutputParameterValue(2);
-            return resultado != null ? resultado : 0;
-
-        } catch (Exception e) {
+            var query = em.createNativeQuery(
+                "SELECT PKG_CARTAO_LIMINAR.FIND_BY_CARTAO@DBLINK_SCA(?) FROM dual"
+            );
+            query.setParameter(1, numeroCartao);
+            var result = query.getSingleResult();
+            return result != null ? Integer.parseInt(result.toString()) : 0;
+        } catch (NumberFormatException e) {
             log.warn("Falha ao verificar liminar de cartão {}. "
                     + "Assumindo sem liminar.", numeroCartao, e);
             return 0;
         }
     }
 
-    @Override
-    public boolean existeLiminar(String codCanal, String numLogicoCartao) {
-        try {
-            int liminarEmpresa = verificarLiminarEmpresa(codCanal);
-            return verificarLiminarCartao(liminarEmpresa, numLogicoCartao) == 1;
-        } catch (Exception e) {
-            log.warn("Falha ao consultar liminar combinada para canal={}, cartao={}. "
-                    + "Assumindo sem liminar.", codCanal, numLogicoCartao, e);
-            return false;
-        }
-    }
+
 }

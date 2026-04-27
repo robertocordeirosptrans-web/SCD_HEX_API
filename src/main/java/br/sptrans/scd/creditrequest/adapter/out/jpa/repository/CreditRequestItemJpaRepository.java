@@ -44,6 +44,33 @@ public interface CreditRequestItemJpaRepository
 
     @Query("SELECT i FROM CreditRequestItemsEntity i WHERE i.id.numSolicitacao = :num AND i.id.codCanal = :canal")
     List<CreditRequestItemsEntity> findAllBySolicitacao(@Param("num") Long num, @Param("canal") String canal);
+        /**
+         * Busca os primeiros 100 itens de recarga com situação informada.
+         * Nota: Oracle não suporta bind variable em FETCH FIRST, por isso o limite é
+         * fixo.
+         */
+        @Query(value = """
+                        SELECT i.*
+                        FROM SPTRANSDBA.SOL_DISTRIB_ITENS i
+                        WHERE i.COD_SITUACAO = :codSituacao
+                        FETCH FIRST 100 ROWS ONLY
+                        """, nativeQuery = true)
+        List<CreditRequestItemsEntity> searchForItensUnlocked(
+                        @Param("codSituacao") String codSituacao);
+
+        @Query(value = """
+                        SELECT i.*\r
+                        FROM SPTRANSDBA.SOL_DISTRIB_ITENS i\r
+                        WHERE i.COD_SITUACAO = :codSituacao\r
+                        FETCH FIRST 100 ROWS ONLY""", nativeQuery = true)
+        List<CreditRequestItemsEntity> searchItemsToBeProcessed(@Param("codSituacao") String codSituacao);
+
+        @Query(value = """
+                        SELECT i.*\r
+                        FROM SPTRANSDBA.SOL_DISTRIB_ITENS i\r
+                        WHERE i.COD_SITUACAO = :codSituacao\r
+                        FETCH FIRST :limit ROWS ONLY""", nativeQuery = true)
+        List<CreditRequestItemsEntity> searchItemsToBeConfirmed(@Param("codSituacao") String codSituacao, @Param("limit") int limit);
 
     @Query(value = """
             SELECT

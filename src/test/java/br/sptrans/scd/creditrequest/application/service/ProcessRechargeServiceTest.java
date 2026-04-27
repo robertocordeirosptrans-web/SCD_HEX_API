@@ -93,7 +93,7 @@ class ProcessRechargeServiceTest {
 
         when(creditRequestRDPort.findByNumSolicitacaoAndCodCanal(100L, "CANAL_A"))
                 .thenReturn(distribuicoes);
-        when(liminarGateway.verificarLiminarEmpresa(anyString())).thenReturn(0);
+        when(liminarGateway.verificarLiminarEmpresa(anyLong())).thenReturn(0);
 
         processRechargeService.processarLoteRecarga(List.of(item));
 
@@ -116,7 +116,7 @@ class ProcessRechargeServiceTest {
         var mktDistrib = new MarketingDistribuitionChannel(mktKey, null, null, null, null, null);
         when(marketingDistribuitionChannelPersistencePort.findByAssocied("CANAL_B"))
                 .thenReturn(java.util.Optional.of(mktDistrib));
-        when(liminarGateway.verificarLiminarEmpresa(anyString())).thenReturn(0);
+        when(liminarGateway.verificarLiminarEmpresa(anyLong())).thenReturn(0);
 
         processRechargeService.processarLoteRecarga(List.of(item));
 
@@ -132,7 +132,7 @@ class ProcessRechargeServiceTest {
                 .thenReturn(List.of());
         when(marketingDistribuitionChannelPersistencePort.findByAssocied("CANAL_C"))
                 .thenReturn(java.util.Optional.empty());
-        when(liminarGateway.verificarLiminarEmpresa(anyString())).thenReturn(0);
+        when(liminarGateway.verificarLiminarEmpresa(anyLong())).thenReturn(0);
 
         processRechargeService.processarLoteRecarga(List.of(item));
 
@@ -145,6 +145,24 @@ class ProcessRechargeServiceTest {
         processRechargeService.processarLoteRecarga(List.of());
 
         verify(creditRequestRDPort, never()).findByNumSolicitacaoAndCodCanal(anyLong(), anyString());
+        verify(hmPort, never()).registrarAutorizacaoRecarga(anyLong(), anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("✓ codCanal nulo não causa NPE — nenhum terminal registrado no HM")
+    void processarLote_codCanalNulo_naoNpe() {
+        // Simula item carregado do banco sem codCanal (mapper legado)
+        CreditRequestItems item = buildItem(400L, "CANAL_D");
+        item.setCodCanal(null); // ausente no mapper — cenário real do bug
+
+        when(creditRequestRDPort.findByNumSolicitacaoAndCodCanal(400L, null))
+                .thenReturn(List.of());
+        when(marketingDistribuitionChannelPersistencePort.findByAssocied(null))
+                .thenReturn(java.util.Optional.empty());
+
+        // Não deve lançar NullPointerException
+        processRechargeService.processarLoteRecarga(List.of(item));
+
         verify(hmPort, never()).registrarAutorizacaoRecarga(anyLong(), anyString(), anyString());
     }
 }
