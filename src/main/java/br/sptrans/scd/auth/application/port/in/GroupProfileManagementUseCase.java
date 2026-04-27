@@ -1,4 +1,5 @@
 
+
 package br.sptrans.scd.auth.application.port.in;
 
 import java.util.List;
@@ -165,6 +166,22 @@ public interface GroupProfileManagementUseCase {
 
         Page<UserProfileResponseDTO> listProfilesByUsuario(Long idUsuario, Pageable pageable);
 
+                /**
+         * Cria uma nova associação usuário-perfil, se não existir ativa.
+         */
+        void createUserProfileAssociation(Long idUsuario, String codPerfil, Long idUsuarioManutencao);
+
+        /**
+         * Atualiza a validade (dtFimValidade) da associação usuário-perfil.
+         * 
+         * @param idUsuario           ID do usuário
+         * @param codPerfil           Código do perfil
+         * @param idUsuarioManutencao Usuário que está realizando a manutenção
+         * @param ativar              true para ativar (1 ano à frente), false para
+         *                            inativar (data atual)
+         */
+        void updateUserProfileValidity(Long idUsuario, String codPerfil, Long idUsuarioManutencao, boolean ativar);
+
         /**
          * Lista todas as associações perfil-funcionalidade.
          */
@@ -244,10 +261,10 @@ public interface GroupProfileManagementUseCase {
         }
 
         // record FunctionalityKey(
-        //                 String codSistema,
-        //                 String codModulo,
-        //                 String codRotina,
-        //                 String codFuncionalidade) {
+        // String codSistema,
+        // String codModulo,
+        // String codRotina,
+        // String codFuncionalidade) {
 
         // }
 

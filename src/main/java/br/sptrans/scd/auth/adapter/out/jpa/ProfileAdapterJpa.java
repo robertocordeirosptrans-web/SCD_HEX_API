@@ -1,5 +1,6 @@
 package br.sptrans.scd.auth.adapter.out.jpa;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,9 +16,12 @@ import br.sptrans.scd.auth.adapter.out.jpa.repository.FunctionalityJpaRepository
 import br.sptrans.scd.auth.adapter.out.jpa.repository.ProfileFunctionalityJpaRepository;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.ProfileJpaRepository;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.UserProfileJpaRepository;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.UserRepositoryJpa;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.FunctionalityEntityJpaKey;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.ProfileEntityJpa;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.ProfileFunctionalityJpa;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.ProfileFunctionalityJpaId;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserProfileJpa;
 import br.sptrans.scd.auth.application.port.out.ProfilePort;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.FunctionalityKey;
@@ -32,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class ProfileAdapterJpa implements ProfilePort {
 
     private final ProfileJpaRepository profileJpaRepository;
+    private final UserRepositoryJpa userRepositoryJpa;
     private final ProfileFunctionalityJpaRepository profileFunctionalityJpaRepository;
     private final FunctionalityJpaRepository functionalityJpaRepository;
     private final UserProfileJpaRepository userProfileJpaRepository;
@@ -56,9 +61,9 @@ public class ProfileAdapterJpa implements ProfilePort {
 
     @Override
     public Page<Profile> listProfile(String nomPerfil, String codStatus, Pageable pageable) {
-        return profileJpaRepository.findByNomPerfilAndCodStatus(nomPerfil, codStatus, pageable).map(profileMapper::toDomain);
+        return profileJpaRepository.findByNomPerfilAndCodStatus(nomPerfil, codStatus, pageable)
+                .map(profileMapper::toDomain);
     }
-
 
     @Override
     public void updateStatus(String codPerfil, String codStatus, Long idUsuarioManutencao) {
@@ -75,25 +80,25 @@ public class ProfileAdapterJpa implements ProfilePort {
         // Buscar as entidades relacionadas para estabelecer as relações JPA
         var perfil = profileJpaRepository.findByCodPerfil(codPerfil)
                 .orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado: " + codPerfil));
-        
+
         FunctionalityEntityJpaKey functionalityKey = new FunctionalityEntityJpaKey();
         functionalityKey.setCodSistema(chave.getCodSistema());
         functionalityKey.setCodModulo(chave.getCodModulo());
         functionalityKey.setCodRotina(chave.getCodRotina());
         functionalityKey.setCodFuncionalidade(chave.getCodFuncionalidade());
-        
+
         var funcionalidade = functionalityJpaRepository.findById(functionalityKey)
                 .orElseThrow(() -> new IllegalArgumentException("Funcionalidade não encontrada: " + functionalityKey));
-        
+
         ProfileFunctionalityJpaId pfId = profileMapper.toJpaId(new ProfileFunctionalityKey(
                 chave.getCodSistema(), chave.getCodModulo(), chave.getCodRotina(),
                 chave.getCodFuncionalidade(), codPerfil));
-        
+
         ProfileFunctionalityJpa pf = new ProfileFunctionalityJpa();
         pf.setId(pfId);
         pf.setIdUsuarioManutencao(idUsuarioManutencao);
-        pf.setPerfil(perfil);  // ✅ Setar a relação com Perfil
-        pf.setFuncionalidade(funcionalidade);  // ✅ Setar a relação com Funcionalidade
+        pf.setPerfil(perfil); // ✅ Setar a relação com Perfil
+        pf.setFuncionalidade(funcionalidade); // ✅ Setar a relação com Funcionalidade
         profileFunctionalityJpaRepository.save(pf);
     }
 
@@ -173,7 +178,6 @@ public class ProfileAdapterJpa implements ProfilePort {
         return userProfileJpaRepository.findByIdUsuario(idUsuario, pageable).map(profileMapper::toDomain);
     }
 
-
     @Override
     public void save(Profile perfil) {
         profileJpaRepository.save(profileMapper.toEntity(perfil));
@@ -208,20 +212,21 @@ public class ProfileAdapterJpa implements ProfilePort {
     public ProfileFunctionality save(ProfileFunctionality entity) {
         // Buscar as entidades relacionadas para estabelecer as relações JPA
         var perfil = profileJpaRepository.findByCodPerfil(entity.getId().getCodPerfil())
-                .orElseThrow(() -> new IllegalArgumentException("Perfil não encontrado: " + entity.getId().getCodPerfil()));
-        
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Perfil não encontrado: " + entity.getId().getCodPerfil()));
+
         FunctionalityEntityJpaKey functionalityKey = new FunctionalityEntityJpaKey();
         functionalityKey.setCodSistema(entity.getId().getCodSistema());
         functionalityKey.setCodModulo(entity.getId().getCodModulo());
         functionalityKey.setCodRotina(entity.getId().getCodRotina());
         functionalityKey.setCodFuncionalidade(entity.getId().getCodFuncionalidade());
-        
+
         var funcionalidade = functionalityJpaRepository.findById(functionalityKey)
                 .orElseThrow(() -> new IllegalArgumentException("Funcionalidade não encontrada: " + functionalityKey));
-        
+
         ProfileFunctionalityJpa jpaEntity = profileMapper.toEntity(entity);
-        jpaEntity.setPerfil(perfil);  // ✅ Setar a relação com Perfil
-        jpaEntity.setFuncionalidade(funcionalidade);  // ✅ Setar a relação com Funcionalidade
+        jpaEntity.setPerfil(perfil); // ✅ Setar a relação com Perfil
+        jpaEntity.setFuncionalidade(funcionalidade); // ✅ Setar a relação com Funcionalidade
         ProfileFunctionalityJpa saved = profileFunctionalityJpaRepository.save(jpaEntity);
         return profileMapper.toDomain(saved);
     }
@@ -239,5 +244,65 @@ public class ProfileAdapterJpa implements ProfilePort {
     @Override
     public long count() {
         return profileFunctionalityJpaRepository.count();
+    }
+
+    // Atualizando a validade (dtFimValidade) da associação usuário-perfil
+    @Override
+    public int updateUserProfileValidity(Long idUsuario, String codPerfil, Long idUsuarioManutencao, boolean ativar,
+            LocalDateTime novaValidade) {
+        LocalDateTime now = LocalDateTime.now();
+        int updated = 0;
+        
+        if (ativar) {
+            // Inativa todos os outros registros ativos do usuário/perfil, exceto o que será ativado
+            userProfileJpaRepository.inactivatePreviousActiveProfiles(
+                idUsuario,
+                codPerfil,
+                null, // dtInicioValidade não é usado para inativar todos
+                novaValidade // dtFimValidade do registro que será mantido ativo
+            );
+            // Ativa apenas o registro com dtFimValidade = novaValidade via UPDATE em lote
+            updated = userProfileJpaRepository.activateUserProfile(
+                idUsuario,
+                codPerfil,
+                novaValidade,
+                idUsuarioManutencao,
+                now
+            );
+        } else {
+            // Inativa todos os registros do usuário/perfil via UPDATE em lote
+            updated = userProfileJpaRepository.inactivateUserProfile(
+                idUsuario,
+                codPerfil,
+                novaValidade,
+                idUsuarioManutencao,
+                now
+            );
+        }
+        return updated;
+    }
+
+    @Override
+    public void saveUserProfile(UserProfile userProfile) {
+        UserProfileJpa entity = profileMapper.toEntity(userProfile);
+        // Buscar e setar o perfil (obrigatório para JPA)
+        ProfileEntityJpa perfil = profileJpaRepository.findByCodPerfil(userProfile.getId().getCodPerfil())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Perfil não encontrado: " + userProfile.getId().getCodPerfil()));
+        entity.setPerfil(perfil);
+        // Buscar e setar o usuário (obrigatório para JPA)
+        var usuario = userRepositoryJpa.findById(userProfile.getId().getIdUsuario())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Usuário não encontrado: " + userProfile.getId().getIdUsuario()));
+        entity.setUsuario(usuario);
+        // Inativar registros antigos ativos (exceto o novo)
+        userProfileJpaRepository.inactivatePreviousActiveProfiles(
+                userProfile.getId().getIdUsuario(),
+                userProfile.getId().getCodPerfil(),
+                userProfile.getId().getDtInicioValidade(),
+                userProfile.getId().getDtFimValidade());
+                
+        userProfileJpaRepository.save(entity);
+
     }
 }

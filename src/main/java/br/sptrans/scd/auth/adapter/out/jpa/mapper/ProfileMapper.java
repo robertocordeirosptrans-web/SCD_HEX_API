@@ -19,6 +19,25 @@ import br.sptrans.scd.auth.domain.UserProfileId;
         uses = { UserMapper.class })
 public interface ProfileMapper {
 
+    // Mapeamento UserProfile → UserProfileJpa
+    default UserProfileJpa toEntity(UserProfile domain) {
+        if (domain == null) return null;
+        UserProfileJpa entity = new UserProfileJpa();
+        UserProfileJpaId jpaId = new UserProfileJpaId();
+        if (domain.getId() != null) {
+            jpaId.setIdUsuario(domain.getId().getIdUsuario());
+            jpaId.setCodPerfil(domain.getId().getCodPerfil());
+            jpaId.setDtInicioValidade(domain.getId().getDtInicioValidade());
+            jpaId.setDtFimValidade(domain.getId().getDtFimValidade());
+        }
+        entity.setId(jpaId);
+        entity.setCodStatus(domain.getCodStatus());
+        entity.setIdUsuarioManutencao(domain.getIdUsuarioManutencao());
+        entity.setDtManutencao(domain.getDtModi());
+        // usuario e perfil são setados pelo adapter se necessário
+        return entity;
+    }
+
     // ── Profile ───────────────────────────────────────────────────────────────
 
     @Mapping(target = "dtModi", source = "dtManutencao")

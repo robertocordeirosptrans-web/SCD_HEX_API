@@ -1,6 +1,7 @@
-   
+
 package br.sptrans.scd.auth.application.port.out;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,8 +29,7 @@ public interface ProfilePort extends ProfileFunctionalityPort {
 
     List<Profile> listProfile(String codStatus);
 
-     Page<Profile> listProfile(String nomPerfil, String codStatus, Pageable pageable);
-
+    Page<Profile> listProfile(String nomPerfil, String codStatus, Pageable pageable);
 
     void save(Profile perfil);
 
@@ -39,12 +39,10 @@ public interface ProfilePort extends ProfileFunctionalityPort {
      * Lista funcionalidades associadas a um perfil, paginado.
      */
 
-
     Page<ProfileFunctionalityProjectionDTO> listFunctionalitiesProjectionByProfile(String codPerfil, Pageable pageable);
 
-        // Projeção customizada para usuários por perfil
+    // Projeção customizada para usuários por perfil
     Page<UserProfileProjectionDTO> listUserProfilesByPerfil(String codPerfil, Pageable pageable);
-   
 
     // ── Associações PERFIL_FUNCIONALIDADES ────────────────────────────────────
     /**
@@ -81,7 +79,10 @@ public interface ProfilePort extends ProfileFunctionalityPort {
 
     Page<UserProfile> findByIdUsuario(Long idUsuario, Pageable pageable);
 
-
+    /**
+     * Salva uma nova associação usuário-perfil.
+     */
+    void saveUserProfile(UserProfile userProfile);
 
     /**
      * Lista todas as associações perfil-funcionalidade.
@@ -89,5 +90,24 @@ public interface ProfilePort extends ProfileFunctionalityPort {
     List<ProfileFunctionality> listProfileFunctionalities();
 
     Page<ProfileFunctionality> listProfileFunctionalities(Pageable pageable);
+
+    /**
+     * Atualiza a validade (dtFimValidade) da associação usuário-perfil.
+     * 
+     * @param idUsuario           ID do usuário
+     * @param codPerfil           Código do perfil
+     * @param idUsuarioManutencao Usuário que está realizando a manutenção
+     * @param ativar              true para ativar (1 ano à frente), false para
+     *                            inativar (data atual)
+     * @return
+     */
+    int updateUserProfileValidity(Long idUsuario, String codPerfil, Long idUsuarioManutencao, boolean ativar,
+            LocalDateTime novaValidade);
+
+    /**
+     * Inativa todos os registros ativos antigos de usuário-perfil, exceto o novo.
+     */
+    // int inactivatePreviousActiveProfiles(Long idUsuario, String codPerfil, java.time.LocalDateTime dtInicioValidade,
+    //         java.time.LocalDateTime dtFimValidade);
 
 }

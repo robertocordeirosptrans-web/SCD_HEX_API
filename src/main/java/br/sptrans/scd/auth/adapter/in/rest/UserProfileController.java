@@ -19,6 +19,7 @@ import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileResponseDTO;
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileStatusRequestDTO;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.security.CacPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,9 +36,11 @@ import jakarta.validation.Valid;
 public class UserProfileController {
 
     private final GroupProfileManagementUseCase groupProfileManagementUseCase;
+    private final UserResolverHelper userResolverHelper;
 
-    public UserProfileController(GroupProfileManagementUseCase groupProfileManagementUseCase) {
+    public UserProfileController(GroupProfileManagementUseCase groupProfileManagementUseCase, UserResolverHelper userResolverHelper) {
         this.groupProfileManagementUseCase = groupProfileManagementUseCase;
+        this.userResolverHelper = userResolverHelper;
     }
 
     @GetMapping
@@ -93,17 +96,22 @@ public class UserProfileController {
     @Operation(summary = "Associar perfil ao usuário", description = "Associa um perfil ativo ao usuário")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Associação criada com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos ou perfil/usuário não encontrado")
+        @ApiResponse(responseCode = "400", description = "Dados inválidos ou perfil/usuário não encontrado ou já existe associação ativa")
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<?> associate(@Valid @RequestBody UserProfileRequestDTO request) {
-        groupProfileManagementUseCase.associateProfilesToGroup(
-                new GroupProfileManagementUseCase.AssociateProfilesToGroupCommand(
-                        request.idUsuario().toString(),
-                        java.util.Set.of(request.codPerfil()),
-                        request.idUsuario()
-                )
-        );
+        Long idUsuario = request.idUsuario();
+        String codPerfil = request.codPerfil();
+        // Verifica se já existe associação ativa
+        Page<UserProfileResponseDTO> existentes = groupProfileManagementUseCase.listProfilesByUsuario(idUsuario, Pageable.unpaged());
+        boolean existeAtivo = existentes.stream()
+            .anyMatch(dto -> codPerfil.equals(dto.codPerfil()) && "A".equalsIgnoreCase(dto.codStatus()));
+        if (existeAtivo) {
+            return ResponseEntity.badRequest().body("Já existe associação ativa deste perfil para o usuário.");
+        }
+        // Cria nova associação
+        Long idUsuarioManutencao = userResolverHelper.getCurrentUserId();
+        groupProfileManagementUseCase.createUserProfileAssociation(idUsuario, codPerfil, idUsuarioManutencao);
         return ResponseEntity.ok().build();
     }
 
@@ -116,16 +124,18 @@ public class UserProfileController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> activate(@Valid @RequestBody UserProfileStatusRequestDTO request) {
-        groupProfileManagementUseCase.associateProfilesToGroup(
-                new GroupProfileManagementUseCase.AssociateProfilesToGroupCommand(
-                        request.idUsuario().toString(),
-                        java.util.Set.of(request.codPerfil()),
-                        request.idUsuario()
-                )
+        public ResponseEntity<?> activate(@Valid @RequestBody UserProfileStatusRequestDTO request) {
+        Long idUsuarioManutencao = userResolverHelper.getCurrentUserId();
+  
+        // Atualizar validade para 1 ano à frente
+        groupProfileManagementUseCase.updateUserProfileValidity(
+            request.idUsuario(),
+            request.codPerfil(),
+            idUsuarioManutencao,
+            true // ativar
         );
         return ResponseEntity.ok().build();
-    }
+        }
 
     @PatchMapping("/inativar")
     @PreAuthorize("hasAuthority('" + CacPermissions.ASSPERAOUSU + "')")
@@ -136,16 +146,18 @@ public class UserProfileController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> deactivate(@Valid @RequestBody UserProfileStatusRequestDTO request) {
-        groupProfileManagementUseCase.disassociateProfileFromGroup(
-                new GroupProfileManagementUseCase.DisassociateProfileFromGroupCommand(
-                        request.idUsuario().toString(),
-                        request.codPerfil(),
-                        request.idUsuario()
-                )
+        public ResponseEntity<?> deactivate(@Valid @RequestBody UserProfileStatusRequestDTO request) {
+        Long idUsuarioManutencao = userResolverHelper.getCurrentUserId();
+
+        // Atualizar validade para data atual (ou lógica de expiração)
+        groupProfileManagementUseCase.updateUserProfileValidity(
+            request.idUsuario(),
+            request.codPerfil(),
+            idUsuarioManutencao,
+            false // inativar
         );
         return ResponseEntity.ok().build();
-    }
+        }
 
 
 }

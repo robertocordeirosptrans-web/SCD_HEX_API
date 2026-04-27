@@ -26,7 +26,9 @@ public class CacheConfig {
                 "order-list",
                 "productPeriodReport",
                 "permissoes",
-                "sessoes"
+                "sessoes",
+                "user-contexts", 
+                "user-permissions"
         );
         // TTL garante que permissões concedidas diretamente no banco (fora da API)
         // sejam visíveis em no máximo 5 minutos, sem precisar reiniciar a aplicação.

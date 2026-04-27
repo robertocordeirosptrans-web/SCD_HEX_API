@@ -1,6 +1,8 @@
 
+
 package br.sptrans.scd.auth.application.usecases.grouporprofile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +29,7 @@ import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.auth.domain.ProfileFunctionality;
 import br.sptrans.scd.auth.domain.UserProfile;
+import br.sptrans.scd.auth.domain.UserProfileId;
 import br.sptrans.scd.shared.exception.BusinessException;
 import br.sptrans.scd.shared.exception.DuplicateResourceException;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
@@ -261,7 +264,7 @@ public class ManageGroupProfileUseCase {
     /**
      * Lista todos os grupos, opcionalmente filtrado por status.
      * 
-     * @param nomGrupo nome do grupo para filtro (null = todos)
+     * @param nomGrupo  nome do grupo para filtro (null = todos)
      * @param codStatus status de filtro (null = todos)
      * @return lista de grupos
      */
@@ -396,6 +399,46 @@ public class ManageGroupProfileUseCase {
                 command.code(), "A", command.idUsuarioLogado());
 
         log.info("Perfil reativado. Código: {}", command.code());
+    }
+
+    /**
+     * Atualiza a validade (dtFimValidade) da associação usuário-perfil.
+     * Se ativar=true, define dtFimValidade para 1 ano à frente.
+     * Se ativar=false, define dtFimValidade para agora.
+     */
+
+    public void updateUserProfileValidity(Long idUsuario, String codPerfil, Long idUsuarioManutencao, boolean ativar) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime novaValidade = ativar ? now.plusYears(1) : now;
+        int updated = profileRepository.updateUserProfileValidity(idUsuario, codPerfil, idUsuarioManutencao, ativar, novaValidade);
+        if (updated == 0) {
+            throw new ResourceNotFoundException("Associação usuário-perfil não encontrada para atualizar validade");
+        }
+    }
+
+        /**
+     * Cria uma nova associação usuário-perfil, se não existir ativa.
+     */
+    public void createUserProfileAssociation(Long idUsuario, String codPerfil, Long idUsuarioManutencao) {
+        // Busca todas as associações do usuário
+        Page<UserProfile> userProfiles = profileRepository.findByIdUsuario(idUsuario, Pageable.unpaged());
+        boolean existsActive = userProfiles.stream()
+            .anyMatch(up -> codPerfil.equals(up.getId().getCodPerfil()) && "A".equalsIgnoreCase(up.getCodStatus()));
+        if (existsActive) {
+            throw new DuplicateResourceException("Já existe associação ativa deste perfil para o usuário.");
+        }
+        // Cria nova associação
+        UserProfile userProfile = new UserProfile();
+        UserProfileId userProfileId = new UserProfileId();
+        userProfileId.setIdUsuario(idUsuario);
+        userProfileId.setCodPerfil(codPerfil);
+        userProfileId.setDtInicioValidade(LocalDateTime.now());
+        userProfileId.setDtFimValidade(LocalDateTime.now().plusYears(1));
+        userProfile.setId(userProfileId);
+        userProfile.setCodStatus("A");
+        userProfile.setIdUsuarioManutencao(idUsuarioManutencao);
+        userProfile.setDtModi(LocalDateTime.now());
+        profileRepository.saveUserProfile(userProfile);
     }
 
     /**

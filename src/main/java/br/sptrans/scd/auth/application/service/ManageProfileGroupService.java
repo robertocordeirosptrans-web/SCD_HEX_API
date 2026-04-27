@@ -45,8 +45,6 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         return groupProfileRepository.findAllGroupProfile(pageable);
     }
 
-
-
     public Optional<GroupProfile> findByCodGrupoAndCodPerfil(String codGrupo, String codPerfil) {
         return groupProfileRepository.findByCodGrupoAndCodPerfil(codGrupo, codPerfil);
     }
@@ -214,6 +212,16 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     @Override
     public Page<ProfileFunctionality> listProfileFunctionalities(Pageable pageable) {
         return manageGroupProfileUseCase.listProfileFunctionalities(pageable);
+    }
+
+    @Override
+    public void updateUserProfileValidity(Long idUsuario, String codPerfil, Long idUsuarioManutencao, boolean ativar) {
+        manageGroupProfileUseCase.updateUserProfileValidity(idUsuario, codPerfil, idUsuarioManutencao, ativar);
+    }
+
+    @Override
+    public void createUserProfileAssociation(Long idUsuario, String codPerfil, Long idUsuarioManutencao) {
+        manageGroupProfileUseCase.createUserProfileAssociation(idUsuario, codPerfil, idUsuarioManutencao);
     }
 
 }
