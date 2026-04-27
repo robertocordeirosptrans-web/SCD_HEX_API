@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(ApiVersionConfig.API_V1_PATH)
+@RequestMapping(ApiVersionConfig.API_V1_PATH + "/sessions")
 @Tag(name = "Sessões v1", description = "Endpoints de gerenciamento e revogação de sessões de usuário")
 public class SessionController {
 
@@ -44,7 +44,7 @@ public class SessionController {
 
     // ── Revogação individual ──────────────────────────────────────────────────
 
-    @PostMapping("/sessions/{sessionId}/revoke")
+    @PostMapping("/{sessionId}/revoke")
     @PreAuthorize(PERM_REVOKE)
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Revogar sessão específica",
@@ -68,7 +68,7 @@ public class SessionController {
 
     // ── Revogação em massa ────────────────────────────────────────────────────
 
-    @PostMapping("/users/{userId}/sessions/revoke")
+    @PostMapping("/users/{userId}/revoke")
     @PreAuthorize(PERM_REVOKE)
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Revogar todas as sessões de um usuário",
