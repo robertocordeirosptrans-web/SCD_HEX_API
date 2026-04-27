@@ -21,14 +21,10 @@ public class Functionality {
     private LocalDateTime dtSinc;
     private String nomFuncionalidade;
     private String flgEvento;
-    private String codSistema;
-    private String codModulo;
-    private String codRotina;
-    private String codFuncionalidade;
 
 
     public String canonicalKey() {
-        return codSistema + "_" + codModulo + "_" + codRotina + "_" + codFuncionalidade;
+        return id.getCodSistema() + "_" + id.getCodModulo() + "_" + id.getCodRotina() + "_" + id.getCodFuncionalidade();
     }
 
     

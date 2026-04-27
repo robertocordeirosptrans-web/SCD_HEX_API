@@ -18,6 +18,60 @@ import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ProductChannelMapper {
 
+    // Mapeamento do domínio para o DTO de resposta
+    default ProductChResponseDTO toResponseDTO(ProductChannel channel) {
+        if (channel == null || channel.getId() == null) return null;
+        Integer codCanal = null;
+        try {
+            codCanal = channel.getId().getCodCanal() != null ? Integer.valueOf(channel.getId().getCodCanal()) : null;
+        } catch (NumberFormatException e) {}
+        return new ProductChResponseDTO(
+            channel.getId().getCodProduto(), // String
+            null, // desProduto
+            channel.getCodStatus() != null ? channel.getCodStatus().getCode() : null,
+            codCanal, // Integer
+            null, // statusCanalProduto
+            channel.getCodConvenio(),
+            channel.getCodOrgaoEmissor(),
+            channel.getQtdLimiteComercializacao(),
+            channel.getQtdMinimaEstoque(),
+            channel.getQtdMaximaEstoque(),
+            channel.getQtdMinimaRessuprimento(),
+            channel.getQtdMaximaRessuprimento(),
+            channel.getVlFace(),
+            channel.getCodTipoOperHM(),
+            channel.getFlgCarac(),
+            null, // canaisDestino
+            null, // inicioValidade
+            null, // fimValidade
+            null, // statusVigencia
+            null, // dtInicioValidadeLimite
+            null, // dtFimValidadeLimite
+            null, // vlMinimoRecarga
+            null, // vlMaximoRecarga
+            null, // vlMaximoSaldo
+            null, // statusLimite
+            null, // idTaxa
+            null, // taxaInicio
+            null, // taxaFim
+            null, // dscTaxa
+            null, // taxaAdmRecInicial
+            null, // taxaAdmRecFinal
+            null, // taxaAdmValFixo
+            null, // taxaAdmPercentual
+            null, // taxaServRecInicial
+            null, // taxaServRecFinal
+            null, // taxaServValFixo
+            null, // taxaServPercentual
+            null, // taxaServValMinimo
+            null, // taxaCanalInicio
+            null, // taxaCanalFim
+            null, // taxaCanalVlInicio
+            null, // taxaCanalVlFinal
+            null  // taxaCanalPercentual
+        );
+    }
+
     @Mapping(source = "idUsuarioCadastro.idUsuario", target = "idUsuarioCadastro")
     @Mapping(source = "idUsuarioManutencao.idUsuario", target = "idUsuarioManutencao")
     ProductChannelEntityJpa toEntity(ProductChannel domain);

@@ -177,7 +177,7 @@
             <version>3.0.0</version>
         </dependency>
 
-        <!-- Caffeine cache — alto desempenho para sessões ativas -->
+        <!-- Caffeine — high-performance cache with TTL support -->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>

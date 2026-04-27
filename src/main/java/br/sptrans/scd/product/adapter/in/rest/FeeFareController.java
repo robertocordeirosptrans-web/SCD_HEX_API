@@ -1,7 +1,10 @@
 package br.sptrans.scd.product.adapter.in.rest;
 
-// ...
 
+
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,7 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.product.adapter.in.rest.dto.FareListResponseDTO;
+import br.sptrans.scd.channel.adapter.in.rest.dto.UserSimpleDTO;
+import br.sptrans.scd.product.adapter.in.rest.dto.FareDetailResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.FareResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.FeeListResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.FeeResponseDTO;
@@ -22,6 +26,8 @@ import br.sptrans.scd.product.adapter.in.rest.dto.RegisterFeeRequest;
 import br.sptrans.scd.product.adapter.in.rest.dto.UpdateFareRequest;
 import br.sptrans.scd.product.adapter.in.rest.dto.UpdateFeeRequest;
 import br.sptrans.scd.product.application.port.in.FeeFareManagementUseCase;
+import br.sptrans.scd.shared.dto.PageResponse;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,14 +37,14 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/fee-fares")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Tarifas e Taxas v1", description = "Endpoints para gerenciamento de tarifas e taxas")
 public class FeeFareController {
 
     private final FeeFareManagementUseCase feeFareManagementUseCase;
 
-    @PostMapping("/tarifa")
+        @PostMapping("/tarifa")
+        @PreAuthorize("hasAuthority('" + CadPermissions.FEE_CADTAR + "')")
     public ResponseEntity<FareResponseDTO> createFare(@Valid @RequestBody RegisterFareRequest request) {
         var command = new FeeFareManagementUseCase.RegisterFareCommand(
                 request.codProduto(),
@@ -68,7 +74,8 @@ public class FeeFareController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
-    @PutMapping("/tarifa/{codTarifa}")
+        @PutMapping("/tarifa/{codTarifa}")
+        @PreAuthorize("hasAuthority('" + CadPermissions.FEE_ATUTAR + "')")
     public ResponseEntity<FareResponseDTO> updateFare(@PathVariable String codTarifa,
             @Valid @RequestBody UpdateFareRequest request) {
         var command = new FeeFareManagementUseCase.UpdateFareCommand(
@@ -93,30 +100,36 @@ public class FeeFareController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/tarifas/{codProduto}/{codCanal}")
-    public ResponseEntity<FareListResponseDTO> listFares(@PathVariable String codProduto,
-            @PathVariable String codCanal) {
-        var fares = feeFareManagementUseCase.listFares(codProduto, codCanal);
-        var dtoList = fares.stream().map(fare -> FareResponseDTO.builder()
-                .codTarifa(fare.getCodTarifa())
-                .codProduto(fare.getCodProduto())
-                .codVersao(fare.getCodVersao())
-                .desTarifa(fare.getDesTarifa())
-                .valTarifa(fare.getValTarifa() != null ? new java.math.BigDecimal(fare.getValTarifa()) : null)
-                .dtVigenciaInicio(fare.getDtVigenciaInicio())
-                .dtVigenciaFim(fare.getDtVigenciaFim())
-                .dtCadastro(fare.getDtCadastro())
-                .dtManutencao(fare.getDtManutencao())
-                .codStatus(fare.getCodStatus())
-                .idUsuarioCadastro(fare.getIdUsuarioCadastro())
-                .idUsuarioManutencao(fare.getIdUsuarioManutencao())
-                .build()).toList();
-        return ResponseEntity.ok(FareListResponseDTO.builder().fares(dtoList).build());
+        @GetMapping("/tarifas/{codProduto}")
+        @PreAuthorize("hasAuthority('" + CadPermissions.FEE_BUSTAR + "')")
+    public ResponseEntity<PageResponse<FareDetailResponseDTO>> listFares(@PathVariable String codProduto, Pageable pageable) {
+        Page<FareDetailResponseDTO> dtoPage = feeFareManagementUseCase.listFares(codProduto, pageable)
+                .map(p -> FareDetailResponseDTO.builder()
+                        .codTarifa(p.getCodTarifa())
+                        .codProduto(p.getCodProduto())
+                        .nomProduto(p.getNomProduto())
+                        .codVersao(p.getCodVersao())
+                        .dtVigenciaIni(p.getDtVigenciaIni())
+                        .dtVigenciaFim(p.getDtVigenciaFim())
+                        .dtCadastro(p.getDtCadastro())
+                        .dtManutencao(p.getDtManutencao())
+                        .desTarifa(p.getDesTarifa())
+                        .stTarifas(p.getStTarifas())
+                        .vlTarifa(p.getVlTarifa())
+                        .usuarioCadastro(p.getIdUsuarioCadastro() != null
+                                ? new UserSimpleDTO(p.getIdUsuarioCadastro(), p.getLoginCadastro(), p.getNomeCadastro())
+                                : null)
+                        .usuarioManutencao(p.getIdUsuarioManutencao() != null
+                                ? new UserSimpleDTO(p.getIdUsuarioManutencao(), p.getLoginManutencao(), p.getNomeManutencao())
+                                : null)
+                        .build());
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     // Taxas (Fee)
 
-    @PostMapping("/taxa")
+        @PostMapping("/taxa")
+        @PreAuthorize("hasAuthority('" + CadPermissions.FEE_CADTAX + "')")
     public ResponseEntity<FeeResponseDTO> createFee(@RequestBody RegisterFeeRequest request) {
         var adm = request.taxaAdministrativa();
         var admCmd = new FeeFareManagementUseCase.RegisterAdministrativeFeeCommand(
@@ -158,7 +171,8 @@ public class FeeFareController {
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
-    @PutMapping("/taxa/{codTaxa}")
+        @PutMapping("/taxa/{codTaxa}")
+        @PreAuthorize("hasAuthority('" + CadPermissions.FEE_ATUTAX + "')")
     public ResponseEntity<FeeResponseDTO> updateFee(@PathVariable Long codTaxa, @RequestBody UpdateFeeRequest request) {
         var adm = request.taxaAdministrativa();
         var admCmd = new FeeFareManagementUseCase.RegisterAdministrativeFeeCommand(
@@ -189,7 +203,8 @@ public class FeeFareController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/taxas/{codProduto}/{codCanal}")
+        @GetMapping("/taxas/{codProduto}/{codCanal}")
+        @PreAuthorize("hasAuthority('" + CadPermissions.FEE_BUSTAX + "')")
     public ResponseEntity<FeeListResponseDTO> listFees(@PathVariable String codProduto, @PathVariable String codCanal) {
         var fees = feeFareManagementUseCase.listFees(codProduto, codCanal);
         var dtoList = fees.stream().map(fee -> FeeResponseDTO.builder()

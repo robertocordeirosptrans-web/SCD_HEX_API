@@ -20,14 +20,14 @@ import lombok.RequiredArgsConstructor;
  * Responsável por: - Atualizar status de usuário (ativo/inativo)
  * - Atualizar senha com histórico - Gerenciar jornada de acesso
  * 
- * Implementa: UserStatusRepository
+ * Implementa: UserStatusPort
  */
 @Primary
 @Repository
 @RequiredArgsConstructor
-public class UserStatusRepositoryAdapter implements UserStatusPort {
+public class UserStatusAdapter implements UserStatusPort {
 
-    private static final Logger log = LoggerFactory.getLogger(UserStatusRepositoryAdapter.class);
+    private static final Logger log = LoggerFactory.getLogger(UserStatusAdapter.class);
 
     private final UserRepositoryJpa userRepositoryJpa;
 

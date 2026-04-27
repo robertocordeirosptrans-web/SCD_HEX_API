@@ -7,12 +7,15 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.FeeFareManagementUseCase;
 import br.sptrans.scd.product.application.port.out.gateway.LiminarGateway;
+import br.sptrans.scd.product.application.port.out.query.FareDetailProjection;
 import br.sptrans.scd.product.application.port.out.repository.FarePort;
 import br.sptrans.scd.product.application.port.out.repository.FeePersistencePort;
 import br.sptrans.scd.product.application.port.out.repository.ProductPort;
@@ -132,8 +135,8 @@ public class FeeFareService implements FeeFareManagementUseCase {
     }
 
     @Override
-    public List<Fare> listFares(String codProduto, String codCanal) {
-        return fareRepository.listByProductChannel(codProduto, codCanal);
+    public Page<FareDetailProjection> listFares(String codProduto, Pageable pageable) {
+        return fareRepository.listDetailByProduct(codProduto, pageable);
     }
 
     // =========================================================================

@@ -23,8 +23,8 @@ public interface AddressChannelJpaRepository extends JpaRepository<AddressChanne
 	@Query("SELECT a FROM AddressChannelEntityJpa a WHERE a.codCanal = :codCanal ORDER BY a.codEndereco")
 	List<AddressChannelEntityJpa> findAllByCodCanal(@Param("codCanal") String codCanal);
 
-	@Query("SELECT a FROM AddressChannelEntityJpa a WHERE a.codCanal = :codCanal")
-	Page<AddressChannelEntityJpa> findAllByCodCanal(@Param("codCanal") String codCanal, Pageable pageable);
+	@Query("SELECT a FROM AddressChannelEntityJpa a WHERE a.codCanal = :codCanal AND (:flgTipoSaida IS NULL OR a.codTipoEndereco = :flgTipoSaida) ORDER BY a.codEndereco")
+	Page<AddressChannelEntityJpa> findAllByCodCanal(@Param("codCanal") String codCanal, @Param("flgTipoSaida") String flgTipoSaida, Pageable pageable);
 
 	@Query("SELECT a FROM AddressChannelEntityJpa a ORDER BY a.codEndereco")
 	List<AddressChannelEntityJpa> findAllOrderByCodEndereco();

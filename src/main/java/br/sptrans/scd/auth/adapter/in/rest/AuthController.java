@@ -1,7 +1,5 @@
 package br.sptrans.scd.auth.adapter.in.rest;
 
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.MeResponse;
+import br.sptrans.scd.auth.adapter.in.rest.dto.ResponseLogin;
+import br.sptrans.scd.auth.adapter.in.rest.dto.ResponseSimple;
 import br.sptrans.scd.audit.application.port.in.AuditUseCase;
 import br.sptrans.scd.audit.domain.AuditEvent;
 import br.sptrans.scd.audit.domain.AuditEventType;
@@ -34,7 +35,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -121,7 +124,7 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
     })
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<ResponseSimple> changePassword(@RequestBody ResquestChangePassword req) {
+    public ResponseEntity<ResponseSimple> changePassword(@Valid @RequestBody ResquestChangePassword req) {
         log.info("REST POST /auth/change-password — Solicitação de troca de senha");
         ResetPasswordComand reset = new ResetPasswordComand(req.token(), req.novaSenha());
         casoUso.resetPassword(reset);
@@ -130,7 +133,7 @@ public class AuthController {
     }
 
     @PostMapping("/recovery-password")
-    public ResponseEntity<ResponseSimple> recoveryPassword(@RequestBody RequestRecoveryPassword req) {
+    public ResponseEntity<ResponseSimple> recoveryPassword(@Valid @RequestBody RequestRecoveryPassword req) {
         log.info("REST POST /auth/recovery-password — Solicitação de recuperação de senha");
 
         ResetRequestComand cmd = new ResetRequestComand(req.email());
@@ -165,24 +168,22 @@ public class AuthController {
 
     }
 
-    public record ResponseLogin(String token) {
+
+    public record RequestRecoveryPassword(
+            @NotBlank(message = "E-mail é obrigatório")
+            @Email(message = "E-mail deve ser válido")
+            @Size(max = 40, message = "E-mail deve ter no máximo 40 caracteres")
+            String email) {
 
     }
 
-    public record MeResponse(Long id, String name, Set<String> roles, Set<String> permissions, Set<String> groups) {
+    public record ResquestChangePassword(
+            @NotBlank(message = "Token é obrigatório")
+            String token,
 
-    }
-
-
-    public record ResponseSimple(String mensagem) {
-
-    }
-
-    public record RequestRecoveryPassword(String email) {
-
-    }
-
-    public record ResquestChangePassword(String token, String novaSenha) {
+            @NotBlank(message = "Nova senha é obrigatória")
+            @Size(min = 6, message = "Nova senha deve ter no mínimo 6 caracteres")
+            String novaSenha) {
 
     }
 

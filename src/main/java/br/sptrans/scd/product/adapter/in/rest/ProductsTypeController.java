@@ -16,16 +16,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.product.adapter.in.rest.dto.ProductsTypeResponseDTO;
-import br.sptrans.scd.product.adapter.in.rest.dto.UserSimpleMapper;
+import br.sptrans.scd.product.adapter.in.rest.dto.ProductTypesRequest;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase.CreateProductsTypeCommand;
 import br.sptrans.scd.product.application.port.in.ProductsTypeManagementUseCase.UpdateProductsTypeCommand;
 import br.sptrans.scd.product.domain.ProductType;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
+import br.sptrans.scd.shared.dto.CatalogueDTO;
+import br.sptrans.scd.shared.dto.CatalogueMapper;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -38,82 +40,70 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/products-types")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Tipos de Produto v1", description = "Endpoints para gerenciamento de tipos de produto")
 public class ProductsTypeController {
 
     private final ProductsTypeManagementUseCase productsTypeManagementUseCase;
     private final UserResolverHelper userResolverHelper;
+    private final CatalogueMapper catalogueMapper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_CADTIPDEPRO + "')")
     @Operation(summary = "Cadastra um novo tipo de produto")
-        @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Tipo de produto cadastrado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
-            public ResponseEntity<ProductType> createProductsType(
-                @Valid @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ProductTypesRequest request) {
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Tipo de produto cadastrado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
+    public ResponseEntity<CatalogueDTO> createProductsType(
+            @Valid @RequestBody ProductTypesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         ProductType productType = productsTypeManagementUseCase.create(
             new CreateProductsTypeCommand(
                 request.codTipoProduto(),
                 request.desTipoProduto(),
                 idUsuario));
-        return ResponseEntity.status(HttpStatus.CREATED).body(productType);
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(catalogueMapper.toDto(productType));
+    }
 
     @PutMapping("/{codTipoProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_ATUTIPDEPRO + "')")
     @Operation(summary = "Atualiza dados de um tipo de produto")
-        @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Tipo de produto atualizado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
-            public ResponseEntity<ProductType> updateProductsType(
-                @PathVariable String codTipoProduto,
-                @Valid @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.ProductTypesRequest request) {
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Tipo de produto atualizado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
+    public ResponseEntity<CatalogueDTO> updateProductsType(
+            @PathVariable String codTipoProduto,
+            @Valid @RequestBody ProductTypesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         ProductType productType = productsTypeManagementUseCase.update(codTipoProduto,
             new UpdateProductsTypeCommand(request.desTipoProduto(), idUsuario));
-        return ResponseEntity.ok(productType);
-        }
+        return ResponseEntity.ok(catalogueMapper.toDto(productType));
+    }
 
     @GetMapping("/{codTipoProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_BUSTIPDEPROPORCOD + "')")
     @Operation(summary = "Busca tipo de produto por código")
-    public ResponseEntity<ProductsTypeResponseDTO> findByProductsType(@PathVariable String codTipoProduto) {
+    public ResponseEntity<CatalogueDTO> findByProductsType(@PathVariable String codTipoProduto) {
         ProductType productType = productsTypeManagementUseCase.findById(codTipoProduto)
                 .orElseThrow(() -> new ProductException(ProductErrorType.PRODUCT_TYPE_NOT_FOUND));
-        ProductsTypeResponseDTO dto = new ProductsTypeResponseDTO(
-            productType.getCodTipoProduto(),
-            productType.getDesTipoProduto(),
-            productType.getCodStatus(),
-            productType.getDtCadastro(),
-            productType.getDtManutencao(),
-            UserSimpleMapper.toDto(productType.getIdUsuarioCadastro()),
-            UserSimpleMapper.toDto(productType.getIdUsuarioManutencao())
-        );
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(catalogueMapper.toDto(productType));
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_LISTIPDEPRO + "')")
     @Operation(summary = "Lista todos os tipos de produto, com filtro opcional de status")
-    public ResponseEntity<PageResponse<ProductsTypeResponseDTO>> findAllProductsTypes(
+    public ResponseEntity<PageResponse<CatalogueDTO>> findAllProductsTypes(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
-        Page<ProductsTypeResponseDTO> dtoPage = productsTypeManagementUseCase.findAll(codStatus, pageable)
-            .map(productType -> new ProductsTypeResponseDTO(
-                productType.getCodTipoProduto(),
-                productType.getDesTipoProduto(),
-                productType.getCodStatus(),
-                productType.getDtCadastro(),
-                productType.getDtManutencao(),
-                UserSimpleMapper.toDto(productType.getIdUsuarioCadastro()),
-                UserSimpleMapper.toDto(productType.getIdUsuarioManutencao())
-            ));
+        Page<CatalogueDTO> dtoPage = productsTypeManagementUseCase.findAll(codStatus, pageable)
+            .map(catalogueMapper::toDto);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @PatchMapping("/{codTipoProduto}/activate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_ATITIPDEPRO + "')")
     @Operation(summary = "Ativa um tipo de produto")
     public ResponseEntity<Void> activateProductsType(
             @PathVariable String codTipoProduto) {
@@ -122,6 +112,7 @@ public class ProductsTypeController {
     }
 
     @PatchMapping("/{codTipoProduto}/inactivate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_INATIPDEPRO + "')")
     @Operation(summary = "Inativa um tipo de produto")
     public ResponseEntity<Void> inactivateProductsType(
             @PathVariable String codTipoProduto) {
@@ -130,6 +121,7 @@ public class ProductsTypeController {
     }
 
     @DeleteMapping("/{codTipoProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_REMTIPDEPRO + "')")
     @Operation(summary = "Remove um tipo de produto")
     public ResponseEntity<Void> deleteProductsType(@PathVariable String codTipoProduto) {
         productsTypeManagementUseCase.delete(codTipoProduto);

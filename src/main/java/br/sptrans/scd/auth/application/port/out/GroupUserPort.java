@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.auth.application.port.out;
 
 import java.util.List;
@@ -6,23 +7,35 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupCustomProjection;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.domain.GroupUser;
 import br.sptrans.scd.auth.domain.GroupUserKey;
 
 public interface GroupUserPort {
 
-    Optional<GroupUser> findById_IdUsuarioAndId_CodGrupo(Long idUsuario, String codGrupo);
+    /**
+     * Lista todas as associações grupo-usuário.
+     */
+    List<GroupUser> listGroupUsers();
 
-    List<GroupUser> findById_IdUsuarioAndCodStatus(Long idUsuario, String codStatus);
+    /**
+     * Lista todas as associações grupo-usuário paginadas.
+     */
+    Page<GroupUser> listGroupUsers(Pageable pageable);
 
-    List<GroupUser> findById_CodGrupoAndCodStatus(String codGrupo, String codStatus);
+    /**
+     * Lista todas as associações grupo-usuário de um grupo específico (apenas ativos).
+     */
+    List<GroupUser> listGroupUsersByCodGrupo(String codGrupo);
 
-    List<GroupUser> findById_IdUsuario(Long idUsuario);
+
 
     Optional<GroupUser> findById(GroupUserKey id);
 
-    List<GroupUser> listGroupUsers();
-    Page<GroupUser> listGroupUsers(Pageable pageable);
+    List<GroupUser> findById_IdUsuarioAndCodStatus(Long idUsuario, String codStatus);
+
+    Page<GroupUserCustomProjection> listCustomUsersByGroup(String codGrupo, Pageable pageable);
 
     GroupUser save(GroupUser entity);
 
@@ -31,4 +44,5 @@ public interface GroupUserPort {
     void deleteById(GroupUserKey id);
 
     long count();
+    Page<GroupCustomProjection> listCustomGroupsByUser(Long idUsuario, Pageable pageable);
 }

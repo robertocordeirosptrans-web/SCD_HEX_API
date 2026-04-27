@@ -2,9 +2,12 @@ package br.sptrans.scd.channel.adapter.out.persistence.entity;
 
 import java.time.LocalDateTime;
 
+import br.sptrans.scd.product.adapter.out.persistence.entity.ProductEntityJpa;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -66,4 +69,9 @@ public class ProductChannelEntityJpa {
 
     @Column(name = "ID_USUARIO_MANUTENCAO")
     private Long idUsuarioManutencao;
+
+    @ManyToOne
+    @JoinColumn(name = "COD_PRODUTO", referencedColumnName = "COD_PRODUTO", insertable = false, updatable = false)
+    private ProductEntityJpa product;
+
 }

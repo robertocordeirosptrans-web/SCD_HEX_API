@@ -9,7 +9,9 @@ import br.sptrans.scd.product.domain.Modality;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = UserEntityJpaMapper.class)
 public interface ModalityMapper {
-
+    
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "active", ignore = true)
     @Mapping(source = "usuarioCadastro", target = "idUsuarioCadastro")
     @Mapping(source = "usuarioManutencao", target = "idUsuarioManutencao")
     Modality toDomain(ModalityEntityJpa entity);

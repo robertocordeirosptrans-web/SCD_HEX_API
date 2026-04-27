@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.application.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.product.application.port.in.ProductUseCase;
+import br.sptrans.scd.product.application.port.out.repository.CardTypePort;
 import br.sptrans.scd.product.application.port.out.repository.ProductPort;
 import br.sptrans.scd.product.application.port.out.repository.ProductVersionPort;
+import br.sptrans.scd.product.domain.CardType;
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
@@ -26,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductService implements ProductUseCase {
 
     private final ProductPort productRepository;
+    private final CardTypePort cardTypeRepository;
     private final ProductVersionPort productVersionRepository;
     private final UserResolverHelper userResolverHelper;
 
@@ -183,8 +187,8 @@ public class ProductService implements ProductUseCase {
     }
 
     @Override
-    public Page<Product> findAllProducts(String codStatus, Pageable pageable) {
-        return productRepository.findAll(codStatus, pageable);
+    public Page<Product> findAllProducts(org.springframework.data.jpa.domain.Specification<br.sptrans.scd.product.adapter.out.persistence.entity.ProductEntityJpa> spec, Pageable pageable) {
+        return productRepository.findAll(spec, pageable);
     }
 
     // =========================================================================
@@ -233,9 +237,19 @@ public class ProductService implements ProductUseCase {
     }
 
     @Override
-    public ProductVersion findByVersion(String codVersao) {
-        return productVersionRepository.findById(codVersao)
-                .orElseThrow(() -> new ProductException(ProductErrorType.VERSION_NOT_FOUND));
+    public List<ProductVersion> findAllVersion(String codProduto) {
+        if (!productRepository.existsByProduct(codProduto)) {
+            throw new ProductException(ProductErrorType.PRODUCT_NOT_FOUND);
+        }
+        return productVersionRepository.findAllByProduct(codProduto);
+    }
+
+    @Override
+    public Page<ProductVersion> findAllVersion(String codProduto, Pageable pageable) {
+        if (!productRepository.existsByProduct(codProduto)) {
+            throw new ProductException(ProductErrorType.PRODUCT_NOT_FOUND);
+        }
+        return productVersionRepository.findAllByProduct(codProduto, pageable);
     }
 
     // =========================================================================
@@ -277,5 +291,10 @@ public class ProductService implements ProductUseCase {
                     return String.valueOf(num + 1);
                 })
                 .orElse("1");
+    }
+
+    @Override
+    public List<CardType> findAllCardTypes() {
+        return cardTypeRepository.findAllViaDblink();
     }
 }

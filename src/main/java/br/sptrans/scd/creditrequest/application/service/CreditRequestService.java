@@ -4,15 +4,21 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.creditrequest.application.port.in.CreditRequestManagementUseCase;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse;
+import br.sptrans.scd.creditrequest.application.port.out.projection.ProductPeriodReportProjection;
+import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestPort;
 import br.sptrans.scd.creditrequest.application.usecases.AlterarStatusCreditRequestCase;
 import br.sptrans.scd.creditrequest.application.usecases.CreateCreditRequestCase;
+import br.sptrans.scd.creditrequest.application.usecases.PeriodReportCreditCase;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
+import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.enums.ActionStatus;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
 import br.sptrans.scd.shared.cache.InvalidateOrderCache;
@@ -26,8 +32,10 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     private static final Logger log = LoggerFactory.getLogger(CreditRequestService.class);
 
     private final CreditRequestPort creditRequestRepository;
+    private final CreditRequestItemsPort itemsRepository;
     private final AlterarStatusCreditRequestCase alterarStatusCase;
     private final CreateCreditRequestCase createCreditRequestCase;
+    private final PeriodReportCreditCase periodReportCase;
 
     // ── Ações de mudança de status ───────────────────────────────────
 
@@ -68,9 +76,17 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
     @InvalidateOrderCache
     public void acceptPendingSettlement(AcceptPendingCommand comando) {
         log.info("Iniciando aceite pendente liquidação - Entradas: {}", comando.itens().size());
-        alterarStatusCase.execute(ActionStatus.ACEITO_PENDENTE_LIQUIDACAO, comando.itens(), null, null, null, comando.dtAceite());
+        alterarStatusCase.execute(ActionStatus.ACEITO_PENDENTE_LIQUIDACAO, comando.itens(), null, null, null,
+                comando.dtAceite());
     }
 
+    // ── Relatórios ───────────────────────────────────────────────────────
+
+    @Override
+    public List<ProductPeriodReportProjection> generateProductPeriodReport(ProductPeriodReportEntry comand) {
+        return periodReportCase.execute(comand.codCanal(), comand.dataInicio(), comand.dataFim(), comand.codProdutos());
+    }
+ 
     // ── Criação ───────────────────────────────────────────────────────
 
     @Override
@@ -87,6 +103,11 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         return creditRequestRepository
                 .findByCodTipoDocumentoAndIdUsuarioCadastro(codTipoDocumento, idUsuarioCadastro)
                 .orElse(null);
+    }
+
+    @Override
+    public Page<CreditRequestItems> searchOrderByChannel(String codCanal, Long numSolicitacao, PageRequest pageRequest) {
+        return itemsRepository.findItemsByChannelAndNumSolicitacao(codCanal, numSolicitacao, pageRequest);
     }
 
     @Override
@@ -136,4 +157,6 @@ public class CreditRequestService implements CreditRequestManagementUseCase {
         return new CursorPage<>(content, content.size(), hasNext,
                 nextCursorNumSol, nextCursorCodCanal);
     }
+
+
 }

@@ -1,13 +1,12 @@
 package br.sptrans.scd.auth.adapter.in.rest.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import br.sptrans.scd.auth.domain.User;
 
 public record UserResponseDTO(
         String codLogin,
+        Long idUsuario,
         String codStatus,
         LocalDateTime dtModi,
         String nomUsuario,
@@ -26,13 +25,14 @@ public record UserResponseDTO(
         String nomEmail,
     String codEntidade,
         String codClassificacaoPessoa,
-        String desClassificacaoPessoa,
-        List<String> nomPerfis
+        String desClassificacaoPessoa
+ 
         ) {
 
     public UserResponseDTO(User user, String desCanal) {
         this(
                 user.getCodLogin(),
+                user.getIdUsuario(),
                 user.getCodStatus() != null ? user.getCodStatus().getCode() : null,
                 user.getDtModi(),
                 user.getNomUsuario(),
@@ -51,11 +51,7 @@ public record UserResponseDTO(
                 user.getNomEmail(),
                 user.getCodEmpresa(),
                 user.getCodClassificacaoPessoa() != null ? user.getCodClassificacaoPessoa().getCodClassificacaoPessoa() : null,
-                user.getCodClassificacaoPessoa() != null ? user.getCodClassificacaoPessoa().getDesClassificacaoPessoa() : null,
-                user.getPerfisUsuario() != null ? user.getPerfisUsuario().stream()
-                        .filter(up -> "A".equals(up.getCodStatus()))
-                        .map(up -> up.getPerfil().getNomPerfil())
-                        .collect(Collectors.toList()) : List.of()
+                user.getCodClassificacaoPessoa() != null ? user.getCodClassificacaoPessoa().getDesClassificacaoPessoa() : null
         );
     }
 }

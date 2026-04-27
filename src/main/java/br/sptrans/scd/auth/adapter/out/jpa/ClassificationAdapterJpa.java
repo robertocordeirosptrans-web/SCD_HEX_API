@@ -15,12 +15,11 @@ import lombok.RequiredArgsConstructor;
 public class ClassificationAdapterJpa implements ClassificationPort {
 
     private final ClassificationPersonRepository classificationPersonRepository;
-
-
+    private final ClassificationPersonMapper classificationPersonMapper;
 
     @Override
     public Optional<ClassificationPerson> findById(String codClassificacaoPessoa) {
         return classificationPersonRepository.findById(codClassificacaoPessoa)
-                .map(ClassificationPersonMapper::toDomain);
+                .map(classificationPersonMapper::toDomain);
     }
 }

@@ -1,9 +1,11 @@
+
 package br.sptrans.scd.channel.adapter.out.jpa.adapter;
 
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +14,7 @@ import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.adapter.out.jpa.mapper.ProductChannelMapper;
 import br.sptrans.scd.channel.adapter.out.jpa.repository.ProductChannelJpaRepository;
 import br.sptrans.scd.channel.application.port.out.ProductChannelPersistencePort;
+import br.sptrans.scd.channel.application.port.out.query.ChannelByProductProjection;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.ProductChannelKey;
@@ -27,9 +30,24 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
     private final UserQueryPort userQueryPort;
 
     private User resolveUser(Long id) {
-        if (id == null) return null;
+        if (id == null)
+            return null;
         return userQueryPort.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário", "id", id));
+    }
+
+    @Override
+    public List<br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO> findProdutosCodigoDescricaoByChannel(
+            String codCanal, String stCanaisProdutos, String stProdutos) {
+        // Consulta customizada para buscar apenas código e descrição
+        return productChannelJpaRepository
+                .findAvailableProductsByChannel(codCanal, stCanaisProdutos, stProdutos)
+                .stream()
+                .filter(entity -> entity.getProduct() != null)
+                .map(entity -> new br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO(
+                        entity.getProduct().getCodProduto(),
+                        entity.getProduct().getCodProduto() + " - " + entity.getProduct().getDesProduto()))
+                .toList();
     }
 
     @Override
@@ -50,6 +68,19 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
                     User userMan = resolveUser(entity.getIdUsuarioManutencao());
                     return productChannelMapper.toDomain(entity, userCad, userMan);
                 });
+    }
+
+    public List<ProductChannel> findAvailableProductsByChannel(String codCanal, String stCanaisProdutos,
+            String stProdutos) {
+        return productChannelJpaRepository
+                .findAvailableProductsByChannel(codCanal, stCanaisProdutos, stProdutos)
+                .stream()
+                .map(entity -> {
+                    User userCad = resolveUser(entity.getIdUsuarioCadastro());
+                    User userMan = resolveUser(entity.getIdUsuarioManutencao());
+                    return productChannelMapper.toDomain(entity, userCad, userMan);
+                })
+                .toList();
     }
 
     @Override
@@ -89,7 +120,6 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
         return productChannelJpaRepository.existsById(productChannelMapper.toEntityKey(id));
     }
 
-
     @Override
     public List<ProductChannelProjection> findCompletoByCanal(String codCanal) {
         if (codCanal == null || codCanal.isEmpty()) {
@@ -113,5 +143,20 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
             throw new IllegalArgumentException("codCanal deve ser um número inteiro", e);
         }
     }
+
+    @Override
+    public List<ChannelByProductProjection> findChannelsByProduct(String codProduto) {
+        return productChannelJpaRepository.findChannelsByProduct(codProduto);
+    }
+
+    @Override
+    public Page<ChannelByProductProjection> findChannelsByProduct(String codProduto, Pageable pageable) {
+        List<ChannelByProductProjection> all = productChannelJpaRepository.findChannelsByProduct(codProduto);
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), all.size());
+        List<ChannelByProductProjection> slice = all.subList(start, end);
+        return new PageImpl<>(slice, pageable, all.size());
+    }
+
 
 }

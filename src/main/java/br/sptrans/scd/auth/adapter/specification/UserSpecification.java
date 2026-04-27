@@ -7,19 +7,20 @@ import java.util.Map;
 import org.springframework.data.jpa.domain.Specification;
 
 import br.sptrans.scd.auth.adapter.in.rest.dto.UserFilterRequestDTO;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserProfileJpa;
 import br.sptrans.scd.auth.domain.User;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Subquery;
 
 public class UserSpecification {
 
-    public static Specification<User> filterUsers(UserFilterRequestDTO filtro) {
+    public static Specification<UserEntityJpa> filterUsers(UserFilterRequestDTO filtro) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (filtro == null) {
-                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+                return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
             }
 
             if (filtro.nomUsuario() != null && !filtro.nomUsuario().isBlank()) {
@@ -35,12 +36,18 @@ public class UserSpecification {
             }
 
             if (filtro.codPerfil() != null && !filtro.codPerfil().isBlank()) {
-                Join<Object, Object> usuarioPerfilJoin = root.join("perfisUsuario", JoinType.LEFT);
-                predicates.add(criteriaBuilder.equal(usuarioPerfilJoin.get("id").get("codPerfil"), filtro.codPerfil()));
-                predicates.add(criteriaBuilder.equal(usuarioPerfilJoin.get("codStatus"), "A"));
+                Subquery<Long> sub = query.subquery(Long.class);
+                var upRoot = sub.from(UserProfileJpa.class);
+                sub.select(upRoot.get("id").get("idUsuario"))
+                   .where(
+                       criteriaBuilder.equal(upRoot.get("id").get("idUsuario"), root.get("idUsuario")),
+                       criteriaBuilder.equal(upRoot.get("id").get("codPerfil"), filtro.codPerfil()),
+                       criteriaBuilder.equal(upRoot.get("codStatus"), "A")
+                   );
+                predicates.add(criteriaBuilder.exists(sub));
             }
 
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
     }
 
@@ -49,7 +56,7 @@ public class UserSpecification {
             List<Predicate> predicates = new ArrayList<>();
 
             if (filters == null || filters.isEmpty()) {
-                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+                return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
             }
 
             filters.forEach((key, value) -> {
@@ -57,29 +64,16 @@ public class UserSpecification {
                     return;
                 }
                 switch (key) {
-                    case "codLogin":
-                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("codLogin")), "%" + value.toLowerCase() + "%"));
-                        break;
-                    case "nomUsuario":
-                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("nomUsuario")), "%" + value.toLowerCase() + "%"));
-                        break;
-                    case "nomEmail":
-                        predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("nomEmail")), "%" + value.toLowerCase() + "%"));
-                        break;
-                    case "codStatus":
-                        predicates.add(criteriaBuilder.equal(root.get("codStatus"), value));
-                        break;
-                    case "codPerfil":
-                        Join<Object, Object> usuarioPerfilJoin = root.join("perfisUsuario", JoinType.LEFT);
-                        predicates.add(criteriaBuilder.equal(usuarioPerfilJoin.get("id").get("codPerfil"), value));
-                        predicates.add(criteriaBuilder.equal(usuarioPerfilJoin.get("codStatus"), "A"));
-                        break;
-                    default:
-                        break;
+                    case "codLogin" -> predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("codLogin")), "%" + value.toLowerCase() + "%"));
+                    case "nomUsuario" -> predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("nomUsuario")), "%" + value.toLowerCase() + "%"));
+                    case "nomEmail" -> predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("nomEmail")), "%" + value.toLowerCase() + "%"));
+                    case "codStatus" -> predicates.add(criteriaBuilder.equal(root.get("codStatus"), value));
+                    default -> {
+                    }
                 }
             });
 
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
     }
 }

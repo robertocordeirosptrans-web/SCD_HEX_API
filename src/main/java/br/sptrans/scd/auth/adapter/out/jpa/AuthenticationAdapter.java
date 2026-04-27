@@ -24,9 +24,9 @@ import lombok.RequiredArgsConstructor;
 @Primary
 @Repository
 @RequiredArgsConstructor
-public class AuthenticationRepositoryAdapter implements AuthenticationPort {
+public class AuthenticationAdapter implements AuthenticationPort {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthenticationRepositoryAdapter.class);
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationAdapter.class);
 
     private final UserRepositoryJpa userRepositoryJpa;
 

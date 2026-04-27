@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.channel.application.port.in;
 
 import java.util.List;
@@ -6,11 +7,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.application.port.out.query.ChannelByProductProjection;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
 import br.sptrans.scd.channel.domain.enums.ChannelDomainStatus;
 
 public interface ProductChannelUseCase {
+
+        /**
+         * Busca produtos disponíveis por canal, status e tipo, retornando apenas código
+         * e descrição.
+         */
+        List<br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO> findProdutosCodigoDescricaoByChannel(
+                        String codCanal, String stCanaisProdutos, String stProdutos);
 
         ProductChannel createProductChannel(CreateProductChannelCommand command);
 
@@ -27,6 +36,10 @@ public interface ProductChannelUseCase {
         List<ProductChannelProjection> findProjections(String codCanal, String codProduto);
 
         Page<ProductChannelProjection> findProjections(String codCanal, String codProduto, Pageable pageable);
+
+        List<ChannelByProductProjection> findChannelsByProduct(String codProduto);
+
+        Page<ChannelByProductProjection> findChannelsByProduct(String codProduto, Pageable pageable);
 
         void deleteProductChannel(String codCanal, String codProduto);
 

@@ -30,6 +30,7 @@ import br.sptrans.scd.channel.domain.RechargeLimit;
 import br.sptrans.scd.channel.domain.RechargeLimitKey;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -41,9 +42,9 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/recharge-limits")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Limites de Recarga v1", description = "Endpoints para gerenciamento de limites de recarga")
+
 public class RechargeLimitController {
 
     private static final Logger log = LoggerFactory.getLogger(RechargeLimitController.class);
@@ -53,11 +54,13 @@ public class RechargeLimitController {
     private final RechargeLimitMapper rechargeLimitMapper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.REC_CADLIMDEREC + "')")
     @Operation(summary = "Cadastra um novo limite de recarga")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Limite de recarga cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
         })
+
     public ResponseEntity<RechargeLimitResponseDTO> createRechargeLimit(
             @RequestBody CreateRechargeLimitRequest request) {
         log.info("REST POST /recharge-limits — Canal: {}, Produto: {}", request.codCanal(), request.codProduto());
@@ -77,6 +80,7 @@ public class RechargeLimitController {
     }
 
     @PutMapping("/{codCanal}/{codProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.REC_ATULIMDEREC + "')")
     @Operation(summary = "Atualiza um limite de recarga")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Limite de recarga atualizado com sucesso"),
@@ -101,6 +105,7 @@ public class RechargeLimitController {
     }
 
     @GetMapping("/{codCanal}/{codProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.REC_BUSLIMDERECPORCOD + "')")
     @Operation(summary = "Busca limite de recarga por canal e produto")
     public ResponseEntity<RechargeLimitResponseDTO> findRechargeLimit(
             @PathVariable String codCanal,
@@ -112,6 +117,7 @@ public class RechargeLimitController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.REC_LISLIMDEREC + "')")
     @Operation(summary = "Lista limites de recarga com filtro opcional por canal ou produto")
     public ResponseEntity<PageResponse<RechargeLimitResponseDTO>> findRechargeLimits(
             @RequestParam(required = false) String codCanal,
@@ -122,6 +128,7 @@ public class RechargeLimitController {
     }
 
     @DeleteMapping("/{codCanal}/{codProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.REC_REMLIMDEREC + "')")
     @Operation(summary = "Remove um limite de recarga")
     public ResponseEntity<Void> deleteRechargeLimit(
             @PathVariable String codCanal,

@@ -13,7 +13,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Refill;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -128,13 +127,22 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         
         if (uri.contains("/auth/login") || uri.contains("/auth/forgot-password")) {
             // Limite mais restritivo para endpoints de autenticação
-            limit = Bandwidth.classic(loginCapacity, Refill.intervally(loginCapacity, Duration.ofMinutes(1)));
+            limit = Bandwidth.builder()
+                    .capacity(loginCapacity)
+                    .refillIntervally(loginCapacity, Duration.ofMinutes(1))
+                    .build();
         } else if (uri.startsWith("/api/")) {
             // Limite padrão para APIs
-            limit = Bandwidth.classic(apiCapacity, Refill.intervally(apiCapacity, Duration.ofMinutes(1)));
+            limit = Bandwidth.builder()
+                    .capacity(apiCapacity)
+                    .refillIntervally(apiCapacity, Duration.ofMinutes(1))
+                    .build();
         } else {
             // Limite para endpoints públicos
-            limit = Bandwidth.classic(publicCapacity, Refill.intervally(publicCapacity, Duration.ofMinutes(1)));
+            limit = Bandwidth.builder()
+                    .capacity(publicCapacity)
+                    .refillIntervally(publicCapacity, Duration.ofMinutes(1))
+                    .build();
         }
         
         return Bucket.builder()

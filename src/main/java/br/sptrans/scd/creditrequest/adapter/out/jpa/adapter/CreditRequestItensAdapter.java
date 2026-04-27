@@ -3,12 +3,15 @@ package br.sptrans.scd.creditrequest.adapter.out.jpa.adapter;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEntity;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.entity.CreditRequestItemsEntityKey;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.mapper.CreditRequestMapper;
 import br.sptrans.scd.creditrequest.adapter.out.jpa.repository.CreditRequestItemJpaRepository;
+import br.sptrans.scd.creditrequest.application.port.out.projection.ProductPeriodReportProjection;
 import br.sptrans.scd.creditrequest.application.port.out.repository.CreditRequestItemsPort;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
@@ -87,6 +90,21 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
     }
 
     @Override
+    public List<ProductPeriodReportProjection> findProductPeriodReport(
+            String codCanal, String dataInicio, String dataFim) {
+        return itemJpaRepository.findProductPeriodReport(codCanal, dataInicio, dataFim);
+    }
+
+    @Override
+    public List<ProductPeriodReportProjection> findProductPeriodReportWithProductFilter(
+            String codCanal, String dataInicio, String dataFim, List<String> codProdutos) {
+        return itemJpaRepository.findProductPeriodReportWithProductFilter(codCanal, dataInicio, dataFim, codProdutos);
+    }
+
+    @Override
+    public Page<CreditRequestItems> findItemsByChannelAndNumSolicitacao(String codCanal, Long numSolicitacao, PageRequest pageRequest) {
+        return itemJpaRepository.findItemsByChannelAndNumSolicitacao(codCanal, numSolicitacao, pageRequest)
+                .map(creditRequestMapper::toDomainItem);
     public List<CreditRequestItems> searchItemsToBeConfirmed(String codSituacao, Integer limit) {
         return itemJpaRepository.searchItemsToBeConfirmed(codSituacao, limit)
                 .stream()

@@ -3,10 +3,13 @@ package br.sptrans.scd.creditrequest.application.port.out.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.CreditRequestItemsKey;
 
-public interface CreditRequestItemsPort {
+public interface CreditRequestItemsPort extends ReportCreditPort {
     /**
      * Busca os primeiros 100 itens de recarga com situação informada.
      */
@@ -32,6 +35,8 @@ public interface CreditRequestItemsPort {
      */
     List<CreditRequestItems> searchItemsToBeProcessed(String codSituacao);
 
+
+    Page<CreditRequestItems> findItemsByChannelAndNumSolicitacao(String codCanal, Long numSolicitacao, PageRequest pageRequest);
         /**
      * Busca itens elegíveis para processamento de recarga com a situação informada.
      */

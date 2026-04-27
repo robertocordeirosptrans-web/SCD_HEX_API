@@ -1,42 +1,18 @@
 package br.sptrans.scd.auth.adapter.out.jpa.mapper;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
+
 import br.sptrans.scd.auth.adapter.out.persistence.entity.PasswordTokenEntityJpa;
 import br.sptrans.scd.auth.domain.PasswordResetToken;
 
-/**
- * Mapper — Conversão entre PasswordResetToken (domínio) e PasswordTokenEntityJpa (JPA)
- */
-public class PasswordTokenMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface PasswordTokenMapper {
 
-    public static PasswordResetToken toDomain(PasswordTokenEntityJpa entity) {
-        if (entity == null) {
-            return null;
-        }
-        
-        PasswordResetToken token = new PasswordResetToken();
-        token.setId(entity.getId());
-        token.setIdUsuario(entity.getIdUsuario());
-        token.setToken(entity.getToken());
-        token.setDtExpiracao(entity.getDtExpiracao());
-        token.setUsado(entity.isUsed());
-        token.setDtCriacao(entity.getDtCriacao());
-        
-        return token;
-    }
+    @Mapping(target = "usado", source = "used")
+    PasswordResetToken toDomain(PasswordTokenEntityJpa entity);
 
-    public static PasswordTokenEntityJpa toEntity(PasswordResetToken domain) {
-        if (domain == null) {
-            return null;
-        }
-        
-        PasswordTokenEntityJpa entity = new PasswordTokenEntityJpa();
-        entity.setId(domain.getId());
-        entity.setIdUsuario(domain.getIdUsuario());
-        entity.setToken(domain.getToken());
-        entity.setDtExpiracao(domain.getDtExpiracao());
-        entity.setUsed(domain.isUsado());
-        entity.setDtCriacao(domain.getDtCriacao());
-        
-        return entity;
-    }
+    @Mapping(target = "used", source = "usado")
+    PasswordTokenEntityJpa toEntity(PasswordResetToken domain);
 }

@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.auth.application.service;
 
 import java.util.List;
@@ -7,9 +8,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import br.sptrans.scd.auth.adapter.in.rest.dto.ProfileFunctionalityProjectionDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileProjectionDTO;
+import br.sptrans.scd.auth.adapter.in.rest.dto.UserProfileResponseDTO;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupCustomProjection;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserCustomProjection;
 import br.sptrans.scd.auth.application.port.in.GroupProfileManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.GroupProfilePort;
-
 import br.sptrans.scd.auth.application.usecases.grouporprofile.ManageGroupProfileUseCase;
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Group;
@@ -39,6 +44,8 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     public Page<GroupProfile> findAllGroupProfile(Pageable pageable) {
         return groupProfileRepository.findAllGroupProfile(pageable);
     }
+
+
 
     public Optional<GroupProfile> findByCodGrupoAndCodPerfil(String codGrupo, String codPerfil) {
         return groupProfileRepository.findByCodGrupoAndCodPerfil(codGrupo, codPerfil);
@@ -87,13 +94,34 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
-    public List<Group> listGroups(String statusCode) {
-        return manageGroupProfileUseCase.listGroups(statusCode);
+    public Page<Group> listGroups(String nomGrupo, String codStatus, Pageable pageable) {
+        return manageGroupProfileUseCase.listGroups(nomGrupo, codStatus, pageable);
     }
 
     @Override
-    public Page<Group> listGroups(String statusCode, Pageable pageable) {
-        return manageGroupProfileUseCase.listGroups(statusCode, pageable);
+    public Page<ProfileFunctionalityProjectionDTO> listFunctionalitiesProjectionByProfile(
+            String codPerfil, Pageable pageable) {
+        return manageGroupProfileUseCase.listFunctionalitiesProjectionByProfile(codPerfil, pageable);
+    }
+
+    @Override
+    public Page<GroupUserCustomProjection> listCustomUsersByGroup(String codGrupo, Pageable pageable) {
+        return manageGroupProfileUseCase.listCustomUsersByGroup(codGrupo, pageable);
+    }
+
+    @Override
+    public Page<GroupCustomProjection> listCustomGroupsByUser(Long idUsuario, Pageable pageable) {
+        return manageGroupProfileUseCase.listCustomGroupsByUser(idUsuario, pageable);
+    }
+
+    @Override
+    public Optional<Group> getGroupByCode(String codGrupo) {
+        return manageGroupProfileUseCase.getGroupByCode(codGrupo);
+    }
+
+    @Override
+    public Optional<Group> findById(String codGrupo) {
+        return manageGroupProfileUseCase.findById(codGrupo);
     }
 
     @Override
@@ -140,13 +168,19 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
-    public Page<Profile> listProfiles(String statusCode, Pageable pageable) {
-        return manageGroupProfileUseCase.listProfiles(statusCode, pageable);
+    public Page<Profile> listProfiles(String nomPerfil, String statusCode, Pageable pageable) {
+        return manageGroupProfileUseCase.listProfiles(nomPerfil, statusCode, pageable);
     }
 
     // ══════════════════════════════════════════════════════════════════════════
     // MÉTODOS LEGADOS (Compatibilidade)
     // ══════════════════════════════════════════════════════════════════════════
+
+    @Override
+    public List<UserProfile> listUserProfiles() {
+        return manageGroupProfileUseCase.listUserProfiles();
+    }
+
     @Override
     public List<GroupUser> listGroupUsers() {
         return manageGroupProfileUseCase.listGroupUsers();
@@ -158,18 +192,18 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
     }
 
     @Override
-    public List<UserProfile> listUserProfiles() {
-        return manageGroupProfileUseCase.listUserProfiles();
-    }
-
-
     public Page<UserProfile> listUserProfiles(Pageable pageable) {
         return manageGroupProfileUseCase.listUserProfiles(pageable);
     }
 
-
-    public Page<UserProfile> listUserProfilesByPerfil(String codPerfil, Pageable pageable) {
+    @Override
+    public Page<UserProfileProjectionDTO> listUserProfilesByPerfil(String codPerfil, Pageable pageable) {
         return manageGroupProfileUseCase.listUserProfilesByPerfil(codPerfil, pageable);
+    }
+
+    @Override
+    public Page<UserProfileResponseDTO> listProfilesByUsuario(Long idUsuario, Pageable pageable) {
+        return manageGroupProfileUseCase.listProfilesByUsuario(idUsuario, pageable);
     }
 
     @Override
@@ -177,8 +211,9 @@ public class ManageProfileGroupService implements GroupProfileManagementUseCase 
         return manageGroupProfileUseCase.listProfileFunctionalities();
     }
 
-
+    @Override
     public Page<ProfileFunctionality> listProfileFunctionalities(Pageable pageable) {
         return manageGroupProfileUseCase.listProfileFunctionalities(pageable);
     }
+
 }

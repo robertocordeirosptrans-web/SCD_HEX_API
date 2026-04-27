@@ -28,6 +28,7 @@ import br.sptrans.scd.channel.application.port.in.AgreementValidityUseCase.Updat
 import br.sptrans.scd.channel.domain.AgreementValidity;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,7 +40,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/agreement-validities")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Vigências de Convênio v1", description = "Endpoints para gerenciamento de vigências de convênio")
 public class AgreementValidityController {
@@ -51,6 +51,7 @@ public class AgreementValidityController {
     private final AgreementValidityMapper agreementValidityMapper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.VIG_CADVIG + "')")
     @Operation(summary = "Cadastra uma nova vigência de convênio")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Vigência de convênio cadastrada com sucesso"),
@@ -72,6 +73,7 @@ public class AgreementValidityController {
     }
 
     @PutMapping("/{codCanal}/{codProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.VIG_ATUVIG + "')")
     @Operation(summary = "Atualiza uma vigência de convênio")
         @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Vigência de convênio atualizada com sucesso"),
@@ -92,6 +94,7 @@ public class AgreementValidityController {
     }
 
     @GetMapping("/{codCanal}/{codProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.VIG_BUSVIGPORCOD + "')")
     @Operation(summary = "Busca vigência de convênio por canal e produto")
     public ResponseEntity<AgreementValidityResponseDTO> findAgreementValidity(
             @PathVariable String codCanal,
@@ -100,6 +103,7 @@ public class AgreementValidityController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.VIG_LISVIG + "')")
     @Operation(summary = "Lista vigências de convênio com filtro opcional por canal ou produto")
     public ResponseEntity<PageResponse<AgreementValidityResponseDTO>> findAgreementValidities(
             @RequestParam(required = false) String codCanal,
@@ -117,6 +121,7 @@ public class AgreementValidityController {
     }
 
     @DeleteMapping("/{codCanal}/{codProduto}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.VIG_REMVIG + "')")
     @Operation(summary = "Remove uma vigência de convênio")
     public ResponseEntity<Void> deleteAgreementValidity(
             @PathVariable String codCanal,

@@ -13,7 +13,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import br.sptrans.scd.channel.adapter.in.rest.dto.SalesChannelFilterRequest;
-import br.sptrans.scd.channel.domain.SalesChannel;
+import br.sptrans.scd.channel.adapter.out.persistence.entity.SalesChannelEntityJpa;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -22,7 +22,7 @@ public class SalesChannelSpecification {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final String WILDCARD = "%";
 
-    public static Specification<SalesChannel> filterChannels(SalesChannelFilterRequest filters) {
+    public static Specification<SalesChannelEntityJpa> filterChannels(SalesChannelFilterRequest filters) {
         return (root, query, criteriaBuilder) -> {
             if (filters == null) {
                 return criteriaBuilder.conjunction();
@@ -48,6 +48,9 @@ public class SalesChannelSpecification {
             addStringPredicate(predicates, root, criteriaBuilder,
                     filters.codCanalSuperior(), "codCanalSuperior", true);
 
+            addStringPredicate(predicates, root, criteriaBuilder,
+                    filters.codAtividade(), "codAtividade", true);
+
             return predicates.isEmpty()
                     ? criteriaBuilder.conjunction()
                     : criteriaBuilder.and(predicates.toArray(new Predicate[0]));
@@ -56,7 +59,7 @@ public class SalesChannelSpecification {
 
     // Métodos auxiliares reutilizáveis
     private static void addStringPredicate(List<Predicate> predicates,
-            Root<SalesChannel> root,
+            Root<SalesChannelEntityJpa> root,
             CriteriaBuilder criteriaBuilder,
             String value, String fieldName, boolean caseInsensitive) {
         if (!StringUtils.hasText(value)) {
@@ -75,7 +78,7 @@ public class SalesChannelSpecification {
     }
 
     private static void addEqualPredicate(List<Predicate> predicates,
-            Root<SalesChannel> root,
+            Root<SalesChannelEntityJpa> root,
             CriteriaBuilder criteriaBuilder,
             String value, String fieldName) {
         if (!StringUtils.hasText(value)) {
@@ -85,7 +88,7 @@ public class SalesChannelSpecification {
     }
 
     private static void addNumericPredicate(List<Predicate> predicates,
-            Root<SalesChannel> root,
+            Root<SalesChannelEntityJpa> root,
             CriteriaBuilder criteriaBuilder,
             String value, String fieldName) {
         if (!StringUtils.hasText(value)) {
@@ -105,7 +108,7 @@ public class SalesChannelSpecification {
     }
 
     private static void addDatePredicate(List<Predicate> predicates,
-            Root<SalesChannel> root,
+            Root<SalesChannelEntityJpa> root,
             CriteriaBuilder criteriaBuilder,
             String value, String fieldName) {
         if (!StringUtils.hasText(value)) {
@@ -125,19 +128,19 @@ public class SalesChannelSpecification {
     }
 
     // Métodos específicos mais genéricos
-    public static Specification<SalesChannel> withCodCanalSuperior(String codCanalSuperior) {
+    public static Specification<SalesChannelEntityJpa> withCodCanalSuperior(String codCanalSuperior) {
         return StringUtils.hasText(codCanalSuperior)
                 ? (root, query, cb) -> cb.equal(root.get("codCanalSuperior"), codCanalSuperior)
                 : null;
     }
 
-    public static Specification<SalesChannel> withCodCanalLike(String codCanal) {
+    public static Specification<SalesChannelEntityJpa> withCodCanalLike(String codCanal) {
         return StringUtils.hasText(codCanal)
                 ? (root, query, cb) -> cb.like(root.get("codCanal"), WILDCARD + codCanal + WILDCARD)
                 : null;
     }
 
-    public static Specification<SalesChannel> withDescricaoLike(String descricao) {
+    public static Specification<SalesChannelEntityJpa> withDescricaoLike(String descricao) {
         return StringUtils.hasText(descricao)
                 ? (root, query, cb) -> cb.like(
                         cb.upper(root.get("descricao")),
@@ -145,14 +148,14 @@ public class SalesChannelSpecification {
                 : null;
     }
 
-    public static Specification<SalesChannel> withStatus(String status) {
+    public static Specification<SalesChannelEntityJpa> withStatus(String status) {
         return StringUtils.hasText(status)
                 ? (root, query, cb) -> cb.equal(root.get("status"), status)
                 : null;
     }
 
     // Versão sobrecarregada para Map - CORRIGIDA
-    public static Specification<SalesChannel> filterChannels(Map<String, String> filtersMap) {
+    public static Specification<SalesChannelEntityJpa> filterChannels(Map<String, String> filtersMap) {
         if (CollectionUtils.isEmpty(filtersMap)) {
             return filterChannels((SalesChannelFilterRequest) null);
         }
@@ -164,17 +167,18 @@ public class SalesChannelSpecification {
                 filtersMap.get("vlCaucao"),
                 filtersMap.get("dtInicioCaucao"),
                 filtersMap.get("dtFimCaucao"),
-                filtersMap.get("codCanalSuperior"));
+                filtersMap.get("codCanalSuperior"),
+                filtersMap.get("codAtividade"));
 
         return filterChannels(request);
     }
 
     // Método para combinar múltiplas specifications
-    public static Specification<SalesChannel> combine(Specification<SalesChannel>... specifications) {
+    public static Specification<SalesChannelEntityJpa> combine(Specification<SalesChannelEntityJpa>... specifications) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            for (Specification<SalesChannel> spec : specifications) {
+            for (Specification<SalesChannelEntityJpa> spec : specifications) {
                 if (spec != null) {
                     Predicate predicate = spec.toPredicate(root, query, criteriaBuilder);
                     if (predicate != null) {
@@ -190,12 +194,13 @@ public class SalesChannelSpecification {
     }
 
     // Método adicional: combinar lista de specifications
-    public static Specification<SalesChannel> combine(List<Specification<SalesChannel>> specifications) {
+    public static Specification<SalesChannelEntityJpa> combine(
+            List<Specification<SalesChannelEntityJpa>> specifications) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (!CollectionUtils.isEmpty(specifications)) {
-                for (Specification<SalesChannel> spec : specifications) {
+                for (Specification<SalesChannelEntityJpa> spec : specifications) {
                     if (spec != null) {
                         Predicate predicate = spec.toPredicate(root, query, criteriaBuilder);
                         if (predicate != null) {

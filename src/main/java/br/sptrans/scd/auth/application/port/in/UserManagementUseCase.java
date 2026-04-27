@@ -5,6 +5,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.auth.domain.User;
 
 /**
@@ -53,6 +58,12 @@ public interface UserManagementUseCase {
     void unblockUser(StatusChangeCommand command);
 
     /**
+     * Bloqueia um usuário ativo (COD_STATUS = 'A' → 'B'). Operação
+     * administrativa que impede o login até desbloqueio.
+     */
+    void blockUser(StatusChangeCommand command);
+
+    /**
      * Redefinição administrativa de senha. Gera nova senha temporária e define
      * DT_EXPIRA_SENHA = now() para forçar troca no próximo login. Não exige
      * token — o administrador que executa a operação.
@@ -93,6 +104,8 @@ public interface UserManagementUseCase {
      * Lista usuários com paginação, filtros e ordenação.
      */
     List<User> listUsersPaginated(UserFilterRequest filtro, int page, int size, String sortBy, String sortDir);
+
+    Page<User> listUsersPaginated(Specification<UserEntityJpa> spec, Pageable pageable);
 
     /**
      * Conta total de usuários com os filtros aplicados.

@@ -1,12 +1,14 @@
 package br.sptrans.scd.channel.adapter.in.rest.dto;
 
+
 public record SalesChannelFilterRequest(
-        String codDocumento,
-        String stCanais,
-        String vlCaucao,
-        String dtInicioCaucao,
-        String dtFimCaucao,
-        String codCanalSuperior) {
+    String codDocumento,
+    String stCanais,
+    String vlCaucao,
+    String dtInicioCaucao,
+    String dtFimCaucao,
+    String codCanalSuperior,
+    String codAtividade) {
 
     public SalesChannelFilterRequest {
         // Valores padrão para nulos
@@ -16,5 +18,6 @@ public record SalesChannelFilterRequest(
         dtInicioCaucao = dtInicioCaucao != null ? dtInicioCaucao : "";
         dtFimCaucao = dtFimCaucao != null ? dtFimCaucao : "";
         codCanalSuperior = codCanalSuperior != null ? codCanalSuperior : "";
+        codAtividade = codAtividade != null ? codAtividade : "";
     }
 }

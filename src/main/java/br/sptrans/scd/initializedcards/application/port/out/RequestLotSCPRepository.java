@@ -1,5 +1,7 @@
 package br.sptrans.scd.initializedcards.application.port.out;
 
+import java.util.List;
+
 import br.sptrans.scd.initializedcards.domain.RequestLotSCP;
 import br.sptrans.scd.initializedcards.domain.RequestLotSCPKey;
 
@@ -9,7 +11,7 @@ public interface RequestLotSCPRepository {
 
     RequestLotSCP findById(RequestLotSCPKey id);
 
-    RequestLotSCP delete(String codCanal, Long nrSolicitacao, Long numLote);
+    List<RequestLotSCP> findAllBySolicitacao(String codCanal, Long nrSolicitacao);
 
-    RequestLotSCP findAll(String codCanal, Long nrSolicitacao, String codAdquirente);
+    void deleteAllBySolicitacao(String codCanal, Long nrSolicitacao);
 }

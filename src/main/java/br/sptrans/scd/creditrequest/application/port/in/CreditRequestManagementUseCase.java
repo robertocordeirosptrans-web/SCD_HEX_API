@@ -4,130 +4,141 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestCredit;
 import br.sptrans.scd.creditrequest.application.port.in.dto.CreateRequestResponse;
+import br.sptrans.scd.creditrequest.application.port.out.projection.ProductPeriodReportProjection;
 import br.sptrans.scd.creditrequest.domain.CreditRequest;
+import br.sptrans.scd.creditrequest.domain.CreditRequestItems;
 import br.sptrans.scd.creditrequest.domain.enums.SearchMode;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public interface CreditRequestManagementUseCase {
-    // ── Ações de mudança de status (usuário) ─────────────────────────
+        // ── Ações de mudança de status (usuário) ─────────────────────────
 
-    void block(BlockCommand comando);
+        void block(BlockCommand comando);
 
-    void unblock(UnblockCommand comando);
+        void unblock(UnblockCommand comando);
 
-    void cancel(CancelCommand comando);
+        void cancel(CancelCommand comando);
 
-    void pay(PayCommand comando);
+        void pay(PayCommand comando);
 
-    void acceptPendingSettlement(AcceptPendingCommand comando);
+        void acceptPendingSettlement(AcceptPendingCommand comando);
 
-    // ── Ações de criação ──────────────────────────────────────────────
-    CreateRequestResponse createCreditRequest(CreateRequestCredit request, String idempotencyKey, Long userId);
+        // ── Ações de criação ──────────────────────────────────────────────
+        CreateRequestResponse createCreditRequest(CreateRequestCredit request, String idempotencyKey, Long userId);
 
-    // ── Consultas ────────────────────────────────────────────────────
-    CreditRequest findById(String codTipoDocumento, Long idUsuarioCadastro);
+        // ── Consultas ────────────────────────────────────────────────────
+        CreditRequest findById(String codTipoDocumento, Long idUsuarioCadastro);
 
-    CursorPage<CreditRequest> findAll(SearchCommand comando);
+        Page<CreditRequestItems> searchOrderByChannel(String codCanal, Long numSolicitacao, PageRequest pageRequest);
 
-    // ── Referência a um pedido + canal + seus itens ────────────────
-    record OrderItemEntry(
-            Long numSolicitacao,
-            String codCanal,
-            List<Long> numSolicitacaoItems
-            ) {
+        CursorPage<CreditRequest> findAll(SearchCommand comando);
 
-    }
+        List<ProductPeriodReportProjection> generateProductPeriodReport(ProductPeriodReportEntry comand);
 
-    record BlockCommand(
-            List<OrderItemEntry> itens,
-            Long idUsuarioTransicao,
-            String desOcorrencia
-            ) {
+        record ProductPeriodReportEntry(
+                        @NotBlank String codCanal,
+                        @NotNull LocalDateTime dataInicio,
+                        @NotNull LocalDateTime dataFim,
+                        @NotNull
+                        @Size(min = 1) List<@NotBlank String> codProdutos) {
+        }
 
-    }
+        // ── Referência a um pedido + canal + seus itens ────────────────
+        record OrderItemEntry(
+                        Long numSolicitacao,
+                        String codCanal,
+                        List<Long> numSolicitacaoItems) {
 
-    record UnblockCommand(
-            List<OrderItemEntry> itens,
-            Long idUsuarioTransicao,
-            String desOcorrencia
-            ) {
+        }
 
-    }
+        record BlockCommand(
+                        List<OrderItemEntry> itens,
+                        Long idUsuarioTransicao,
+                        String desOcorrencia) {
 
-    record CancelCommand(
-            List<OrderItemEntry> itens,
-            Long idUsuarioTransicao,
-            String desOcorrencia
-            ) {
+        }
 
-    }
+        record UnblockCommand(
+                        List<OrderItemEntry> itens,
+                        Long idUsuarioTransicao,
+                        String desOcorrencia) {
 
-    record PayItemEntry(
-            Long numSolicitacao,
-            Long numSolicitacaoItem,
-            String codCanal,
-            String codProduto,
-            String codSituacao,
-            BigDecimal vlItem,
-            BigDecimal vlTxadm,
-            BigDecimal vlTxserv
-    ) {
+        }
 
-    }
+        record CancelCommand(
+                        List<OrderItemEntry> itens,
+                        Long idUsuarioTransicao,
+                        String desOcorrencia) {
 
-    record PayCommand(
-            List<PayItemEntry> itens,
-            Long idUsuarioTransicao,
-            String codFormaPagto,
-            BigDecimal vlPago,
-            LocalDateTime dtConfirmaPagto
-            ) {
+        }
 
-    }
+        record PayItemEntry(
+                        Long numSolicitacao,
+                        Long numSolicitacaoItem,
+                        String codCanal,
+                        String codProduto,
+                        String codSituacao,
+                        BigDecimal vlItem,
+                        BigDecimal vlTxadm,
+                        BigDecimal vlTxserv) {
 
-    record AcceptPendingCommand(
-            List<OrderItemEntry> itens,
-            Long idUsuarioTransicao,
-            LocalDateTime dtAceite
-            ) {
+        }
 
-    }
+        record PayCommand(
+                        List<PayItemEntry> itens,
+                        Long idUsuarioTransicao,
+                        String codFormaPagto,
+                        BigDecimal vlPago,
+                        LocalDateTime dtConfirmaPagto) {
 
-    record CursorPage<T>(
-            List<T> content,
-            int size,
-            boolean hasNext,
-            String nextCursorNumSolicitacao,
-            String nextCursorCodCanal
-            ) {
+        }
 
-    }
+        record AcceptPendingCommand(
+                        List<OrderItemEntry> itens,
+                        Long idUsuarioTransicao,
+                        LocalDateTime dtAceite) {
 
-    record SearchCommand(
-            // ── Cursor ──
-            Long cursorNumSolicitacao,
-            String cursorCodCanal,
-            // ── Filtros ──
-            String codCanal,
-            String codSituacao,
-            String numLote,
-            String codFormaPagto,
-            LocalDateTime dtInicio,
-            LocalDateTime dtFim,
-            LocalDateTime dtLiberacaoEfetivaInicio,
-            LocalDateTime dtLiberacaoEfetivaFim,
-            LocalDateTime dtPagtoEconomicaInicio,
-            LocalDateTime dtPagtoEconomicaFim,
-            LocalDateTime dtFinanceiraInicio,
-            LocalDateTime dtFinanceiraFim,
-            LocalDateTime dtAlteracaoInicio,
-            LocalDateTime dtAlteracaoFim,
-            BigDecimal vlTotalMin,
-            BigDecimal vlTotalMax,
-            // ── Modo de busca ──
-            SearchMode searchMode
-            ) {
+        }
 
-    }
+        record CursorPage<T>(
+                        List<T> content,
+                        int size,
+                        boolean hasNext,
+                        String nextCursorNumSolicitacao,
+                        String nextCursorCodCanal) {
+
+        }
+
+        record SearchCommand(
+                        // ── Cursor ──
+                        Long cursorNumSolicitacao,
+                        String cursorCodCanal,
+                        // ── Filtros ──
+                        String codCanal,
+                        String codSituacao,
+                        String numLote,
+                        String codFormaPagto,
+                        LocalDateTime dtInicio,
+                        LocalDateTime dtFim,
+                        LocalDateTime dtLiberacaoEfetivaInicio,
+                        LocalDateTime dtLiberacaoEfetivaFim,
+                        LocalDateTime dtPagtoEconomicaInicio,
+                        LocalDateTime dtPagtoEconomicaFim,
+                        LocalDateTime dtFinanceiraInicio,
+                        LocalDateTime dtFinanceiraFim,
+                        LocalDateTime dtAlteracaoInicio,
+                        LocalDateTime dtAlteracaoFim,
+                        BigDecimal vlTotalMin,
+                        BigDecimal vlTotalMax,
+                        // ── Modo de busca ──
+                        SearchMode searchMode) {
+
+        }
 }

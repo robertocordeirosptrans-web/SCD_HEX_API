@@ -17,16 +17,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.product.adapter.in.rest.dto.SpeciesRequest;
-import br.sptrans.scd.product.adapter.in.rest.dto.SpeciesResponseDTO;
-import br.sptrans.scd.product.adapter.in.rest.dto.UserSimpleMapper;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase.CreateSpeciesCommand;
 import br.sptrans.scd.product.application.port.in.SpeciesManagementUseCase.UpdateSpeciesCommand;
 import br.sptrans.scd.product.domain.Species;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
+import br.sptrans.scd.shared.dto.CatalogueDTO;
+import br.sptrans.scd.shared.dto.CatalogueMapper;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,21 +40,22 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/species")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Espécies v1", description = "Endpoints para gerenciamento de espécies de produto")
 public class SpeciesController {
 
     private final SpeciesManagementUseCase speciesManagementUseCase;
     private final UserResolverHelper userResolverHelper;
+    private final CatalogueMapper catalogueMapper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.SPE_CADESP + "')")
     @Operation(summary = "Cadastra uma nova espécie")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Espécie cadastrada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        @ApiResponse(responseCode = "200", description = "Espécie cadastrada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
-    public ResponseEntity<Species> createSpecies(
+    public ResponseEntity<CatalogueDTO> createSpecies(
             @Valid @RequestBody SpeciesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Species species = speciesManagementUseCase.create(
@@ -61,58 +63,47 @@ public class SpeciesController {
                         request.codEspecie(),
                         request.desEspecie(),
                         idUsuario));
-        return ResponseEntity.status(HttpStatus.CREATED).body(species);
+        return ResponseEntity.status(HttpStatus.CREATED).body(catalogueMapper.toDto(species));
     }
 
     @PutMapping("/{codEspecie}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SPE_ATUESP + "')")
     @Operation(summary = "Atualiza dados de uma espécie")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Espécie atualizada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+        @ApiResponse(responseCode = "200", description = "Espécie atualizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
-    public ResponseEntity<Species> updateSpecies(
+    public ResponseEntity<CatalogueDTO> updateSpecies(
             @PathVariable String codEspecie,
-                        @Valid @RequestBody SpeciesRequest request) {
+            @Valid @RequestBody SpeciesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
-                Species species = speciesManagementUseCase.update(codEspecie,
+        Species species = speciesManagementUseCase.update(codEspecie,
                                 new UpdateSpeciesCommand(request.desEspecie(), idUsuario));
-        return ResponseEntity.ok(species);
+        return ResponseEntity.ok(catalogueMapper.toDto(species));
     }
 
     @GetMapping("/{codEspecie}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SPE_BUSESPPORCOD + "')")
     @Operation(summary = "Busca espécie por código")
-    public ResponseEntity<SpeciesResponseDTO> findBySpecies(@PathVariable String codEspecie) {
+    public ResponseEntity<CatalogueDTO> findBySpecies(@PathVariable String codEspecie) {
         Species species = speciesManagementUseCase.findById(codEspecie)
                 .orElseThrow(() -> new ProductException(ProductErrorType.SPECIES_NOT_FOUND));
-        SpeciesResponseDTO dto = new SpeciesResponseDTO(
-                species.getCodEspecie(),
-                species.getDesEspecie(),
-                species.getCodStatus(),
-                species.getDtCadastro(),
-                species.getDtManutencao(),
-                UserSimpleMapper.toDto(species.getIdUsuarioCadastro()),
-                UserSimpleMapper.toDto(species.getIdUsuarioManutencao()));
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(catalogueMapper.toDto(species));
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.SPE_LISESP + "')")
     @Operation(summary = "Lista todas as espécies, com filtro opcional de status")
-    public ResponseEntity<PageResponse<SpeciesResponseDTO>> findAllSpecies(
+    public ResponseEntity<PageResponse<CatalogueDTO>> findAllSpecies(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
-        Page<SpeciesResponseDTO> dtoPage = speciesManagementUseCase.findAll(codStatus, pageable)
-                .map(species -> new SpeciesResponseDTO(
-                        species.getCodEspecie(),
-                        species.getDesEspecie(),
-                        species.getCodStatus(),
-                        species.getDtCadastro(),
-                        species.getDtManutencao(),
-                        UserSimpleMapper.toDto(species.getIdUsuarioCadastro()),
-                        UserSimpleMapper.toDto(species.getIdUsuarioManutencao())));
+        Page<CatalogueDTO> dtoPage = speciesManagementUseCase.findAll(codStatus, pageable)
+                .map(catalogueMapper::toDto);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @PatchMapping("/{codEspecie}/activate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SPE_ATIESP + "')")
     @Operation(summary = "Ativa uma espécie")
     public ResponseEntity<Void> activateSpecies(
             @PathVariable String codEspecie) {
@@ -121,6 +112,7 @@ public class SpeciesController {
     }
 
     @PatchMapping("/{codEspecie}/inactivate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SPE_INAESP + "')")
     @Operation(summary = "Inativa uma espécie")
     public ResponseEntity<Void> inactivateSpecies(
             @PathVariable String codEspecie) {
@@ -129,11 +121,10 @@ public class SpeciesController {
     }
 
     @DeleteMapping("/{codEspecie}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.SPE_REMESP + "')")
     @Operation(summary = "Remove uma espécie")
     public ResponseEntity<Void> deleteSpecies(@PathVariable String codEspecie) {
         speciesManagementUseCase.delete(codEspecie);
         return ResponseEntity.noContent().build();
     }
-
-
 }

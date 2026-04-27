@@ -32,6 +32,10 @@ public class GroupUserEntityJpa {
     private Long idUsuarioManutencao;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO_MANUTENCAO", insertable = false, updatable = false)
+    private UserEntityJpa usuarioManutencao;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("idUsuario")
     @JoinColumn(name = "ID_USUARIO")
     private UserEntityJpa usuario;

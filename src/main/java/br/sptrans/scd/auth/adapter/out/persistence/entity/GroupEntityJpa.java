@@ -8,6 +8,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -31,8 +33,13 @@ public class GroupEntityJpa {
 
     @Column(name = "DT_MODI")
     private LocalDateTime dtManutencao;
+
     @Column(name = "ID_USUARIO_MANUTENCAO")
     private Long idUsuarioManutencao;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO_MANUTENCAO", insertable = false, updatable = false)
+    private UserEntityJpa usuarioManutencao;
 
     @OneToMany(mappedBy = "grupo", fetch = FetchType.LAZY)
     private Set<GroupProfileEntityJpa> grupoPerfis = new HashSet<>();

@@ -1,12 +1,14 @@
 package br.sptrans.scd.initializedcards.application.port.out;
 
+import java.util.List;
+
 import br.sptrans.scd.initializedcards.domain.HistRequestInitializedCards;
 
 public interface HistRequestInitializedRepository {
 
     HistRequestInitializedCards save(HistRequestInitializedCards entity);
 
-    HistRequestInitializedCards findByHistId(String codCanal, Long nrSolicitacao, String seqHistSolicCartaoIni);
+    List<HistRequestInitializedCards> findAllHist(String codCanal, Long nrSolicitacao);
 
-    HistRequestInitializedCards findAllHist(String codCanal, Long nrSolicitacao, String codAdquirente);
+    Long nextSeqHist(String codCanal, Long nrSolicitacao);
 }

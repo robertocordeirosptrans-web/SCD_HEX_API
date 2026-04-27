@@ -16,16 +16,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.sptrans.scd.product.adapter.in.rest.dto.TechnologyResponseDTO;
-import br.sptrans.scd.product.adapter.in.rest.dto.UserSimpleMapper;
+import br.sptrans.scd.product.adapter.in.rest.dto.TechnologyRequest;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.CreateTechnologyCommand;
 import br.sptrans.scd.product.application.port.in.TechnologyManagementUseCase.UpdateTechnologyCommand;
 import br.sptrans.scd.product.domain.Technology;
 import br.sptrans.scd.product.domain.enums.ProductErrorType;
 import br.sptrans.scd.product.domain.exception.ProductException;
+import br.sptrans.scd.shared.dto.CatalogueDTO;
+import br.sptrans.scd.shared.dto.CatalogueMapper;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,82 +39,70 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/technologies")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Tecnologias v1", description = "Endpoints para gerenciamento de tecnologias de produto")
 public class TechnologyController {
 
     private final TechnologyManagementUseCase technologyManagementUseCase;
     private final UserResolverHelper userResolverHelper;
+    private final CatalogueMapper catalogueMapper;
 
     @PostMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_CADTEC + "')")
     @Operation(summary = "Cadastra uma nova tecnologia")
-        @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Tecnologia cadastrada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
-            public ResponseEntity<Technology> createTechnology(
-                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.TechnologyRequest request) {
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Tecnologia cadastrada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
+    public ResponseEntity<CatalogueDTO> createTechnology(
+            @RequestBody TechnologyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Technology technology = technologyManagementUseCase.create(
             new CreateTechnologyCommand(
                 request.codTecnologia(),
                 request.desTecnologia(),
                 idUsuario));
-        return ResponseEntity.status(HttpStatus.CREATED).body(technology);
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(catalogueMapper.toDto(technology));
+    }
 
     @PutMapping("/{codTecnologia}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_ATUTEC + "')")
     @Operation(summary = "Atualiza dados de uma tecnologia")
-        @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Tecnologia atualizada com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
-        })
-            public ResponseEntity<Technology> updateTechnology(
-                @PathVariable String codTecnologia,
-                @RequestBody br.sptrans.scd.product.adapter.in.rest.dto.TechnologyRequest request) {
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Tecnologia atualizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    })
+    public ResponseEntity<CatalogueDTO> updateTechnology(
+            @PathVariable String codTecnologia,
+            @RequestBody TechnologyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Technology technology = technologyManagementUseCase.update(codTecnologia,
             new UpdateTechnologyCommand(request.desTecnologia(), idUsuario));
-        return ResponseEntity.ok(technology);
-        }
+        return ResponseEntity.ok(catalogueMapper.toDto(technology));
+    }
 
     @GetMapping("/{codTecnologia}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_BUSTECPORCOD + "')")
     @Operation(summary = "Busca tecnologia por código")
-    public ResponseEntity<TechnologyResponseDTO> findByTechnology(@PathVariable String codTecnologia) {
+    public ResponseEntity<CatalogueDTO> findByTechnology(@PathVariable String codTecnologia) {
         Technology technology = technologyManagementUseCase.findById(codTecnologia)
                 .orElseThrow(() -> new ProductException(ProductErrorType.TECHNOLOGY_NOT_FOUND));
-        TechnologyResponseDTO dto = new TechnologyResponseDTO(
-            technology.getCodTecnologia(),
-            technology.getDesTecnologia(),
-            technology.getCodStatus(),
-            technology.getDtCadastro(),
-            technology.getDtManutencao(),
-            UserSimpleMapper.toDto(technology.getIdUsuarioCadastro()),
-            UserSimpleMapper.toDto(technology.getIdUsuarioManutencao())
-        );
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.ok(catalogueMapper.toDto(technology));
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_LISTEC + "')")
     @Operation(summary = "Lista todas as tecnologias, com filtro opcional de status")
-    public ResponseEntity<PageResponse<TechnologyResponseDTO>> findAllTechnologies(
+    public ResponseEntity<PageResponse<CatalogueDTO>> findAllTechnologies(
             @RequestParam(required = false) String codStatus,
             Pageable pageable) {
-        Page<TechnologyResponseDTO> dtoPage = technologyManagementUseCase.findAll(codStatus, pageable)
-            .map(technology -> new TechnologyResponseDTO(
-                technology.getCodTecnologia(),
-                technology.getDesTecnologia(),
-                technology.getCodStatus(),
-                technology.getDtCadastro(),
-                technology.getDtManutencao(),
-                UserSimpleMapper.toDto(technology.getIdUsuarioCadastro()),
-                UserSimpleMapper.toDto(technology.getIdUsuarioManutencao())
-            ));
+        Page<CatalogueDTO> dtoPage = technologyManagementUseCase.findAll(codStatus, pageable)
+            .map(catalogueMapper::toDto);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
     @PatchMapping("/{codTecnologia}/activate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_ATITEC + "')")
     @Operation(summary = "Ativa uma tecnologia")
     public ResponseEntity<Void> activateTechnology(
             @PathVariable String codTecnologia) {
@@ -121,6 +111,7 @@ public class TechnologyController {
     }
 
     @PatchMapping("/{codTecnologia}/inactivate")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_INATEC + "')")
     @Operation(summary = "Inativa uma tecnologia")
     public ResponseEntity<Void> inactivateTechnology(
             @PathVariable String codTecnologia) {
@@ -129,12 +120,10 @@ public class TechnologyController {
     }
 
     @DeleteMapping("/{codTecnologia}")
+    @PreAuthorize("hasAuthority('" + CadPermissions.TEC_REMTEC + "')")
     @Operation(summary = "Remove uma tecnologia")
     public ResponseEntity<Void> deleteTechnology(@PathVariable String codTecnologia) {
         technologyManagementUseCase.delete(codTecnologia);
         return ResponseEntity.noContent().build();
     }
-
-    // ── Request DTOs ──────────────────────────────────────────────────────────
-    // Request DTOs removidos, usar TechnologyRequest
 }

@@ -10,6 +10,8 @@ import br.sptrans.scd.product.domain.ProductType;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = UserEntityJpaMapper.class)
 public interface ProductsTypeMapper {
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "active", ignore = true)
     @Mapping(source = "usuarioCadastro", target = "idUsuarioCadastro")
     @Mapping(source = "usuarioManutencao", target = "idUsuarioManutencao")
     ProductType toDomain(ProductTypesEntityJpa entity);

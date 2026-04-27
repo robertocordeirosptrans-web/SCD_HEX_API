@@ -61,9 +61,9 @@ public class AddressChannelAdapterJpa implements AddressChannelPersistencePort {
     }
 
     @Override
-    public Page<AddressChannel> findAllByCanal(String codCanal, Pageable pageable) {
+    public Page<AddressChannel> findAllByCanal(String codCanal,String flgTipoSaida, Pageable pageable) {
         if (codCanal != null && !codCanal.isBlank()) {
-            return repository.findAllByCodCanal(codCanal, pageable).map(this::toDomain);
+            return repository.findAllByCodCanal(codCanal, flgTipoSaida, pageable).map(this::toDomain);
         }
         return repository.findAllOrderByCodEndereco(pageable).map(this::toDomain);
     }

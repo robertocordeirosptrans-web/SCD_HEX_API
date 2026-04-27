@@ -1,7 +1,11 @@
 package br.sptrans.scd.product.adapter.in.rest;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,15 +20,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.product.adapter.in.rest.dto.ProductRequest;
+import br.sptrans.scd.product.adapter.in.rest.dto.ProductResponseDTO;
+import br.sptrans.scd.product.adapter.in.rest.dto.ProductVersionDetailResponseDTO;
 import br.sptrans.scd.product.adapter.in.rest.dto.ProductVersionRequest;
+import br.sptrans.scd.product.adapter.in.rest.dto.UserSimpleMapper;
+import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductMapper;
+import br.sptrans.scd.product.adapter.out.persistence.entity.ProductEntityJpa;
+import br.sptrans.scd.product.adapter.specification.ProductSpecification;
 import br.sptrans.scd.product.application.port.in.ProductUseCase;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateProductCommand;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.CreateVersionCommand;
 import br.sptrans.scd.product.application.port.in.ProductUseCase.UpdateProductCommand;
+import br.sptrans.scd.product.domain.CardType;
 import br.sptrans.scd.product.domain.Product;
 import br.sptrans.scd.product.domain.ProductVersion;
 import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
+import br.sptrans.scd.shared.security.CadPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -44,6 +56,7 @@ public class ProductController {
 
     private final ProductUseCase productUseCase;
     private final UserResolverHelper userResolverHelper;
+    private final ProductMapper productMapper;
 
     @PostMapping
     @Operation(summary = "Cadastra um novo produto")
@@ -51,9 +64,10 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Produto cadastrado com sucesso"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_CADPRO + "')")
 
     public ResponseEntity<Void> createProduct(
-           @Valid  @RequestBody ProductRequest request) {
+            @Valid @RequestBody ProductRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         productUseCase.createProduct(new CreateProductCommand(
                 request.codProduto(),
@@ -83,29 +97,38 @@ public class ProductController {
     }
 
     @GetMapping
-    @Operation(summary = "Lista todos os produtos, com filtro opcional de status")
-
-    public ResponseEntity<PageResponse<Product>> findAllProducts(
-            @RequestParam(required = false) String codStatus,
+    @Operation(summary = "Lista todos os produtos, com filtros dinâmicos")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_LISPRO + "')")
+    public ResponseEntity<PageResponse<ProductResponseDTO>> findAllProducts(
+            @RequestParam Map<String, String> filters,
             Pageable pageable) {
-        Page<Product> page = productUseCase.findAllProducts(codStatus, pageable);
-        return ResponseEntity.ok(PageResponse.fromPage(page));
+        Specification<ProductEntityJpa> spec = ProductSpecification.filterProducts(filters);
+        Page<Product> page = productUseCase.findAllProducts(spec, pageable);
+        Page<ProductResponseDTO> dtoPage = page.map(productMapper::toResponseDTO);
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
+    }
+
+    @GetMapping("/tp_cartoes")
+    @Operation(summary = "Lista todos os tipos de cartões")
+    public ResponseEntity<List<CardType>> getTypeCards() {
+        return ResponseEntity.ok(productUseCase.findAllCardTypes());
     }
 
     @GetMapping("/{codProduto}")
-
     @Operation(summary = "Busca produto por código")
-
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_BUSPROPORCOD + "')")
     public ResponseEntity<Product> findByProduct(@PathVariable String codProduto) {
+
         return ResponseEntity.ok(productUseCase.findByProduct(codProduto));
     }
 
     @PutMapping("/{codProduto}")
     @Operation(summary = "Atualiza dados de um produto")
-
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_ATUPRO + "')")
     public ResponseEntity<Void> updateProduct(
             @PathVariable String codProduto,
             @Valid @RequestBody ProductRequest request) {
+
         Long idUsuario = userResolverHelper.getCurrentUserId();
         productUseCase.updateProduct(codProduto, new UpdateProductCommand(
                 request.desProduto(),
@@ -136,15 +159,17 @@ public class ProductController {
     @PatchMapping("/{codProduto}/activate")
 
     @Operation(summary = "Ativa um produto")
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_ATIPRO + "')")
     public ResponseEntity<Void> activateProduct(
             @PathVariable String codProduto) {
+
         productUseCase.activateProduct(codProduto, userResolverHelper.getCurrentUserId());
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{codProduto}/inactivate")
     @Operation(summary = "Inativa um produto")
-
+    @PreAuthorize("hasAuthority('" + CadPermissions.PRO_INAPRO + "')")
     public ResponseEntity<Void> inactivateProduct(
             @PathVariable String codProduto) {
         productUseCase.inactivateProduct(codProduto, userResolverHelper.getCurrentUserId());
@@ -183,11 +208,41 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(version);
     }
 
-    @GetMapping("/versions/{codVersao}")
-    @Operation(summary = "Busca uma versão de produto por código")
-
-    public ResponseEntity<ProductVersion> findByVersion(@PathVariable String codVersao) {
-        return ResponseEntity.ok(productUseCase.findByVersion(codVersao));
+    @GetMapping("/{codProduto}/versions")
+    @Operation(summary = "Lista o histórico de versionamento de um produto")
+    public ResponseEntity<PageResponse<ProductVersionDetailResponseDTO>> findAllVersion(
+            @PathVariable String codProduto,
+            Pageable pageable) {
+        var dtoPage = productUseCase.findAllVersion(codProduto, pageable)
+                .map(v -> ProductVersionDetailResponseDTO.builder()
+                        .codVersao(v.getCodVersao())
+                        .codProduto(v.getCodProduto())
+                        .dtValidade(v.getDtValidade())
+                        .dtVidaInicio(v.getDtVidaInicio())
+                        .dtVidaFim(v.getDtVidaFim())
+                        .dtLiberacao(v.getDtLiberacao())
+                        .dtLancamento(v.getDtLancamento())
+                        .dtVendaInicio(v.getDtVendaInicio())
+                        .dtVendaFim(v.getDtVendaFim())
+                        .dtUsoIni(v.getDtUsoInicio())
+                        .dtUsoFim(v.getDtUsoFim())
+                        .dtTrocaIni(v.getDtTrocaInicio())
+                        .dtTrocaFim(v.getDtTrocaFim())
+                        .flgBloqFabricacao(v.getFlgBloqFabricacao())
+                        .flgBloqVenda(v.getFlgBloqVenda())
+                        .flgBloqDistribuicao(v.getFlgBloqDistribuicao())
+                        .flgBloqTroca(v.getFlgBloqTroca())
+                        .flgBloqAquisicao(v.getFlgBloqAquisicao())
+                        .flgBloqPedido(v.getFlgBloqPedido())
+                        .flgBloqDevolucao(v.getFlgBloqDevolucao())
+                        .dtCadastro(v.getDtCadastro())
+                        .dtManutencao(v.getDtManutencao())
+                        .stProdutosVersoes(v.getCodStatus())
+                        .desProdutoVersoes(v.getDesProdutoVersoes())
+                        .usuarioCadastro(UserSimpleMapper.toDto(v.getIdUsuarioCadastro()))
+                        .usuarioManutencao(UserSimpleMapper.toDto(v.getIdUsuarioManutencao()))
+                        .build());
+        return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }
 
 }

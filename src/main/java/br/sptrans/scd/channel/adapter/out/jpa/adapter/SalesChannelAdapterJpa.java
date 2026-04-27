@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.channel.adapter.out.jpa.adapter;
 
 import java.util.List;
@@ -5,10 +6,12 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.auth.application.port.out.ClassificationPort;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.in.rest.dto.SubSalesChannelProjection;
 import br.sptrans.scd.channel.adapter.out.jpa.mapper.SalesChannelMapper;
 import br.sptrans.scd.channel.adapter.out.jpa.repository.SalesChannelJpaRepository;
 import br.sptrans.scd.channel.adapter.out.persistence.entity.SalesChannelEntityJpa;
@@ -17,8 +20,6 @@ import br.sptrans.scd.channel.application.port.out.TypesActivityPersistencePort;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
-
-
 
 @Repository
 @RequiredArgsConstructor
@@ -29,6 +30,13 @@ public class SalesChannelAdapterJpa implements SalesChannelPersistencePort {
     private final TypesActivityPersistencePort typesActivityPort;
     private final ClassificationPort classificationPort;
     private final UserResolverHelper userResolverHelper;
+
+    public List<SalesChannel> findByCodClassificacaoPessoaAndStCanais(String codClassificacaoPessoa, String stCanais) {
+        return repository.findByCodClassificacaoPessoaAndStCanais(codClassificacaoPessoa, stCanais)
+                .stream()
+                .map(entity -> enrichDomain(entity, mapper.toDomain(entity)))
+                .toList();
+    }
 
     private SalesChannel enrichDomain(SalesChannelEntityJpa entity, SalesChannel domain) {
         if (entity.getCodAtividade() != null) {
@@ -66,8 +74,8 @@ public class SalesChannelAdapterJpa implements SalesChannelPersistencePort {
     }
 
     @Override
-    public Page<SalesChannel> findAll(String stCanais, Pageable pageable) {
-        return repository.findAllByStCanais(stCanais, pageable)
+    public Page<SalesChannel> findAll(Specification<SalesChannelEntityJpa> spec, Pageable pageable) {
+        return repository.findAll(spec, pageable)
                 .map(entity -> enrichDomain(entity, mapper.toDomain(entity)));
     }
 
@@ -91,8 +99,16 @@ public class SalesChannelAdapterJpa implements SalesChannelPersistencePort {
 
     @Override
     public List<SalesChannel> findByCodCanalSuperior(String codCanalSuperior) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findByCodCanalSuperior'");
+        return repository.findByCodCanalSuperior(codCanalSuperior)
+                .stream()
+                .map(entity -> enrichDomain(entity, mapper.toDomain(entity)))
+                .toList();
+    }
+
+    @Override
+    public Page<SubSalesChannelProjection> findSubChannelsByCodCanalSuperior(String codCanalSuperior,
+            Pageable pageable) {
+        return repository.findSubChannelsByCodCanalSuperior(codCanalSuperior, pageable);
     }
 
 }

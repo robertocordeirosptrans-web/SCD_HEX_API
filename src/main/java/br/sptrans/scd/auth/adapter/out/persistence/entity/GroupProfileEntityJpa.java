@@ -24,9 +24,15 @@ public class GroupProfileEntityJpa {
     @EmbeddedId
     private GroupProfileEntityJpaId id;
 
+    @Column(name = "ID_USUARIO_MANUTENCAO", length = 20)
+    private Long idUsuarioManutencao;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO_MANUTENCAO", insertable = false, updatable = false)
+    private UserEntityJpa usuarioManutencao;
+
     @Column(name = "COD_STATUS", length = 1)
     private String codStatus;
-
 
     @Column(name = "DT_MODI")
     private LocalDateTime dtManutencao;
@@ -50,7 +56,5 @@ public class GroupProfileEntityJpa {
     protected void aoAtualizar() {
         this.dtManutencao = LocalDateTime.now();
     }
-
- 
 
 }

@@ -87,6 +87,7 @@ public interface UserMapper {
                 .nomCargo(entity.getNomCargo())
                 .nomFuncao(entity.getNomFuncao())
                 .codEmpresa(entity.getCodEmpresa())
+      
                 .build();
     }
 

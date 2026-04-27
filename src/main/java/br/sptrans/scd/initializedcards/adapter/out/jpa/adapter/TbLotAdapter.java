@@ -1,44 +1,65 @@
 package br.sptrans.scd.initializedcards.adapter.out.jpa.adapter;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import br.sptrans.scd.initializedcards.adapter.out.jpa.mapper.TbLotSCDMapper;
 import br.sptrans.scd.initializedcards.adapter.out.jpa.repository.TbLotJpaRepository;
-import br.sptrans.scd.initializedcards.adapter.out.persistence.entity.TbLotSCDEntityJpa;
 import br.sptrans.scd.initializedcards.application.port.out.TbLotRepository;
 import br.sptrans.scd.initializedcards.domain.TbLotSCD;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
-@Transactional
 public class TbLotAdapter implements TbLotRepository {
+
 
     private final TbLotJpaRepository repository;
     private final TbLotSCDMapper mapper;
 
+    
+    private static final Map<String, String> ALLOWED_SORT_FIELDS = Map.of(
+            "idLote", "idLote",
+            "qtdCartoesLote", "qtdCartoesLote",
+            "dtGeracao", "dtGeracao",
+            "codTipoCartao", "codTipoCartao"
+    );
 
     @Override
-    public TbLotSCD findById(Long numLote) {
-        Optional<TbLotSCDEntityJpa> result = repository.findById(numLote);
+    public TbLotSCD findById(Long idLote) {
+        Optional<br.sptrans.scd.initializedcards.adapter.out.persistence.entity.TbLotSCDEntityJpa> result =
+                repository.findById(idLote);
         return result.map(mapper::toDomain).orElse(null);
     }
 
     @Override
-    public TbLotSCD findAll() {
-        List<TbLotSCDEntityJpa> entities = repository.findAll();
-        // Retornar null se não houver entidades, ou o primeiro, ou adaptar para retornar lista se interface mudar
-        if (entities.isEmpty()) {
-            return null;
-        }
-        // Exemplo: retorna o primeiro lote (ajuste conforme a interface TbLotRepository)
-        return mapper.toDomain(entities.get(0));
-        // Se TbLotRepository mudar para List<TbLotSCD>, pode-se retornar:
-        // return entities.stream().map(mapper::toDomain).collect(Collectors.toList());
+    public List<TbLotSCD> findAll() {
+        return repository.findAll()
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 
+    @Override
+    public List<TbLotSCD> findAllByIds(List<Long> ids) {
+        return repository.findAllById(ids)
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<TbLotSCD> findDisponiveis(String sortBy) {
+        String field = ALLOWED_SORT_FIELDS.getOrDefault(sortBy, "idLote");
+        Sort sort = Sort.by(Sort.Direction.ASC, field);
+        return repository.findDisponiveis(sort)
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
 }

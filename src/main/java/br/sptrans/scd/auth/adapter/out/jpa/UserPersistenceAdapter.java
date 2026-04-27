@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -90,9 +91,14 @@ public class UserPersistenceAdapter implements UserPersistencePort {
     @Override
     public List<User> findAllPaginated(String status, String nome, String email, String perfil, int offset, int limit, String sortBy, String sortDir) {
         UserFilterRequestDTO filtro = new UserFilterRequestDTO(nome, email, perfil, status);
-        Specification<User> spec = UserSpecification.filterUsers(filtro);
+        // Usar Specification para UserEntityJpa, não User
+        Specification<UserEntityJpa> spec = UserSpecification.filterUsers(filtro);
         Pageable pageable = PageRequest.of(offset / limit, limit, Sort.Direction.fromString(sortDir), sortBy);
-        return null;
+        List<UserEntityJpa> entities = userRepositoryJpa.findAll(spec, pageable).getContent();
+        if (entities == null || entities.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        return entities.stream().map(userMapper::toDomain).toList();
     }
 
     @Override
@@ -101,6 +107,11 @@ public class UserPersistenceAdapter implements UserPersistencePort {
         return entities.stream()
                 .filter(e -> nome == null || e.getNomUsuario().toLowerCase().contains(nome.toLowerCase()))
                 .count();
+    }
+
+    @Override
+    public Page<User> findAllPaginated(Specification<UserEntityJpa> spec, Pageable pageable) {
+        return userRepositoryJpa.findAll(spec, pageable).map(userMapper::toDomain);
     }
 
     // ────────────────────────────────────────────────────────────────────────────

@@ -2,6 +2,7 @@
 package br.sptrans.scd.channel.application.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,12 +10,15 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.application.port.out.ClassificationPort;
 import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.channel.adapter.in.rest.dto.SubSalesChannelProjection;
+import br.sptrans.scd.channel.adapter.out.persistence.entity.SalesChannelEntityJpa;
 import br.sptrans.scd.channel.application.port.in.SalesChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
 import br.sptrans.scd.channel.application.port.out.TypesActivityPersistencePort;
@@ -57,7 +61,7 @@ public class SalesChannelService implements SalesChannelUseCase {
                     .orElseThrow(() -> new ChannelException(ChannelErrorType.TYPES_ACTIVITY_NOT_FOUND));
         }
 
-        if(cmd.usuario() != null) {
+        if (cmd.usuario() != null) {
             var user = userResolverHelper.resolve(cmd.usuario().getIdUsuario());
             if (user == null) {
                 throw new ChannelException(ChannelErrorType.USER_NOT_FOUND);
@@ -96,6 +100,17 @@ public class SalesChannelService implements SalesChannelUseCase {
         SalesChannel saved = salesChannelRepository.save(salesChannel);
         log.info("Canal de venda criado com sucesso. Código: {}", saved.getCodCanal());
         return saved;
+    }
+
+    public List<SalesChannel> findByCodClassificacaoPessoaAndStCanais(String codClassificacaoPessoa, String stCanais) {
+        return salesChannelRepository.findByCodClassificacaoPessoaAndStCanais(codClassificacaoPessoa, stCanais);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<SubSalesChannelProjection> findSubChannelsByCodCanalSuperior(
+            String codCanalSuperior, Pageable pageable) {
+        return salesChannelRepository.findSubChannelsByCodCanalSuperior(codCanalSuperior, pageable);
     }
 
     @Override
@@ -160,9 +175,8 @@ public class SalesChannelService implements SalesChannelUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "canais", key = "#stCanais != null ? #stCanais.name() : 'ALL' + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
-    public Page<SalesChannel> findAllSalesChannels(ChannelDomainStatus stCanais, Pageable pageable) {
-        return salesChannelRepository.findAll(stCanais != null ? stCanais.getCode() : null, pageable);
+    public Page<SalesChannel> findAllSalesChannels(Specification<SalesChannelEntityJpa> spec, Pageable pageable) {
+        return salesChannelRepository.findAll(spec, pageable);
     }
 
     @Override

@@ -109,7 +109,8 @@ public interface CreditRequestMapper {
         return entity;
     }
 
-    @Mapping(target = "itens", source = "itens", qualifiedByName = "mapItens")
+
+    @Mapping(target = "codSituacao", expression = "java(entity.getCodSituacao() != null ? entity.getCodSituacao().getCode() : null)")
     CreditRequestDTO toDTO(CreditRequest entity);
 
     List<CreditRequestDTO> toDTOList(List<CreditRequest> entities);
@@ -138,6 +139,7 @@ public interface CreditRequestMapper {
     @Mapping(target = "vlTxadm", source = "vlTxadm")
     @Mapping(target = "vlTxserv", source = "vlTxserv")
     @Mapping(target = "vlTxtotal", source = "vlTxtotal")
+    @Mapping(target = "codSituacao", expression = "java(entity.getCodSituacao() != null ? entity.getCodSituacao().getCode() : null)")
     CreditRequestItemsDTO itemToDTO(CreditRequestItems entity);
 
     // Conversão de entidade JPA para domínio
@@ -163,6 +165,7 @@ public interface CreditRequestMapper {
         cr.setNumLote(entity.getNumLote());
         cr.setDtFinanceira(entity.getDtFinanceira());
         cr.setVlTotal(entity.getVlTotal());
+        cr.setVlPago(entity.getVlPago());
         cr.setDtCadastro(entity.getDtCadastro());
         cr.setFlgCanc(entity.getFlgCanc());
         cr.setDtManutencao(entity.getDtManutencao());

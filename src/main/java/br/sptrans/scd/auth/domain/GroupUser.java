@@ -20,6 +20,7 @@ public class GroupUser {
     private LocalDateTime dtModi;
     private User usuario;
     private Group grupo;
+    private User usuarioManutencao;
 
     public void setId(GroupUserKey id) {
         this.id = id;

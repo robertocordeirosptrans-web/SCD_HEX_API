@@ -1,5 +1,5 @@
-package br.sptrans.scd.auth.adapter.out.jpa.repository;
 
+package br.sptrans.scd.auth.adapter.out.jpa.repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,27 +13,26 @@ import org.springframework.data.repository.query.Param;
 
 import br.sptrans.scd.auth.adapter.out.persistence.entity.GroupEntityJpa;
 
-
-public interface GroupJpaRepository extends JpaRepository<GroupEntityJpa, String>, JpaSpecificationExecutor<GroupEntityJpa> {
+public interface GroupJpaRepository
+		extends JpaRepository<GroupEntityJpa, String>, JpaSpecificationExecutor<GroupEntityJpa> {
 
 	@Query("""
-		SELECT g FROM GroupEntityJpa g WHERE g.codGrupo = :codGrupo
-	""")
+				SELECT g FROM GroupEntityJpa g WHERE g.codGrupo = :codGrupo
+			""")
 	Optional<GroupEntityJpa> findByCodGrupo(@Param("codGrupo") String codGrupo);
 
 	@Query("""
-		SELECT CASE WHEN COUNT(g) > 0 THEN true ELSE false END FROM GroupEntityJpa g WHERE g.codGrupo = :codGrupo
-	""")
+				SELECT CASE WHEN COUNT(g) > 0 THEN true ELSE false END FROM GroupEntityJpa g WHERE g.codGrupo = :codGrupo
+			""")
 	boolean existsByCodGrupo(@Param("codGrupo") String codGrupo);
 
 	@Query("""
-		SELECT g FROM GroupEntityJpa g WHERE (:codStatus IS NULL OR g.codStatus = :codStatus)
-	""")
+				SELECT g FROM GroupEntityJpa g WHERE (:codStatus IS NULL OR g.codStatus = :codStatus)
+			""")
 	List<GroupEntityJpa> findAllByCodStatus(@Param("codStatus") String codStatus);
 
-	@Query("""
-		SELECT g FROM GroupEntityJpa g WHERE (:codStatus IS NULL OR g.codStatus = :codStatus)
-	""")
-	Page<GroupEntityJpa> findAllByCodStatus(@Param("codStatus") String codStatus, Pageable pageable);
+	@Query(value = "SELECT g FROM GroupEntityJpa g LEFT JOIN FETCH g.usuarioManutencao WHERE (:codStatus IS NULL OR g.codStatus = :codStatus) AND (:nomGrupo IS NULL OR LOWER(g.nomGrupo) LIKE LOWER(CONCAT('%', :nomGrupo, '%')))", countQuery = "SELECT COUNT(g) FROM GroupEntityJpa g WHERE (:codStatus IS NULL OR g.codStatus = :codStatus) AND (:nomGrupo IS NULL OR LOWER(g.nomGrupo) LIKE LOWER(CONCAT('%', :nomGrupo, '%')))")
+	Page<GroupEntityJpa> findByNomGrupoAndCodStatus(@Param("nomGrupo") String nomGrupo,
+			@Param("codStatus") String codStatus, Pageable pageable);
 
 }

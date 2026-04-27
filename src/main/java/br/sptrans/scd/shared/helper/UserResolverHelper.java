@@ -11,4 +11,9 @@ public interface UserResolverHelper {
     User getCurrentUser();
 
     Long getCurrentUserId();
+
+    /**
+     * Retorna o codEmpresa do usuário autenticado.
+     */
+    String getCurrentCodEmpresa();
 }

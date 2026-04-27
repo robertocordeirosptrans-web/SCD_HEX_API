@@ -2,9 +2,14 @@ package br.sptrans.scd.initializedcards.adapter.out.persistence.entity;
 
 import java.util.Date;
 
+import br.sptrans.scd.channel.adapter.out.persistence.entity.SalesChannelEntityJpa;
+import br.sptrans.scd.product.adapter.out.persistence.entity.ProductEntityJpa;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,11 +27,19 @@ public class RICEntityJpa {
     @EmbeddedId
     private RICEntityJpaKey id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "COD_CANAL", referencedColumnName = "COD_CANAL", insertable = false, updatable = false)
+    private SalesChannelEntityJpa salesChannel;
+
     @Column(name = "COD_ADQUIRENTE", length = 20)
     private String codAdquirente;
 
     @Column(name = "COD_PRODUTO", length = 20)
     private String codProduto;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "COD_PRODUTO", referencedColumnName = "COD_PRODUTO", insertable = false, updatable = false)
+    private ProductEntityJpa produto;
 
     @Column(name = "QTD_SOLICITADA", nullable = false)
     private Long qtdSolicitada;
