@@ -67,11 +67,15 @@ public final class PasswordHashUtil {
         }
         TipoHash tipo = detectarTipoHash(hashArmazenado.trim());
         return switch (tipo) {
-            case BCRYPT  -> BCrypt.checkpw(senhaRecebida, hashArmazenado.trim());
-            case SHA256  -> PADRAO_HEX_SHA256.matcher(senhaRecebida).matches()
-                             && senhaRecebida.equalsIgnoreCase(hashArmazenado.trim());
-            case MD5     -> PADRAO_HEX_MD5.matcher(senhaRecebida).matches()
-                             && senhaRecebida.equalsIgnoreCase(hashArmazenado.trim());
+            case BCRYPT -> BCrypt.checkpw(senhaRecebida, hashArmazenado.trim());
+            case SHA256 -> {
+                String senhaHash = hashSha256(senhaRecebida);
+                yield senhaHash.equalsIgnoreCase(hashArmazenado.trim());
+            }
+            case MD5 -> {
+                String senhaHash = br.sptrans.scd.shared.security.Criptografia.getMD5Hex(senhaRecebida);
+                yield senhaHash.equalsIgnoreCase(hashArmazenado.trim());
+            }
             case DESCONHECIDO -> false;
         };
     }
