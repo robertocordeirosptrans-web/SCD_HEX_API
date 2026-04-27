@@ -61,7 +61,7 @@ public interface ProfileMapper {
     @Mapping(target = "id", source = "id")
     @Mapping(target = "dtModi", source = "dtManutencao")
     @Mapping(target = "usuario", ignore = true)
-    @Mapping(target = "perfil", ignore = true)
+    @Mapping(target = "perfil", source = "perfil")
     UserProfile toDomain(UserProfileJpa entity);
 
     UserProfileId toUserProfileId(UserProfileJpaId id);

@@ -17,7 +17,7 @@ import lombok.Setter;
  * controle de revogação, expiração e rastreabilidade.
  */
 @Entity
-@Table(name = "USER_SESSIONS", schema = "SPTRANSDBA")
+@Table(name = "SCD_SESSIONS_USUARIOS", schema = "SPTRANSDBA")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -6,7 +6,6 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.cache.interceptor.KeyGenerator;
-import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,8 +15,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 @EnableCaching
 public class CacheConfig {
 
-    @Value("${api.security.token.expiration-hours:2}")
-    private int sessionTtlHours;
 
     @Bean
     public CacheManager cacheManager() {
@@ -28,7 +25,8 @@ public class CacheConfig {
                 "pedidos",
                 "order-list",
                 "productPeriodReport",
-                "permissoes"
+                "permissoes",
+                "sessoes"
         );
         // TTL garante que permissões concedidas diretamente no banco (fora da API)
         // sejam visíveis em no máximo 5 minutos, sem precisar reiniciar a aplicação.

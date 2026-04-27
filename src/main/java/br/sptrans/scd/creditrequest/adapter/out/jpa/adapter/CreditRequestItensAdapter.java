@@ -43,13 +43,15 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
         if (id == null) {
             return Optional.empty();
         }
-        CreditRequestItemsEntityKey entityKey = new CreditRequestItemsEntityKey(id.getNumSolicitacao(), id.getNumSolicitacaoItem(), id.getCodCanal());
+        CreditRequestItemsEntityKey entityKey = new CreditRequestItemsEntityKey(id.getNumSolicitacao(),
+                id.getNumSolicitacaoItem(), id.getCodCanal());
         return itemJpaRepository.findById(entityKey)
                 .map(creditRequestMapper::toDomainItem);
     }
 
     @Override
-    public List<Long> findNumSolicitacaoItemsBySolicitacaoCanalLote(Long numSolicitacao, String codCanal, String numLote) {
+    public List<Long> findNumSolicitacaoItemsBySolicitacaoCanalLote(Long numSolicitacao, String codCanal,
+            String numLote) {
         return itemJpaRepository.findNumSolicitacaoItemsBySolicitacaoCanalLote(numSolicitacao, codCanal, numLote);
     }
 
@@ -102,9 +104,13 @@ public class CreditRequestItensAdapter implements CreditRequestItemsPort {
     }
 
     @Override
-    public Page<CreditRequestItems> findItemsByChannelAndNumSolicitacao(String codCanal, Long numSolicitacao, PageRequest pageRequest) {
+    public Page<CreditRequestItems> findItemsByChannelAndNumSolicitacao(String codCanal, Long numSolicitacao,
+            PageRequest pageRequest) {
         return itemJpaRepository.findItemsByChannelAndNumSolicitacao(codCanal, numSolicitacao, pageRequest)
                 .map(creditRequestMapper::toDomainItem);
+    }
+
+    @Override
     public List<CreditRequestItems> searchItemsToBeConfirmed(String codSituacao, Integer limit) {
         return itemJpaRepository.searchItemsToBeConfirmed(codSituacao, limit)
                 .stream()
