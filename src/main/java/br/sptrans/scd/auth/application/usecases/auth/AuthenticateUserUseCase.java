@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.audit.application.port.in.AuditUseCase;
@@ -202,5 +204,17 @@ public class AuthenticateUserUseCase {
             roles, 
             permissions, 
             grupos);
+    }
+
+    /**
+     * Invalida o cache de permissões (perfis e funcionalidades) do usuário.
+     * Chamado após logout para forçar recarga do banco no próximo login.
+     */
+    @Caching(evict = {
+        @CacheEvict(value = "permissoes", key = "'func:' + #idUsuario"),
+        @CacheEvict(value = "permissoes", key = "'perfis:' + #idUsuario")
+    })
+    public void evictUserPermissionsCache(Long idUsuario) {
+        log.info("Cache de permissões invalidado para usuário {}", idUsuario);
     }
 }

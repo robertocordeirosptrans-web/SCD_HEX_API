@@ -4,16 +4,19 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.sptrans.scd.auth.adapter.out.jpa.mapper.FunctionalityMapper;
 import br.sptrans.scd.auth.adapter.out.jpa.mapper.ProfileMapper;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserJpaRepository;
+import br.sptrans.scd.auth.adapter.out.jpa.repository.UserFunctionalityJpaRepository;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.UserProfileJpaRepository;
 import br.sptrans.scd.auth.application.port.out.AuthorizationPort;
-
 import br.sptrans.scd.auth.domain.Functionality;
 import br.sptrans.scd.auth.domain.Profile;
 import br.sptrans.scd.shared.exception.InvalidUserProfileException;
@@ -37,6 +40,8 @@ public class AuthorizationAdapter implements AuthorizationPort {
     private static final Logger log = LoggerFactory.getLogger(AuthorizationAdapter.class);
 
     private final UserProfileJpaRepository userProfileJpaRepository;
+    private final GroupUserJpaRepository groupUserJpaRepository;
+    private final UserFunctionalityJpaRepository userFunctionalityJpaRepository;
     private final FunctionalityMapper functionalityMapper;
     private final ProfileMapper profileMapper;
 
@@ -44,18 +49,40 @@ public class AuthorizationAdapter implements AuthorizationPort {
     @Cacheable(value = "permissoes", key = "'func:' + #idUsuario")
     public Set<Functionality> carregarFuncionalidadesEfetivas(Long idUsuario) {
         log.debug("Carregando funcionalidades efetivas para usuário: {}", idUsuario);
-        
+
         try {
+            Set<Functionality> functionalities = new java.util.HashSet<>();
+
+            // Fonte #1: Perfis diretos do usuário → funcionalidades (USUARIO_PERFIS)
             var userProfiles = userProfileJpaRepository.findActiveWithFunctionalities(idUsuario);
-            
-            Set<Functionality> functionalities = userProfiles.stream()
+            userProfiles.stream()
                 .map(up -> up.getPerfil())
                 .filter(perfil -> perfil != null)
                 .flatMap(perfil -> perfil.getPerfilFuncionalidades().stream())
                 .filter(pf -> pf.getFuncionalidade() != null)
                 .map(pf -> functionalityMapper.toDomain(pf.getFuncionalidade()))
-                .collect(java.util.stream.Collectors.toSet());
-            
+                .forEach(functionalities::add);
+
+            // Fonte #2: Grupos do usuário → perfis → funcionalidades (GRUPO_USUARIOS → GRUPO_PERFIS → PERFIL_FUNCIONALIDADES)
+            var groupUsers = groupUserJpaRepository.findActiveWithFunctionalities(idUsuario);
+            groupUsers.stream()
+                .map(gu -> gu.getGrupo())
+                .filter(grupo -> grupo != null)
+                .flatMap(grupo -> grupo.getGrupoPerfis().stream())
+                .filter(gp -> gp.getPerfil() != null)
+                .flatMap(gp -> gp.getPerfil().getPerfilFuncionalidades().stream())
+                .filter(pf -> pf.getFuncionalidade() != null)
+                .map(pf -> functionalityMapper.toDomain(pf.getFuncionalidade()))
+                .forEach(functionalities::add);
+
+            // Fonte #3: Funcionalidades diretas do usuário (USUARIO_FUNCIONALIDADES)
+            var directFuncs = userFunctionalityJpaRepository.findActiveByUsuario(idUsuario);
+            directFuncs.stream()
+                .map(uf -> uf.getFuncionalidade())
+                .filter(f -> f != null)
+                .map(functionalityMapper::toDomain)
+                .forEach(functionalities::add);
+
             log.debug("Funcionalidades carregadas para usuário {}: {} itens", idUsuario, functionalities.size());
             return functionalities;
         } catch (Exception e) {
@@ -105,5 +132,16 @@ public class AuthorizationAdapter implements AuthorizationPort {
             log.error("Erro ao carregar perfis efetivos para usuário: {}", idUsuario, e);
             throw new InvalidUserProfileException("Erro ao carregar perfis do usuário", e);
         }
+    }
+    /**
+     * Remove permissões e perfis do cache para o usuário informado.
+     * Pode ser chamado após logout ou alteração de permissões.
+     */
+    @Caching(evict = {
+        @CacheEvict(value = "permissoes", key = "'func:' + #idUsuario"),
+        @CacheEvict(value = "permissoes", key = "'perfis:' + #idUsuario")
+    })
+    public void evictUserPermissions(Long idUsuario) {
+        log.info("Cache de permissões invalidado para usuário {}", idUsuario);
     }
 }

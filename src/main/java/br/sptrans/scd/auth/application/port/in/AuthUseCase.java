@@ -57,6 +57,28 @@ public interface AuthUseCase {
      */
     void resetPassword(ResetPasswordComand comando);
 
+    /**
+     * Invalida o cache de permissões (perfis e funcionalidades) do usuário.
+     * Deve ser chamado após logout para garantir que o próximo login
+     * recarregue as permissões atualizadas do banco de dados.
+     */
+    void evictUserPermissionsCache(Long idUsuario);
+
+    /**
+     * US001 — Renovar tokens a partir de um refresh token válido.
+     * Valida o refresh token, verifica se o usuário ainda está ativo,
+     * cria nova sessão e retorna novo par de tokens (access + refresh).
+     *
+     * @return par de tokens renovados
+     * @throws AuthenticationException se o refresh token for inválido/expirado
+     *                                 ou o usuário estiver bloqueado/inativo
+     */
+    TokenPair refreshToken(RefreshTokenComand comand);
+
+    record TokenPair(String accessToken, String refreshToken) {}
+
+    record RefreshTokenComand(String refreshToken, String ip, String userAgent) {}
+
     record UserContext(Long id, String name, Set<String> roles, Set<String> permissions, Set<String> groups) {
 
     }

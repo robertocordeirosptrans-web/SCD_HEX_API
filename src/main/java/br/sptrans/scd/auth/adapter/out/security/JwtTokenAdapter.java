@@ -115,4 +115,27 @@ public class JwtTokenAdapter implements TokenGeneratorPort, TokenValidatorPort {
             return null;
         }
     }
+
+    @Override
+    public String validateRefreshToken(String refreshToken) {
+        try {
+            var decoded = JWT.require(Algorithm.HMAC256(secret))
+                .withIssuer("app-api")
+                .build()
+                .verify(refreshToken);
+            String type = decoded.getClaim("type").asString();
+            if (!"refresh".equals(type)) {
+                throw new InvalidTokenException("Token fornecido não é um refresh token", null);
+            }
+            return decoded.getSubject();
+        } catch (InvalidTokenException e) {
+            throw e;
+        } catch (com.auth0.jwt.exceptions.TokenExpiredException e) {
+            throw new ExpiredTokenException("Refresh token expirado", e);
+        } catch (JWTVerificationException e) {
+            throw new InvalidTokenException("Refresh token inválido: " + e.getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            throw new TokenGenerationException("Falha ao validar refresh token: configuração inválida do secret", e);
+        }
+    }
 }

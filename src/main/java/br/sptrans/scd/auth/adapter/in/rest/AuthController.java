@@ -19,6 +19,7 @@ import br.sptrans.scd.auth.adapter.in.rest.dto.ResponseLogin;
 import br.sptrans.scd.auth.adapter.in.rest.dto.ResponseSimple;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthComand;
+import br.sptrans.scd.auth.application.port.in.AuthUseCase.RefreshTokenComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetPasswordComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetRequestComand;
 import br.sptrans.scd.auth.application.port.in.SessionManagementUseCase;
@@ -72,9 +73,10 @@ public class AuthController {
         String userAgent = httpRequest.getHeader("User-Agent");
         UserSession session = sessionUseCase.createSession(user.getIdUsuario(), ip, userAgent);
 
-        // Embute session_id no JWT
-        String jwt = tokenGenerator.generate(user, session.getIdSessao());
-        return ResponseEntity.ok(new ResponseLogin(jwt));
+        // Embute session_id no access token; gera também o refresh token
+        String jwt          = tokenGenerator.generate(user, session.getIdSessao());
+        String refreshToken = tokenGenerator.generateRefresh(user);
+        return ResponseEntity.ok(new ResponseLogin(jwt, refreshToken));
     }
 
     @PostMapping("/logout")
@@ -98,6 +100,10 @@ public class AuthController {
                     AuditEventType.LOGOUT,
                     ctx.userId, sessionId,
                     ctx.ipAddress, ctx.userAgent, null));
+            // Invalida cache de permissões do usuário
+            if (ctx.userId != null) {
+                casoUso.evictUserPermissionsCache(ctx.userId);
+            }
         }
         return ResponseEntity.ok(new ResponseSimple("Logout realizado com sucesso."));
     }
@@ -130,6 +136,22 @@ public class AuthController {
         casoUso.resetPassword(reset);
         return ResponseEntity.ok(new ResponseSimple(
                 "Senha redefinida com sucesso. Faça login com a nova senha."));
+    }
+
+    @PostMapping("/refresh-token")
+    @Operation(summary = "Renovar tokens", description = "Valida o refresh token e retorna novo par de tokens (access + refresh). O refresh token é rotacionado a cada uso.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Tokens renovados com sucesso"),
+        @ApiResponse(responseCode = "401", description = "Refresh token inválido ou expirado")
+    })
+    public ResponseEntity<ResponseLogin> refreshToken(@Valid @RequestBody RequestRefreshToken req,
+                                                      HttpServletRequest httpRequest) {
+        log.info("REST POST /auth/refresh-token — Solicitação de renovação de tokens");
+        String ip        = resolveClientIp(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+        RefreshTokenComand comand = new RefreshTokenComand(req.refreshToken(), ip, userAgent);
+        AuthUseCase.TokenPair pair = casoUso.refreshToken(comand);
+        return ResponseEntity.ok(new ResponseLogin(pair.accessToken(), pair.refreshToken()));
     }
 
     @PostMapping("/recovery-password")
@@ -184,6 +206,12 @@ public class AuthController {
             @NotBlank(message = "Nova senha é obrigatória")
             @Size(min = 6, message = "Nova senha deve ter no mínimo 6 caracteres")
             String novaSenha) {
+
+    }
+
+    public record RequestRefreshToken(
+            @NotBlank(message = "Refresh token é obrigatório")
+            String refreshToken) {
 
     }
 

@@ -20,4 +20,14 @@ public interface TokenValidatorPort {
      * Retorna null se o claim não estiver presente.
      */
     String extractSessionId(String token);
+
+    /**
+     * Valida um refresh token: verifica assinatura, expiração e a claim
+     * {@code type == "refresh"}. Retorna o login (subject) se válido.
+     *
+     * @throws ExpiredTokenException  se o token estiver expirado
+     * @throws InvalidTokenException  se a assinatura for inválida ou o tipo não
+     *                                for "refresh"
+     */
+    String validateRefreshToken(String refreshToken);
 }

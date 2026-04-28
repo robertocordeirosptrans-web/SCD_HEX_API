@@ -28,9 +28,11 @@ public class UserFunctionalityEntityJpa {
     @Column(name = "COD_STATUS_USU_FUN", length = 1)
     private String codStatusUsuFun;   // "A" = Ativo  "I" = Inativo
 
-    @Column(name = "DT_CADASTRO")
-    private LocalDateTime dtCadastro;
-    @Column(name = "DT_MANUTENCAO")
+    @Column(name = "DT_INICIO_VALIDADE")
+    private LocalDateTime dtIniValidade;
+    @Column(name = "DT_FIM_VALIDADE")
+    private LocalDateTime dtFimValidade;
+    @Column(name = "DT_MODI")
     private LocalDateTime dtManutencao;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,7 +51,6 @@ public class UserFunctionalityEntityJpa {
 
     @PrePersist
     protected void aoInserir() {
-        this.dtCadastro = LocalDateTime.now();
         this.dtManutencao = LocalDateTime.now();
     }
 
@@ -74,13 +75,7 @@ public class UserFunctionalityEntityJpa {
         this.codStatusUsuFun = codStatusUsuFun;
     }
 
-    public LocalDateTime getDtCadastro() {
-        return dtCadastro;
-    }
-
-    public void setDtCadastro(LocalDateTime dtCadastro) {
-        this.dtCadastro = dtCadastro;
-    }
+  
 
     public LocalDateTime getDtManutencao() {
         return dtManutencao;
