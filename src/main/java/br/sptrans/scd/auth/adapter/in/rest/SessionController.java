@@ -1,5 +1,6 @@
 package br.sptrans.scd.auth.adapter.in.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.sptrans.scd.auth.application.port.in.SessionManagementUseCase;
@@ -16,7 +18,9 @@ import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 import br.sptrans.scd.auth.application.port.out.UserSessionRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.session.UserSession;
+import br.sptrans.scd.shared.dto.PageResponse;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import br.sptrans.scd.shared.security.CacPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,6 +46,7 @@ public class SessionController {
     private final SessionManagementUseCase sessionUseCase;
     private final UserSessionRepository sessionRepository;
     private final UserQueryPort userQueryPort;
+    private final UserResolverHelper userResolverHelper;
 
     // ── Revogação individual ──────────────────────────────────────────────────
 
@@ -55,17 +60,17 @@ public class SessionController {
         @ApiResponse(responseCode = "403", description = "Sem permissão SESSION_REVOKE"),
         @ApiResponse(responseCode = "404", description = "Sessão não encontrada")
     })
-    public ResponseEntity<RevokeResponse> revokeSession(@PathVariable String sessionId,
-                                                        Authentication authentication) {
+        public ResponseEntity<RevokeResponse> revokeSession(@PathVariable String sessionId,
+                                Authentication authentication) {
         // Valida que a sessão existe
         sessionRepository.findBySessionId(sessionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sessão", "id", sessionId));
+            .orElseThrow(() -> new ResourceNotFoundException("Sessão", "id", sessionId));
 
-        Long revokedBy = resolveUserId(authentication);
+        Long revokedBy = userResolverHelper.getCurrentUserId();
         sessionUseCase.revokeSession(sessionId, revokedBy, "ADMIN_REVOKE");
 
         return ResponseEntity.ok(new RevokeResponse("Sessão " + sessionId + " revogada com sucesso."));
-    }
+        }
 
     // ── Revogação em massa ────────────────────────────────────────────────────
 
@@ -93,17 +98,42 @@ public class SessionController {
 
     // ── Consulta de sessões ativas ────────────────────────────────────────────
 
-    @GetMapping("/users/{userId}/sessions")
+    @GetMapping("/users/sessions")
     @PreAuthorize(PERM_REVOKE)
     @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Listar sessões ativas de um usuário",
-               description = "Retorna todas as sessões ativas. Requer permissão SESSION_REVOKE.")
+    @Operation(summary = "Listar sessões ativas de usuários",
+               description = "Retorna sessões ativas filtrando por nome, codLogin ou email. Paginação suportada. Requer permissão SESSION_REVOKE.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Sessões retornadas com sucesso"),
         @ApiResponse(responseCode = "403", description = "Sem permissão SESSION_REVOKE")
     })
-    public ResponseEntity<List<SessionSummaryResponse>> listActiveSessions(@PathVariable Long userId) {
-        List<SessionSummaryResponse> sessions = sessionRepository.findActiveByUserId(userId)
+    public ResponseEntity<PageResponse<SessionSummaryResponse>> listActiveSessions(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String codLogin,
+            @RequestParam(required = false) String email,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        // Busca usuários que casam com os filtros
+        List<User> users = new ArrayList<>();
+        if (codLogin != null && !codLogin.isBlank()) {
+            userQueryPort.findByCodLogin(codLogin).ifPresent(users::add);
+        } else if (email != null && !email.isBlank()) {
+            userQueryPort.findByNomEmail(email).ifPresent(users::add);
+        } else if (nome != null && !nome.isBlank()) {
+            // Busca todos usuários que contenham o nome
+            users = userQueryPort.findAllPaginated(null, nome, null, null, 0, Integer.MAX_VALUE, null, null);
+        }
+
+        // Se nenhum filtro, retorna vazio
+        if (users.isEmpty()) {
+            return ResponseEntity.ok(PageResponse.of(List.of(), page, size, 0));
+        }
+
+        // Busca sessões ativas de todos os usuários encontrados
+        List<SessionSummaryResponse> allSessions = new ArrayList<>();
+        for (User user : users) {
+            sessionRepository.findActiveByUserId(user.getIdUsuario())
                 .stream()
                 .filter(UserSession::isAtiva)
                 .map(s -> new SessionSummaryResponse(
@@ -114,21 +144,13 @@ public class SessionController {
                         s.getDtCriacao().toString(),
                         s.getDtExpiracao().toString(),
                         s.getStatus().name()))
-                .toList();
-        return ResponseEntity.ok(sessions);
-    }
-
-    // ── helpers ───────────────────────────────────────────────────────────────
-
-    private Long resolveUserId(Authentication authentication) {
-        try {
-            return userQueryPort.findByCodLogin(authentication.getName())
-                    .map(User::getIdUsuario)
-                    .orElse(null);
-        } catch (Exception e) {
-            return null;
+                .forEach(allSessions::add);
         }
+
+        // Paginação manual
+        return ResponseEntity.ok(PageResponse.fromList(allSessions, page, size));
     }
+
 
     // ── DTOs ─────────────────────────────────────────────────────────────────
 
