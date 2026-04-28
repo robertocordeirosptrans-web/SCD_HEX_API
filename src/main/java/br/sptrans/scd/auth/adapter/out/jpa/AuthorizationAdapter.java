@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import br.sptrans.scd.auth.adapter.out.jpa.mapper.FunctionalityMapper;
 import br.sptrans.scd.auth.adapter.out.jpa.mapper.ProfileMapper;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.GroupUserJpaRepository;
-import br.sptrans.scd.auth.adapter.out.jpa.repository.UserFunctionalityJpaRepository;
 import br.sptrans.scd.auth.adapter.out.jpa.repository.UserProfileJpaRepository;
 import br.sptrans.scd.auth.application.port.out.AuthorizationPort;
 import br.sptrans.scd.auth.domain.Functionality;
@@ -41,7 +40,6 @@ public class AuthorizationAdapter implements AuthorizationPort {
 
     private final UserProfileJpaRepository userProfileJpaRepository;
     private final GroupUserJpaRepository groupUserJpaRepository;
-    private final UserFunctionalityJpaRepository userFunctionalityJpaRepository;
     private final FunctionalityMapper functionalityMapper;
     private final ProfileMapper profileMapper;
 
@@ -76,12 +74,12 @@ public class AuthorizationAdapter implements AuthorizationPort {
                 .forEach(functionalities::add);
 
             // Fonte #3: Funcionalidades diretas do usuário (USUARIO_FUNCIONALIDADES)
-            var directFuncs = userFunctionalityJpaRepository.findActiveByUsuario(idUsuario);
-            directFuncs.stream()
-                .map(uf -> uf.getFuncionalidade())
-                .filter(f -> f != null)
-                .map(functionalityMapper::toDomain)
-                .forEach(functionalities::add);
+            // var directFuncs = userFunctionalityJpaRepository.findActiveByUsuario(idUsuario);
+            // directFuncs.stream()
+            //     .map(uf -> uf.getFuncionalidade())
+            //     .filter(f -> f != null)
+            //     .map(functionalityMapper::toDomain)
+            //     .forEach(functionalities::add);
 
             log.debug("Funcionalidades carregadas para usuário {}: {} itens", idUsuario, functionalities.size());
             return functionalities;

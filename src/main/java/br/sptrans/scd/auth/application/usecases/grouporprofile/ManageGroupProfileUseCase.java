@@ -128,6 +128,7 @@ public class ManageGroupProfileUseCase {
      * @param command contém código do grupo
      * @throws BusinessException se usuários ativos vinculados
      */
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void deactivateGroup(GroupProfileManagementUseCase.DeactivateCommand command) {
         log.info("Desativando grupo. Código: {}", command.code());
 
@@ -163,6 +164,7 @@ public class ManageGroupProfileUseCase {
      * @param command contém código do grupo
      * @throws BusinessException se grupo já está ativo
      */
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void reactivateGroup(GroupProfileManagementUseCase.ReactivateCommand command) {
         log.info("Reativando grupo. Código: {}", command.code());
 
@@ -348,6 +350,7 @@ public class ManageGroupProfileUseCase {
      * @param command contém código do perfil
      * @throws BusinessException se usuários ativos vinculados
      */
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void deactivateProfile(GroupProfileManagementUseCase.DeactivateCommand command) {
         log.info("Desativando perfil. Código: {}", command.code());
 
@@ -383,6 +386,7 @@ public class ManageGroupProfileUseCase {
      * @param command contém código do perfil
      * @throws BusinessException se perfil já está ativo
      */
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void reactivateProfile(GroupProfileManagementUseCase.ReactivateCommand command) {
         log.info("Reativando perfil. Código: {}", command.code());
 
@@ -407,6 +411,7 @@ public class ManageGroupProfileUseCase {
      * Se ativar=false, define dtFimValidade para agora.
      */
 
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void updateUserProfileValidity(Long idUsuario, String codPerfil, Long idUsuarioManutencao, boolean ativar) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime novaValidade = ativar ? now.plusYears(1) : now;
@@ -419,6 +424,7 @@ public class ManageGroupProfileUseCase {
         /**
      * Cria uma nova associação usuário-perfil, se não existir ativa.
      */
+    @CacheEvict(value = "permissoes", allEntries = true)
     public void createUserProfileAssociation(Long idUsuario, String codPerfil, Long idUsuarioManutencao) {
         // Busca todas as associações do usuário
         Page<UserProfile> userProfiles = profileRepository.findByIdUsuario(idUsuario, Pageable.unpaged());

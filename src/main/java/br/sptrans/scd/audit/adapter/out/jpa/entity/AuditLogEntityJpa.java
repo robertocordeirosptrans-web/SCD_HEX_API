@@ -21,7 +21,7 @@ import jakarta.persistence.Table;
  * para comportar JSON e strings longas de User-Agent.</p>
  */
 @Entity
-@Table(name = "AUDIT_LOG", schema = "SPTRANSDBA")
+@Table(name = "AUDIT_API", schema = "SPTRANSDBA")
 public class AuditLogEntityJpa {
 
     @Id

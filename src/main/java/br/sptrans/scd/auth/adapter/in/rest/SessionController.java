@@ -3,6 +3,8 @@ package br.sptrans.scd.auth.adapter.in.rest;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -107,6 +109,7 @@ public class SessionController {
         @ApiResponse(responseCode = "200", description = "Sessões retornadas com sucesso"),
         @ApiResponse(responseCode = "403", description = "Sem permissão SESSION_REVOKE")
     })
+
     public ResponseEntity<PageResponse<SessionSummaryResponse>> listActiveSessions(
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) String codLogin,
@@ -114,23 +117,20 @@ public class SessionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        // Busca usuários que casam com os filtros
         List<User> users = new ArrayList<>();
         if (codLogin != null && !codLogin.isBlank()) {
             userQueryPort.findByCodLogin(codLogin).ifPresent(users::add);
         } else if (email != null && !email.isBlank()) {
             userQueryPort.findByNomEmail(email).ifPresent(users::add);
         } else if (nome != null && !nome.isBlank()) {
-            // Busca todos usuários que contenham o nome
             users = userQueryPort.findAllPaginated(null, nome, null, null, 0, Integer.MAX_VALUE, null, null);
         }
 
-        // Se nenhum filtro, retorna vazio
         if (users.isEmpty()) {
-            return ResponseEntity.ok(PageResponse.of(List.of(), page, size, 0));
+            Page<SessionSummaryResponse> emptyPage = new PageImpl<>(List.of(), org.springframework.data.domain.PageRequest.of(page, size), 0);
+            return ResponseEntity.ok(PageResponse.fromPage(emptyPage));
         }
 
-        // Busca sessões ativas de todos os usuários encontrados
         List<SessionSummaryResponse> allSessions = new ArrayList<>();
         for (User user : users) {
             sessionRepository.findActiveByUserId(user.getIdUsuario())
@@ -147,8 +147,11 @@ public class SessionController {
                 .forEach(allSessions::add);
         }
 
-        // Paginação manual
-        return ResponseEntity.ok(PageResponse.fromList(allSessions, page, size));
+        int start = Math.min(page * size, allSessions.size());
+        int end = Math.min(start + size, allSessions.size());
+        List<SessionSummaryResponse> pagedSessions = allSessions.subList(start, end);
+        Page<SessionSummaryResponse> sessionPage = new PageImpl<>(pagedSessions, org.springframework.data.domain.PageRequest.of(page, size), allSessions.size());
+        return ResponseEntity.ok(PageResponse.fromPage(sessionPage));
     }
 
 
