@@ -17,6 +17,7 @@ import br.sptrans.scd.auth.application.port.out.UserSessionRepository;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.session.UserSession;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
+import br.sptrans.scd.shared.security.CacPermissions;
 import br.sptrans.scd.shared.version.ApiVersionConfig;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -36,7 +37,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Sessões v1", description = "Endpoints de gerenciamento e revogação de sessões de usuário")
 public class SessionController {
 
-    private static final String PERM_REVOKE = "hasAuthority('SESSION_REVOKE')";
+    private static final String PERM_REVOKE = "hasAuthority('" + CacPermissions.REVSSESS + "')";
 
     private final SessionManagementUseCase sessionUseCase;
     private final UserSessionRepository sessionRepository;

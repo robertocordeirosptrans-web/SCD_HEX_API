@@ -10,6 +10,14 @@ public final class CacPermissions {
 
     private static final String PREFIX = "SCD_WEB_API_CAC_";
 
+    // Gerenciamento de sessões de usuarios
+    /** Revogar sessão específica */
+    public static final String REVSSESS = PREFIX + "SES_REVSSESS";
+    /** Revogar todas as sessões de um usuário */
+    public static final String REVSALLUSERSESS = PREFIX + "SES_REVSALLUSERSESS";
+    /** Listar sessões ativas de um usuário */
+    public static final String LISTACTSESS = PREFIX + "SES_LISTACTSESS";
+
     // ── COD_ROTINA: GRP — Grupos ────────────────────────────────────────────
     /** Listar grupos */
     public static final String LISGRU = PREFIX + "GRP_LISGRU";
