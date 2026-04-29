@@ -16,8 +16,8 @@ import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetPasswordComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetRequestComand;
 import br.sptrans.scd.auth.application.usecases.auth.AuthenticateUserUseCase;
+import br.sptrans.scd.auth.application.usecases.auth.RecoveryPasswordUseCase;
 import br.sptrans.scd.auth.application.usecases.auth.RequestPasswordResetUseCase;
-import br.sptrans.scd.auth.application.usecases.auth.ResetPasswordUseCase;
 import br.sptrans.scd.auth.domain.User;
 
 
@@ -34,7 +34,7 @@ class AuthServiceTest {
 
     @Mock private AuthenticateUserUseCase authenticateUserUseCase;
     @Mock private RequestPasswordResetUseCase requestPasswordResetUseCase;
-    @Mock private ResetPasswordUseCase resetPasswordUseCase;
+    @Mock private RecoveryPasswordUseCase recoveryPasswordUseCase;
 
     @InjectMocks
     private AuthService authService;
@@ -87,12 +87,12 @@ class AuthServiceTest {
     // ── resetPassword ─────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("✓ resetPassword() deve delegar para ResetPasswordUseCase")
+    @DisplayName("✓ resetPassword() deve delegar para RecoveryPasswordUseCase")
     void resetPassword_shouldDelegateToUseCase() {
         ResetPasswordComand cmd = new ResetPasswordComand("token-uuid", "NovaSenha@123");
 
         authService.resetPassword(cmd);
 
-        verify(resetPasswordUseCase).resetPassword(cmd);
+        verify(recoveryPasswordUseCase).recoveryPassword(cmd);
     }
 }

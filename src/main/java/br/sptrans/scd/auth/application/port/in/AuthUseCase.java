@@ -58,6 +58,31 @@ public interface AuthUseCase {
     void resetPassword(ResetPasswordComand comando);
 
     /**
+     * Trocar senha do usuário autenticado.
+     * 
+     * Fluxo: O usuário já está autenticado (token JWT no header) e deseja
+     * trocar sua própria senha. Requisitos:
+     * 
+     * 1. Recebe no header o token de autenticação (Authorization: Bearer <token>)
+     * 2. Decodifica o token para capturar o userId
+     * 3. Busca o usuário no banco de dados
+     * 4. Lê a coluna codSenha (hash da senha atual)
+     * 5. Compara a senha atual fornecida com o hash armazenado usando PasswordHashUtil
+     * 6. Se válida, gera novo hash de acordo com o tipo detectado
+     * 7. Atualiza codSenha com o novo hash
+     * 8. Move o hash anterior para oldSenha
+     * 9. Atualiza dtModi com timestamp atual
+     * 10. Atualiza dtExpiraSenha com data futura de 3 meses
+     * 11. Invalida todas as sessões ativas do usuário (logout em todos os dispositivos)
+     *
+     * @param comando contém userId (extraído do token), senhaAtual e novaSenha
+     * @throws AuthenticationFailedException se senha atual incorreta
+     * @throws ValidationException se nova senha não atende política
+     * @throws ResourceNotFoundException se usuário não encontrado
+     */
+    void changePassword(ChangePasswordCommand comando);
+
+    /**
      * Invalida o cache de permissões (perfis e funcionalidades) do usuário.
      * Deve ser chamado após logout para garantir que o próximo login
      * recarregue as permissões atualizadas do banco de dados.
@@ -92,6 +117,17 @@ public interface AuthUseCase {
     }
 
     record ResetPasswordComand(String token, String novaSenha) {
+
+    }
+
+    /**
+     * Comando para trocar senha do usuário autenticado.
+     * 
+     * @param idUsuario ID do usuário extraído do token JWT
+     * @param senhaAtual senha atual em texto plano (para validação)
+     * @param novaSenha nova senha em texto plano (será hashada com BCrypt)
+     */
+    record ChangePasswordCommand(Long idUsuario, String senhaAtual, String novaSenha) {
 
     }
 

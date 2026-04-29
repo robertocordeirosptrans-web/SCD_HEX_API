@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.PasswordValidator;
+import br.sptrans.scd.auth.application.port.in.SessionManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.PasswordTokenPort;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 import br.sptrans.scd.auth.application.port.out.UserStatusPort;
@@ -27,19 +28,21 @@ import lombok.RequiredArgsConstructor;
  * 
  * Responsável por: - Validar token (não expirado, não utilizado) - Validar
  * complexidade da nova senha - Impedir reutilização de senhas anteriores -
- * Atualizar senha no sistema - Invalidar tokens
+ * Atualizar senha no sistema - Invalidar todos os tokens de reset - Invalidar
+ * todas as sessões ativas do usuário (logout forçado em todos os dispositivos)
  * 
  * Portos utilizados: - Output Port: PasswordTokenRepository — buscar/atualizar
  * token - Output Port: userQueryPort — buscar usuário - Output Port:
- * UserStatusRepository — atualizar senha - Input Port: PasswordValidator —
- * validar complexidade
+ * UserStatusRepository — atualizar senha - Output Port:
+ * SessionManagementUseCase — invalidar sessões do usuário - Input Port:
+ * PasswordValidator — validar complexidade
  */
 @Component
 @Transactional
 @RequiredArgsConstructor
-public class ResetPasswordUseCase {
+public class RecoveryPasswordUseCase {
 
-    private static final Logger log = LoggerFactory.getLogger(ResetPasswordUseCase.class);
+    private static final Logger log = LoggerFactory.getLogger(RecoveryPasswordUseCase.class);
 
     @Value("${scd.auth.senha-expira-dias:90}")
     private long senhaExpiraDias;
@@ -48,6 +51,7 @@ public class ResetPasswordUseCase {
     private final UserQueryPort userQueryPort;
     private final UserStatusPort userStatusPort;
     private final PasswordValidator passwordValidator;
+    private final SessionManagementUseCase sessionManagementUseCase;
 
     /**
      * Redefinir senha com token válido.
@@ -61,7 +65,7 @@ public class ResetPasswordUseCase {
      * @throws AuthenticationFailedException se token inválido/expirado
      * @throws ValidationException se senha não atende política
      */
-    public void resetPassword(AuthUseCase.ResetPasswordComand command) {
+    public void recoveryPassword(AuthUseCase.ResetPasswordComand command) {
         log.info("Iniciando reset de senha com token");
         
         // Busca token
@@ -113,12 +117,18 @@ public class ResetPasswordUseCase {
                 oldHash,
                 LocalDateTime.now().plusDays(senhaExpiraDias));
         
-        log.info("Senha atualizada para usuário: {}", user.getIdUsuario());
+        log.info("Senha atualizada para usuário: {}. Nova expiração: +{} dias", 
+            user.getIdUsuario(), senhaExpiraDias);
 
-        // Marca token como utilizado e invalida todos os demais
+        // Marca token como utilizado e invalida todos os demais tokens de reset
         tokenObj.markAsUsed();
         tokenRepository.invalidateTokensForUser(user.getIdUsuario());
-        
         log.info("Token marcado como utilizado");
+
+        // Invalida todas as sessões ativas do usuário (logout forçado por segurança)
+        // Motivo: PASSWORD_RECOVERY garante que o usuário faça novo login com a nova senha
+        sessionManagementUseCase.revokeAllUserSessions(user.getIdUsuario(), "PASSWORD_RECOVERY");
+        log.info("Todas as sessões revogadas para usuário ID: {}. Motivo: PASSWORD_RECOVERY", 
+            user.getIdUsuario());
     }
 }

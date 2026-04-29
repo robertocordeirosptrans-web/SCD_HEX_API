@@ -33,6 +33,8 @@ public final class CacPermissions {
     // ── COD_ROTINA: USE — Usuários ────────────────────────────────────────────
     /** Listar usuários */
     public static final String LISUSU          = PREFIX + "USE_LISUSU";
+    /** Reset de senha (administrativo) */
+    public static final String RESET_PASSWORD  = PREFIX + "USE_RESETPASS";
 
     // ── COD_ROTINA: USU — Associações Usuário-Perfil ─────────────────────────
     /** Listar associações usuário-perfil */

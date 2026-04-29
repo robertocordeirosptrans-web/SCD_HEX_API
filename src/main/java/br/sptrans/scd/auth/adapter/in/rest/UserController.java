@@ -198,6 +198,30 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/{idUsuario}/reset-password")
+    @PreAuthorize("hasAuthority('" + CacPermissions.RESET_PASSWORD + "')")
+    @Operation(summary = "Reset administrativo de senha", description = "Permite ao administrador resetar a senha de um usuário. A senha é definida como padrão e o usuário será forçado a trocar no próximo login.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Senha resetada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
+            @ApiResponse(responseCode = "403", description = "Sem permissão para resetar senha (requer RESET_PASSWORD)")
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<AdminResetPasswordResponse> adminResetPassword(
+            @PathVariable Long idUsuario) {
+        Long idUsuarioLogado = userResolverHelper.getCurrentUserId();
+        String tempPassword = userManagementUseCase.adminResetPassword(
+            new UserManagementUseCase.AdminResetPasswordCommand(idUsuario, idUsuarioLogado));
+        
+        User user = userManagementUseCase.findById(idUsuario);
+        
+        return ResponseEntity.ok(new AdminResetPasswordResponse(
+            idUsuario,
+            user.getPersonalInfo() != null ? user.getPersonalInfo().getNomUsuario() : null,
+            tempPassword,
+            "Senha resetada para o valor padrão. Usuário deve alterar no próximo login."));
+    }
+
     private UserResponseDTO toResponseDTO(User user) {
         return new UserResponseDTO(user, null);
     }
@@ -222,6 +246,18 @@ public class UserController {
     }
 
     public record UserResponse(String nomUsuario, String nomFuncao, String nomCargo) {
+
+    }
+
+    /**
+     * Response DTO para reset administrativo de senha.
+     * Retorna a senha temporária que o administrador pode compartilhar com o usuário.
+     */
+    public record AdminResetPasswordResponse(
+            Long idUsuario,
+            String nomUsuario,
+            String senhaTemporaria,
+            String mensagem) {
 
     }
 

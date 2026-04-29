@@ -6,12 +6,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import br.sptrans.scd.audit.application.port.in.AuditUseCase;
+import br.sptrans.scd.audit.domain.AuditEvent;
+import br.sptrans.scd.audit.domain.AuditEventType;
+import br.sptrans.scd.auth.application.port.in.SessionManagementUseCase;
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
 import br.sptrans.scd.auth.application.port.out.AuthenticationPort;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 import br.sptrans.scd.auth.application.port.out.UserStatusPort;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.enums.UserStatus;
+import br.sptrans.scd.shared.audit.AuditContext;
 import br.sptrans.scd.shared.cache.InvalidateUserCache;
 import br.sptrans.scd.shared.exception.BusinessException;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
@@ -36,11 +41,13 @@ import lombok.RequiredArgsConstructor;
 public class ManageUserStatusUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(ManageUserStatusUseCase.class);
-    private static final String TEMP_PASSWORD = "SBEReset@#2026";
+    private static final String TEMP_PASSWORD = "SCD@Reset#2026";
 
     private final UserQueryPort userQueryPort;
     private final UserStatusPort userStatusPort;
     private final AuthenticationPort authenticationPort;
+    private final SessionManagementUseCase sessionManagementUseCase;
+    private final AuditUseCase auditUseCase;
 
     /**
      * Desativa um usuário ativo.
@@ -143,33 +150,57 @@ public class ManageUserStatusUseCase {
     /**
      * Redefinição administrativa de senha.
      * 
-     * Regras: - Gera nova senha temporária - Define DT_EXPIRA_SENHA = now()
-     * para forçar troca no próximo login - Não exige token — o administrador
-     * que executa é a autorização
+     * Regras: 
+     * - Gera nova senha temporária (SCD@Reset#2026)
+     * - Define DT_EXPIRA_SENHA = now() para forçar troca no próximo login
+     * - Move hash anterior para oldSenha
+     * - Atualiza DT_MODI com timestamp da solicitação
+     * - Invalida todas as sessões ativas do usuário (logout em todos os dispositivos)
+     * - Registra em auditoria a ação, ID do admin, ID do usuário e timestamp
      * 
      * @param command contém ID do usuário e quem está executando
-     * @return a senha temporária gerada
+     * @return a senha temporária gerada (SCD@Reset#2026)
      * @throws ResourceNotFoundException se usuário não encontrado
      */
     @InvalidateUserCache
     public String adminResetPassword(UserManagementUseCase.AdminResetPasswordCommand command) {
-        log.info("Reset administrativo de senha. Usuário ID: {}", command.idUsuario());
+        log.info("Reset administrativo de senha. Usuário ID: {}. Realizado por admin ID: {}", 
+            command.idUsuario(), command.idUsuarioLogado());
         
         // Busca usuário
         User user = findUserOrThrow(command.idUsuario());
 
-        // Gera nova senha temporária
+        // Gera nova senha temporária com BCrypt
         String newHash = PasswordHashUtil.hashBcrypt(TEMP_PASSWORD);
         String oldHash = user.getCodSenha();
 
-        // Atualiza senha (força expiração imediata)
+        // Atualiza senha (força expiração imediata no momento da solicitação)
         userStatusPort.updatePassword(
             command.idUsuario(),
             newHash,
             oldHash,
-            LocalDateTime.now()); // DT_EXPIRA = agora, força troca imediata
+            LocalDateTime.now()); // DT_EXPIRA = now(), força troca imediata
         
-        log.info("Senha administrativa resetada. Usuário ID: {}", command.idUsuario());
+        log.info("Senha administrativa resetada. Usuário ID: {}. Nova expiração: agora", command.idUsuario());
+
+        // Invalida todas as sessões ativas do usuário (logout forçado em todos os dispositivos)
+        sessionManagementUseCase.revokeAllUserSessions(command.idUsuario(), "ADMIN_PASSWORD_RESET");
+        log.info("Todas as sessões revogadas para usuário ID: {}. Motivo: ADMIN_PASSWORD_RESET", command.idUsuario());
+
+        // Registra em auditoria
+        AuditContext.Data ctx = AuditContext.get();
+        auditUseCase.audit(new AuditEvent(
+            AuditEventType.ADMIN_PASSWORD_RESET,
+            command.idUsuarioLogado(),   // Quem executou (admin)
+            command.idUsuario(),          // Quem sofreu a ação (usuário)
+            null,
+            ctx.ipAddress,
+            ctx.userAgent,
+            "{\"action\":\"ADMIN_PASSWORD_RESET\",\"targetUserId\":" + command.idUsuario() + 
+            ",\"adminId\":" + command.idUsuarioLogado() + ",\"tempPassword\":\"***\"}"));
+        
+        log.info("Auditoria registrada para admin reset de senha. Admin ID: {}, Usuário ID: {}", 
+            command.idUsuarioLogado(), command.idUsuario());
         
         return TEMP_PASSWORD;
     }

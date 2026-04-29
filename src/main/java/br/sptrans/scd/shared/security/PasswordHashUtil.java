@@ -16,7 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
  *   <li><b>SHA-256</b>: hash armazenado possui 64 caracteres hexadecimais</li>
  *   <li><b>MD5</b>: hash armazenado possui 32 caracteres hexadecimais</li>
  * </ul>
- * Senhas novas devem sempre ser armazenadas com BCrypt via {@link #hashBcrypt(String)}.
+ * 
  */
 public final class PasswordHashUtil {
 

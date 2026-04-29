@@ -4,9 +4,10 @@ import org.springframework.stereotype.Service;
 
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.usecases.auth.AuthenticateUserUseCase;
+import br.sptrans.scd.auth.application.usecases.auth.ChangePasswordUseCase;
+import br.sptrans.scd.auth.application.usecases.auth.RecoveryPasswordUseCase;
 import br.sptrans.scd.auth.application.usecases.auth.RefreshTokenUseCase;
 import br.sptrans.scd.auth.application.usecases.auth.RequestPasswordResetUseCase;
-import br.sptrans.scd.auth.application.usecases.auth.ResetPasswordUseCase;
 import br.sptrans.scd.auth.domain.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,8 @@ public class AuthService implements AuthUseCase {
 
     private final AuthenticateUserUseCase authenticateUserUseCase;
     private final RequestPasswordResetUseCase requestPasswordResetUseCase;
-    private final ResetPasswordUseCase resetPasswordUseCase;
+    private final RecoveryPasswordUseCase recoveryPasswordUseCase;
+    private final ChangePasswordUseCase changePasswordUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
 
 
@@ -42,7 +44,13 @@ public class AuthService implements AuthUseCase {
     // ── redefinirSenha ───────────────────────────────────────────────────────
     @Override
     public void resetPassword(ResetPasswordComand comando) {
-        resetPasswordUseCase.resetPassword(comando);
+        recoveryPasswordUseCase.recoveryPassword(comando);
+    }
+
+    // ── Trocar Senha (usuário autenticado) ────────────────────────────────────
+    @Override
+    public void changePassword(ChangePasswordCommand comando) {
+        changePasswordUseCase.changePassword(comando.idUsuario(), comando.senhaAtual(), comando.novaSenha());
     }
 
     // ── Invalidar cache de permissões ────────────────────────────────────────

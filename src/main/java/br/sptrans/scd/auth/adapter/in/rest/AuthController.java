@@ -20,7 +20,6 @@ import br.sptrans.scd.auth.adapter.in.rest.dto.ResponseSimple;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.RefreshTokenComand;
-import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetPasswordComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetRequestComand;
 import br.sptrans.scd.auth.application.port.in.SessionManagementUseCase;
 import br.sptrans.scd.auth.domain.User;
@@ -123,19 +122,40 @@ public class AuthController {
     }
 
     @PostMapping("/change-password")
-    @Operation(summary = "Trocar senha", description = "Permite ao usuário autenticado trocar sua própria senha")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Trocar senha", description = "Permite ao usuário autenticado trocar sua própria senha. Requer senha atual e nova senha.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Senha alterada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Senha atual incorreta ou nova senha inválida"),
         @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
     })
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<ResponseSimple> changePassword(@Valid @RequestBody ResquestChangePassword req) {
+    public ResponseEntity<ResponseSimple> changePassword(@Valid @RequestBody ResquestChangePassword req,
+                                                        Authentication authentication) {
         log.info("REST POST /auth/change-password — Solicitação de troca de senha");
-        ResetPasswordComand reset = new ResetPasswordComand(req.token(), req.novaSenha());
-        casoUso.resetPassword(reset);
+        
+        // Extrai userId do token JWT (obtém context do usuário autenticado)
+        String codLogin = authentication.getName();
+        AuthUseCase.UserContext ctx = casoUso.loadUserContext(codLogin);
+        Long idUsuario = ctx.id();
+        
+        // Chama o novo UseCase com o comando correto
+        AuthUseCase.ChangePasswordCommand command = new AuthUseCase.ChangePasswordCommand(
+            idUsuario, 
+            req.senhaAtual(), 
+            req.novaSenha());
+        
+        casoUso.changePassword(command);
+        
+        // Registra evento de auditoria
+        AuditContext.Data auditCtx = AuditContext.get();
+        auditUseCase.audit(AuditEvent.of(
+            AuditEventType.PASSWORD_CHANGED,
+            idUsuario, null,
+            auditCtx.ipAddress, auditCtx.userAgent, null));
+        
         return ResponseEntity.ok(new ResponseSimple(
-                "Senha redefinida com sucesso. Faça login com a nova senha."));
+                "Senha alterada com sucesso. Faça login com a nova senha."));
     }
 
     @PostMapping("/refresh-token")
@@ -200,8 +220,8 @@ public class AuthController {
     }
 
     public record ResquestChangePassword(
-            @NotBlank(message = "Token é obrigatório")
-            String token,
+            @NotBlank(message = "Senha atual é obrigatória")
+            String senhaAtual,
 
             @NotBlank(message = "Nova senha é obrigatória")
             @Size(min = 6, message = "Nova senha deve ter no mínimo 6 caracteres")

@@ -30,5 +30,6 @@ public enum AuditEventType {
 
     // ── Senhas ────────────────────────────────────────────────────────────────
     PASSWORD_RESET_REQUESTED,
-    PASSWORD_CHANGED
+    PASSWORD_CHANGED,
+    ADMIN_PASSWORD_RESET
 }
