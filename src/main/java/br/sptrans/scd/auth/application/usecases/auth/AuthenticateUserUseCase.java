@@ -1,6 +1,8 @@
 package br.sptrans.scd.auth.application.usecases.auth;
 
+import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -16,8 +18,10 @@ import br.sptrans.scd.auth.application.port.in.AuthUseCase;
 import br.sptrans.scd.auth.application.port.out.AuthenticationPort;
 import br.sptrans.scd.auth.application.port.out.AuthorizationPort;
 import br.sptrans.scd.auth.application.port.out.GroupUserPort;
+import br.sptrans.scd.auth.application.port.out.PasswordTokenPort;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
 import br.sptrans.scd.auth.domain.GroupUser;
+import br.sptrans.scd.auth.domain.PasswordResetToken;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.shared.audit.AuditContext;
 import br.sptrans.scd.shared.exception.AccountBlockedException;
@@ -45,176 +49,208 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthenticateUserUseCase {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthenticateUserUseCase.class);
+        private static final Logger log = LoggerFactory.getLogger(AuthenticateUserUseCase.class);
 
-    private final UserQueryPort userPort;
-    private final AuthenticationPort authenticationPort;
-    private final AuthorizationPort authorizationPort;
-    private final GroupUserPort groupUserRepository;
-    private final AuditUseCase auditUseCase;
+        private final UserQueryPort userPort;
+        private final AuthenticationPort authenticationPort;
+        private final AuthorizationPort authorizationPort;
+        private final GroupUserPort groupUserRepository;
+        private final AuditUseCase auditUseCase;
+        private final PasswordTokenPort passwordTokenPort;
 
-    /**
-     * Autentica um usuário com as credenciais fornecidas.
-     * 
-     * Regras de negócio: - Bloqueia após 3 tentativas - Conta
-     * bloqueada/inativa: exceção com mensagem distinta - Valida jornada de
-     * acesso - Sucesso: reseta tentativas, persiste último acesso, retorna
-     * usuário com permissões
-     * 
-     * @param command credenciais de autenticação
-     * @return usuário autenticado com contexto
-     * @throws AuthenticationFailedException se credenciais inválidas
-     * @throws AccountBlockedException se conta bloqueada
-     * @throws InactiveUserException se conta inativa
-     */
-    public User authenticate(AuthUseCase.AuthComand command) {
-        log.info("Iniciando autenticação para login: {}", LogSanitizer.maskLogin(command.codLogin()));
-        
-        // Busca usuário
-        User user = userPort.findByCodLogin(command.codLogin())
-            .orElseThrow(() -> {
-                log.warn("Falha na autenticação — usuário não encontrado");
-                AuditContext.Data ctx = AuditContext.get();
-                auditUseCase.audit(AuditEvent.preAuth(
-                        AuditEventType.LOGIN_FAILURE,
-                        ctx.ipAddress, ctx.userAgent,
-                        "{\"reason\":\"USER_NOT_FOUND\"}"));
-                return new AuthenticationFailedException("Usuário ou senha inválidos.");
-            });
-        
-        // Valida conta bloqueada
-        if (user.isBlocked()) {
-            log.warn("Tentativa de acesso em conta bloqueada. ID: {}", user.getIdUsuario());
-            AuditContext.Data ctx = AuditContext.get();
-            auditUseCase.audit(AuditEvent.preAuth(
-                    AuditEventType.LOGIN_FAILURE,
-                    ctx.ipAddress, ctx.userAgent,
-                    "{\"reason\":\"ACCOUNT_BLOCKED\"}"));
-            throw new AccountBlockedException(
-                "Conta bloqueada por excesso de tentativas. Contate o administrador.");
+        /**
+         * Autentica um usuário com as credenciais fornecidas.
+         * 
+         * Regras de negócio: - Bloqueia após 3 tentativas - Conta
+         * bloqueada/inativa: exceção com mensagem distinta - Valida jornada de
+         * acesso - Sucesso: reseta tentativas, persiste último acesso, retorna
+         * usuário com permissões
+         * 
+         * @param command credenciais de autenticação
+         * @return usuário autenticado com contexto
+         * @throws AuthenticationFailedException se credenciais inválidas
+         * @throws AccountBlockedException       se conta bloqueada
+         * @throws InactiveUserException         se conta inativa
+         */
+        public User authenticate(AuthUseCase.AuthComand command) {
+                log.info("Iniciando autenticação para login: {}", LogSanitizer.maskLogin(command.codLogin()));
+
+                // Busca usuário
+                User user = userPort.findByCodLogin(command.codLogin())
+                                .orElseThrow(() -> {
+                                        log.warn("Falha na autenticação — usuário não encontrado");
+                                        AuditContext.Data ctx = AuditContext.get();
+                                        auditUseCase.audit(AuditEvent.preAuth(
+                                                        AuditEventType.LOGIN_FAILURE,
+                                                        ctx.ipAddress, ctx.userAgent,
+                                                        "{\"reason\":\"USER_NOT_FOUND\"}"));
+                                        return new AuthenticationFailedException("Usuário ou senha inválidos.");
+                                });
+
+                // Valida conta bloqueada
+                if (user.isBlocked()) {
+                        log.warn("Tentativa de acesso em conta bloqueada. ID: {}", user.getIdUsuario());
+                        AuditContext.Data ctx = AuditContext.get();
+                        auditUseCase.audit(AuditEvent.preAuth(
+                                        AuditEventType.LOGIN_FAILURE,
+                                        ctx.ipAddress, ctx.userAgent,
+                                        "{\"reason\":\"ACCOUNT_BLOCKED\"}"));
+                        throw new AccountBlockedException(
+                                        "Conta bloqueada por excesso de tentativas. Contate o administrador.");
+                }
+
+                // Valida conta inativa
+                if (user.isInactive()) {
+                        log.warn("Tentativa de acesso em conta inativa. ID: {}", user.getIdUsuario());
+                        AuditContext.Data ctx = AuditContext.get();
+                        auditUseCase.audit(AuditEvent.preAuth(
+                                        AuditEventType.LOGIN_FAILURE,
+                                        ctx.ipAddress, ctx.userAgent,
+                                        "{\"reason\":\"USER_INACTIVE\"}"));
+                        throw new InactiveUserException(
+                                        "Conta inativa. Contate o administrador.");
+                }
+
+                // Detecta senha padrão (reset) e força fluxo de expiração
+                final String SENHA_PADRAO = "SCD@Reset#2026";
+                if (command.senha().equals(SENHA_PADRAO)) {
+                        // Gera ou recupera token de reset
+                        String resetToken = null;
+                        try {
+                                PasswordResetToken token = passwordTokenPort
+                                                .findByIdUsuarioAndUsedFalse(user.getIdUsuario())
+                                                .orElse(null);
+                                if (token != null && !token.isExpired()) {
+                                        resetToken = token.getToken();
+                                } else {
+                                        // Gera novo token
+                                        PasswordResetToken novoToken = new PasswordResetToken();
+                                        novoToken.setIdUsuario(user.getIdUsuario());
+                                        novoToken.setToken(UUID.randomUUID().toString());
+                                        novoToken.setDtExpiracao(LocalDateTime.now().plusMinutes(15));
+                                        passwordTokenPort.save(novoToken);
+                                        resetToken = novoToken.getToken();
+                                }
+                        } catch (Exception e) {
+                                log.error("Erro ao gerar token de reset para senha padrão", e);
+                        }
+                        throw new AuthenticationFailedException(
+                                        "Senha padrão detectada. Sua senha expirou. Solicite alteração de senha. Token: "
+                                                        + resetToken + ", userId: " + user.getIdUsuario());
+                }
+
+                // Valida senha
+                String hashArmazenado = user.getCodSenha() != null ? user.getCodSenha().trim() : null;
+
+                if (!PasswordHashUtil.verificar(command.senha(), hashArmazenado)) {
+                        log.warn("Credenciais inválidas. ID: {}, tentativa: {}", user.getIdUsuario(),
+                                        user.getNumTentativasFalha() + 1);
+                        user.registrarTentativaFalha();
+
+                        authenticationPort.atualizarTentativasEStatus(
+                                        user.getIdUsuario(),
+                                        user.getNumTentativasFalha(),
+                                        user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
+
+                        AuditContext.Data ctxWrongPwd = AuditContext.get();
+                        if (user.isBlocked()) {
+                                log.warn("Conta bloqueada após excesso de tentativas. ID: {}", user.getIdUsuario());
+                                auditUseCase.audit(AuditEvent.preAuth(
+                                                AuditEventType.LOGIN_FAILURE,
+                                                ctxWrongPwd.ipAddress, ctxWrongPwd.userAgent,
+                                                "{\"reason\":\"ACCOUNT_BLOCKED_AFTER_ATTEMPTS\"}"));
+                                throw new AccountBlockedException(
+                                                "Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
+                        }
+                        auditUseCase.audit(AuditEvent.preAuth(
+                                        AuditEventType.LOGIN_FAILURE,
+                                        ctxWrongPwd.ipAddress, ctxWrongPwd.userAgent,
+                                        "{\"reason\":\"WRONG_PASSWORD\",\"attempt\":" + user.getNumTentativasFalha()
+                                                        + "}"));
+                        throw new AuthenticationFailedException(
+                                        "Usuário ou senha inválidos. Tentativa " + user.getNumTentativasFalha()
+                                                        + " de 3.");
+                }
+
+                // Valida jornada de acesso
+                if (!user.acessoPermitidoAgora()) {
+                        log.warn("Acesso fora da jornada permitida. ID: {}", user.getIdUsuario());
+                        AuditContext.Data ctxJornada = AuditContext.get();
+                        auditUseCase.audit(AuditEvent.preAuth(
+                                        AuditEventType.LOGIN_FAILURE,
+                                        ctxJornada.ipAddress, ctxJornada.userAgent,
+                                        "{\"reason\":\"OUTSIDE_WORK_HOURS\"}"));
+                        throw new AuthenticationFailedException(
+                                        "Acesso não permitido neste dia/horário conforme sua jornada configurada.");
+                }
+
+                // Autentica com sucesso
+                log.info("Login bem-sucedido. ID: {}", user.getIdUsuario());
+                AuditContext.Data ctxOk = AuditContext.get();
+                auditUseCase.audit(AuditEvent.of(
+                                AuditEventType.LOGIN_SUCCESS,
+                                user.getIdUsuario(), null,
+                                ctxOk.ipAddress, ctxOk.userAgent,
+                                null));
+                user.resetarTentativas();
+
+                authenticationPort.atualizarTentativasEStatus(
+                                user.getIdUsuario(), 0,
+                                user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
+
+                authenticationPort.atualizarUltimoAcesso(user.getIdUsuario());
+
+                return user;
         }
-        
-        // Valida conta inativa
-        if (user.isInactive()) {
-            log.warn("Tentativa de acesso em conta inativa. ID: {}", user.getIdUsuario());
-            AuditContext.Data ctx = AuditContext.get();
-            auditUseCase.audit(AuditEvent.preAuth(
-                    AuditEventType.LOGIN_FAILURE,
-                    ctx.ipAddress, ctx.userAgent,
-                    "{\"reason\":\"USER_INACTIVE\"}"));
-            throw new InactiveUserException(
-                "Conta inativa. Contate o administrador.");
+
+        /**
+         * Carrega o contexto completo do usuário autenticado (perfis, permissões,
+         * grupos).
+         * 
+         * @param codLogin login do usuário
+         * @return contexto completo para autorização
+         */
+        public AuthUseCase.UserContext loadUserContext(String codLogin) {
+                User user = userPort.findByCodLogin(codLogin)
+                                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "login", codLogin));
+
+                // Carrega perfis efetivos
+                Set<String> roles = authorizationPort.carregarPerfisEfetivos(user.getIdUsuario())
+                                .stream()
+                                .map(profile -> profile.getCodPerfil())
+                                .collect(Collectors.toSet());
+
+                // Carrega funcionalidades efetivas
+                Set<String> permissions = authorizationPort.carregarFuncionalidadesEfetivas(user.getIdUsuario())
+                                .stream()
+                                .map(func -> func.canonicalKey())
+                                .collect(Collectors.toSet());
+
+                // Carrega grupos ativos
+                Set<String> grupos = groupUserRepository
+                                .findById_IdUsuarioAndCodStatus(user.getIdUsuario(), "A")
+                                .stream()
+                                .map(GroupUser::getId)
+                                .map(id -> id.getCodGrupo())
+                                .collect(Collectors.toSet());
+
+                return new AuthUseCase.UserContext(
+                                user.getIdUsuario(),
+                                user.getNomUsuario(),
+                                roles,
+                                permissions,
+                                grupos);
         }
 
-        // Valida senha
-        String hashArmazenado = user.getCodSenha() != null ? user.getCodSenha().trim() : null;
-
-        if (!PasswordHashUtil.verificar(command.senha(), hashArmazenado)) {
-            log.warn("Credenciais inválidas. ID: {}, tentativa: {}", user.getIdUsuario(), user.getNumTentativasFalha() + 1);
-            user.registrarTentativaFalha();
-            
-            authenticationPort.atualizarTentativasEStatus(
-                    user.getIdUsuario(),
-                    user.getNumTentativasFalha(),
-                    user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
-            
-            AuditContext.Data ctxWrongPwd = AuditContext.get();
-            if (user.isBlocked()) {
-                log.warn("Conta bloqueada após excesso de tentativas. ID: {}", user.getIdUsuario());
-                auditUseCase.audit(AuditEvent.preAuth(
-                        AuditEventType.LOGIN_FAILURE,
-                        ctxWrongPwd.ipAddress, ctxWrongPwd.userAgent,
-                        "{\"reason\":\"ACCOUNT_BLOCKED_AFTER_ATTEMPTS\"}"));
-                throw new AccountBlockedException(
-                    "Conta bloqueada após 3 tentativas inválidas. Contate o administrador.");
-            }
-            auditUseCase.audit(AuditEvent.preAuth(
-                    AuditEventType.LOGIN_FAILURE,
-                    ctxWrongPwd.ipAddress, ctxWrongPwd.userAgent,
-                    "{\"reason\":\"WRONG_PASSWORD\",\"attempt\":" + user.getNumTentativasFalha() + "}"));
-            throw new AuthenticationFailedException(
-                "Usuário ou senha inválidos. Tentativa " + user.getNumTentativasFalha() + " de 3.");
+        /**
+         * Invalida o cache de permissões (perfis e funcionalidades) do usuário.
+         * Chamado após logout para forçar recarga do banco no próximo login.
+         */
+        @Caching(evict = {
+                        @CacheEvict(value = "permissoes", key = "'func:' + #idUsuario"),
+                        @CacheEvict(value = "permissoes", key = "'perfis:' + #idUsuario")
+        })
+        public void evictUserPermissionsCache(Long idUsuario) {
+                log.info("Cache de permissões invalidado para usuário {}", idUsuario);
         }
-
-        // Valida jornada de acesso
-        if (!user.acessoPermitidoAgora()) {
-            log.warn("Acesso fora da jornada permitida. ID: {}", user.getIdUsuario());
-            AuditContext.Data ctxJornada = AuditContext.get();
-            auditUseCase.audit(AuditEvent.preAuth(
-                    AuditEventType.LOGIN_FAILURE,
-                    ctxJornada.ipAddress, ctxJornada.userAgent,
-                    "{\"reason\":\"OUTSIDE_WORK_HOURS\"}"));
-            throw new AuthenticationFailedException(
-                "Acesso não permitido neste dia/horário conforme sua jornada configurada.");
-        }
-        
-        // Autentica com sucesso
-        log.info("Login bem-sucedido. ID: {}", user.getIdUsuario());
-        AuditContext.Data ctxOk = AuditContext.get();
-        auditUseCase.audit(AuditEvent.of(
-                AuditEventType.LOGIN_SUCCESS,
-                user.getIdUsuario(), null,
-                ctxOk.ipAddress, ctxOk.userAgent,
-                null));
-        user.resetarTentativas();
-        
-        authenticationPort.atualizarTentativasEStatus(
-            user.getIdUsuario(), 0, 
-            user.getCodStatus() != null ? user.getCodStatus().getCode() : null);
-        
-        authenticationPort.atualizarUltimoAcesso(user.getIdUsuario());
-        
-        return user;
-    }
-
-    /**
-     * Carrega o contexto completo do usuário autenticado (perfis, permissões,
-     * grupos).
-     * 
-     * @param codLogin login do usuário
-     * @return contexto completo para autorização
-     */
-    public AuthUseCase.UserContext loadUserContext(String codLogin) {
-        User user = userPort.findByCodLogin(codLogin)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", "login", codLogin));
-
-        // Carrega perfis efetivos
-        Set<String> roles = authorizationPort.carregarPerfisEfetivos(user.getIdUsuario())
-                .stream()
-                .map(profile -> profile.getCodPerfil())
-                .collect(Collectors.toSet());
-
-        // Carrega funcionalidades efetivas
-        Set<String> permissions = authorizationPort.carregarFuncionalidadesEfetivas(user.getIdUsuario())
-                .stream()
-                .map(func -> func.canonicalKey())
-                .collect(Collectors.toSet());
-
-        // Carrega grupos ativos
-        Set<String> grupos = groupUserRepository
-            .findById_IdUsuarioAndCodStatus(user.getIdUsuario(), "A")
-                .stream()
-                .map(GroupUser::getId)
-                .map(id -> id.getCodGrupo())
-                .collect(Collectors.toSet());
-
-        return new AuthUseCase.UserContext(
-            user.getIdUsuario(), 
-            user.getNomUsuario(), 
-            roles, 
-            permissions, 
-            grupos);
-    }
-
-    /**
-     * Invalida o cache de permissões (perfis e funcionalidades) do usuário.
-     * Chamado após logout para forçar recarga do banco no próximo login.
-     */
-    @Caching(evict = {
-        @CacheEvict(value = "permissoes", key = "'func:' + #idUsuario"),
-        @CacheEvict(value = "permissoes", key = "'perfis:' + #idUsuario")
-    })
-    public void evictUserPermissionsCache(Long idUsuario) {
-        log.info("Cache de permissões invalidado para usuário {}", idUsuario);
-    }
 }

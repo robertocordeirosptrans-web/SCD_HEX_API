@@ -16,6 +16,7 @@ import br.sptrans.scd.auth.domain.vo.PasswordValidationResult;
 import br.sptrans.scd.shared.exception.AuthenticationFailedException;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
 import br.sptrans.scd.shared.exception.ValidationException;
+import br.sptrans.scd.shared.security.Criptografia;
 import br.sptrans.scd.shared.security.PasswordHashUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -96,11 +97,17 @@ public class ChangePasswordUseCase {
             throw new ValidationException(validacao.getErrorsAsString());
         }
 
-        // 4. Detecta tipo de hash da senha anterior para logging
+        // 4. Detecta tipo de hash da senha anterior para logging e para gerar o novo hash
         PasswordHashUtil.TipoHash tipoHashAnterior = PasswordHashUtil.detectarTipoHash(user.getCodSenha());
-        
-        // 5. Gera novo hash (usa BCrypt como padrão forte)
-        String novoHash = PasswordHashUtil.hashBcrypt(novaSenha);
+
+        // 5. Gera novo hash usando o mesmo tipo do hash anterior
+        String novoHash;
+        novoHash = switch (tipoHashAnterior) {
+            case BCRYPT -> PasswordHashUtil.hashBcrypt(novaSenha);
+            case MD5 -> Criptografia.getMD5Hex(novaSenha);
+            case SHA256 -> PasswordHashUtil.hashSha256(novaSenha);
+            default -> PasswordHashUtil.hashBcrypt(novaSenha);
+        }; // fallback para BCrypt se tipo desconhecido
         String hashAnterior = user.getCodSenha();
 
         // 6. Atualiza senha (move anterior para oldSenha, atualiza dtExpiraSenha)
@@ -111,8 +118,8 @@ public class ChangePasswordUseCase {
             hashAnterior,
             novaDataExpiracao);
 
-        log.info("Senha atualizada para usuário ID: {}. Hash anterior tipo: {}, novo tipo: BCrypt, expiração: +{} dias",
-            idUsuario, tipoHashAnterior, senhaExpiraDias);
+        log.info("Senha atualizada para usuário ID: {}. Hash anterior tipo: {}, novo tipo: {}, expiração: +{} dias",
+            idUsuario, tipoHashAnterior, tipoHashAnterior, senhaExpiraDias);
 
         // 7. Invalida todas as sessões do usuário (logout em todos os dispositivos)
         // Motivo: PASSWORD_CHANGED força novo login com nova senha

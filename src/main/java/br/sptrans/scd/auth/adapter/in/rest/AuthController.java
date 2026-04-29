@@ -1,3 +1,4 @@
+
 package br.sptrans.scd.auth.adapter.in.rest;
 
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import br.sptrans.scd.auth.application.port.in.AuthUseCase.AuthComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.RefreshTokenComand;
 import br.sptrans.scd.auth.application.port.in.AuthUseCase.ResetRequestComand;
 import br.sptrans.scd.auth.application.port.in.SessionManagementUseCase;
+import br.sptrans.scd.auth.application.usecases.auth.ChangeExpiredPasswordUseCase;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.port.out.TokenGeneratorPort;
 import br.sptrans.scd.auth.domain.port.out.TokenValidatorPort;
@@ -44,7 +46,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/auth")
 @Tag(name = "Autenticação v1", description = "Endpoints para autenticação e gerenciamento de usuários - Versão 1")
+
 public class AuthController {
+    // ...existing code...
+    // --- DTO de resposta para troca de senha expirada ---
+
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
@@ -53,27 +59,27 @@ public class AuthController {
     private final TokenValidatorPort tokenValidator;
     private final SessionManagementUseCase sessionUseCase;
     private final AuditUseCase auditUseCase;
-
+    private final ChangeExpiredPasswordUseCase changeExpiredPasswordUseCase;
 
     @PostMapping("/login")
     @Operation(summary = "Login do usuário", description = "Autentica o usuário, cria sessão rastreada e retorna token JWT")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
-        @ApiResponse(responseCode = "403", description = "Credenciais inválidas ou usuário bloqueado/inativo")
+            @ApiResponse(responseCode = "200", description = "Login realizado com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Credenciais inválidas ou usuário bloqueado/inativo")
     })
     public ResponseEntity<ResponseLogin> login(@RequestBody @Valid RequestLogin req,
-                                               HttpServletRequest httpRequest) {
+            HttpServletRequest httpRequest) {
         log.info("REST POST /auth/login — Tentativa de autenticação");
         AuthComand auth = new AuthComand(req.login(), req.password());
         User user = casoUso.autenticar(auth);
 
         // Cria sessão rastreada
-        String ip        = resolveClientIp(httpRequest);
+        String ip = resolveClientIp(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
         UserSession session = sessionUseCase.createSession(user.getIdUsuario(), ip, userAgent);
 
         // Embute session_id no access token; gera também o refresh token
-        String jwt          = tokenGenerator.generate(user, session.getIdSessao());
+        String jwt = tokenGenerator.generate(user, session.getIdSessao());
         String refreshToken = tokenGenerator.generateRefresh(user);
         return ResponseEntity.ok(new ResponseLogin(jwt, refreshToken));
     }
@@ -82,12 +88,12 @@ public class AuthController {
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Logout", description = "Invalida a sessão atual — o token deixa de ser aceito imediatamente")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Logout realizado com sucesso"),
-        @ApiResponse(responseCode = "401", description = "Token ausente ou inválido")
+            @ApiResponse(responseCode = "200", description = "Logout realizado com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido")
     })
     public ResponseEntity<ResponseSimple> logout(HttpServletRequest request,
-                                                 Authentication authentication) {
-        String token     = extractBearerToken(request);
+            Authentication authentication) {
+        String token = extractBearerToken(request);
         String sessionId = token != null ? tokenValidator.extractSessionId(token) : null;
 
         if (sessionId != null) {
@@ -112,8 +118,8 @@ public class AuthController {
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Dados do usuário autenticado", description = "Retorna id, nome, perfis, permissões e grupos do usuário logado")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Dados retornados com sucesso"),
-        @ApiResponse(responseCode = "401", description = "Token ausente ou inválido")
+            @ApiResponse(responseCode = "200", description = "Dados retornados com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Token ausente ou inválido")
     })
     public ResponseEntity<MeResponse> me(Authentication authentication) {
         String codLogin = authentication.getName();
@@ -126,48 +132,99 @@ public class AuthController {
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Trocar senha", description = "Permite ao usuário autenticado trocar sua própria senha. Requer senha atual e nova senha.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Senha alterada com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Senha atual incorreta ou nova senha inválida"),
-        @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
+            @ApiResponse(responseCode = "200", description = "Senha alterada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Senha atual incorreta ou nova senha inválida"),
+            @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
     })
     public ResponseEntity<ResponseSimple> changePassword(@Valid @RequestBody ResquestChangePassword req,
-                                                        Authentication authentication) {
+            Authentication authentication) {
         log.info("REST POST /auth/change-password — Solicitação de troca de senha");
-        
+
         // Extrai userId do token JWT (obtém context do usuário autenticado)
         String codLogin = authentication.getName();
         AuthUseCase.UserContext ctx = casoUso.loadUserContext(codLogin);
         Long idUsuario = ctx.id();
-        
+
         // Chama o novo UseCase com o comando correto
         AuthUseCase.ChangePasswordCommand command = new AuthUseCase.ChangePasswordCommand(
-            idUsuario, 
-            req.senhaAtual(), 
-            req.novaSenha());
-        
+                idUsuario,
+                req.senhaAtual(),
+                req.novaSenha());
+
         casoUso.changePassword(command);
-        
+
         // Registra evento de auditoria
         AuditContext.Data auditCtx = AuditContext.get();
         auditUseCase.audit(AuditEvent.of(
-            AuditEventType.PASSWORD_CHANGED,
-            idUsuario, null,
-            auditCtx.ipAddress, auditCtx.userAgent, null));
-        
+                AuditEventType.PASSWORD_CHANGED,
+                idUsuario, null,
+                auditCtx.ipAddress, auditCtx.userAgent, null));
+
         return ResponseEntity.ok(new ResponseSimple(
                 "Senha alterada com sucesso. Faça login com a nova senha."));
+    }
+
+    @PostMapping("/change-expired-password")
+    @Operation(summary = "Trocar senha expirada", description = "Permite ao usuário trocar senha expirada usando reset_token. Valida token, senha atual, aplica política e retorna novos tokens.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Senha alterada com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Token inválido, expirado ou senha atual incorreta"),
+            @ApiResponse(responseCode = "400", description = "Nova senha inválida")
+    })
+    public ResponseEntity<?> changeExpiredPassword(
+            @Valid @RequestBody RequestChangeExpiredPassword req,
+            HttpServletRequest httpRequest) {
+        String token = extractBearerToken(httpRequest);
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.status(401)
+                    .body(new ErrorResponse("PASSWORD_EXPIRED", "Token de redefinição ausente.", "/change-password",
+                            "/api/auth/change-expired-password", null, req.user_id()));
+        }
+        try {
+            // Troca a senha expirada e obtém o usuário atualizado
+            User user = changeExpiredPasswordUseCase.changeExpiredPassword(
+                    token,
+                    req.user_id(),
+                    req.current_password(),
+                    req.new_password());
+
+            // Cria nova sessão para o usuário
+            String ip = resolveClientIp(httpRequest);
+            String userAgent = httpRequest.getHeader("User-Agent");
+            UserSession session = sessionUseCase.createSession(user.getIdUsuario(), ip, userAgent);
+
+            // Gera novos tokens
+            String accessToken = tokenGenerator.generate(user, session.getIdSessao());
+            String refreshToken = tokenGenerator.generateRefresh(user);
+
+            return ResponseEntity.ok(new ChangeExpiredPasswordSuccessResponse(
+                    "success",
+                    "Senha alterada com sucesso!",
+                    true,
+                    accessToken,
+                    refreshToken));
+        } catch (br.sptrans.scd.shared.exception.AuthenticationFailedException e) {
+            return ResponseEntity.status(401).body(new ErrorResponse("PASSWORD_EXPIRED", e.getMessage(),
+                    "/change-password", "/api/auth/change-expired-password", token, req.user_id()));
+        } catch (br.sptrans.scd.shared.exception.ValidationException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ErrorResponse("PASSWORD_POLICY", e.getMessage(), null, null, token, req.user_id()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(new ErrorResponse("INTERNAL_ERROR", e.getMessage(), null, null, token, req.user_id()));
+        }
     }
 
     @PostMapping("/refresh-token")
     @Operation(summary = "Renovar tokens", description = "Valida o refresh token e retorna novo par de tokens (access + refresh). O refresh token é rotacionado a cada uso.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Tokens renovados com sucesso"),
-        @ApiResponse(responseCode = "401", description = "Refresh token inválido ou expirado")
+            @ApiResponse(responseCode = "200", description = "Tokens renovados com sucesso"),
+            @ApiResponse(responseCode = "401", description = "Refresh token inválido ou expirado")
     })
     public ResponseEntity<ResponseLogin> refreshToken(@Valid @RequestBody RequestRefreshToken req,
-                                                      HttpServletRequest httpRequest) {
+            HttpServletRequest httpRequest) {
         log.info("REST POST /auth/refresh-token — Solicitação de renovação de tokens");
-        String ip        = resolveClientIp(httpRequest);
+        String ip = resolveClientIp(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
         RefreshTokenComand comand = new RefreshTokenComand(req.refreshToken(), ip, userAgent);
         AuthUseCase.TokenPair pair = casoUso.refreshToken(comand);
@@ -203,37 +260,53 @@ public class AuthController {
     }
 
     // ── DTOs ─────────────────────────────────────────────────────────────────
-    public record RequestLogin(@NotBlank(message = "Login é obrigatório")
-            String login,
-            @NotBlank(message = "Senha é obrigatória")
-            String password) {
+    public record RequestLogin(@NotBlank(message = "Login é obrigatório") String login,
+            @NotBlank(message = "Senha é obrigatória") String password) {
 
     }
 
-
     public record RequestRecoveryPassword(
-            @NotBlank(message = "E-mail é obrigatório")
-            @Email(message = "E-mail deve ser válido")
-            @Size(max = 40, message = "E-mail deve ter no máximo 40 caracteres")
-            String email) {
+            @NotBlank(message = "E-mail é obrigatório") @Email(message = "E-mail deve ser válido") @Size(max = 40, message = "E-mail deve ter no máximo 40 caracteres") String email) {
 
     }
 
     public record ResquestChangePassword(
-            @NotBlank(message = "Senha atual é obrigatória")
-            String senhaAtual,
+            @NotBlank(message = "Senha atual é obrigatória") String senhaAtual,
 
-            @NotBlank(message = "Nova senha é obrigatória")
-            @Size(min = 6, message = "Nova senha deve ter no mínimo 6 caracteres")
-            String novaSenha) {
+            @NotBlank(message = "Nova senha é obrigatória") @Size(min = 6, message = "Nova senha deve ter no mínimo 6 caracteres") String novaSenha) {
 
     }
 
     public record RequestRefreshToken(
-            @NotBlank(message = "Refresh token é obrigatório")
-            String refreshToken) {
+            @NotBlank(message = "Refresh token é obrigatório") String refreshToken) {
 
     }
 
-}
+    public record RequestChangeExpiredPassword(
+            @NotBlank(message = "user_id é obrigatório") String user_id,
+            @NotBlank(message = "Senha atual é obrigatória") String current_password,
+            @NotBlank(message = "Nova senha é obrigatória") @Size(min = 6, message = "Nova senha deve ter no mínimo 6 caracteres") String new_password) {
+    }
 
+    public record ErrorResponse(
+            String code,
+            String message,
+            String redirect_url,
+            String change_password_endpoint,
+            String reset_token,
+            String user_id) {
+        public String getStatus() {
+            return "error";
+        }
+    }
+
+    public record ChangeExpiredPasswordSuccessResponse(
+            String status,
+            String message,
+            boolean auto_login,
+            String access_token,
+            String refresh_token) {
+    }
+    
+
+}

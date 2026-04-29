@@ -15,7 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "reset_tokens", schema = "SPTRANSDBA")
+@Table(name = "reset_tokens", schema = "SCD_ROBERTO")
 public class PasswordTokenEntityJpa {
 
     @Id
