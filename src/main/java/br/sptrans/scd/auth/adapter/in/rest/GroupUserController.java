@@ -57,7 +57,7 @@ public class GroupUserController {
                 return ResponseEntity.ok(PageResponse.fromPage(page));
         }
 
-        @GetMapping("/{idUsuario}/grupos")
+        @GetMapping("/{idUsuario}/usuarios")
         @PreAuthorize("hasAuthority('" + CacPermissions.LISASSUSUPER + "')")
         @Operation(summary = "Listar grupos do usuário", description = "Retorna uma lista paginada de grupos vinculados ao usuário informado")
         @ApiResponses(value = {
@@ -80,7 +80,7 @@ public class GroupUserController {
                 return ResponseEntity.ok(PageResponse.fromPage(dtos));
         }
 
-        @GetMapping("/{codGrupo}/usuarios")
+        @GetMapping("/{codGrupo}/grupos")
         @PreAuthorize("hasAuthority('" + CacPermissions.LISASSUSUPER + "')")
         @Operation(summary = "Listar usuários do grupo", description = "Retorna uma lista de usuários vinculados ao grupo informado")
         @ApiResponses(value = {
