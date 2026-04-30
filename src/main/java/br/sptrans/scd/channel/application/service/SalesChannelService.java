@@ -96,7 +96,7 @@ public class SalesChannelService implements SalesChannelUseCase {
                 classificationPerson,
                 typesActivity,
                 cmd.usuario(),
-                null);
+                cmd.usuario());
         SalesChannel saved = salesChannelRepository.save(salesChannel);
         log.info("Canal de venda criado com sucesso. Código: {}", saved.getCodCanal());
         return saved;
