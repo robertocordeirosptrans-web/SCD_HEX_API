@@ -33,9 +33,9 @@ public interface ProductChannelUseCase {
 
         Page<ProductChannel> findByCodProduto(String codProduto, Pageable pageable);
 
-        List<ProductChannelProjection> findProjections(String codCanal, String codProduto);
+        // List<ProductChannelProjection> findProjections(String codCanal, String codProduto);
 
-        Page<ProductChannelProjection> findProjections(String codCanal, String codProduto, Pageable pageable);
+        Page<ProductChannelProjection> findProjections(String codCanal, Pageable pageable);
 
         List<ChannelByProductProjection> findChannelsByProduct(String codProduto);
 

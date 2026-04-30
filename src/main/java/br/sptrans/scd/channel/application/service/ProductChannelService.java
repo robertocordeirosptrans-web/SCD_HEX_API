@@ -17,6 +17,7 @@ import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.application.port.in.ProductChannelUseCase;
 import br.sptrans.scd.channel.application.port.out.ProductChannelPersistencePort;
 import br.sptrans.scd.channel.application.port.out.SalesChannelPersistencePort;
+import br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO;
 import br.sptrans.scd.channel.application.port.out.query.ChannelByProductProjection;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
@@ -35,42 +36,42 @@ public class ProductChannelService implements ProductChannelUseCase {
     private final ProductChannelPersistencePort repository;
     private final SalesChannelPersistencePort salesChannelRepository;
 
-
     @Override
-    public List<br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO> findProdutosCodigoDescricaoByChannel(
+    public List<ProdutoCodigoDescricaoDTO> findProdutosCodigoDescricaoByChannel(
             String codCanal, String stCanaisProdutos, String stProdutos) {
         return repository.findProdutosCodigoDescricaoByChannel(codCanal, stCanaisProdutos, stProdutos);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    @Cacheable(value = "canais", key = "'product-projections-' + #codCanal + '-' + (#codProduto != null ? #codProduto : 'ALL')")
-    public List<ProductChannelProjection> findProjections(String codCanal, String codProduto) {
-        // Exemplo: busca por canal, pode ser adaptado para outros filtros
-        if (codCanal != null && !codCanal.isEmpty()) {
-            try {
 
-                return repository.findCompletoByCanal(codCanal);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("codCanal deve ser um número inteiro", e);
-            }
-        }
-        // Adapte para outros filtros conforme necessário
-        throw new UnsupportedOperationException("Filtro de projections não implementado para os parâmetros fornecidos");
-    }
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "canais", key = "'product-projections-' + #codCanal + '-' + (#codProduto != null ? #codProduto : 'ALL') + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
-    public Page<ProductChannelProjection> findProjections(String codCanal, String codProduto, Pageable pageable) {
+    @Cacheable(value = "canais", key = "'product-projections-' + #codCanal + '-' + (#pageable != null ? #pageable.pageNumber : 'ALL') + '-' + (#pageable != null ? #pageable.pageSize : 'ALL')")
+    public Page<ProductChannelProjection> findProjections(String codCanal, Pageable pageable) {
         if (codCanal != null && !codCanal.isEmpty()) {
-            try {
-                return repository.findCompletoByCanal(codCanal, pageable);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("codCanal deve ser um número inteiro", e);
+            var canalOpt = salesChannelRepository.findById(codCanal);
+            if (canalOpt.isEmpty()) {
+                throw new ChannelException(ChannelErrorType.SALES_CHANNEL_NOT_FOUND);
             }
+            var canal = canalOpt.get();
+            var codAtividade = canal.getCodAtividade() != null ? canal.getCodAtividade().getCodAtividade() : null;
+            if (codAtividade == null) {
+                throw new ChannelException(ChannelErrorType.SALES_CHANNEL_INVALID_STATE);
+            }
+            Page<ProductChannelProjection> result;
+            switch (codAtividade) {
+                case "2" -> // Canal de Comercialização
+                    result = repository.findCompletoByCanal(codCanal, pageable);
+                case "3" -> // Canal de Distribuição
+                    result = repository.findCompletoByCanalDistrib(codCanal, pageable);
+                default -> throw new ChannelException(ChannelErrorType.SALES_CHANNEL_INVALID_STATE);
+            }
+            if (result == null || result.isEmpty()) {
+                throw new ChannelException(ChannelErrorType.SALES_CHANNEL_INVALID_STATE);
+            }
+            return result;
         }
-        throw new UnsupportedOperationException("Filtro de projections não implementado para os parâmetros fornecidos");
+        throw new ChannelException(ChannelErrorType.SALES_CHANNEL_INVALID_STATE);
     }
 
     @Override
@@ -190,3 +191,4 @@ public class ProductChannelService implements ProductChannelUseCase {
     }
 
 }
+

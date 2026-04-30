@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO;
 import br.sptrans.scd.channel.application.port.out.query.ChannelByProductProjection;
 import br.sptrans.scd.channel.application.port.out.query.ProductChannelProjection;
 import br.sptrans.scd.channel.domain.ProductChannel;
@@ -18,18 +19,18 @@ public interface ProductChannelPersistencePort {
      * Busca produtos disponíveis por canal, status e tipo, retornando apenas código
      * e descrição.
      */
-    List<br.sptrans.scd.channel.application.port.out.dto.ProdutoCodigoDescricaoDTO> findProdutosCodigoDescricaoByChannel(
+    List<ProdutoCodigoDescricaoDTO> findProdutosCodigoDescricaoByChannel(
             String codCanal, String stCanaisProdutos, String stProdutos);
-
-
 
     Optional<ProductChannel> findById(ProductChannelKey id);
 
     Page<ProductChannel> findAll(Pageable pageable);
 
-    List<ProductChannelProjection> findCompletoByCanal(String codCanal);
+    // List<ProductChannelProjection> findCompletoByCanal(String codCanal);
 
     Page<ProductChannelProjection> findCompletoByCanal(String codCanal, Pageable pageable);
+
+    Page<ProductChannelProjection> findCompletoByCanalDistrib(String codCanalDistribuicao, Pageable pageable);
 
     Page<ProductChannel> findByCodCanal(String codCanal, Pageable pageable);
 

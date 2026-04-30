@@ -23,6 +23,7 @@ public enum ChannelErrorType {
     SALES_CHANNEL_CODE_ALREADY_EXISTS("Código de canal de vendas já cadastrado.", HttpStatus.CONFLICT),
     SALES_CHANNEL_ALREADY_ACTIVE("Canal de vendas já está ativo.", HttpStatus.CONFLICT),
     SALES_CHANNEL_ALREADY_INACTIVE("Canal de vendas já está inativo.", HttpStatus.CONFLICT),
+    SALES_CHANNEL_INVALID_STATE("Canal de vendas encontrado, mas em estado inválido para a operação.", HttpStatus.BAD_REQUEST),
 
     // ContactChannel
     CONTACT_CHANNEL_NOT_FOUND("Contato do canal não encontrado.", HttpStatus.NOT_FOUND),

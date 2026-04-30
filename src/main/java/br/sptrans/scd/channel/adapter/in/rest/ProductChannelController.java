@@ -174,7 +174,7 @@ public class ProductChannelController {
             @RequestParam(required = false) String codCanal,
             @RequestParam(required = false) String codProduto,
             Pageable pageable) {
-        Page<ProductChResponseDTO> dtoPage = productChannelUseCase.findProjections(codCanal, codProduto, pageable)
+        Page<ProductChResponseDTO> dtoPage = productChannelUseCase.findProjections(codCanal, pageable)
                 .map(productChannelMapper::toResponseDTO);
         return ResponseEntity.ok(PageResponse.fromPage(dtoPage));
     }

@@ -79,102 +79,102 @@ public interface ProductChannelJpaRepository extends JpaRepository<ProductChanne
     Optional<ProductChannelEntityJpa> findByIdOptimized(@Param("codCanal") String codCanal,
             @Param("codProduto") String codProduto);
 
-    @Query(value = """
-            SELECT DISTINCT
-                  -- Informações básicas do canal/produto
-                  cp.COD_CANAL as codCanal,
-                  cp.COD_PRODUTO as codProduto,
-                  p.DES_PRODUTO as desProduto,
-                  cp.ST_CANAIS_PRODUTOS as statusCanalProduto,
+    // @Query(value = """
+    //         SELECT DISTINCT
+    //               -- Informações básicas do canal/produto
+    //               cp.COD_CANAL as codCanal,
+    //               cp.COD_PRODUTO as codProduto,
+    //               p.DES_PRODUTO as desProduto,
+    //               cp.ST_CANAIS_PRODUTOS as statusCanalProduto,
 
-                  -- Características do produto no canal
-                  cp.QTD_LIMITE_COMERCIALIZACAO as qtdLimiteComercializacao,
-                  cp.QTD_MINIMA_ESTOQUE as qtdMinimaEstoque,
-                  cp.QTD_MAXIMA_ESTOQUE as qtdMaximaEstoque,
-                  cp.QTD_MINIMA_RESSUPRIMENTO as qtdMinimaRessuprimento,
-                  cp.QTD_MAXIMA_RESSUPRIMENTO as qtdMaximaRessuprimento,
-                  cp.VL_FACE as vlFace,
-                  cp.COD_CONVENIO as codConvenio,
-                  cp.TIPO_OPER_HM as tipoOperHm,
-                  cp.FLG_CARAC as flgCarac,
-                  cp.COD_ORGAO_EMISSOR as codOrgaoEmissor,
+    //               -- Características do produto no canal
+    //               cp.QTD_LIMITE_COMERCIALIZACAO as qtdLimiteComercializacao,
+    //               cp.QTD_MINIMA_ESTOQUE as qtdMinimaEstoque,
+    //               cp.QTD_MAXIMA_ESTOQUE as qtdMaximaEstoque,
+    //               cp.QTD_MINIMA_RESSUPRIMENTO as qtdMinimaRessuprimento,
+    //               cp.QTD_MAXIMA_RESSUPRIMENTO as qtdMaximaRessuprimento,
+    //               cp.VL_FACE as vlFace,
+    //               cp.COD_CONVENIO as codConvenio,
+    //               cp.TIPO_OPER_HM as tipoOperHm,
+    //               cp.FLG_CARAC as flgCarac,
+    //               cp.COD_ORGAO_EMISSOR as codOrgaoEmissor,
 
-                  -- Vigência do produto
-                  cv.DT_INICIO_VALIDADE as inicioValidade,
-                  cv.DT_FIM_VALIDADE as fimValidade,
-                  cv.COD_STATUS as statusVigencia,
+    //               -- Vigência do produto
+    //               cv.DT_INICIO_VALIDADE as inicioValidade,
+    //               cv.DT_FIM_VALIDADE as fimValidade,
+    //               cv.COD_STATUS as statusVigencia,
 
-                  -- Taxa principal
-                  t.ID_TAXA as idTaxa,
-                  t.DSC_TAXA as descricaoTaxa,
-                  t.DT_INICIAL as taxaInicio,
-                  t.DT_FINAL as taxaFim,
+    //               -- Taxa principal
+    //               t.ID_TAXA as idTaxa,
+    //               t.DSC_TAXA as descricaoTaxa,
+    //               t.DT_INICIAL as taxaInicio,
+    //               t.DT_FINAL as taxaFim,
 
-                  -- Taxa administrativa
-                  ta.REC_INICIAL as taxaAdmRecInicial,
-                  ta.REC_FINAL as taxaAdmRecFinal,
-                  ta.VAL_FIXO as taxaAdmValFixo,
-                  ta.VAL_PERCENTUAL as taxaAdmPercentual,
+    //               -- Taxa administrativa
+    //               ta.REC_INICIAL as taxaAdmRecInicial,
+    //               ta.REC_FINAL as taxaAdmRecFinal,
+    //               ta.VAL_FIXO as taxaAdmValFixo,
+    //               ta.VAL_PERCENTUAL as taxaAdmPercentual,
 
-                  -- Taxa serviço
-                  ts.REC_INICIAL as taxaServRecInicial,
-                  ts.REC_FINAL as taxaServRecFinal,
-                  ts.VAL_FIXO as taxaServValFixo,
-                  ts.VAL_PERCENTUAL as taxaServPercentual,
-                  ts.VAL_MINIMO as taxaServValMinimo,
+    //               -- Taxa serviço
+    //               ts.REC_INICIAL as taxaServRecInicial,
+    //               ts.REC_FINAL as taxaServRecFinal,
+    //               ts.VAL_FIXO as taxaServValFixo,
+    //               ts.VAL_PERCENTUAL as taxaServPercentual,
+    //               ts.VAL_MINIMO as taxaServValMinimo,
 
-                  -- Taxa por canal
-                  tc.VL_T_INICIO as taxaCanalVlInicio,
-                  tc.VL_T_FINAL as taxaCanalVlFinal,
-                  tc.VL_PERCENTUAL as taxaCanalPercentual,
-                  tc.DT_INICIO as taxaCanalInicio,
-                  tc.DT_FIM as taxaCanalFim,
+    //               -- Taxa por canal
+    //               tc.VL_T_INICIO as taxaCanalVlInicio,
+    //               tc.VL_T_FINAL as taxaCanalVlFinal,
+    //               tc.VL_PERCENTUAL as taxaCanalPercentual,
+    //               tc.DT_INICIO as taxaCanalInicio,
+    //               tc.DT_FIM as taxaCanalFim,
 
-                  -- Canais destino (distribuição)
-                  td.COD_CANALDESTINO as canaisDestino,
+    //               -- Canais destino (distribuição)
+    //               td.COD_CANALDESTINO as canaisDestino,
 
-                  -- Limites de recarga
-                  lr.DT_INICIO_VALIDADE as limiteInicioValidade,
-                  lr.DT_FIM_VALIDADE as limiteFimValidade,
-                  lr.VL_MINIMO_RECARGA as vlMinimoRecarga,
-                  lr.VL_MAXIMO_RECARGA as vlMaximoRecarga,
-                  lr.VL_MAXIMO_SALDO as vlMaximoSaldo,
-                  lr.COD_STATUS as statusLimite
+    //               -- Limites de recarga
+    //               lr.DT_INICIO_VALIDADE as limiteInicioValidade,
+    //               lr.DT_FIM_VALIDADE as limiteFimValidade,
+    //               lr.VL_MINIMO_RECARGA as vlMinimoRecarga,
+    //               lr.VL_MAXIMO_RECARGA as vlMaximoRecarga,
+    //               lr.VL_MAXIMO_SALDO as vlMaximoSaldo,
+    //               lr.COD_STATUS as statusLimite
 
-              FROM SPTRANSDBA.CANAIS_PRODUTOS cp
+    //           FROM SPTRANSDBA.CANAIS_PRODUTOS cp
 
-              -- Informações do produto
-              INNER JOIN SPTRANSDBA.PRODUTOS p ON cp.COD_PRODUTO = p.COD_PRODUTO
+    //           -- Informações do produto
+    //           INNER JOIN SPTRANSDBA.PRODUTOS p ON cp.COD_PRODUTO = p.COD_PRODUTO
 
-              -- Vigência (se existir)
-              LEFT JOIN SPTRANSDBA.CONVENIOS_VIGENCIAS cv ON cp.COD_CANAL = cv.COD_CANAL
-                  AND cp.COD_PRODUTO = cv.COD_PRODUTO
+    //           -- Vigência (se existir)
+    //           LEFT JOIN SPTRANSDBA.CONVENIOS_VIGENCIAS cv ON cp.COD_CANAL = cv.COD_CANAL
+    //               AND cp.COD_PRODUTO = cv.COD_PRODUTO
 
-              -- Taxas (todas as relacionadas)
-              LEFT JOIN SPTRANSDBA.TAXAS t ON cp.COD_CANAL = t.COD_CANAL
-                  AND cp.COD_PRODUTO = t.COD_PRODUTO
+    //           -- Taxas (todas as relacionadas)
+    //           LEFT JOIN SPTRANSDBA.TAXAS t ON cp.COD_CANAL = t.COD_CANAL
+    //               AND cp.COD_PRODUTO = t.COD_PRODUTO
 
-              -- Detalhes das taxas
-              LEFT JOIN SPTRANSDBA.TAXAS_ADMINISTRATIVA ta ON t.ID_TAXA = ta.ID_TAXA
-              LEFT JOIN SPTRANSDBA.TAXAS_SERVICO ts ON t.ID_TAXA = ts.ID_TAXA
-              LEFT JOIN SPTRANSDBA.TAXA_SCANAL tc ON cp.COD_CANAL = tc.COD_CANAL
+    //           -- Detalhes das taxas
+    //           LEFT JOIN SPTRANSDBA.TAXAS_ADMINISTRATIVA ta ON t.ID_TAXA = ta.ID_TAXA
+    //           LEFT JOIN SPTRANSDBA.TAXAS_SERVICO ts ON t.ID_TAXA = ts.ID_TAXA
+    //           LEFT JOIN SPTRANSDBA.TAXA_SCANAL tc ON cp.COD_CANAL = tc.COD_CANAL
 
-              -- Canais destino (distribuição)
-              LEFT JOIN SPTRANSDBA.TAXAS_DESTINO td ON t.ID_TAXA = td.ID_TAXA
+    //           -- Canais destino (distribuição)
+    //           LEFT JOIN SPTRANSDBA.TAXAS_DESTINO td ON t.ID_TAXA = td.ID_TAXA
 
-              -- Limites (se existirem)
-              LEFT JOIN SPTRANSDBA.LIMITES_RECARGA lr ON cp.COD_CANAL = lr.COD_CANAL
-                  AND cp.COD_PRODUTO = lr.COD_PRODUTO
+    //           -- Limites (se existirem)
+    //           LEFT JOIN SPTRANSDBA.LIMITES_RECARGA lr ON cp.COD_CANAL = lr.COD_CANAL
+    //               AND cp.COD_PRODUTO = lr.COD_PRODUTO
 
-              WHERE cp.COD_CANAL = :codCanal
-                  AND cp.ST_CANAIS_PRODUTOS = 'A'
+    //           WHERE cp.COD_CANAL = :codCanal
+    //               AND cp.ST_CANAIS_PRODUTOS = 'A'
 
-              ORDER BY
-                  cp.COD_PRODUTO,
-                  t.ID_TAXA,
-                  td.COD_CANALDESTINO
-                  """, nativeQuery = true)
-    List<ProductChannelProjection> findCompletoByCanal(@Param("codCanal") String codCanal);
+    //           ORDER BY
+    //               cp.COD_PRODUTO,
+    //               t.ID_TAXA,
+    //               td.COD_CANALDESTINO
+    //               """, nativeQuery = true)
+    // List<ProductChannelProjection> findCompletoByCanal(@Param("codCanal") String codCanal);
 
     @Query(value = """
             SELECT DISTINCT
@@ -323,8 +323,8 @@ public interface ProductChannelJpaRepository extends JpaRepository<ProductChanne
                 t.COD_PRODUTO,
                 t.DT_INICIAL DESC
                 """, nativeQuery = true)
-    List<ProductChannelProjection> findCompletoByCanalDistrib(
-            @Param("codCanalDistribuicao") Integer codCanalDistribuicao);
+    Page<ProductChannelProjection> findCompletoByCanalDistrib(
+            @Param("codCanalDistribuicao") String codCanalDistribuicao, Pageable pageable);
 
     @Query(value = """
                 SELECT

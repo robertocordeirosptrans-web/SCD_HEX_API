@@ -70,6 +70,18 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
                 });
     }
 
+    @Override
+    public Page<ProductChannelProjection> findCompletoByCanalDistrib(String codCanalDistribuicao, Pageable pageable) {
+        if (codCanalDistribuicao == null || codCanalDistribuicao.isEmpty()) {
+            throw new IllegalArgumentException("codCanalDistribuicao não pode ser nulo ou vazio");
+        }
+        try {
+            return productChannelJpaRepository.findCompletoByCanalDistrib(codCanalDistribuicao, pageable);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("codCanalDistribuicao deve ser um número inteiro", e);
+        }
+    }
+
     public List<ProductChannel> findAvailableProductsByChannel(String codCanal, String stCanaisProdutos,
             String stProdutos) {
         return productChannelJpaRepository
@@ -120,17 +132,7 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
         return productChannelJpaRepository.existsById(productChannelMapper.toEntityKey(id));
     }
 
-    @Override
-    public List<ProductChannelProjection> findCompletoByCanal(String codCanal) {
-        if (codCanal == null || codCanal.isEmpty()) {
-            throw new IllegalArgumentException("codCanal não pode ser nulo ou vazio");
-        }
-        try {
-            return productChannelJpaRepository.findCompletoByCanal(codCanal);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("codCanal deve ser um número inteiro", e);
-        }
-    }
+
 
     @Override
     public Page<ProductChannelProjection> findCompletoByCanal(String codCanal, Pageable pageable) {
@@ -157,6 +159,5 @@ public class ProductChannelAdapterJpa implements ProductChannelPersistencePort {
         List<ChannelByProductProjection> slice = all.subList(start, end);
         return new PageImpl<>(slice, pageable, all.size());
     }
-
 
 }
