@@ -1,0 +1,121 @@
+{
+  "api_version": "v1",
+  "base_url": "http://localhost:8080/api",
+  "module": "creditrequest",
+  "endpoints": [
+    {
+      "id": 1,
+      "controlador": "CreditRequestController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/pedidos/buscar",
+      "descricao": "Busca pedidos com cursor-based pagination e múltiplos filtros",
+      "autenticacao": true,
+      "campos_obrigatorios": [],
+      "campos_opcionais": [
+        "cursor",
+        "limit",
+        "codCanal",
+        "codSituacao",
+        "numLote",
+        "numSolicitacao",
+        "codProduto",
+        "codFormaPagto",
+        "vlTotalMin",
+        "vlTotalMax",
+        "dtInicio",
+        "dtFim",
+        "dtLiberacaoEfetivaInicio",
+        "dtLiberacaoEfetivaFim",
+        "dtPagtoEconomicaInicio",
+        "dtPagtoEconomicaFim",
+        "dtFinanceiraInicio",
+        "dtFinanceiraFim",
+        "dtAlteracaoInicio",
+        "dtAlteracaoFim"
+      ],
+      "exemplo_request": {
+        "cursor": null,
+        "limit": 20,
+        "codCanal": "CANAL001",
+        "codSituacao": "PENDENTE",
+        "numLote": "LOTE001",
+        "numSolicitacao": null,
+        "codProduto": "PROD001",
+        "codFormaPagto": "DEBITO",
+        "vlTotalMin": 100.00,
+        "vlTotalMax": 5000.00,
+        "dtInicio": "2025-01-01T00:00:00",
+        "dtFim": "2025-12-31T23:59:59"
+      },
+      "modos_busca": {
+        "SPECIFIC": "Acionado com numSolicitacao - Retorna máximo 1 registro",
+        "OPERATIONAL": "Padrão - Com filtros operacionais (codCanal, codSituacao, datas)",
+        "ANALYTICAL": "Com múltiplos filtros complexos - Máximo 50 registros por página"
+      }
+    },
+    {
+      "id": 2,
+      "controlador": "CreditRequestController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/pedidos/alterar-status",
+      "descricao": "Altera o status de pedidos (BLOQUEAR, DESBLOQUEAR, CANCELAR, PAGO)",
+      "autenticacao": true,
+      "campos_obrigatorios": [
+        "acao",
+        "pedidosPermitidos"
+      ],
+      "exemplo_request": {
+        "acao": "BLOQUEAR",
+        "codCanal": "CANAL001",
+        "observacao": "Bloqueio para análise",
+        "pedidosPermitidos": [
+          {
+            "numSolicitacao": 1001,
+            "itens": [
+              {
+                "numSolicitacaoItem": 1
+              },
+              {
+                "numSolicitacaoItem": 2
+              }
+            ]
+          }
+        ]
+      },
+      "acoes_disponiveis": [
+        "BLOQUEAR - Requer permissão ALTERAR_STATUS_BLOQ",
+        "DESBLOQUEAR - Requer permissão correspondente",
+        "CANCELAR - Requer permissão ALTERAR_STATUS_CANC",
+        "PAGO - Requer permissão ALTERAR_STATUS_PAGO"
+      ]
+    }
+  ],
+  "resumo": {
+    "total_endpoints": 2,
+    "por_controlador": {
+      "CreditRequestController": 2
+    },
+    "por_metodo": {
+      "POST": 2
+    }
+  },
+  "autenticacao": {
+    "tipo": "Bearer Token",
+    "header": "Authorization: Bearer {token}",
+    "descricao": "Todos os endpoints requerem autenticação via JWT token"
+  },
+  "permissoes": [
+    "BUSCAR - Listar e buscar pedidos",
+    "ALTERAR_STATUS_BLOQ - Bloquear pedidos",
+    "ALTERAR_STATUS_CANC - Cancelar pedidos",
+    "ALTERAR_STATUS_PAGO - Marcar como pago"
+  ],
+  "observacoes": [
+    "Pedidos sem permissão 'sobre canal' ficam restritos ao canal do usuário",
+    "O cursor é opaco e deve ser usado conforme retornado pela API",
+    "Datas devem estar no formato ISO 8601",
+    "nextCursor será null quando não houver mais páginas",
+    "Relatórios podem ser filtrados por até 31 dias",
+    "A API detecta automaticamente o modo de busca baseado nos filtros fornecidos"
+  ]
+}

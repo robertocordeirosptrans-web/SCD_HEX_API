@@ -1,0 +1,115 @@
+{
+  "api_version": "v1",
+  "base_url": "http://localhost:8080/api",
+  "module": "initializedcards",
+  "endpoints": [
+    {
+      "id": 1,
+      "controlador": "RequestInitializedController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/initialized-cards",
+      "descricao": "Cria uma nova solicitação de cartões inicializados",
+      "autenticacao": true,
+      "campos_obrigatorios": [
+        "codTipoCanal",
+        "codCanal",
+        "qtdSolicitada",
+        "flgTipoSaida",
+        "dtPrevistaEntrega"
+      ],
+      "exemplo_request": {
+        "codTipoCanal": "TIPO001",
+        "codCanal": "CANAL001",
+        "codAdquirente": "ADQUIR001",
+        "codProduto": "PROD001",
+        "qtdSolicitada": 500,
+        "flgTipoSaida": "C",
+        "flgTipoVolume": "U",
+        "flgAssociacaoUsuario": "S",
+        "flgGeraArquivo": "S",
+        "flgRespEntregaRetirada": "R",
+        "desNomeRespEntrega": "João Silva",
+        "codTipoDoctoRespEntrega": "CPF",
+        "codDoctoRespEntrega": "12345678900",
+        "codEnderecoEntrega": "END001",
+        "dtPrevistaEntrega": "2025-02-28T00:00:00"
+      }
+    },
+    {
+      "id": 2,
+      "controlador": "RequestInitializedController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/initialized-cards/{codCanal}/{nrSolicitacao}/lotes",
+      "path_parameters": {
+        "codCanal": "CANAL001",
+        "nrSolicitacao": "1001"
+      },
+      "descricao": "Associa lotes a uma solicitação",
+      "autenticacao": true,
+      "campos_obrigatorios": [
+        "idsLotes"
+      ],
+      "exemplo_request": {
+        "idsLotes": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "controlador": "RequestInitializedController",
+      "metodo": "PATCH",
+      "endpoint": "/api/v1/initialized-cards/{codCanal}/{nrSolicitacao}/cancelar",
+      "path_parameters": {
+        "codCanal": "CANAL001",
+        "nrSolicitacao": "1001"
+      },
+      "descricao": "Cancela uma solicitação de cartões inicializados",
+      "autenticacao": true,
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    }
+  ],
+  "resumo": {
+    "total_endpoints": 3,
+    "por_controlador": {
+      "RequestInitializedController": 3
+    },
+    "por_metodo": {
+      "POST": 2,
+      "PATCH": 1
+    }
+  },
+  "autenticacao": {
+    "tipo": "Bearer Token",
+    "header": "Authorization: Bearer {token}",
+    "descricao": "Todos os endpoints requerem autenticação via JWT token"
+  },
+  "campos_opcionais": {
+    "codAdquirente": "Código da adquirente (até 20 caracteres)",
+    "codProduto": "Código do produto (até 20 caracteres)",
+    "flgTipoVolume": "Tipo de volume (até 1 caractere)",
+    "flgAssociacaoUsuario": "Flag associação usuário (até 1 caractere)",
+    "flgGeraArquivo": "Flag gera arquivo (até 1 caractere)",
+    "flgRespEntregaRetirada": "Flag responsável entrega/retirada (até 1 caractere)",
+    "desNomeRespEntrega": "Nome do responsável entrega (até 60 caracteres)",
+    "codTipoDoctoRespEntrega": "Tipo documento responsável (até 3 caracteres)",
+    "codDoctoRespEntrega": "Número documento responsável (até 20 caracteres)",
+    "codEnderecoEntrega": "Código endereço entrega (até 20 caracteres)"
+  },
+  "fluxo_completo": [
+    "1. POST /api/v1/initialized-cards - Criar solicitação",
+    "2. POST /api/v1/initialized-cards/{codCanal}/{nrSolicitacao}/lotes - Associar lotes",
+    "3. PATCH /api/v1/initialized-cards/{codCanal}/{nrSolicitacao}/cancelar - Cancelar se necessário"
+  ],
+  "observacoes": [
+    "dtPrevistaEntrega deve estar em formato ISO 8601",
+    "flgTipoSaida é obrigatório e pode ser 'C' ou outro valor definido",
+    "Lotes devem estar disponíveis para serem associados",
+    "Uma solicitação pode estar em diferentes fases (criação, aprovação, entrega)",
+    "Histórico de solicitações está disponível via GET /initialized-cards/{codCanal}/{nrSolicitacao}/historico",
+    "Lotes disponíveis podem ser consultados via GET /initialized-cards/lotes/disponiveis"
+  ]
+}

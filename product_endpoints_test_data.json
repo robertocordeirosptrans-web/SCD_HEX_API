@@ -1,0 +1,207 @@
+{
+  "api_version": "v1",
+  "base_url": "http://localhost:8080/api",
+  "module": "product",
+  "endpoints": [
+    {
+      "id": 1,
+      "controlador": "ProductController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/product",
+      "descricao": "Cadastra um novo produto",
+      "autenticacao": true,
+      "campos_obrigatorios": [
+        "codProduto",
+        "desProduto",
+        "desEmissorResponsavel",
+        "codTipoProduto",
+        "codTecnologia",
+        "codModalidade",
+        "codFamilia",
+        "codEspecie",
+        "codEntidade",
+        "codClassificacaoPessoa"
+      ],
+      "exemplo_request": {
+        "codProduto": "PROD001",
+        "desProduto": "Cartão de Débito Premium",
+        "desEmissorResponsavel": "Banco X",
+        "desUtilizacao": "Transações de débito em pontos de venda e caixas eletrônicos",
+        "flgBloqFabricacao": "N",
+        "flgBloqVenda": "N",
+        "flgBloqDistribuicao": "N",
+        "flgBloqTroca": "N",
+        "flgBloqAquisicao": "N",
+        "flgBloqPedido": "N",
+        "flgBloqDevolucao": "N",
+        "flgInicializado": "N",
+        "flgComercializado": "N",
+        "flgRestManual": "N",
+        "codEntidade": "ENT001",
+        "codTipoCartao": "DEBITO",
+        "codClassificacaoPessoa": "PF",
+        "codTipoProduto": "TIPO001",
+        "codTecnologia": "TECH001",
+        "codModalidade": "MOD001",
+        "codFamilia": "FAM001",
+        "codEspecie": "ESP001"
+      }
+    },
+    {
+      "id": 2,
+      "controlador": "ProductController",
+      "metodo": "PUT",
+      "endpoint": "/api/v1/product/{codProduto}",
+      "path_parameters": {
+        "codProduto": "PROD001"
+      },
+      "descricao": "Atualiza dados de um produto",
+      "autenticacao": true,
+      "campos_obrigatorios": [
+        "desProduto",
+        "desEmissorResponsavel",
+        "codTipoProduto",
+        "codTecnologia",
+        "codModalidade",
+        "codFamilia",
+        "codEspecie",
+        "codEntidade",
+        "codClassificacaoPessoa"
+      ],
+      "exemplo_request": {
+        "desProduto": "Cartão de Débito Premium Plus",
+        "desEmissorResponsavel": "Banco X",
+        "desUtilizacao": "Transações de débito em pontos de venda, caixas eletrônicos e online",
+        "flgBloqFabricacao": "N",
+        "flgBloqVenda": "N",
+        "flgBloqDistribuicao": "N",
+        "flgBloqTroca": "N",
+        "flgBloqAquisicao": "N",
+        "flgBloqPedido": "N",
+        "flgBloqDevolucao": "N",
+        "flgInicializado": "S",
+        "flgComercializado": "S",
+        "flgRestManual": "N",
+        "codEntidade": "ENT001",
+        "codTipoCartao": "DEBITO",
+        "codClassificacaoPessoa": "PF",
+        "codTipoProduto": "TIPO001",
+        "codTecnologia": "TECH001",
+        "codModalidade": "MOD001",
+        "codFamilia": "FAM001",
+        "codEspecie": "ESP001"
+      }
+    },
+    {
+      "id": 3,
+      "controlador": "ProductController",
+      "metodo": "PATCH",
+      "endpoint": "/api/v1/product/{codProduto}/activate",
+      "path_parameters": {
+        "codProduto": "PROD001"
+      },
+      "descricao": "Ativa um produto",
+      "autenticacao": true,
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    },
+    {
+      "id": 4,
+      "controlador": "ProductController",
+      "metodo": "PATCH",
+      "endpoint": "/api/v1/product/{codProduto}/inactivate",
+      "path_parameters": {
+        "codProduto": "PROD001"
+      },
+      "descricao": "Inativa um produto",
+      "autenticacao": true,
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    },
+    {
+      "id": 5,
+      "controlador": "ProductController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/product/{codProduto}/versions",
+      "path_parameters": {
+        "codProduto": "PROD001"
+      },
+      "descricao": "Cria uma nova versão para um produto",
+      "autenticacao": true,
+      "campos_obrigatorios": [
+        "desProdutoVersoes"
+      ],
+      "exemplo_request": {
+        "codProduto": "PROD001",
+        "codVersao": "V001",
+        "desProdutoVersoes": "Versão inicial do produto",
+        "dtValidade": "2026-12-31T23:59:59",
+        "dtVidaInicio": "2025-01-01T00:00:00",
+        "dtVidaFim": "2026-12-31T23:59:59",
+        "dtLiberacao": "2025-01-01T00:00:00",
+        "dtLancamento": "2025-01-15T00:00:00",
+        "dtVendaInicio": "2025-01-15T00:00:00",
+        "dtVendaFim": "2026-12-31T23:59:59",
+        "dtUsoInicio": "2025-02-01T00:00:00",
+        "dtUsoFim": "2026-12-31T23:59:59",
+        "dtTrocaInicio": "2025-01-01T00:00:00",
+        "dtTrocaFim": "2026-12-31T23:59:59",
+        "flgBloqAquisicao": "N",
+        "flgBloqDevolucao": "N",
+        "flgBloqDistribuicao": "N",
+        "flgBloqFabricacao": "N",
+        "flgBloqPedido": "N",
+        "flgBloqTroca": "N",
+        "flgBloqVenda": "N",
+        "idUsuarioCadastro": 1,
+        "idUsuarioManutencao": 1,
+        "stProdutosVersoes": "A"
+      }
+    }
+  ],
+  "resumo": {
+    "total_endpoints": 5,
+    "por_controlador": {
+      "ProductController": 5
+    },
+    "por_metodo": {
+      "POST": 2,
+      "PUT": 1,
+      "PATCH": 2
+    }
+  },
+  "autenticacao": {
+    "tipo": "Bearer Token",
+    "header": "Authorization: Bearer {token}",
+    "descricao": "Todos os endpoints requerem autenticação via JWT token e papel ADMIN"
+  },
+  "permissoes": [
+    "PRO_CADPRO - Cadastrar produtos",
+    "PRO_LISPRO - Listar produtos",
+    "PRO_BUSPROPORCOD - Buscar produto por código",
+    "PRO_ATUPRO - Atualizar produtos",
+    "PRO_ATIPRO - Ativar produtos",
+    "PRO_INAPRO - Inativar produtos"
+  ],
+  "flags_validas": {
+    "bloqueio": ["S", "N"],
+    "inicializado": ["S", "N"],
+    "comercializado": ["S", "N"],
+    "restManual": ["S", "N"]
+  },
+  "fluxo_completo": [
+    "1. POST /api/v1/product - Criar produto",
+    "2. POST /api/v1/product/{codProduto}/versions - Criar versão do produto",
+    "3. PATCH /api/v1/product/{codProduto}/activate - Ativar produto",
+    "4. PUT /api/v1/product/{codProduto} - Atualizar produto conforme necessário",
+    "5. PATCH /api/v1/product/{codProduto}/inactivate - Inativar quando desejado"
+  ],
+  "observacoes": [
+    "Todos os códigos (codTipoProduto, codTecnologia, etc) devem ser válidos no sistema",
+    "Datas devem estar em formato ISO 8601 (YYYY-MM-DDTHH:MM:SS)",
+    "Flags devem ser 'S' (Sim) ou 'N' (Não)",
+    "Um produto pode ter múltiplas versões ao longo do tempo",
+    "O versionamento permite rastrear mudanças no produto",
+    "Requer permissão de ADMIN para criar/atualizar produtos"
+  ]
+}

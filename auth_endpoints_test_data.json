@@ -1,0 +1,251 @@
+{
+  "api_version": "v1",
+  "base_url": "http://localhost:8080/api",
+  "module": "auth",
+  "endpoints": [
+    {
+      "id": 1,
+      "controlador": "AuthController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/auth/login",
+      "descricao": "Autentica o usuário e retorna tokens JWT",
+      "autenticacao": false,
+      "campos_obrigatorios": [
+        "login",
+        "password"
+      ],
+      "exemplo_request": {
+        "login": "usuario1",
+        "password": "SenhaForte123"
+      }
+    },
+    {
+      "id": 2,
+      "controlador": "AuthController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/auth/logout",
+      "descricao": "Invalida a sessão atual do usuário",
+      "autenticacao": true,
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    },
+    {
+      "id": 3,
+      "controlador": "AuthController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/auth/change-password",
+      "descricao": "Permite ao usuário autenticado trocar sua própria senha",
+      "autenticacao": true,
+      "campos_obrigatorios": [
+        "senhaAtual",
+        "novaSenha"
+      ],
+      "exemplo_request": {
+        "senhaAtual": "SenhaAntiga123",
+        "novaSenha": "NovaSenha456"
+      }
+    },
+    {
+      "id": 4,
+      "controlador": "AuthController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/auth/change-expired-password",
+      "descricao": "Permite ao usuário trocar senha expirada usando reset_token",
+      "autenticacao": false,
+      "campos_obrigatorios": [
+        "user_id",
+        "current_password",
+        "new_password"
+      ],
+      "exemplo_request": {
+        "user_id": "1",
+        "current_password": "SenhaExpirada123",
+        "new_password": "NovaSenha456"
+      }
+    },
+    {
+      "id": 5,
+      "controlador": "AuthController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/auth/refresh-token",
+      "descricao": "Renova tokens usando o refresh token",
+      "autenticacao": false,
+      "campos_obrigatorios": [
+        "refreshToken"
+      ],
+      "exemplo_request": {
+        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      }
+    },
+    {
+      "id": 6,
+      "controlador": "AuthController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/auth/recovery-password",
+      "descricao": "Solicita recuperação de senha por email",
+      "autenticacao": false,
+      "campos_obrigatorios": [
+        "email"
+      ],
+      "exemplo_request": {
+        "email": "usuario@example.com"
+      }
+    },
+    {
+      "id": 7,
+      "controlador": "UserController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/users",
+      "descricao": "Cria um novo usuário no sistema (requer ADMIN)",
+      "autenticacao": true,
+      "campos_obrigatorios": [
+        "codLogin",
+        "codSenha",
+        "nomUsuario",
+        "desEndereco",
+        "codCpf",
+        "codRg",
+        "nomEmail",
+        "codClassificacaoPessoa",
+        "codEmpresa",
+        "dtJornadaIni",
+        "dtJornadaFim",
+        "numDiasSemanasPermitidos"
+      ],
+      "exemplo_request": {
+        "codLogin": "user123",
+        "codSenha": "SenhaForte123",
+        "nomUsuario": "João Silva",
+        "desEndereco": "Rua Principal, 123",
+        "nomDepartamento": "TI",
+        "nomCargo": "Analista",
+        "nomFuncao": "Desenvolvedor",
+        "codCpf": "12345678900",
+        "codRg": "123456789",
+        "nomEmail": "joao.silva@example.com",
+        "codClassificacaoPessoa": "PF",
+        "codEmpresa": "EMP001",
+        "dtJornadaIni": "2025-01-01T08:00:00",
+        "dtJornadaFim": "2025-01-01T17:00:00",
+        "numDiasSemanasPermitidos": "1111100"
+      }
+    },
+    {
+      "id": 8,
+      "controlador": "UserController",
+      "metodo": "PUT",
+      "endpoint": "/api/v1/users/{idUsuario}",
+      "path_parameters": {
+        "idUsuario": "1"
+      },
+      "descricao": "Atualiza dados de um usuário",
+      "autenticacao": true,
+      "campos_obrigatorios": [],
+      "exemplo_request": {
+        "nomUsuario": "João Silva Santos",
+        "desEndereco": "Rua Principal, 456",
+        "nomDepartamento": "TI",
+        "nomCargo": "Analista Sênior",
+        "codCpf": "12345678900",
+        "codRg": "123456789",
+        "nomFuncao": "Desenvolvedor",
+        "numTelefone": 1133334444,
+        "nomEmail": "joao.silva@example.com",
+        "codEmpresa": "EMP001",
+        "codClassificacaoPessoa": "PF",
+        "dt_jornada_ini": "2025-01-01T08:00:00",
+        "dt_jornada_fim": "2025-01-01T18:00:00"
+      }
+    },
+    {
+      "id": 9,
+      "controlador": "UserController",
+      "metodo": "PATCH",
+      "endpoint": "/api/v1/users/{idUsuario}/deactivate",
+      "path_parameters": {
+        "idUsuario": "1"
+      },
+      "descricao": "Desativa um usuário (status = INATIVO)",
+      "autenticacao": true,
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    },
+    {
+      "id": 10,
+      "controlador": "UserController",
+      "metodo": "PATCH",
+      "endpoint": "/api/v1/users/{idUsuario}/activate",
+      "path_parameters": {
+        "idUsuario": "1"
+      },
+      "descricao": "Ativa um usuário (status = ATIVO)",
+      "autenticacao": true,
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    },
+    {
+      "id": 11,
+      "controlador": "UserController",
+      "metodo": "PATCH",
+      "endpoint": "/api/v1/users/{idUsuario}/block",
+      "path_parameters": {
+        "idUsuario": "1"
+      },
+      "descricao": "Bloqueia um usuário (status = BLOQUEADO)",
+      "autenticacao": true,
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    },
+    {
+      "id": 12,
+      "controlador": "UserController",
+      "metodo": "PATCH",
+      "endpoint": "/api/v1/users/{idUsuario}/unblock",
+      "path_parameters": {
+        "idUsuario": "1"
+      },
+      "descricao": "Desbloqueia um usuário",
+      "autenticacao": true,
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    },
+    {
+      "id": 13,
+      "controlador": "UserController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/users/{idUsuario}/reset-password",
+      "path_parameters": {
+        "idUsuario": "1"
+      },
+      "descricao": "Reset administrativo de senha (requer RESET_PASSWORD)",
+      "autenticacao": true,
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    }
+  ],
+  "resumo": {
+    "total_endpoints": 13,
+    "por_controlador": {
+      "AuthController": 6,
+      "UserController": 7
+    },
+    "por_metodo": {
+      "POST": 7,
+      "PUT": 1,
+      "PATCH": 5
+    }
+  },
+  "autenticacao": {
+    "tipo": "Bearer Token",
+    "header": "Authorization: Bearer {token}",
+    "descricao": "Endpoints com autenticacao=true requerem JWT token no header Authorization"
+  },
+  "observacoes": [
+    "Login e logout criam/revogam sessões rastreadas com IP e User-Agent",
+    "O refresh token é rotacionado a cada uso",
+    "Senhas temporárias são geradas com reset administrativo",
+    "Usuários com status BLOQUEADO não conseguem fazer login",
+    "A jornada deve estar no formato ISO 8601 (YYYY-MM-DDTHH:MM:SS)",
+    "numDiasSemanasPermitidos é um padrão de 7 caracteres (0 ou 1) representando seg-dom"
+  ]
+}

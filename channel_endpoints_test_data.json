@@ -1,0 +1,512 @@
+{
+  "api_version": "v1",
+  "base_url": "http://localhost:8080/api",
+  "module": "channel",
+  "endpoints": [
+    {
+      "id": 1,
+      "controlador": "AddressChannelController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/address-channels",
+      "descricao": "Cadastra um novo endereço do canal",
+      "campos_obrigatorios": [
+        "codEndereco",
+        "desLogradouro",
+        "codCanalId"
+      ],
+      "exemplo_request": {
+        "codEndereco": "END001",
+        "codEmpregador": "EMP001",
+        "desLogradouro": "Rua Principal, 123",
+        "codFornecedor": "FORN001",
+        "codTipoEndereco": "TIPO001",
+        "codCEP": "01310100",
+        "desBairro": "Centro",
+        "desCidade": "São Paulo",
+        "desUF": "SP",
+        "numDDD": 11,
+        "numFone": 32215555,
+        "numFax": 32215556,
+        "desObs": "Endereço principal",
+        "stEnderecos": "A",
+        "desNumero": "123",
+        "codCanalId": "CANAL001"
+      }
+    },
+    {
+      "id": 2,
+      "controlador": "AddressChannelController",
+      "metodo": "PUT",
+      "endpoint": "/api/v1/address-channels/{codEndereco}",
+      "path_parameters": {
+        "codEndereco": "END001"
+      },
+      "descricao": "Atualiza dados de um endereço do canal",
+      "campos_obrigatorios": [
+        "desLogradouro",
+        "codCanal"
+      ],
+      "exemplo_request": {
+        "codEmpregador": "EMP001",
+        "desLogradouro": "Rua Principal, 456",
+        "codFornecedor": "FORN001",
+        "codTipoEndereco": "TIPO001",
+        "codCEP": "01310100",
+        "desBairro": "Centro",
+        "desCidade": "São Paulo",
+        "desUF": "SP",
+        "numDDD": 11,
+        "numFone": 32215555,
+        "numFax": 32215556,
+        "desObs": "Endereço principal atualizado",
+        "stEnderecos": "A",
+        "desNumero": "456",
+        "codCanal": "CANAL001"
+      }
+    },
+    {
+      "id": 3,
+      "controlador": "AgreementValidityController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/agreement-validities",
+      "descricao": "Cadastra uma nova vigência de convênio",
+      "campos_obrigatorios": [
+        "codCanal",
+        "codProduto",
+        "dtFimValidade",
+        "dtInicioValidade",
+        "codStatus"
+      ],
+      "exemplo_request": {
+        "codCanal": "CANAL001",
+        "codProduto": "PROD001",
+        "dtFimValidade": "2025-12-31T23:59:59",
+        "dtInicioValidade": "2025-01-01T00:00:00",
+        "codStatus": "A"
+      }
+    },
+    {
+      "id": 4,
+      "controlador": "AgreementValidityController",
+      "metodo": "PUT",
+      "endpoint": "/api/v1/agreement-validities/{codCanal}/{codProduto}",
+      "path_parameters": {
+        "codCanal": "CANAL001",
+        "codProduto": "PROD001"
+      },
+      "descricao": "Atualiza uma vigência de convênio",
+      "campos_obrigatorios": [
+        "dtFimValidade",
+        "codStatus"
+      ],
+      "exemplo_request": {
+        "dtFimValidade": "2026-12-31T23:59:59",
+        "codStatus": "A"
+      }
+    },
+    {
+      "id": 5,
+      "controlador": "ContactChannelController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/contact-channels",
+      "descricao": "Cadastra um novo contato do canal",
+      "campos_obrigatorios": [
+        "codContato",
+        "desContato",
+        "codCanal"
+      ],
+      "exemplo_request": {
+        "codContato": "CON001",
+        "codFornecedor": "FORN001",
+        "codEmpregador": "EMP001",
+        "desContato": "João Silva",
+        "desEmailContato": "joao.silva@example.com",
+        "numDDD": 11,
+        "numFone": 987654321,
+        "numFoneRamal": 100,
+        "numFax": 32215556,
+        "numFaxRamal": 101,
+        "stEntidadeContato": "P",
+        "desComentarios": "Contato principal",
+        "codTipoDocumento": "CPF",
+        "codDocumento": "12345678900",
+        "codCanal": "CANAL001"
+      }
+    },
+    {
+      "id": 6,
+      "controlador": "ContactChannelController",
+      "metodo": "PUT",
+      "endpoint": "/api/v1/contact-channels/{codContato}",
+      "path_parameters": {
+        "codContato": "CON001"
+      },
+      "descricao": "Atualiza dados de um contato do canal",
+      "campos_obrigatorios": [
+        "desContato",
+        "codCanal"
+      ],
+      "exemplo_request": {
+        "codFornecedor": "FORN001",
+        "codEmpregador": "EMP001",
+        "desContato": "João Silva Santos",
+        "desEmailContato": "joao.silva@example.com",
+        "numDDD": 11,
+        "numFone": 987654321,
+        "numFoneRamal": 100,
+        "numFax": 32215556,
+        "numFaxRamal": 101,
+        "stEntidadeContato": "P",
+        "desComentarios": "Contato atualizado",
+        "codTipoDocumento": "CPF",
+        "codDocumento": "12345678900",
+        "codCanal": "CANAL001"
+      }
+    },
+    {
+      "id": 7,
+      "controlador": "MarketingDistribuitionChannelController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/marketing-distribuition-channels",
+      "descricao": "Cadastra um novo canal de comercialização/distribuição",
+      "campos_obrigatorios": [
+        "codCanalComercializacao",
+        "codCanalDistribuicao",
+        "codStatus"
+      ],
+      "exemplo_request": {
+        "codCanalComercializacao": "COM001",
+        "codCanalDistribuicao": "DIST001",
+        "codStatus": "A"
+      }
+    },
+    {
+      "id": 8,
+      "controlador": "MarketingDistribuitionChannelController",
+      "metodo": "PUT",
+      "endpoint": "/api/v1/marketing-distribuition-channels/{codCanalComercializacao}/{codCanalDistribuicao}",
+      "path_parameters": {
+        "codCanalComercializacao": "COM001",
+        "codCanalDistribuicao": "DIST001"
+      },
+      "descricao": "Atualiza um canal de comercialização/distribuição",
+      "campos_obrigatorios": [
+        "codStatus"
+      ],
+      "exemplo_request": {
+        "codStatus": "I"
+      }
+    },
+    {
+      "id": 9,
+      "controlador": "ProductChannelController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/product-channels",
+      "descricao": "Cadastra um novo canal de produto",
+      "campos_obrigatorios": [
+        "codCanal",
+        "codProduto",
+        "qtdLimiteComercializacao",
+        "qtdMinimaEstoque",
+        "qtdMaximaEstoque",
+        "qtdMinimaRessuprimento",
+        "qtdMaximaRessuprimento",
+        "codOrgaoEmissor",
+        "vlFace",
+        "codStatus",
+        "codConvenio",
+        "codTipoOperHM",
+        "flgCarac"
+      ],
+      "exemplo_request": {
+        "codCanal": "CANAL001",
+        "codProduto": "PROD001",
+        "qtdLimiteComercializacao": 10000,
+        "qtdMinimaEstoque": 100,
+        "qtdMaximaEstoque": 5000,
+        "qtdMinimaRessuprimento": 500,
+        "qtdMaximaRessuprimento": 2000,
+        "codOrgaoEmissor": 1,
+        "vlFace": 50,
+        "codStatus": "A",
+        "codConvenio": 1,
+        "codTipoOperHM": 1,
+        "flgCarac": "S"
+      }
+    },
+    {
+      "id": 10,
+      "controlador": "ProductChannelController",
+      "metodo": "PUT",
+      "endpoint": "/api/v1/product-channels/{codCanal}/{codProduto}",
+      "path_parameters": {
+        "codCanal": "CANAL001",
+        "codProduto": "PROD001"
+      },
+      "descricao": "Atualiza um canal de produto",
+      "campos_obrigatorios": [
+        "qtdLimiteComercializacao",
+        "qtdMinimaEstoque",
+        "qtdMaximaEstoque",
+        "qtdMinimaRessuprimento",
+        "qtdMaximaRessuprimento",
+        "codOrgaoEmissor",
+        "vlFace",
+        "codStatus",
+        "codConvenio",
+        "codTipoOperHM",
+        "flgCarac"
+      ],
+      "exemplo_request": {
+        "qtdLimiteComercializacao": 15000,
+        "qtdMinimaEstoque": 150,
+        "qtdMaximaEstoque": 6000,
+        "qtdMinimaRessuprimento": 600,
+        "qtdMaximaRessuprimento": 2500,
+        "codOrgaoEmissor": 1,
+        "vlFace": 50,
+        "codStatus": "A",
+        "codConvenio": 1,
+        "codTipoOperHM": 1,
+        "flgCarac": "N"
+      }
+    },
+    {
+      "id": 11,
+      "controlador": "RechargeLimitController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/recharge-limits",
+      "descricao": "Cadastra um novo limite de recarga",
+      "campos_obrigatorios": [
+        "codCanal",
+        "codProduto",
+        "dtInicioValidade",
+        "dtFimValidade",
+        "vlMinimoRecarga",
+        "vlMaximoRecarga",
+        "vlMaximoSaldo",
+        "codStatus"
+      ],
+      "exemplo_request": {
+        "codCanal": "CANAL001",
+        "codProduto": "PROD001",
+        "dtInicioValidade": "2025-01-01T00:00:00",
+        "dtFimValidade": "2025-12-31T23:59:59",
+        "vlMinimoRecarga": 10.00,
+        "vlMaximoRecarga": 500.00,
+        "vlMaximoSaldo": 1000.00,
+        "codStatus": "A"
+      }
+    },
+    {
+      "id": 12,
+      "controlador": "RechargeLimitController",
+      "metodo": "PUT",
+      "endpoint": "/api/v1/recharge-limits/{codCanal}/{codProduto}",
+      "path_parameters": {
+        "codCanal": "CANAL001",
+        "codProduto": "PROD001"
+      },
+      "descricao": "Atualiza um limite de recarga",
+      "campos_obrigatorios": [
+        "dtInicioValidade",
+        "dtFimValidade",
+        "vlMinimoRecarga",
+        "vlMaximoRecarga",
+        "vlMaximoSaldo",
+        "codStatus"
+      ],
+      "exemplo_request": {
+        "dtInicioValidade": "2025-01-01T00:00:00",
+        "dtFimValidade": "2026-12-31T23:59:59",
+        "vlMinimoRecarga": 15.00,
+        "vlMaximoRecarga": 600.00,
+        "vlMaximoSaldo": 1500.00,
+        "codStatus": "A"
+      }
+    },
+    {
+      "id": 13,
+      "controlador": "SalesChannelController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/sales-channels",
+      "descricao": "Cadastra um novo canal de venda",
+      "campos_obrigatorios": [
+        "codCanal",
+        "desCanal",
+        "vlCaucao"
+      ],
+      "exemplo_request": {
+        "codCanal": "CANAL001",
+        "codDocumento": "12345678000100",
+        "codCanalSuperior": null,
+        "desCanal": "Canal Principal de Vendas",
+        "codTipoDocumento": "CNPJ",
+        "desRazaoSocial": "Empresa Comercial Ltda",
+        "desNomeFantasia": "Loja Principal",
+        "vlCaucao": 5000.00,
+        "dtInicioCaucao": "2025-01-01",
+        "dtFimCaucao": "2026-12-31",
+        "seqNivel": 1,
+        "flgCriticaNumlote": "S",
+        "flgLimiteDias": 30,
+        "flgProcessamentoAutomatico": "S",
+        "flgProcessamentoParcial": "S",
+        "flgSaldoDevedor": "N",
+        "numMinutoIniLibRecarga": 0,
+        "numMinutoFimLibRecarga": 1440,
+        "flgEmiteReciboPedido": "S",
+        "flgSupercanal": "N",
+        "flgPagtoFuturo": "S",
+        "codClassificacaoPessoa": "CLASSIF001",
+        "codAtividade": "ATIV001"
+      }
+    },
+    {
+      "id": 14,
+      "controlador": "SalesChannelController",
+      "metodo": "PUT",
+      "endpoint": "/api/v1/sales-channels/{codCanal}",
+      "path_parameters": {
+        "codCanal": "CANAL001"
+      },
+      "descricao": "Atualiza dados de um canal de venda",
+      "campos_obrigatorios": [
+        "desCanal"
+      ],
+      "exemplo_request": {
+        "codCanalSuperior": null,
+        "desCanal": "Canal Principal de Vendas - Atualizado",
+        "desRazaoSocial": "Empresa Comercial Ltda - Atualizada",
+        "desNomeFantasia": "Loja Principal - Matriz",
+        "vlCaucao": 7500.00,
+        "dtInicioCaucao": "2025-01-01",
+        "dtFimCaucao": "2027-12-31",
+        "seqNivel": 1,
+        "flgCriticaNumlote": "S",
+        "flgLimiteDias": 45,
+        "flgProcessamentoAutomatico": "S",
+        "flgProcessamentoParcial": "S",
+        "flgSaldoDevedor": "N",
+        "numMinutoIniLibRecarga": 0,
+        "numMinutoFimLibRecarga": 1440,
+        "flgEmiteReciboPedido": "S",
+        "flgSupercanal": "N",
+        "flgPagtoFuturo": "S",
+        "codClassificacaoPessoa": "CLASSIF001",
+        "codAtividade": "ATIV001"
+      }
+    },
+    {
+      "id": 15,
+      "controlador": "SalesChannelController",
+      "metodo": "PATCH",
+      "endpoint": "/api/v1/sales-channels/{codCanal}/activate",
+      "path_parameters": {
+        "codCanal": "CANAL001"
+      },
+      "descricao": "Ativa um canal de venda",
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    },
+    {
+      "id": 16,
+      "controlador": "SalesChannelController",
+      "metodo": "PATCH",
+      "endpoint": "/api/v1/sales-channels/{codCanal}/inactivate",
+      "path_parameters": {
+        "codCanal": "CANAL001"
+      },
+      "descricao": "Inativa um canal de venda",
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    },
+    {
+      "id": 17,
+      "controlador": "TypesActivityController",
+      "metodo": "POST",
+      "endpoint": "/api/v1/types-activities",
+      "descricao": "Cadastra um novo tipo de atividade",
+      "campos_obrigatorios": [
+        "codAtividade",
+        "desAtividade"
+      ],
+      "exemplo_request": {
+        "codAtividade": "ATIV001",
+        "desAtividade": "Comércio Atacadista"
+      }
+    },
+    {
+      "id": 18,
+      "controlador": "TypesActivityController",
+      "metodo": "PUT",
+      "endpoint": "/api/v1/types-activities/{codAtividade}",
+      "path_parameters": {
+        "codAtividade": "ATIV001"
+      },
+      "descricao": "Atualiza dados de um tipo de atividade",
+      "campos_obrigatorios": [
+        "desAtividade"
+      ],
+      "exemplo_request": {
+        "desAtividade": "Comércio Atacadista e Varejista"
+      }
+    },
+    {
+      "id": 19,
+      "controlador": "TypesActivityController",
+      "metodo": "PATCH",
+      "endpoint": "/api/v1/types-activities/{codAtividade}/activate",
+      "path_parameters": {
+        "codAtividade": "ATIV001"
+      },
+      "descricao": "Ativa um tipo de atividade",
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    },
+    {
+      "id": 20,
+      "controlador": "TypesActivityController",
+      "metodo": "PATCH",
+      "endpoint": "/api/v1/types-activities/{codAtividade}/inactivate",
+      "path_parameters": {
+        "codAtividade": "ATIV001"
+      },
+      "descricao": "Inativa um tipo de atividade",
+      "campos_obrigatorios": [],
+      "exemplo_request": {}
+    }
+  ],
+  "resumo": {
+    "total_endpoints": 20,
+    "por_controlador": {
+      "AddressChannelController": 2,
+      "AgreementValidityController": 2,
+      "ContactChannelController": 2,
+      "MarketingDistribuitionChannelController": 2,
+      "ProductChannelController": 2,
+      "RechargeLimitController": 2,
+      "SalesChannelController": 4,
+      "TypesActivityController": 4
+    },
+    "por_metodo": {
+      "POST": 8,
+      "PUT": 8,
+      "PATCH": 4
+    }
+  },
+  "autenticacao": {
+    "tipo": "Bearer Token",
+    "header": "Authorization: Bearer {token}",
+    "descricao": "Todos os endpoints requerem autenticação via JWT token no header Authorization"
+  },
+  "observacoes": [
+    "Os valores @NotBlank indicam campos obrigatórios que não podem ser vazios",
+    "Os valores @NotNull indicam campos obrigatórios que não podem ser nulos",
+    "Os valores @Size indicam restrições de tamanho máximo de caracteres",
+    "Os paths com {} são parâmetros que devem ser substituídos por valores reais",
+    "Os métodos PATCH para activate/inactivate não requerem body",
+    "Respostas bem-sucedidas retornam status 201 para POST, 200 para PUT e 204 para PATCH",
+    "Os valores de status podem variar conforme a entidade (ex: 'A' para Ativo, 'I' para Inativo)"
+  ]
+}

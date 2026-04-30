@@ -1,0 +1,191 @@
+{
+  "projeto": "SCD_HEX_API",
+  "data_geracao": "2025-04-30",
+  "versao_api": "v1",
+  "resumo_geral": {
+    "total_modulos": 5,
+    "total_endpoints_post": 18,
+    "total_endpoints_put": 10,
+    "total_endpoints_patch": 11,
+    "total_endpoints_modificacao": 39
+  },
+  "modulos": [
+    {
+      "nome": "channel",
+      "descricao": "Gerenciamento de canais de venda, endereços, contatos, produtos e vigências",
+      "arquivo": "channel_endpoints_test_data.json",
+      "endpoints": {
+        "post": 8,
+        "put": 8,
+        "patch": 4,
+        "total": 20
+      },
+      "controladores": [
+        "AddressChannelController",
+        "AgreementValidityController",
+        "ContactChannelController",
+        "MarketingDistribuitionChannelController",
+        "ProductChannelController",
+        "RechargeLimitController",
+        "SalesChannelController",
+        "TypesActivityController"
+      ]
+    },
+    {
+      "nome": "auth",
+      "descricao": "Autenticação, gerenciamento de usuários, sessões e permissões",
+      "arquivo": "auth_endpoints_test_data.json",
+      "endpoints": {
+        "post": 7,
+        "put": 1,
+        "patch": 5,
+        "total": 13
+      },
+      "controladores": [
+        "AuthController",
+        "UserController"
+      ]
+    },
+    {
+      "nome": "creditrequest",
+      "descricao": "Gerenciamento de pedidos de crédito, busca e alteração de status",
+      "arquivo": "creditrequest_endpoints_test_data.json",
+      "endpoints": {
+        "post": 2,
+        "put": 0,
+        "patch": 0,
+        "total": 2
+      },
+      "controladores": [
+        "CreditRequestController"
+      ]
+    },
+    {
+      "nome": "initializedcards",
+      "descricao": "Gerenciamento de solicitações de cartões inicializados e lotes",
+      "arquivo": "initializedcards_endpoints_test_data.json",
+      "endpoints": {
+        "post": 2,
+        "put": 0,
+        "patch": 1,
+        "total": 3
+      },
+      "controladores": [
+        "RequestInitializedController"
+      ]
+    },
+    {
+      "nome": "product",
+      "descricao": "Gerenciamento de produtos, versões e configurações",
+      "arquivo": "product_endpoints_test_data.json",
+      "endpoints": {
+        "post": 2,
+        "put": 1,
+        "patch": 2,
+        "total": 5
+      },
+      "controladores": [
+        "ProductController"
+      ]
+    }
+  ],
+  "estatisticas_por_tipo": {
+    "POST": {
+      "total": 21,
+      "descricao": "Criar novos recursos"
+    },
+    "PUT": {
+      "total": 10,
+      "descricao": "Atualizar recursos existentes"
+    },
+    "PATCH": {
+      "total": 12,
+      "descricao": "Alterações parciais (status, ativação, etc)"
+    }
+  },
+  "autenticacao_geral": {
+    "tipo": "JWT Bearer Token",
+    "header": "Authorization: Bearer {token}",
+    "descricao": "Todos os endpoints (exceto login e recovery) requerem JWT token válido",
+    "endpoints_publicos": [
+      "POST /api/v1/auth/login",
+      "POST /api/v1/auth/recovery-password",
+      "POST /api/v1/auth/refresh-token"
+    ]
+  },
+  "estrutura_arquivos": {
+    "channel_endpoints_test_data.json": {
+      "modulo": "channel",
+      "endpoints": 20,
+      "tamanho_estimado": "~15 KB",
+      "campos_exemplo": 150
+    },
+    "auth_endpoints_test_data.json": {
+      "modulo": "auth",
+      "endpoints": 13,
+      "tamanho_estimado": "~8 KB",
+      "campos_exemplo": 85
+    },
+    "creditrequest_endpoints_test_data.json": {
+      "modulo": "creditrequest",
+      "endpoints": 2,
+      "tamanho_estimado": "~4 KB",
+      "campos_exemplo": 30
+    },
+    "initializedcards_endpoints_test_data.json": {
+      "modulo": "initializedcards",
+      "endpoints": 3,
+      "tamanho_estimado": "~3 KB",
+      "campos_exemplo": 25
+    },
+    "product_endpoints_test_data.json": {
+      "modulo": "product",
+      "endpoints": 5,
+      "tamanho_estimado": "~6 KB",
+      "campos_exemplo": 45
+    }
+  },
+  "guia_utilizacao": [
+    "1. Abrir o arquivo JSON correspondente ao módulo desejado",
+    "2. Localizar o endpoint desejado por controlador ou método HTTP",
+    "3. Utilizar os dados de exemplo para realizar testes",
+    "4. Campos obrigatórios são indicados em 'campos_obrigatorios'",
+    "5. Campos opcionais estão em 'campos_opcionais' ou 'exemplo_request'",
+    "6. Path parameters devem ser substituídos nos valores reais",
+    "7. Usar o token Bearer obtido em /auth/login para autenticação"
+  ],
+  "fluxos_principais": {
+    "autenticacao": [
+      "1. POST /api/v1/auth/login - Obter token",
+      "2. Usar token em Authorization header para demais requisições",
+      "3. POST /api/v1/auth/refresh-token - Renovar token antes de expirar"
+    ],
+    "criar_canal": [
+      "1. POST /api/v1/sales-channels - Criar canal de venda",
+      "2. POST /api/v1/product-channels - Associar produtos ao canal",
+      "3. POST /api/v1/agreement-validities - Definir vigência do convênio",
+      "4. POST /api/v1/recharge-limits - Definir limites de recarga"
+    ],
+    "solicitar_cartoes": [
+      "1. POST /api/v1/initialized-cards - Criar solicitação",
+      "2. POST /api/v1/initialized-cards/{codCanal}/{nrSolicitacao}/lotes - Associar lotes",
+      "3. GET histórico para acompanhar status"
+    ]
+  },
+  "observacoes_importantes": [
+    "Todos os timestamps devem usar formato ISO 8601 (YYYY-MM-DDTHH:MM:SS)",
+    "Permissões variam conforme o perfil do usuário",
+    "Muitos endpoints requerem chaves de autorização específicas (ex: CadPermissions)",
+    "Dados de exemplo incluem valores válidos para testes",
+    "Campos com @NotBlank são obrigatórios e não podem estar vazios",
+    "Campos com @NotNull são obrigatórios e não podem ser nulos",
+    "Flags geralmente aceitam apenas 'S' (Sim) ou 'N' (Não)",
+    "IDs de usuário e sessão são gerenciados automaticamente pelo sistema"
+  ],
+  "proximas_analises": [
+    "Adicionar mais controllers conforme necessário",
+    "Incluir exemplos de respostas (status codes e JSON response)",
+    "Documentar melhor as permissões necessárias por endpoint",
+    "Criar exemplos de integração com ferramentas como Postman/Insomnia"
+  ]
+}
