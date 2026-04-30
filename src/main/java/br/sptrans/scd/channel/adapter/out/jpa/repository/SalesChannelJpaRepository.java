@@ -103,7 +103,7 @@ public interface SalesChannelJpaRepository extends JpaRepository<SalesChannelEnt
         @Query("SELECT c FROM SalesChannelEntityJpa c WHERE c.codCanalSuperior = :codCanalSuperior")
         List<SalesChannelEntityJpa> findByCodCanalSuperior(String codCanalSuperior);
 
-        @Query(value = "SELECT COD_CANAL as codCanal, DES_CANAL as desCanal, COD_CANAL_SUPERIOR as codCanalSuperior, ST_CANAIS as stCanal FROM SPTRANSDBA.CANAIS WHERE COD_CANAL_SUPERIOR = :codCanalSuperior", countQuery = "SELECT COUNT(1) FROM SPTRANSDBA.CANAIS WHERE COD_CANAL_SUPERIOR = :codCanalSuperior", nativeQuery = true)
+        @Query(value = "SELECT COD_CANAL as codCanal, DES_CANAL as desCanal, COD_CANAL_SUPERIOR as codCanalSuperior, ST_CANAIS as stCanal, SEQ_NIVEL as seqNivel FROM SPTRANSDBA.CANAIS WHERE COD_CANAL_SUPERIOR = :codCanalSuperior", countQuery = "SELECT COUNT(1) FROM SPTRANSDBA.CANAIS WHERE COD_CANAL_SUPERIOR = :codCanalSuperior", nativeQuery = true)
         Page<SubSalesChannelProjection> findSubChannelsByCodCanalSuperior(
                         @Param("codCanalSuperior") String codCanalSuperior, Pageable pageable);
 

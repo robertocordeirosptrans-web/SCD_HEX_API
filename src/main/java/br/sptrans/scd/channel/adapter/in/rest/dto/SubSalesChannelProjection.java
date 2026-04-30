@@ -5,5 +5,6 @@ public interface SubSalesChannelProjection {
     String getDesCanal();
     String getCodCanalSuperior();
     String getStCanal();
+    String getSeqNivel();
     // Adicione outros getters conforme os campos necessários da tabela CANAIS
 }
