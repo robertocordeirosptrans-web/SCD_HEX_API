@@ -2,15 +2,17 @@ package br.sptrans.scd.channel.adapter.out.persistence.entity;
 
 import java.time.LocalDateTime;
 
+import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 
 @Entity
 @Table(name = "ENTIDADE_CONTATO", schema = "SPTRANSDBA")
@@ -68,12 +70,15 @@ public class ContactChannelEntityJpa {
     @Column(name = "DT_MANUTENCAO")
     private LocalDateTime dtManutencao;
 
-    @Column(name = "ID_USUARIO_MANUTENCAO")
-    private Long idUsuarioManutencao;
+    @ManyToOne
+    @JoinColumn(name = "ID_USUARIO_MANUTENCAO", referencedColumnName = "ID_USUARIO")
+    private UserEntityJpa usuarioManutencao;
 
-    @Column(name = "ID_USUARIO_CADASTRO")
-    private Long idUsuarioCadastro;
+    @ManyToOne
+    @JoinColumn(name = "ID_USUARIO_CADASTRO", referencedColumnName = "ID_USUARIO")
+    private UserEntityJpa usuarioCadastro;
 
-    @Column(name = "COD_CANAL", length = 20)
-    private String codCanal;
+    @ManyToOne
+    @JoinColumn(name = "COD_CANAL", referencedColumnName = "COD_CANAL")
+    private SalesChannelEntityJpa canal;
 }

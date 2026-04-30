@@ -18,6 +18,7 @@ public record AddressChannelResponseDTO(
         String desObs,
         String stEnderecos,
         String desNumero,
+        Integer codSeq,
         LocalDateTime dtCadastro,
         LocalDateTime dtManutencao,
         // Canal info (flattened)
