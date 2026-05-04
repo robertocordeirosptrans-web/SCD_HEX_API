@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import br.sptrans.scd.product.adapter.out.jpa.mapper.ProductVersionMapper;
 import br.sptrans.scd.product.adapter.out.jpa.repository.ProductVersionJpaRepository;
+import br.sptrans.scd.product.adapter.out.persistence.entity.ProductVersionId;
 import br.sptrans.scd.product.application.port.out.repository.ProductVersionPort;
 import br.sptrans.scd.product.domain.ProductVersion;
 import lombok.RequiredArgsConstructor;
@@ -24,12 +25,24 @@ public class ProductVersionAdapterJpa implements ProductVersionPort {
 
     @Override
     public Optional<ProductVersion> findById(String codVersao) {
-        return repository.findById(codVersao)
+        // Busca por codVersao como String - mantém compatibilidade
+        // Nota: Se houver múltiplas versões com o mesmo código para diferentes produtos,
+        // este método retornará uma delas arbitrariamente. Idealmente, use findByVersionAndProduct.
+        return repository.findAll().stream()
+                .filter(e -> codVersao.equals(e.getCodVersao()))
+                .findFirst()
+                .map(productVersionMapper::toDomain);
+    }
+
+    public Optional<ProductVersion> findByVersionAndProduct(String codVersao, String codProduto) {
+        ProductVersionId id = new ProductVersionId(codVersao, codProduto);
+        return repository.findById(id)
                 .map(productVersionMapper::toDomain);
     }
 
     public boolean existsById(String codVersao) {
-        return repository.existsById(codVersao);
+        return repository.findAll().stream()
+                .anyMatch(e -> codVersao.equals(e.getCodVersao()));
     }
 
     public List<ProductVersion> findAll(String codStatus) {
@@ -47,25 +60,33 @@ public class ProductVersionAdapterJpa implements ProductVersionPort {
     @Override
     public ProductVersion save(ProductVersion version) {
         var entity = productVersionMapper.toEntity(version);
+        // Cria a chave composta se não existir
+        if (entity.getId() == null) {
+            entity.setId(new ProductVersionId(version.getCodVersao(), version.getCodProduto()));
+        }
         var saved = repository.save(entity);
         return productVersionMapper.toDomain(saved);
     }
 
     @Override
     public void updateStatus(String codVersao, String codStatus, Long idUsuario) {
-        repository.findById(codVersao).ifPresent(entity -> {
-            entity.setFlgBloqFabricacao(codStatus);
-            if (idUsuario != null) {
-                UserEntityJpa userRef = new UserEntityJpa();
-                userRef.setIdUsuario(idUsuario);
-                entity.setUsuarioManutencao(userRef);
-            }
-            repository.save(entity);
-        });
+        repository.findAll().stream()
+                .filter(e -> codVersao.equals(e.getCodVersao()))
+                .findFirst()
+                .ifPresent(entity -> {
+                    entity.setFlgBloqFabricacao(codStatus);
+                    if (idUsuario != null) {
+                        UserEntityJpa userRef = new UserEntityJpa();
+                        userRef.setIdUsuario(idUsuario);
+                        entity.setUsuarioManutencao(userRef);
+                    }
+                    repository.save(entity);
+                });
     }
 
-    public void deleteById(String codVersao) {
-        repository.deleteById(codVersao);
+    public void deleteById(String codVersao, String codProduto) {
+        ProductVersionId id = new ProductVersionId(codVersao, codProduto);
+        repository.deleteById(id);
     }
 
     @Override

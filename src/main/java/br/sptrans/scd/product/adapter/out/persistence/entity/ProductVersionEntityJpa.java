@@ -5,9 +5,9 @@ import java.time.LocalDateTime;
 
 import br.sptrans.scd.auth.adapter.out.persistence.entity.UserEntityJpa;
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -25,13 +25,14 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProductVersionEntityJpa {
 
-    @Id
-    @NotNull
-    @Column(name = "COD_VERSAO", nullable = false, length = 20)
+    @EmbeddedId
+    private ProductVersionId id;
+
+    // Campos de leitura para manter compatibilidade com código existente
+    @Column(name = "COD_VERSAO", nullable = false, length = 20, insertable = false, updatable = false)
     private String codVersao;
 
-    @NotNull
-    @Column(name = "COD_PRODUTO", length = 20)
+    @Column(name = "COD_PRODUTO", nullable = false, length = 20, insertable = false, updatable = false)
     private String codProduto;
 
     @Column(name = "DT_VALIDADE")
