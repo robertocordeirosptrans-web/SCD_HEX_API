@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.channel.domain.SalesChannel;
 import br.sptrans.scd.initializedcards.application.port.in.HistRequestInitializedUseCase;
 import br.sptrans.scd.initializedcards.application.port.in.RequestInitializedUseCase;
@@ -26,6 +27,7 @@ import br.sptrans.scd.initializedcards.domain.enums.StatusSolicitacao;
 import br.sptrans.scd.initializedcards.domain.enums.TipoSaida;
 import br.sptrans.scd.shared.exception.ResourceNotFoundException;
 import br.sptrans.scd.shared.exception.ValidationException;
+import br.sptrans.scd.shared.helper.UserResolverHelper;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,6 +39,7 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
     private final HistRequestInitializedRepository histRequestInitializedRepository;
     private final RequestLotSCPRepository requestLotSCPRepository;
     private final TbLotRepository tbLotRepository;
+    private final UserResolverHelper userResolverHelper;
 
     // ── Criar ──────────────────────────────────────────────────────────────────
 
@@ -83,7 +86,7 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
         solicitacao.setFlgFaseSolicitacao(FaseSolicitacao.CADASTRADA.getCode());
 
         if (command.idUsuarioCadastro() != null) {
-            br.sptrans.scd.auth.domain.User usuario = new br.sptrans.scd.auth.domain.User();
+            User usuario = new User();
             usuario.setIdUsuario(command.idUsuarioCadastro());
             solicitacao.setIdUsuarioCadastro(usuario);
         }
@@ -182,7 +185,7 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
             lotSCP.setDtCadastro(agora);
 
             if (command.idUsuario() != null) {
-                br.sptrans.scd.auth.domain.User usuario = new br.sptrans.scd.auth.domain.User();
+                User usuario = new User();
                 usuario.setIdUsuario(command.idUsuario());
                 lotSCP.setIdUsuarioCadastro(usuario);
             }
@@ -194,7 +197,7 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
         solicitacao.setDtAssociacaoLoteSCP(agora);
         solicitacao.setDtManutencao(agora);
         if (command.idUsuario() != null) {
-            br.sptrans.scd.auth.domain.User usuario = new br.sptrans.scd.auth.domain.User();
+            User usuario = new User();
             usuario.setIdUsuario(command.idUsuario());
             solicitacao.setIdUsuarioManutencao(usuario);
         }
@@ -217,7 +220,7 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
         solicitacao.setDtAssociacaoLoteSCP(null);
         solicitacao.setDtManutencao(agora);
         if (command.idUsuario() != null) {
-            br.sptrans.scd.auth.domain.User usuario = new br.sptrans.scd.auth.domain.User();
+            User usuario = new User();
             usuario.setIdUsuario(command.idUsuario());
             solicitacao.setIdUsuarioManutencao(usuario);
         }
@@ -246,7 +249,7 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
         solicitacao.setDtCancelamento(agora);
         solicitacao.setDtManutencao(agora);
         if (command.idUsuario() != null) {
-            br.sptrans.scd.auth.domain.User usuario = new br.sptrans.scd.auth.domain.User();
+            User usuario = new User();
             usuario.setIdUsuario(command.idUsuario());
             solicitacao.setIdUsuarioManutencao(usuario);
         }
@@ -316,8 +319,36 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
         hist.setStSolicitaCartaoInicializad(solicitacao.getStSolicitaCartaoInicializad());
         hist.setDtCadastro(LocalDateTime.now());
         hist.setDtCancelamento(solicitacao.getDtCancelamento());
-        hist.setIdUsuarioCadastro(solicitacao.getIdUsuarioCadastro());
-        hist.setIdUsuarioManutencao(solicitacao.getIdUsuarioManutencao());
+        
+        // Resolve o ID do usuário de cadastro: primeiro tenta usar o da solicitação, senão resolve do token
+        if (solicitacao.getIdUsuarioCadastro() != null && solicitacao.getIdUsuarioCadastro().getIdUsuario() != null) {
+            User usuarioCadastro = new User();
+            usuarioCadastro.setIdUsuario(solicitacao.getIdUsuarioCadastro().getIdUsuario());
+            hist.setIdUsuarioCadastro(usuarioCadastro);
+        } else {
+            // Se não tiver usuário de cadastro, resolve do token autenticado
+            Long idUsuarioAutenticado = userResolverHelper.getCurrentUserId();
+            if (idUsuarioAutenticado != null) {
+                User usuarioCadastro = new User();
+                usuarioCadastro.setIdUsuario(idUsuarioAutenticado);
+                hist.setIdUsuarioCadastro(usuarioCadastro);
+            }
+        }
+        
+        // Resolve o ID do usuário de manutenção: primeiro tenta usar o da solicitação, senão resolve do token
+        if (solicitacao.getIdUsuarioManutencao() != null && solicitacao.getIdUsuarioManutencao().getIdUsuario() != null) {
+            User usuarioManutencao = new User();
+            usuarioManutencao.setIdUsuario(solicitacao.getIdUsuarioManutencao().getIdUsuario());
+            hist.setIdUsuarioManutencao(usuarioManutencao);
+        } else {
+            // Se não tiver usuário de manutenção, resolve do token autenticado
+            Long idUsuarioAutenticado = userResolverHelper.getCurrentUserId();
+            if (idUsuarioAutenticado != null) {
+                User usuarioManutencao = new User();
+                usuarioManutencao.setIdUsuario(idUsuarioAutenticado);
+                hist.setIdUsuarioManutencao(usuarioManutencao);
+            }
+        }
 
         histRequestInitializedRepository.save(hist);
     }
