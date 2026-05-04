@@ -34,12 +34,19 @@ public class SpeciesService extends AbstractCatalogueService<Species, String, Sp
 
     @Override
     public Species create(CreateSpeciesCommand command) {
-        if (speciesRepository.existsById(command.codEspecie())) {
+        var usuario = userResolverHelper.resolve(command.idUsuario());
+        
+        // Gerar código automaticamente se estiver vazio ou for "0"
+        String codEspecie = command.codEspecie();
+        if (codEspecie == null || codEspecie.trim().isEmpty() || "0".equals(codEspecie)) {
+            Long maxCode = speciesRepository.findMaxNumericCode();
+            codEspecie = String.valueOf(maxCode + 1);
+        } else if (speciesRepository.existsById(codEspecie)) {
             throw new ProductException(ProductErrorType.SPECIES_CODE_ALREADY_EXISTS);
         }
-        var usuario = userResolverHelper.resolve(command.idUsuario());
+        
         Species entity = new Species();
-        entity.setId(command.codEspecie());
+        entity.setId(codEspecie);
         entity.setDesEspecie(command.desEspecie());
         entity.setActive(true);
         entity.setIdUsuarioCadastro(usuario);

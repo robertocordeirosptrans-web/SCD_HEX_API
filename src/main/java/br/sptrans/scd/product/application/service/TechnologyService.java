@@ -33,12 +33,19 @@ public class TechnologyService extends
 
     @Override
     public Technology create(CreateTechnologyCommand command) {
-        if (technologyRepository.existsById(command.codTecnologia())) {
+        var usuario = userResolverHelper.resolve(command.idUsuario());
+        
+        // Gerar código automaticamente se estiver vazio ou for "0"
+        String codTecnologia = command.codTecnologia();
+        if (codTecnologia == null || codTecnologia.trim().isEmpty() || "0".equals(codTecnologia)) {
+            Long maxCode = technologyRepository.findMaxNumericCode();
+            codTecnologia = String.valueOf(maxCode + 1);
+        } else if (technologyRepository.existsById(codTecnologia)) {
             throw new ProductException(ProductErrorType.TECHNOLOGY_CODE_ALREADY_EXISTS);
         }
-        var usuario = userResolverHelper.resolve(command.idUsuario());
+        
         Technology entity = new Technology();
-        entity.setId(command.codTecnologia());
+        entity.setId(codTecnologia);
         entity.setDesTecnologia(command.desTecnologia());
         entity.setActive(true);
         entity.setIdUsuarioCadastro(usuario);

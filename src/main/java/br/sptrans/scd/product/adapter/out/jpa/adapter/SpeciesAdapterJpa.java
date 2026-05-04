@@ -80,6 +80,8 @@ public class SpeciesAdapterJpa implements SpeciesPort {
         repository.deleteById(codEspecie);
     }
 
-
-
+    @Override
+    public Long findMaxNumericCode() {
+        return repository.findMaxNumericCode();
+    }
 }

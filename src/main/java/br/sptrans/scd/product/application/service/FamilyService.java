@@ -32,12 +32,19 @@ public class FamilyService extends
 
     @Override
     public Family create(CreateFamilyCommand command) {
-        if (familyRepository.existsById(command.codFamilia())) {
-            throw new RuntimeException("Família já existe");
-        }
         var usuario = userResolverHelper.resolve(command.idUsuario());
+        
+        // Gerar código automaticamente se estiver vazio ou for "0"
+        String codFamilia = command.codFamilia();
+        if (codFamilia == null || codFamilia.trim().isEmpty() || "0".equals(codFamilia)) {
+            Long maxCode = familyRepository.findMaxNumericCode();
+            codFamilia = String.valueOf(maxCode + 1);
+        } else if (familyRepository.existsById(codFamilia)) {
+            throw new ProductException(ProductErrorType.FAMILY_CODE_ALREADY_EXISTS);
+        }
+        
         Family entity = new Family();
-        entity.setId(command.codFamilia());
+        entity.setId(codFamilia);
         entity.setDesFamilia(command.desFamilia());
         entity.setActive(true);
         entity.setIdUsuarioCadastro(usuario);

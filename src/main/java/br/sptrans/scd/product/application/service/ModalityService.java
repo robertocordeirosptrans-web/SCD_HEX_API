@@ -34,12 +34,19 @@ public class ModalityService extends AbstractCatalogueService<Modality, String, 
 
     @Override
     public Modality create(CreateModalityCommand command) {
-        if (modalityRepository.existsById(command.codModalidade())) {
+        var usuario = userResolverHelper.resolve(command.idUsuario());
+        
+        // Gerar código automaticamente se estiver vazio ou for "0"
+        String codModalidade = command.codModalidade();
+        if (codModalidade == null || codModalidade.trim().isEmpty() || "0".equals(codModalidade)) {
+            Long maxCode = modalityRepository.findMaxNumericCode();
+            codModalidade = String.valueOf(maxCode + 1);
+        } else if (modalityRepository.existsById(codModalidade)) {
             throw new ProductException(ProductErrorType.MODALITY_CODE_ALREADY_EXISTS);
         }
-        var usuario = userResolverHelper.resolve(command.idUsuario());
+        
         Modality entity = new Modality();
-        entity.setId(command.codModalidade());
+        entity.setId(codModalidade);
         entity.setDesModalidade(command.desModalidade());
         entity.setActive(true);
         entity.setIdUsuarioCadastro(usuario);

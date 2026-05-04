@@ -79,6 +79,11 @@ public class ProductsTypeAdapterJpa implements ProductsTypePort {
     public void deleteById(String codTipoProduto) {
         repository.deleteById(codTipoProduto);
     }
+
+    @Override
+    public Long findMaxNumericCode() {
+        return repository.findMaxNumericCode();
+    }
 }
 
 

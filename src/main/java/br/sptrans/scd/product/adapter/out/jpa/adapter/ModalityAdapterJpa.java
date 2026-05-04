@@ -79,6 +79,11 @@ public class ModalityAdapterJpa implements ModalityPort {
     public void deleteById(String codModalidade) {
         repository.deleteById(codModalidade);
     }
+
+    @Override
+    public Long findMaxNumericCode() {
+        return repository.findMaxNumericCode();
+    }
 }
 
 

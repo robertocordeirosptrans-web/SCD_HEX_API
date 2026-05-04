@@ -16,4 +16,10 @@ public interface ProductsTypePort {
     ProductType save(ProductType tiposProdutos);
     void updateStatus(String codTipoProduto, String codStatus, Long idUsuario);
     void deleteById(String codTipoProduto);
+
+    /**
+     * Encontra o máximo código tipo produto numérico para auto-incremento.
+     * Retorna 0 se nenhum código numérico existir.
+     */
+    Long findMaxNumericCode();
 }

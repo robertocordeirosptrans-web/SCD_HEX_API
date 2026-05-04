@@ -2,7 +2,10 @@ package br.sptrans.scd.product.domain;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import br.sptrans.scd.auth.domain.User;
+import br.sptrans.scd.product.adapter.in.rest.deserializer.ModalityDeserializer;
 import br.sptrans.scd.product.domain.enums.ProductDomainStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,6 +16,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonDeserialize(using = ModalityDeserializer.class)
 public class Modality implements CatalogueEntity<String> {
 
     private String codModalidade;

@@ -56,12 +56,12 @@ public class ModalityController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<CatalogueDTO> createModality(
-            @Valid @RequestBody ModalityRequest request) {
+            @Valid @RequestBody(required = false) ModalityRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Modality modality = modalityManagementUseCase.create(
             new CreateModalityCommand(
-                request.codModalidade(),
-                request.desModalidade(),
+                null,
+                request != null ? request.desModalidade() : "Nova Modalidade",
                 idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(catalogueMapper.toDto(modality));
     }

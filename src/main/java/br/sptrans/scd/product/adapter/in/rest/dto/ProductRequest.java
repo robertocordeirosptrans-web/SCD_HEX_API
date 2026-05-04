@@ -1,10 +1,6 @@
 package br.sptrans.scd.product.adapter.in.rest.dto;
 
-import java.util.Date;
-
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -17,11 +13,8 @@ public record ProductRequest(
         @NotBlank(message = "Código modalidade é obrigatório") @Size(min = 1, max = 20, message = "Código modalidade deve ter até 20 caracteres") String codModalidade,
         @NotBlank(message = "Código família é obrigatório") @Size(min = 1, max = 20, message = "Código família deve ter até 20 caracteres") String codFamilia,
         @NotBlank(message = "Código espécie é obrigatório") @Size(min = 1, max = 20, message = "Código espécie deve ter até 20 caracteres") String codEspecie,
-        @NotNull(message = "Data é obrigatória") Date dtCadastro,
-        @NotNull(message = "Data é obrigatória") Date dtManutencao,
-        // Relacionamentos com ID Long
-        @NotNull(message = "ID usuário cadastro é obrigatório") @Min(value = 1, message = "ID usuário cadastro deve ser maior que 0") Long idUsuarioCadastro,
-        @NotNull(message = "ID usuário manutenção é obrigatório") @Min(value = 1, message = "ID usuário manutenção deve ser maior que 0") Long idUsuarioManutencao,
+
+
         // Campos diretos
         @NotBlank(message = "Descrição do produto é obrigatória") @Size(min = 3, max = 100, message = "Descrição deve ter entre 3 e 100 caracteres") String desProduto,
         @NotBlank(message = "Descrição emissor responsável é obrigatória") @Size(max = 100, message = "Descrição emissor não pode exceder 100 caracteres") String desEmissorResponsavel,

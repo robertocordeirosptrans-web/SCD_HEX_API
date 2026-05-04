@@ -16,4 +16,10 @@ public interface SpeciesPort {
     Species save(Species especies);
     void updateStatus(String codEspecie, String codStatus, Long idUsuario);
     void deleteById(String codEspecie);
+
+    /**
+     * Encontra o máximo código espécie numérico para auto-incremento.
+     * Retorna 0 se nenhum código numérico existir.
+     */
+    Long findMaxNumericCode();
 }

@@ -56,12 +56,12 @@ public class ProductsTypeController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<CatalogueDTO> createProductsType(
-            @Valid @RequestBody ProductTypesRequest request) {
+            @Valid @RequestBody(required = false) ProductTypesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         ProductType productType = productsTypeManagementUseCase.create(
             new CreateProductsTypeCommand(
-                request.codTipoProduto(),
-                request.desTipoProduto(),
+                null,
+                request != null ? request.desTipoProduto() : "Novo Tipo de Produto",
                 idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(catalogueMapper.toDto(productType));
     }

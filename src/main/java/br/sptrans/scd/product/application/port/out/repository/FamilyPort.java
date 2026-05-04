@@ -14,4 +14,10 @@ public interface FamilyPort {
     Family save(Family family);
     void updateStatus(String codFamilia, String codStatus, Long idUsuario);
     void deleteById(String codFamilia);
+
+    /**
+     * Encontra o máximo código família numérico para auto-incremento.
+     * Retorna 0 se nenhum código numérico existir.
+     */
+    Long findMaxNumericCode();
 }

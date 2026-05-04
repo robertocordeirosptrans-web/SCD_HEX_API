@@ -60,4 +60,9 @@ public class FamilyAdapterJpa implements FamilyPort {
     public void deleteById(String codFamilia) {
         repository.deleteById(codFamilia);
     }
+
+    @Override
+    public Long findMaxNumericCode() {
+        return repository.findMaxNumericCode();
+    }
 }

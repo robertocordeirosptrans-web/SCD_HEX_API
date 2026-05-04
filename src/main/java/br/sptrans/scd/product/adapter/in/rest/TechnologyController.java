@@ -35,6 +35,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(ApiVersionConfig.API_V1_PATH + "/technologies")
@@ -55,12 +56,12 @@ public class TechnologyController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<CatalogueDTO> createTechnology(
-            @RequestBody TechnologyRequest request) {
+            @Valid @RequestBody(required = false) TechnologyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Technology technology = technologyManagementUseCase.create(
-            new CreateTechnologyCommand(
-                request.codTecnologia(),
-                request.desTecnologia(),
+                new CreateTechnologyCommand(
+                    null,
+                    request != null ? request.desTecnologia() : "Nova Tecnologia",
                 idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(catalogueMapper.toDto(technology));
     }
@@ -74,10 +75,10 @@ public class TechnologyController {
     })
     public ResponseEntity<CatalogueDTO> updateTechnology(
             @PathVariable String codTecnologia,
-            @RequestBody TechnologyRequest request) {
+            @Valid @RequestBody(required = false) TechnologyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Technology technology = technologyManagementUseCase.update(codTecnologia,
-            new UpdateTechnologyCommand(request.desTecnologia(), idUsuario));
+            new UpdateTechnologyCommand(request != null ? request.desTecnologia() : "Nova Tecnologia", idUsuario));
         return ResponseEntity.ok(catalogueMapper.toDto(technology));
     }
 

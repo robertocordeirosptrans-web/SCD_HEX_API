@@ -79,4 +79,9 @@ public class TechnologyAdapterJpa implements TechnologyPort {
     public void deleteById(String codTecnologia) {
         repository.deleteById(codTecnologia);
     }
+
+    @Override
+    public Long findMaxNumericCode() {
+        return repository.findMaxNumericCode();
+    }
 }

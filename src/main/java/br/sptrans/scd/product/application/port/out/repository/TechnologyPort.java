@@ -16,4 +16,10 @@ public interface TechnologyPort {
     Technology save(Technology tecnologia);
     void updateStatus(String codTecnologia, String codStatus, Long idUsuario);
     void deleteById(String codTecnologia);
+
+    /**
+     * Encontra o máximo código tecnologia numérico para auto-incremento.
+     * Retorna 0 se nenhum código numérico existir.
+     */
+    Long findMaxNumericCode();
 }

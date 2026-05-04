@@ -4,10 +4,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 
 import br.sptrans.scd.product.adapter.out.persistence.entity.TechnologyEntityJpa;
 
 public interface TechnologyJpaRepository extends JpaRepository<TechnologyEntityJpa, String>, JpaSpecificationExecutor<TechnologyEntityJpa>{
 
     Page<TechnologyEntityJpa> findByCodStatus(String codStatus, Pageable pageable);
+    /**
+     * Encontra o máximo código tecnologia numérico para auto-incremento.
+     * Retorna 0 se nenhum código numérico existir.
+     */
+    @Query(value = "SELECT COALESCE(MAX(TO_NUMBER(COD_TECNOLOGIA)), 0) FROM SPTRANSDBA.TECNOLOGIAS WHERE REGEXP_LIKE(COD_TECNOLOGIA, '^[0-9]+$')", nativeQuery = true)
+    Long findMaxNumericCode();
 }

@@ -1,6 +1,7 @@
 package br.sptrans.scd.product.application.service;
 
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -34,16 +35,23 @@ public class ProductsTypeService extends AbstractCatalogueService<ProductType, S
 
     @Override
     public ProductType create(CreateProductsTypeCommand command) {
-        if (productsTypeRepository.existsById(command.codTipoProduto())) {
+        var usuario = userResolverHelper.resolve(command.idUsuario());
+        
+        // Gerar código automaticamente se estiver vazio ou for "0"
+        String codTipoProduto = command.codTipoProduto();
+        if (codTipoProduto == null || codTipoProduto.trim().isEmpty() || "0".equals(codTipoProduto)) {
+            Long maxCode = productsTypeRepository.findMaxNumericCode();
+            codTipoProduto = String.valueOf(maxCode + 1);
+        } else if (productsTypeRepository.existsById(codTipoProduto)) {
             throw new ProductException(ProductErrorType.PRODUCTS_TYPE_CODE_ALREADY_EXISTS);
         }
-        var usuario = userResolverHelper.resolve(command.idUsuario());
+        
         ProductType entity = new ProductType();
-        entity.setId(command.codTipoProduto());
+        entity.setId(codTipoProduto);
         entity.setDesTipoProduto(command.desTipoProduto());
         entity.setActive(true);
         entity.setIdUsuarioCadastro(usuario);
-        entity.setDtCadastro(java.time.LocalDateTime.now());
+        entity.setDtCadastro(LocalDateTime.now());
 
         auditLogger.info("[AUDIT] Usuário {} criou TipoProduto {} - {}", usuario.getCodLogin(), entity.getId(), entity.getDesTipoProduto());
         return productsTypeRepository.save(entity);

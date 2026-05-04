@@ -23,4 +23,10 @@ public interface ModalityPort {
     void updateStatus(String codModalidade, String codStatus, Long idUsuario);
 
     void deleteById(String codModalidade);
+
+    /**
+     * Encontra o máximo código modalidade numérico para auto-incremento.
+     * Retorna 0 se nenhum código numérico existir.
+     */
+    Long findMaxNumericCode();
 }

@@ -56,12 +56,12 @@ public class SpeciesController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<CatalogueDTO> createSpecies(
-            @Valid @RequestBody SpeciesRequest request) {
+            @Valid @RequestBody(required = false) SpeciesRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Species species = speciesManagementUseCase.create(
                 new CreateSpeciesCommand(
-                        request.codEspecie(),
-                        request.desEspecie(),
+                    null,
+                    request != null ? request.desEspecie() : "Nova Espécie",
                         idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(catalogueMapper.toDto(species));
     }

@@ -56,12 +56,12 @@ public class FamilyController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<CatalogueDTO> createFamily(
-            @Valid @RequestBody FamilyRequest request) {
+            @Valid @RequestBody(required = false) FamilyRequest request) {
         Long idUsuario = userResolverHelper.getCurrentUserId();
         Family family = familyManagementUseCase.create(
             new CreateFamilyCommand(
-                request.codFamilia(),
-                request.desFamilia(),
+                null,
+                request != null ? request.desFamilia() : "Nova Família",
                 idUsuario));
         return ResponseEntity.status(HttpStatus.CREATED).body(catalogueMapper.toDto(family));
     }
