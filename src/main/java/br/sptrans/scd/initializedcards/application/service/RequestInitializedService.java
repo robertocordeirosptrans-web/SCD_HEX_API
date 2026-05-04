@@ -202,6 +202,9 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
             solicitacao.setIdUsuarioManutencao(usuario);
         }
 
+        // Atualizar status dos lotes para 1 (associado)
+        tbLotRepository.updateStatusByIds(command.idsLotes(), "1");
+
         RequestInitializedCards saved = requestInitializedRepository.save(solicitacao);
         salvarHistorico(saved);
     }
@@ -213,7 +216,20 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
         RequestInitializedCards solicitacao = buscarPorId(command.codCanal(), command.nrSolicitacao());
         validarStatusAtiva(solicitacao);
 
+        // Buscar os IDs dos lotes associados antes de deletar
+        List<RequestLotSCP> lotes =
+                requestLotSCPRepository.findAllBySolicitacao(command.codCanal(), command.nrSolicitacao());
+        List<Long> idsLotes = lotes.stream()
+                .filter(l -> l.getId() != null)
+                .map(l -> l.getId().getIdLote())
+                .collect(Collectors.toList());
+
         requestLotSCPRepository.deleteAllBySolicitacao(command.codCanal(), command.nrSolicitacao());
+
+        // Atualizar status dos lotes para 2 (desassociado)
+        if (!idsLotes.isEmpty()) {
+            tbLotRepository.updateStatusByIds(idsLotes, "2");
+        }
 
         LocalDateTime agora = LocalDateTime.now();
         solicitacao.setFlgFaseSolicitacao(FaseSolicitacao.CADASTRADA.getCode());
@@ -262,8 +278,8 @@ public class RequestInitializedService implements RequestInitializedUseCase, His
 
     @Override
     @Transactional(readOnly = true)
-    public List<TbLotSCD> buscarLotesDisponiveis(String sortBy) {
-        return tbLotRepository.findDisponiveis(sortBy);
+    public Page<TbLotSCD> buscarLotesDisponiveis(Long codTipoCartao, Pageable pageable) {
+        return tbLotRepository.findDisponiveis(codTipoCartao, pageable);
     }
 
     // ── Histórico (HistRequestInitializedUseCase) ─────────────────────────────

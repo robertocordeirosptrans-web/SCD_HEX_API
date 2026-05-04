@@ -172,15 +172,14 @@ public class RequestInitializedController {
 
     @Operation(summary = "Buscar lotes disponíveis para associação")
     @GetMapping("/lotes/disponiveis")
-    public ResponseEntity<List<LoteDisponivelResponse>> buscarLotesDisponiveis(
-            @RequestParam(required = false, defaultValue = "idLote") String sortBy) {
+    public ResponseEntity<PageResponse<LoteDisponivelResponse>> buscarLotesDisponiveis(
+            @RequestParam(required = true) Long codTipoCartao,
+            @PageableDefault(size = 20) Pageable pageable) {
 
-        List<LoteDisponivelResponse> lotes = useCase.buscarLotesDisponiveis(sortBy)
-                .stream()
-                .map(LoteDisponivelResponse::fromDomain)
-                .collect(Collectors.toList());
+        Page<LoteDisponivelResponse> page = useCase.buscarLotesDisponiveis(codTipoCartao, pageable)
+                .map(LoteDisponivelResponse::fromDomain);
 
-        return ResponseEntity.ok(lotes);
+        return ResponseEntity.ok(PageResponse.fromPage(page));
     }
 }
 

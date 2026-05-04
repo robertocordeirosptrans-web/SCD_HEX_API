@@ -32,7 +32,7 @@ public interface RequestInitializedUseCase {
 
         void cancelarSolicitacao(CancelarCommand command);
 
-        List<TbLotSCD> buscarLotesDisponiveis(String sortBy);
+        Page<TbLotSCD> buscarLotesDisponiveis(Long codTipoCartao, Pageable pageable);
 
         // ── Comandos ──────────────────────────────────────────────────────────────
 
