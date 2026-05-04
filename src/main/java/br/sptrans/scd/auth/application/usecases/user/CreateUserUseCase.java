@@ -7,12 +7,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import br.sptrans.scd.auth.application.port.in.UserManagementUseCase;
+import br.sptrans.scd.auth.application.port.out.ClassificationPersonPort;
 import br.sptrans.scd.auth.application.port.out.UserCommandPort;
 import br.sptrans.scd.auth.application.port.out.UserQueryPort;
+import br.sptrans.scd.auth.domain.ClassificationPerson;
 import br.sptrans.scd.auth.domain.User;
 import br.sptrans.scd.auth.domain.enums.UserStatus;
 import br.sptrans.scd.shared.cache.InvalidateUserCache;
 import br.sptrans.scd.shared.exception.DuplicateResourceException;
+import br.sptrans.scd.shared.exception.ResourceNotFoundException;
 import br.sptrans.scd.shared.helper.LogSanitizer;
 import br.sptrans.scd.shared.security.PasswordHashUtil;
 import jakarta.transaction.Transactional;
@@ -38,6 +41,7 @@ public class CreateUserUseCase {
 
     private final UserQueryPort userReader;
     private final UserCommandPort userWriter;
+    private final ClassificationPersonPort classificationPersonPort;
 
     /**
      * Cria novo usuário com senha temporária.
@@ -54,12 +58,23 @@ public class CreateUserUseCase {
     @InvalidateUserCache
     public User createUser(UserManagementUseCase.CreateUserCommand command) {
         log.info("Criando novo usuário. Login: {}", LogSanitizer.maskLogin(command.codLogin()));
-        
+
         // Valida COD_LOGIN único
         if (userReader.existsByLogin(command.codLogin())) {
             log.warn("Tentativa de criação com login duplicado");
             throw new DuplicateResourceException("Login", "codLogin", command.codLogin());
         }
+
+        // Busca e valida ClassificationPerson
+        ClassificationPerson classification = command.codClassificacaoPessoa();
+
+        ClassificationPerson fullClassification = classificationPersonPort
+                .findById(classification.getCodClassificacaoPessoa())
+                .orElseThrow(() -> {
+                    log.warn("Classificação de pessoa não encontrada: {}", classification.getCodClassificacaoPessoa());
+                    return new ResourceNotFoundException("ClassificationPerson", "codClassificacaoPessoa",
+                            classification.getCodClassificacaoPessoa());
+                });
 
         // Gera hash da senha temporária
         String passwordHash = PasswordHashUtil.hashBcrypt(TEMP_PASSWORD);
@@ -69,6 +84,13 @@ public class CreateUserUseCase {
         user.setCodLogin(command.codLogin().trim().toLowerCase());
         user.setNomUsuario(command.nomUsuario().trim());
         user.setNomEmail(command.nomEmail().trim());
+        user.setDesEndereco(command.desEndereco().trim());
+        user.setNomDepartamento(command.nomDepartamento().trim());
+        user.setNomCargo(command.nomCargo().trim());
+        user.setNomFuncao(command.nomFuncao().trim());
+        user.setNumTelefone(command.numTelefone());
+        user.setCodEmpresa(command.codEmpresa().trim());
+        user.setCodClassificacaoPessoa(fullClassification);
         user.setCodCpf(command.codCpf());
         user.setCodRg(command.codRg());
         user.setCodSenha(passwordHash);
@@ -78,7 +100,7 @@ public class CreateUserUseCase {
         user.setNumDiasSemanasPermitidos(command.numDiasSemanasPermitidos());
         user.setDtJornadaIni(command.dtJornadaIni());
         user.setDtJornadaFim(command.dtJornadaFim());
-        
+
         // Força troca de senha no primeiro acesso
         user.setDtExpiraSenha(LocalDateTime.now());
         user.setDtCriacao(LocalDateTime.now());
@@ -87,7 +109,7 @@ public class CreateUserUseCase {
         // Persiste novo usuário
         userWriter.save(user);
         log.info("Usuário criado com sucesso. ID: {}", user.getIdUsuario());
-        
+
         return user;
     }
 }

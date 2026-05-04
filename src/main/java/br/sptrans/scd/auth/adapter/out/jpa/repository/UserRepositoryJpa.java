@@ -69,4 +69,11 @@ public interface UserRepositoryJpa extends JpaRepository<UserEntityJpa, Long>, J
 
     Optional<UserEntityJpa> findByCodCpf(String codCpf);
 
+    /**
+     * Busca o máximo ID_USUARIO para gerar próximo ID automaticamente.
+     * Retorna 0 se nenhum usuário existe.
+     */
+    @Query("SELECT COALESCE(MAX(u.idUsuario), 0) FROM UserEntityJpa u")
+    Long findMaxIdUsuario();
+
 }

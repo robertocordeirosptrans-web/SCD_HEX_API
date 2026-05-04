@@ -2,6 +2,9 @@ package br.sptrans.scd.auth.domain;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import br.sptrans.scd.auth.adapter.in.rest.deserializer.ClassificationPersonDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +14,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonDeserialize(using = ClassificationPersonDeserializer.class)
 public class ClassificationPerson {
 
     private String codClassificacaoPessoa;

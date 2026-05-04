@@ -122,6 +122,13 @@ public class UserPersistenceAdapter implements UserPersistencePort {
     @CacheEvict(value = "permissoes", allEntries = true)
     public User save(User user) {
         UserEntityJpa entity = userMapper.toEntity(user);
+        
+        // Gerar ID_USUARIO automaticamente se não foi informado
+        if (entity.getIdUsuario() == null || entity.getIdUsuario() == 0) {
+            Long maxId = userRepositoryJpa.findMaxIdUsuario();
+            entity.setIdUsuario(maxId + 1);
+        }
+        
         UserEntityJpa saved = userRepositoryJpa.save(entity);
         return userMapper.toDomain(saved);
     }

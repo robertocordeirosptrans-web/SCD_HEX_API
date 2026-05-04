@@ -2,13 +2,17 @@ package br.sptrans.scd.auth.adapter.in.rest.dto;
 
 
 
+import java.time.LocalDateTime;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import br.sptrans.scd.auth.domain.ClassificationPerson;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.Size;
 
 public record UserRequestDTO(
         @NotBlank(message = "Login é obrigatório") @Size(min = 3, max = 10, message = "Login deve ter entre 3 e 10 caracteres") String codLogin,
@@ -24,6 +28,7 @@ public record UserRequestDTO(
         @Size(max = 20, message = "Cargo deve ter no máximo 20 caracteres") String nomCargo,
 
         @Size(max = 20, message = "Função deve ter no máximo 20 caracteres") String nomFuncao,
+        @Size(max = 30, message = "Número de telefone deve ter no máximo 30 caracteres") Long numTelefone,
 
         @NotBlank(message = "CPF é obrigatório") @Size(max = 20, message = "CPF deve ter no máximo 20 caracteres") String codCpf,
 
@@ -31,7 +36,7 @@ public record UserRequestDTO(
 
         @NotBlank(message = "Email é obrigatório") @Email(message = "Email deve ser válido") @Size(max = 40, message = "Email deve ter no máximo 40 caracteres") String nomEmail,
 
-        @NotBlank(message = "Classificação da pessoa é obrigatória") String codClassificacaoPessoa,
+        @NotBlank(message = "Classificação da pessoa é obrigatória") ClassificationPerson codClassificacaoPessoa,
 
         @NotBlank(message = "Código da empresa é obrigatório") @Size(max = 20, message = "Código da empresa deve ter no máximo 20 caracteres") String codEmpresa,
 
