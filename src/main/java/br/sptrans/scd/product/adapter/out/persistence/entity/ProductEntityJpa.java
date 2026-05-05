@@ -95,7 +95,7 @@ public class ProductEntityJpa {
     private String codEntidade;
 
     @Column(name = "COD_TIPO_CARTAO", length = 20)
-    private String codTipoCartao;
+    private Long codTipoCartao;
 
     @NotNull
     @Column(name = "COD_CLASSIFICACAO_PESSOA")
