@@ -146,6 +146,27 @@ A API estará disponível em `http://localhost:8080` (ou na porta configurada em
 | `cors.allowed-origins` | Origens permitidas para CORS |
 | `rate-limiting.enabled` | Habilita/desabilita rate limiting |
 
+## Portas Requeridas
+
+- **Aplicação (HTTP)**: `server.port` (configurável). Padrão comum: `8080`. A UI do Swagger fica em `/swagger-ui/index.html` na mesma porta.
+- **Banco de Dados (Oracle)**: `1521` (porta padrão do Oracle Thin). Certifique-se de permitir acesso ao host do Oracle configurado em `spring.datasource.url`.
+- **SMTP (envio de e-mail)**: `587` (STARTTLS) ou `25`/`465` conforme seu provedor — ver `spring.mail.port` e `spring.mail.host` em `application.properties` ou variáveis de ambiente.
+- **Observação de rede**: Além de abrir as portas de entrada necessárias (aplicação), a aplicação precisa de saída de rede liberada para o host do banco e para o servidor SMTP configurado.
+
+## Novas funcionalidades (adicionadas recentemente)
+
+As seguintes funcionalidades não constavam na versão anterior do README e foram adicionadas ao projeto:
+
+- **Idempotência via banco de dados**: Suporte a idempotência para endpoints críticos com tabela dedicada e job de limpeza. Scripts: `scripts/create-idempotency-table.sql`. Parâmetros em `application.properties` (`idempotency.*`).
+- **Auditoria (audit log)**: Módulo de auditoria com persistência em banco e script de criação: `scripts/create-audit-log.sql`.
+- **Jobs agendados para recarga**: Rotinas em background para `confirmar-recarga`, `liberar-recarga` e `processar-recarga` configuráveis em `application.properties` (cron/intervalos e flags `scheduler.*`).
+- **Gerenciamento de sessões e job de expiração**: Limite de sessões simultâneas por usuário e job de expiração configuráveis (`session.*`).
+- **Endpoint summary / documentação automatizada**: Arquivo `ENDPOINTS_SUMMARY.json` com resumo das rotas disponíveis (útil para inventário e testes automatizados).
+- **Scripts úteis incluídos**: Pasta `scripts/` com SQL para criação de tabelas auxiliares (idempotência, tokens de recuperação de senha, auditoria, etc.).
+- **Template de e-mail Thymeleaf**: `src/main/resources/templates/password-reset-email.html` (usado pelo fluxo de recuperação de senha via SMTP).
+
+Se desejar, posso reorganizar o README para destacar essas funcionalidades em seções separadas ou gerar uma checklist de implantação com as portas e variáveis de ambiente necessárias.
+
 ## Módulos e Funcionalidades
 
 ### Autenticação (`auth`)
